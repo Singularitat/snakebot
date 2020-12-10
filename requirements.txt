@@ -1,0 +1,10 @@
+aiohttp == 3.5.4
+async_timeout == 3.0.1
+bs4 == 0.0.1
+discord.py[voice] == 1.4.1
+python_baseconv == 1.2.2
+youtube_dl == 2020.7.28
+python-dateutil == 2.8.1
+GitPython == 3.1.9
+# ffmpeg on path
+# pip install -r requirements.txt
