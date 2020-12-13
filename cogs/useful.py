@@ -21,36 +21,20 @@ class useful(commands.Cog):
         starttime = time.time()
 
     @commands.command()
-    async def startissues(self, ctx):
-        await ctx.send("""```To Do List:
-
-Karma And Awards
-Fix Slot Machine
-Do Word Machine Learning
-Snekbox
-Fix Music Bot
-Update Help Command
-Comment Code
-If Someone Ghost Pings Snakebot Detects, And Then Annoucnes Thier Crimes To Everyone
-Speech To Text
-Update Stock Command
-Fix Blacklist Command```""")
-
-    @commands.command()
     async def issue(self, ctx, *, issue):
         """Appends an issue to the snakebot-todo"""
         await ctx.channel.purge(limit=1)
-        channel = self.bot.get_channel(748312134538231939)
-        message = await channel.fetch_message(784425248921485342)
-        issues = str(message.content)
+        channel = self.bot.get_channel(776616587322327061)
+        message = await channel.fetch_message(787155786068656130)
+        issues = str(message.content).replace('`', '')
         issuelist = issues.split("\n")
         issue = string.capwords(issue)
         if issue[0:6] == "Delete":
-            issuelist.remove(f'{issue[7:]}```')
+            issuelist.remove(f'{issue[7:]}')
             issues = "\n".join(issuelist)
-            await message.edit(content=f"""{issues}```""")
+            await message.edit(content=f"""```{issues}```""")
         else:
-            await message.edit(content=f"""{issues[:-3]}
+            await message.edit(content=f"""```{issues}
 {issue}```""")
 
     @commands.command()

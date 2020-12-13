@@ -3,6 +3,16 @@ from discord.ext import commands
 import json
 import platform
 import os
+from chatterbot import ChatBot
+from chatterbot.trainers import ChatterBotCorpusTrainer
+
+
+chatbot = ChatBot(
+    'Snakebot',
+    storage_adapter='chatterbot.storage.SQLStorageAdapter',
+    database_uri='sqlite:///cogs/db/database.sqlite3'
+)
+trainer = ChatterBotCorpusTrainer(chatbot)
 
 
 class events(commands.Cog):
@@ -31,7 +41,7 @@ class events(commands.Cog):
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         """Logs deleted messages into the log channel"""
-        if not message.content:
+        if not message.content or message.content.startswith('\\issue'):
             pass
         else:
             channel = self.bot.get_channel(765410315038621748)
@@ -67,10 +77,8 @@ class events(commands.Cog):
                 await message.channel.send(embed=discord.Embed(title='You\'re blacklisted!', description='Haha dumb dumb.', color=0x00FF00))
         if str(message.author) in data["downvote"]:
             await message.add_reaction(self.bot.get_emoji(766414744730206228))
-        if message.author.id != self.bot.user.id:
-            print(f"{message.guild}/{message.channel}/{message.author.name}>{message.content}")
-            if message.embeds:
-                print(message.embeds[0].to_dict())
+        if str(message.channel) == 'snake-chat' and message.author != self.bot.user:
+            await message.channel.send(chatbot.get_response(str(message.content)))
 
     @commands.Cog.listener()
     async def on_reaction_clear(self, message, reactions):

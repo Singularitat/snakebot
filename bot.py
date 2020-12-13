@@ -17,6 +17,7 @@ with open('json/data.txt') as json_file:
     data = json.load(json_file)
     TOKEN = (data['token'])
 
+# Runs all the the cogs in /cogs as extensions
 
 cogs_dir = "cogs"
 
