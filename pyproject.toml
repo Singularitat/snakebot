@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "Snakebot"
+version = "0.1.1"
+description = "A Basic Python Bot That Tries To Do Everything"
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+async-timeout = "3.0.1"
+bs4 = "0.0.1"
+"discord.py" = {extras = ["voice"], version = "^1.5.1"}
+python-baseconv = "^1.2.2"
+youtube_dl = "^2020.12.12"
+GitPython = "^3.1.11"
+numpy = "1.19.3"
+ChatterBot = "1.0.4"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
