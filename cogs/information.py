@@ -17,6 +17,7 @@ class Information(commands.Cog):
     @commands.command()
     @commands.has_any_role('High Society', 'Higher Society')
     async def roles(self, ctx, member: discord.Member):
+        """Sends a list of all roles in the server"""
         role_list = []
         for role in member.roles:
             if str(role.name) != '@everyone':

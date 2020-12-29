@@ -41,7 +41,7 @@ class events(commands.Cog):
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         """Logs deleted messages into the log channel"""
-        if not message.content or message.content.startswith('\\issue'):
+        if not message.content or message.content.startswith('.issue'):
             pass
         else:
             channel = self.bot.get_channel(765410315038621748)

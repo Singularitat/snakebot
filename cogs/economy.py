@@ -97,6 +97,7 @@ class economy(commands.Cog):
 
     @commands.command()
     async def sellstock(self, ctx, symbol, amount: float):
+        """Sells inputted stock"""
         url = 'https://nz.finance.yahoo.com/most-active?offset=0&count=200'
         author = str(ctx.author)
         with open('json/economy.json') as data_file:
@@ -248,6 +249,7 @@ class economy(commands.Cog):
 
     @commands.command()
     async def streak(self, ctx):
+        """Gets your current streaks on the slot machine"""
         with open('json/economy.json') as data_file:
             data = json.load(data_file)
         cash = str(ctx.author)

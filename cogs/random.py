@@ -16,11 +16,10 @@ class garbage(commands.Cog):
     @commands.command()
     @commands.has_any_role('Sneak', 'Higher Society', 'High Society')
     async def send(self, ctx, member: discord.Member, *, content):
-        """Sends a DM to targeted member"""
+        """Sends a DM to someone"""
         try:
-            channel = await member.create_dm()
-            await channel.send(content)
-            await ctx.send('Sent')
+            await member.send(content)
+            await ctx.send(f'Send message to {member}')
         except Exception:
             await ctx.send(f'{member} has DMs disabled for non-friends')
 
@@ -52,6 +51,7 @@ class garbage(commands.Cog):
 
     @commands.command()
     async def delay(self, ctx, time, *, message):
+        """Sends a message after a delay"""
         if time[-1] == 'm':
             time = float(time[:-1])
             time *= 60

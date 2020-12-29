@@ -8,8 +8,7 @@ from os.path import isfile, join
 # Connects to discord, Sets command prefix, Removes default help command
 
 bot = discord.Client()
-bot = commands.Bot(command_prefix="\\")
-bot.remove_command('help')
+bot = commands.Bot(command_prefix=".", help_command=None)
 
 # Gets discord TOKEN
 
