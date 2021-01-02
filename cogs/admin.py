@@ -7,6 +7,8 @@ import re
 import git
 import copy
 import subprocess
+import os
+import sys
 
 
 class admin(commands.Cog):
