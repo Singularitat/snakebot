@@ -5,6 +5,8 @@ import asyncio
 import time
 from baseconv import base2, base16, base64
 import datetime
+from bs4 import BeautifulSoup
+import aiohttp
 
 
 class garbage(commands.Cog):
@@ -14,12 +16,28 @@ class garbage(commands.Cog):
         starttime = time.time()
 
     @commands.command()
+    async def hug(self, ctx):
+        url = 'https://tenor.com/search/hug-gifs'
+        headers = {"User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebkit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36'}
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get(url) as page:
+                soup = BeautifulSoup(await page.text(), 'html.parser')
+        images = []
+        for a in soup.find_all("img"):
+            image = a.get('src')
+            if image.startswith('https://media.tenor.com/'):
+                images.append(image)
+        await ctx.send(random.choice(images))
+
+
+
+    @commands.command()
     @commands.has_any_role('Sneak', 'Higher Society', 'High Society')
     async def send(self, ctx, member: discord.Member, *, content):
         """Sends a DM to someone"""
         try:
             await member.send(content)
-            await ctx.send(f'Send message to {member}')
+            await ctx.send(f'Sent message to {member}')
         except Exception:
             await ctx.send(f'{member} has DMs disabled for non-friends')
 
