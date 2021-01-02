@@ -67,14 +67,10 @@ class admin(commands.Cog):
         """Automatically downvotes someone"""
         with open('json/real.json') as data_file:
             data = json.load(data_file)
-        if str(member) in data["downvote"]:
-            data["downvote"].remove(str(member))
+        if member.id in data["downvote"]:
+            data["downvote"].remove(member.id)
         else:
-            data["downvote"].append(str(member))
-        if member in data["blacklist"]:
-            data["blacklist"].remove(str(member))
-        else:
-            data["blacklist"].append(str(member))
+            data["downvote"].append(member.id)
         with open('json/real.json', 'w') as file:
             data = json.dump(data, file)
 
