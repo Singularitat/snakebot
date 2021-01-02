@@ -183,7 +183,7 @@ class economy(commands.Cog):
         else:
             await ctx.send(embed=discord.Embed(title='Bet must be positive', color=discord.Color.red()))
 
-    @commands.command()
+    @commands.command(aliases=["slots"])
     async def slot(self, ctx, bet: float):
         """Rolls the slot machine"""
         emojis = [
@@ -332,7 +332,7 @@ class economy(commands.Cog):
             embed.set_footer(icon_url=self.bot.user.avatar_url, text="Go way hat you™")
             await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(aliases=["bal"])
     async def balance(self, ctx):
         """Gets the users current balance"""
         with open('json/economy.json') as data_file:
@@ -344,7 +344,7 @@ class economy(commands.Cog):
         with open('json/economy.json', 'w') as file:
             data = json.dump(data, file)
 
-    @commands.command()
+    @commands.command(aliases=["give", "donate"])
     async def pay(self, ctx, user: discord.Member, amount: float):
         """Pays inputted user inputted amount"""
         if (amount > 0):
@@ -354,6 +354,8 @@ class economy(commands.Cog):
             if data["money"][cash] < amount:
                 await ctx.send(embed=discord.Embed(title="You don't have enough cash", color=discord.Color.red()))
             else:
+                if str(user) not in data["money"].keys():
+                    data["money"][str(user)] = 1000
                 data["money"][cash] -= amount
                 data["money"][str(user)] += amount
                 with open('json/economy.json', 'w') as file:
