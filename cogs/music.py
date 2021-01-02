@@ -440,9 +440,7 @@ class music(commands.Cog):
 
     @commands.command(name='skip', aliases=['s'])
     async def _skip(self, ctx: commands.Context):
-        """Vote to skip a song. The requester can automatically skip.
-        3 skip votes are needed for the song to be skipped.
-        """
+        """Vote to skip a song."""
 
         if not ctx.voice_state.is_playing:
             return await ctx.send('Not playing any music right now...')
@@ -460,7 +458,7 @@ class music(commands.Cog):
                 await ctx.message.add_reaction('⏭')
                 ctx.voice_state.skip()
             else:
-                await ctx.send('Skip vote added, currently at **{}/3**'.format(total_votes))
+                await ctx.send('Skip vote added, currently at **{}/1**'.format(total_votes))
 
         else:
             await ctx.send('You have already voted to skip this song.')
@@ -510,9 +508,7 @@ class music(commands.Cog):
 
     @commands.command(name='loop')
     async def _loop(self, ctx: commands.Context):
-        """Loops the currently playing song.
-        Invoke this command again to unloop the song.
-        """
+        """Loops the currently playing song."""
 
         if not ctx.voice_state.is_playing:
             return await ctx.send('Nothing being played at the moment.')
@@ -524,10 +520,7 @@ class music(commands.Cog):
     @commands.command(name='play', aliases=['p'])
     async def _play(self, ctx: commands.Context, *, search: str):
         """Plays a song.
-        If there are songs in the queue, this will be queued until the
-        other songs finished playing.
         This command automatically searches from various sites if no URL is provided.
-        A list of these sites can be found here: https://rg3.github.io/youtube-dl/supportedsites.html
         """
 
         async with ctx.typing():
@@ -549,7 +542,6 @@ class music(commands.Cog):
         It returns an imbed of the first 10 results collected from youtube.
         Then the user can choose one of the titles by typing a number
         in chat or they can cancel by typing "cancel" in chat.
-        Each title in the list can be clicked as a link.
         """
         async with ctx.typing():
             try:
