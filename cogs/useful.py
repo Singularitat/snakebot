@@ -22,6 +22,7 @@ class useful(commands.Cog):
 
 
     @commands.command()
+    @commands.has_any_role('Sneak')
     async def issue(self, ctx, *, issue):
         """Appends an issue to the snakebot-todo"""
         await ctx.channel.purge(limit=1)
