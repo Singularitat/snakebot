@@ -6,6 +6,7 @@ from os.path import isfile, join
 import re
 import git
 import copy
+import subprocess
 
 
 class admin(commands.Cog):
@@ -35,14 +36,14 @@ class admin(commands.Cog):
             await member.add_roles(role)
 
     @commands.command(hidden=True, aliases=["pull"])
-    async def update2(self, ctx):
+    async def update(self, ctx):
         """ Gets latest commits and applies them from git """
         def run_shell(command):
             with Popen(command, stdout=PIPE, stderr=PIPE, shell=True) as proc:
                 return [std.decode("utf-8") for std in proc.communicate()]
 
         pull = await self.bot.loop.run_in_executor(
-            None, run_shell, "git pull origin master"
+            None, run_shell, "git pull"
         )
         for extension in [f.replace('.py', '') for f in listdir('cogs') if isfile(join('cogs', f))]:
             try:
@@ -53,13 +54,6 @@ class admin(commands.Cog):
                 else:
                     await ctx.send(embed=discord.Embed(title="```{}: {}\n```".format(type(e).__name__, str(e)), color=discord.Color.blurple()))
         await ctx.send(embed=discord.Embed(title="Pulled latests commits and restarted.", color=discord.Color.blurple()))
-
-    @commands.command(hidden=True)
-    @commands.has_any_role('Sneak')
-    async def update(self, ctx):
-        """Updates the bot"""
-        repo = git.Repo()
-        repo.remotes.origin.pull('master')
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
