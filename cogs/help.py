@@ -31,7 +31,11 @@ class HelpMenu(ListPageSource):
         len_data = len(self.entries)
 
         embed = Embed(title="Help has been sent", colour=self.ctx.author.colour)
-        embed.set_thumbnail(url=self.ctx.guild.me.avatar_url)
+        if self.ctx.guild is None:
+            thumbnail = self.ctx.author.avatar_url
+        else:
+            thumbnail = self.ctx.guild.me.avatar_url
+        embed.set_thumbnail(url=thumbnail)
         embed.set_footer(text=f"{offset:,} - {min(len_data, offset+self.per_page-1):,} of {len_data:,} commands.")
 
         for name, value in fields:
