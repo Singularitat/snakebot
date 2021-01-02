@@ -5,6 +5,10 @@ import platform
 import os
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
+import time
+import datetime
+import textwrap
+from discord import Embed
 
 
 chatbot = ChatBot(
@@ -23,7 +27,7 @@ class events(commands.Cog):
     async def on_voice_state_update(self, member, before, after):
         with open('json/real.json') as data_file:
             data = json.load(data_file)
-        if str(member) in data["downvote"] and after.channel is not None:
+        if member.id in data["downvote"] and after.channel is not None:
             await member.edit(voice_channel=None)
 
     @commands.Cog.listener()
@@ -44,6 +48,24 @@ class events(commands.Cog):
         if not message.content or message.content.startswith('.issue'):
             pass
         else:
+            if '@everyone' or '@here' in message.content:
+                timesince = datetime.datetime.utcfromtimestamp(time.time())-message.created_at
+                if timesince.total_seconds() < 360:
+                    general = self.bot.get_channel(748312134538231939)
+                    embed = Embed(colour=discord.Colour.blurple())
+                    embed.description = (
+                        textwrap.dedent(f"""
+                            **{message.author} has ghosted pinged**
+                            For their crimes they have been downvoted
+                        """)
+                    )
+                    await general.send(embed=embed)
+                    with open('json/real.json') as data_file:
+                        data = json.load(data_file)
+                    if message.author.id not in data["downvote"]:
+                        data["downvote"].append(message.author.id)
+                    with open('json/real.json', 'w') as file:
+                        data = json.dump(data, file)
             channel = self.bot.get_channel(765410315038621748)
             await channel.send(f"```{message.author} deleted:\n{message.content.replace('`', '')}```")
 
@@ -73,9 +95,9 @@ class events(commands.Cog):
         with open('json/real.json') as data_file:
             data = json.load(data_file)
         if message.content.startswith('.'):
-            if str(message.author) in data["blacklist"]:
+            if message.author.id in data["blacklist"]:
                 await message.channel.send(embed=discord.Embed(title='You\'re blacklisted!', description='Haha dumb dumb.', color=0x00FF00))
-        if str(message.author) in data["downvote"]:
+        if message.author.id in data["downvote"]:
             await message.add_reaction(self.bot.get_emoji(766414744730206228))
         if str(message.channel) == 'snake-chat' and message.author != self.bot.user:
             await message.channel.send(chatbot.get_response(str(message.content)))
@@ -84,7 +106,7 @@ class events(commands.Cog):
     async def on_reaction_clear(self, message, reactions):
         with open('json/real.json') as data_file:
             data = json.load(data_file)
-        if str(message.author) in data["downvote"]:
+        if message.author.id in data["downvote"]:
             await message.add_reaction(self.bot.get_emoji(766414744730206228))
 
     @commands.Cog.listener()
