@@ -41,7 +41,7 @@ class admin(commands.Cog):
     async def update(self, ctx):
         """ Gets latest commits and applies them from git """
         def run_shell(command):
-            with Popen(command, stdout=PIPE, stderr=PIPE, shell=True) as proc:
+            with subprocess.Popen(command, stdout=PIPE, stderr=PIPE, shell=True) as proc:
                 return [std.decode("utf-8") for std in proc.communicate()]
 
         pull = await self.bot.loop.run_in_executor(

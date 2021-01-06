@@ -292,39 +292,35 @@ class economy(commands.Cog):
                 b = random.choice(emojis)
                 c = random.choice(emojis)
                 d = random.choice(emojis)
+                iswin = True
                 if (a == b == c == d):
                     quad += 1
-                    iswin = True
                 elif (a == b == c) or (a == c == d) or (a == b == d) or (b == d == c):
                     triple += 1
-                    iswin = True
                 elif (a == b) and (d == c) or (b == c) and (d == a) or (d == b) and (a == c):
                     scam += 1
-                    iswin = True
                 elif (a == b) or (a == c) or (b == c) or (d == c) or (d == b) or (d == a):
                     double += 1
-                    iswin = True
                 else:
                     none += 1
                     iswin = False
+                    lose += 1
+                    if highestwin < win:
+                        highestwin = win
+                    win = 0
                 if iswin is True:
                     win += 1
                     if highestlose < lose:
                         highestlose = lose
                     lose = 0
-                else:
-                    lose += 1
-                    if highestwin < win:
-                        highestwin = win
-                    win = 0
                 x += 1
-            total = (((quad * 100) + (triple * 15) + (scam * 20) + (double * 1.5) - (none))/amount)*100
+            total = (((quad * 100) + (triple * 15) + (scam * 20) + (double * 1.5) - (none))*(1/amount))*100
             embed = discord.Embed(title=f"Chances from {amount} attempts", color=discord.Color.blue())
-            embed.add_field(name="Quad: ", value=f'{quad}, {round(((quad/amount)*100), 2)}%', inline=True)
-            embed.add_field(name="Triple: ", value=f'{triple}, {round(((triple/amount)*100), 2)}%', inline=True)
-            embed.add_field(name="Double double: ", value=f'{scam}, {round(((scam/amount)*100), 2)}%', inline=True)
-            embed.add_field(name="Double: ", value=f'{double}, {round(((double/amount)*100), 2)}%', inline=True)
-            embed.add_field(name="None: ", value=f'{none}, {round(((none/amount)*100), 2)}%', inline=True)
+            embed.add_field(name="Quad: ", value=f'{quad}, {round(((quad*(1/amount))*100), 2)}%', inline=True)
+            embed.add_field(name="Triple: ", value=f'{triple}, {round(((triple*(1/amount))*100), 2)}%', inline=True)
+            embed.add_field(name="Double double: ", value=f'{scam}, {round(((scam*(1/amount))*100), 2)}%', inline=True)
+            embed.add_field(name="Double: ", value=f'{double}, {round(((double*(1/amount))*100), 2)}%', inline=True)
+            embed.add_field(name="None: ", value=f'{none}, {round(((none*(1/amount))*100), 2)}%', inline=True)
             embed.add_field(name="Percentage gain/loss: ", value=f'{round(total, 2)}%', inline=True)
             embed.add_field(name="Highest win streak: ", value=highestwin, inline=True)
             embed.add_field(name="Highest lose streak: ", value=highestlose, inline=True)

@@ -51,7 +51,7 @@ class events(commands.Cog):
             if '@everyone' or '@here' in message.content:
                 timesince = datetime.datetime.utcfromtimestamp(time.time())-message.created_at
                 if timesince.total_seconds() < 360:
-                    general = self.bot.get_channel(748312134538231939)
+                    general = self.bot.get_channel(682736102045515791)
                     embed = Embed(colour=discord.Colour.blurple())
                     embed.description = (
                         textwrap.dedent(f"""
