@@ -2,17 +2,23 @@ from discord import Embed
 import textwrap
 import discord
 from discord.ext import commands
-from .utils.util import (
-    time_since,
-    get_matching_emote
-)
+from .utils import time
+from .utils.util import time_since, get_matching_emote
 
 
 class Information(commands.Cog):
-    """A cog with commands for generating embeds with server info, such as server stats and user info."""
+    """For generating embeds with server info and member info."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    def get_bot_uptime(self, *, brief=False):
+        return time.human_timedelta(self.bot.uptime, accuracy=None, brief=brief, suffix=False)
+
+    @commands.command()
+    async def uptime(self, ctx):
+        """Shows the bots uptime"""
+        await ctx.send(f'**{self.get_bot_uptime()}**')
 
     @commands.command()
     @commands.has_any_role('High Society', 'Higher Society')
@@ -26,7 +32,7 @@ class Information(commands.Cog):
 
     @commands.command(name="server", aliases=["server_info", "guild", "guild_info", "info", "information"])
     async def server_info(self, ctx):
-        """Returns an embed of server information."""
+        """Sends an embed of server information."""
         created = time_since(ctx.guild.created_at, precision="days")
         region = ctx.guild.region
         roles = len(ctx.guild.roles)
@@ -59,28 +65,28 @@ class Information(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="user", aliases=["user_info", "member", "member_info"])
-    async def user_info(self, ctx, user: discord.Member = None) -> None:
-        """Returns info about a user."""
-        if user is None:
-            user = ctx.author
-        embed = await self.create_user_embed(ctx, user)
+    async def user_info(self, ctx, member: discord.Member = None) -> None:
+        """Sends info about a member."""
+        if member is None:
+            member = ctx.author
+        embed = await self.create_user_embed(ctx, member)
         await ctx.send(embed=embed)
 
-    async def create_user_embed(self, ctx, user: discord.Member) -> Embed:
+    async def create_user_embed(self, ctx, member: discord.Member) -> Embed:
         """Creates an embed containing information on the `user`."""
-        created = time_since(user.created_at, max_units=3)
-        name = str(user)
-        if user.nick:
-            name = f"{user.nick} ({name})"
-        joined = time_since(user.joined_at, max_units=3)
-        roles = ", ".join(role.mention for role in user.roles[1:])
+        created = time_since(member.created_at, max_units=3)
+        name = str(member)
+        if member.nick:
+            name = f"{member.nick} ({name})"
+        joined = time_since(member.joined_at, max_units=3)
+        roles = ", ".join(role.mention for role in member.roles[1:])
         fields = [
             (
                 "User information",
                 textwrap.dedent(f"""
                     Created: {created}
-                    Profile: {user.mention}
-                    ID: {user.id}
+                    Profile: {member.mention}
+                    ID: {member.id}
                 """).strip()
             ),
             (
@@ -96,8 +102,8 @@ class Information(commands.Cog):
         )
         for field_name, field_content in fields:
             embed.add_field(name=field_name, value=field_content, inline=False)
-        embed.set_thumbnail(url=user.avatar_url_as(static_format="png"))
-        embed.colour = user.top_role.colour if roles else discord.Colour.blurple()
+        embed.set_thumbnail(url=member.avatar_url_as(static_format="png"))
+        embed.colour = member.top_role.colour if roles else discord.Colour.blurple()
         return embed
 
 
