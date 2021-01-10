@@ -19,7 +19,7 @@ chatbot = ChatBot(
 trainer = ChatterBotCorpusTrainer(chatbot)
 
 
-class events(commands.Cog):
+class Events(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -39,19 +39,22 @@ class events(commands.Cog):
                 if after.content.startswith('https'):
                     pass
                 else:
-                    channel = self.bot.get_channel(765410315038621748)
-                    await channel.send(f"```{before.author} editted:\n{before.content} >>> {after.content}```")
+                    try:
+                        channel = discord.utils.get(after.guild.channels, name="logs")
+                        await channel.send(f"```{before.author} editted:\n{before.content} >>> {after.content}```")
+                    except Exception:
+                        pass
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
-        """Logs deleted messages into the log channel"""
-        if not message.content or message.content.startswith('.issue'):
+        """Logs deleted messages into the logs channel"""
+        if not message.content or message.content.startswith(f'{self.bot.command_prefix}issue'):
             pass
         else:
-            if '@everyone' or '@here' in message.content:
+            if '@everyone' in message.content or '@here' in message.content:
                 timesince = datetime.datetime.utcfromtimestamp(time.time())-message.created_at
                 if timesince.total_seconds() < 360:
-                    general = self.bot.get_channel(682736102045515791)
+                    general = discord.utils.get(message.guild.channels, name="logs")
                     embed = Embed(colour=discord.Colour.blurple())
                     embed.description = (
                         textwrap.dedent(f"""
@@ -66,16 +69,20 @@ class events(commands.Cog):
                         data["downvote"].append(message.author.id)
                     with open('json/real.json', 'w') as file:
                         data = json.dump(data, file)
-            channel = self.bot.get_channel(765410315038621748)
-            await channel.send(f"```{message.author} deleted:\n{message.content.replace('`', '')}```")
+            try:
+                channel = discord.utils.get(message.guild.channels, name="logs")
+                await channel.send(f"```{message.author} deleted:\n{message.content.replace('`', '')}```")
+            except Exception:
+                pass
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         with open('json/real.json') as data_file:
             data = json.load(data_file)
-        data["notevil"][str(after)] = []
+        data["notevil"][str(after.id)] = []
         for role in after.roles:
-            data["notevil"][str(after)].append(str(role.name))
+            if str(role.name) != "@everyone" and role < after.guild.me.top_role:
+                data["notevil"][str(after.id)].append(str(role.name))
         with open('json/real.json', 'w') as file:
             data = json.dump(data, file)
 
@@ -85,20 +92,17 @@ class events(commands.Cog):
             data = json.load(data_file)
         if member in data["notevil"]:
             try:
-                member.add_roles(data["notevil"][str(member)])
-            except Exception as e:
-                print(e)
+                member.add_roles(data["notevil"][str(member.id)])
+            except Exception:
+                pass
 
     @commands.Cog.listener()
     async def on_message(self, message):
         """Sends and error message if someone blacklisted sends a command"""
         with open('json/real.json') as data_file:
             data = json.load(data_file)
-        if message.content.startswith('.'):
-            if message.author.id in data["blacklist"]:
-                await message.channel.send(embed=discord.Embed(title='You\'re blacklisted!', description='Haha dumb dumb.', color=0x00FF00))
         if message.author.id in data["downvote"]:
-            await message.add_reaction(self.bot.get_emoji(766414744730206228))
+            await message.add_reaction(discord.utils.get(message.guild.emojis, name="downvote"))
         if str(message.channel) == 'snake-chat' and message.author != self.bot.user:
             await message.channel.send(chatbot.get_response(str(message.content)))
 
@@ -107,7 +111,7 @@ class events(commands.Cog):
         with open('json/real.json') as data_file:
             data = json.load(data_file)
         if message.author.id in data["downvote"]:
-            await message.add_reaction(self.bot.get_emoji(766414744730206228))
+            await message.add_reaction(discord.utils.get(message.guild.emojis, name="downvote"))
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -116,6 +120,9 @@ class events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        if not hasattr(self, 'uptime'):
+            self.bot.uptime = datetime.datetime.utcnow()
+        self.bot.owner_id = 225708387558490112
         """Bot startup"""
         print('Logged in as', self.bot.user.name, self.bot.user.id,)
         print("Discord.py API version:", discord.__version__)
@@ -125,9 +132,11 @@ class events(commands.Cog):
         await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(name="Tax Evasion Simulator 2020"))
 
     async def bot_check_once(self, ctx):
+        if ctx.author.id == 225708387558490112:
+            return True
         with open('json/real.json') as data_file:
             data = json.load(data_file)
-        return ctx.author.id not in data['blacklist']
+        return ctx.author.id not in data['blacklist'] and ctx.author.id not in data["downvote"]
 
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role):
@@ -141,4 +150,4 @@ class events(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(events(bot))
+    bot.add_cog(Events(bot))
