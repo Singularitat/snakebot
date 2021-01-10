@@ -8,21 +8,19 @@ import urllib.request
 import time
 import datetime
 import string
-from .utils.util import (
-    remove_html_tags,
-    clean_non_letters
-)
+from .utils.util import remove_html_tags, clean_non_letters
 
 
-class useful(commands.Cog):
+class Useful(commands.Cog):
+    """For actually useful commands."""
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         global starttime
         starttime = time.time()
 
-
     @commands.command()
-    @commands.has_any_role('Sneak')
+    @commands.is_owner()
     async def issue(self, ctx, *, issue):
         """Appends an issue to the snakebot-todo"""
         await ctx.channel.purge(limit=1)
@@ -55,7 +53,6 @@ class useful(commands.Cog):
             except KeyError:
                 pass
         await ctx.send(random.choice(image))
-
 
     @commands.command(aliases=['img'])
     async def image(self, ctx, *, search):
@@ -91,15 +88,15 @@ class useful(commands.Cog):
         await ctx.send(f'{round(self.bot.latency * 1000)}ms')
 
     @commands.command()
-    async def realping(self, ctx):
-        """Gets the current real fake ping"""
+    async def botping(self, ctx):
+        """Gets the current lag between the bot sending a message and discord receiving it"""
         x = await ctx.send('Pinging...')
         ms = (x.created_at - ctx.message.created_at).total_seconds()*1000
         await x.edit(content=('{}ms'.format(int(ms))))
 
     @commands.command(aliases=['urbandictionary'])
     async def urban(self, ctx, search, ran=None):
-        """Graps the defination of input on urbandictionary"""
+        """Grabs the definition of something from the urbandictionary"""
         url = f'https://api.urbandictionary.com/v0/define?term={search}'
         async with aiohttp.ClientSession() as session:
             raw_response = await session.get(url)
@@ -131,7 +128,7 @@ class useful(commands.Cog):
 
     @commands.command()
     async def crypto(self, ctx, symbol):
-        """Gets current price of inputted cyrpto currency"""
+        """Gets current price of a cyrpto currency"""
         url = 'https://coinmarketcap.com/'
         headers = {"User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36'}
         async with aiohttp.ClientSession(headers=headers) as session:
@@ -201,7 +198,7 @@ class useful(commands.Cog):
 
     @commands.command()
     async def covid(self, ctx, *, country='nz'):
-        """Shows current coronavirus cases in inputted country"""
+        """Shows current coronavirus cases, defaults to New Zealand"""
         try:
             if len(country) > 2:
                 url = 'https://corona.lmao.ninja/v3/covid-19/countries/'
@@ -242,7 +239,7 @@ class useful(commands.Cog):
 
     @commands.command(aliases=['data'])
     async def databreach(self, ctx, num):
-        """Sends an inputted amount of information on databreachs in 2020"""
+        """Sends information on databreachs in 2020"""
         url = 'https://haveibeenpwned.com/api/v3/breaches'
         async with aiohttp.ClientSession() as session:
             raw_response = await session.get(url)
@@ -272,7 +269,7 @@ class useful(commands.Cog):
 
     @commands.command()
     async def nz(self, ctx):
-        """Shows current coronavirus cases in New Zealand"""
+        """Shows current coronavirus cases in New Zealand from health.govt.nz"""
         url = 'https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-data-and-statistics/covid-19-current-cases'
         headers = {"User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebkit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36'}
         async with aiohttp.ClientSession(headers=headers) as session:
@@ -296,4 +293,4 @@ class useful(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(useful(bot))
+    bot.add_cog(Useful(bot))
