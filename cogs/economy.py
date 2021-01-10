@@ -5,12 +5,11 @@ from discord.ext import commands
 import json
 import random
 import time
-from .utils.util import (
-    stockgrab
-)
 
 
-class economy(commands.Cog):
+class Economy(commands.Cog):
+    """For commands related to the economy."""
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -19,149 +18,22 @@ class economy(commands.Cog):
         """Gets the top 3 balances"""
         with open('json/economy.json') as data_file:
             data = json.load(data_file)
-        first = ['', 0]
-        second = ['', 0]
-        third = ['', 0]
-        for user in data["money"]:
-            if data["money"][user] > first[1]:
-                first[0] = user
-                first[1] = data["money"][user]
-            elif data["money"][user] > second[1]:
-                second[0] = user
-                second[1] = data["money"][user]
-            elif data["money"][user] > third[1]:
-                third[0] = user
-                third[1] = data["money"][user]
+        topthree = sorted(data["money"], key=data["money"].get, reverse=True)[:3]
         embed = Embed(colour=discord.Colour.blurple())
         embed.description = (
             textwrap.dedent(f"""
                 **Top 3 users**
-                First: **{first[0]}**, {first[1]:.3e}
-                Second: **{second[0]}**, {second[1]:.3e}
-                Third: **{third[0]}**, {third[1]:.3e}
+                First: **{topthree[0]}**, {data["money"][topthree[0]]:.3e}
+                Second: **{topthree[1]}**, {data["money"][topthree[1]]:.3e}
+                Third: **{topthree[2]}**, {data["money"][topthree[2]]:.3e}
             """)
         )
         embed.set_thumbnail(url=ctx.guild.icon_url)
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def stocks(self, ctx):
-        """Sends the price of every stock with a price above 1"""
-        url = 'https://nz.finance.yahoo.com/most-active?offset=0&count=200'
-        with open('json/economy.json') as data_file:
-            data = json.load(data_file)
-        embed = discord.Embed(colour=discord.Color.blue())
-        x = 0
-        y = 25
-        for stock in await stockgrab(url):
-            if float(stock[2]) >= 1 or stock[0][:3] in data["stocks"]:
-                embed.add_field(name=stock[0][:3], value=f'${stock[2]}', inline=True)
-                if x == y:
-                    await ctx.send(embed=embed)
-                    embed = discord.Embed(colour=discord.Color.blue())
-                    y += 25
-                x += 1
-
-    @commands.command()
-    async def stockbal(self, ctx, symbol):
-        """Gets the amount of stocks you have in inputted stock"""
-        with open('json/economy.json') as data_file:
-            data = json.load(data_file)
-        symbol = symbol.upper()
-        try:
-            await ctx.send(embed=discord.Embed(title=f'You have {data["stocks"][symbol][str(ctx.author)]} stocks in {symbol}', color=discord.Color.blue()))
-        except KeyError:
-            await ctx.send(embed=discord.Embed(title=f'You have never invested in {symbol}', color=discord.Color.red()))
-
-    @commands.command()
-    async def stockprice(self, ctx, symbol):
-        """Gets the price of inputted stock"""
-        url = 'https://nz.finance.yahoo.com/most-active?offset=0&count=200'
-        symbol = symbol.upper()
-        with open('json/economy.json') as data_file:
-            data = json.load(data_file)
-        for stock in await stockgrab(url):
-            if float(stock[2]) >= 1 or stock[0][:3] in data["stocks"]:
-                try:
-                    data["stocks"][stock[0][:3]]["price"] = stock[2]
-                except KeyError:
-                    pass
-        for stock in data["stocks"]:
-            if stock == symbol:
-                await ctx.send(embed=discord.Embed(title=f'1 {symbol} is worth ${data["stocks"][symbol]["price"]}', color=discord.Color.blue()))
-                break
-        if symbol != stock:
-            await ctx.send(embed=discord.Embed(title=f'No stock found for {symbol}', color=discord.Color.red()))
-        with open('json/economy.json', 'w') as file:
-            data = json.dump(data, file)
-
-    @commands.command()
-    async def sellstock(self, ctx, symbol, amount: float):
-        """Sells inputted stock"""
-        url = 'https://nz.finance.yahoo.com/most-active?offset=0&count=200'
-        author = str(ctx.author)
-        with open('json/economy.json') as data_file:
-            data = json.load(data_file)
-        symbol = symbol.upper()
-        for stock in await stockgrab(url):
-            if float(stock[2]) >= 1 or stock[0][:3] in data["stocks"]:
-                try:
-                    data["stocks"][stock[0][:3]]["price"] = stock[2]
-                except KeyError:
-                    pass
-        if symbol in data["stocks"]:
-            if amount <= data["stocks"][symbol][author]:
-                cash = amount * float(data["stocks"][symbol]["price"])
-                data["stocks"][symbol][author] -= amount
-                data["money"][author] += cash
-                await ctx.send(embed=discord.Embed(title=f"Sold {amount} stocks for ${cash}", color=discord.Color.blue()))
-            else:
-                await ctx.send(embed=discord.Embed(title=f'You dont have enough stocks you have {amount} stocks', color=discord.Color.red()))
-        with open('json/economy.json', 'w') as file:
-            data = json.dump(data, file)
-
-    @commands.command()
-    async def invest(self, ctx, symbol=None, cash=None):
-        """Buys inputted stock with inputted amount of cash"""
-        url = 'https://nz.finance.yahoo.com/most-active?offset=0&count=200'
-        author = str(ctx.author)
-        if symbol is None:
-            embed = discord.Embed(colour=discord.Color.blue())
-            embed.set_author(name='Stocks')
-            embed.set_footer(icon_url=self.bot.user.avatar_url, text='Go way hat you™')
-            for stock in await stockgrab(url):
-                if float(stock[2]) >= 1:
-                    embed.add_field(name=stock[0][:3], value=f'${stock[2]}', inline=True)
-            await ctx.send(embed=embed)
-        else:
-            with open('json/economy.json') as data_file:
-                data = json.load(data_file)
-            for stock in await stockgrab(url):
-                if float(stock[2]) >= 1 or stock[0][:3] in data["stocks"]:
-                    try:
-                        data["stocks"][stock[0][:3]]["price"] = stock[2]
-                    except KeyError:
-                        data["stocks"][stock[0][:3]] = {}
-                        pass
-            symbol = symbol.upper()
-            if symbol in data["stocks"]:
-                if data["money"][author] >= float(cash):
-                    stocks = float(cash) / float(data["stocks"][symbol]["price"])
-                    await ctx.send(embed=discord.Embed(title=f"You bought {stocks} stocks in {symbol}", color=discord.Color.red()))
-                    try:
-                        stocks = stocks + data["stocks"][symbol][author]
-                    except Exception:
-                        pass
-                    data["stocks"][symbol][author] = stocks
-                    data["money"][author] -= float(cash)
-            else:
-                await ctx.send(embed=discord.Embed(title=f"No stock found for {symbol}", color=discord.Color.red()))
-            with open('json/economy.json', 'w') as file:
-                data = json.dump(data, file)
-
-    @commands.command()
     async def lottery(self, ctx, bet: float):
-        """Does a lottery with a 1/99 chance of winning 99 times the bet"""
+        """A lottery with a 1/99 chance of winning 99 times the bet"""
         if (bet > 0):
             lottery = random.randint(1, 100)
             number = random.randint(1, 100)
@@ -249,7 +121,7 @@ class economy(commands.Cog):
 
     @commands.command()
     async def streak(self, ctx):
-        """Gets your current streaks on the slot machine"""
+        """Gets your streaks on the slot machine"""
         with open('json/economy.json') as data_file:
             data = json.load(data_file)
         cash = str(ctx.author)
@@ -264,8 +136,9 @@ class economy(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
+    @commands.cooldown(1, 5400, commands.BucketType.user)
     async def chances(self, ctx, amount: int, remove: int = 0):
-        """Gives the chances of getting quads triples doubles and singles in a given amount"""
+        """Sends simulated chances of the slot machine"""
         start = time.time()
         emojis = [
             ":apple:", ":tangerine:", ":pear:", ":lemon:", ":watermelon:", ":grapes:", ":strawberry:", ":cherries:", ":melon:",
@@ -273,7 +146,6 @@ class economy(commands.Cog):
         ]
         if remove != 0:
             emojis = emojis[-remove]
-        x = 0
         quad = 0
         triple = 0
         double = 0
@@ -284,10 +156,10 @@ class economy(commands.Cog):
         lose = 0
         highestlose = 0
         highestwin = 0
-        if amount > 1000000:
+        if amount > 100000:
             await ctx.send('Choose a lower number')
         else:
-            while amount > x:
+            for i in range(amount):
                 a = random.choice(emojis)
                 b = random.choice(emojis)
                 c = random.choice(emojis)
@@ -313,7 +185,6 @@ class economy(commands.Cog):
                     if highestlose < lose:
                         highestlose = lose
                     lose = 0
-                x += 1
             total = (((quad * 100) + (triple * 15) + (scam * 20) + (double * 1.5) - (none))*(1/amount))*100
             embed = discord.Embed(title=f"Chances from {amount} attempts", color=discord.Color.blue())
             embed.add_field(name="Quad: ", value=f'{quad}, {round(((quad*(1/amount))*100), 2)}%', inline=True)
@@ -330,7 +201,7 @@ class economy(commands.Cog):
 
     @commands.command(aliases=["bal"])
     async def balance(self, ctx):
-        """Gets the users current balance"""
+        """Gets your current balance"""
         with open('json/economy.json') as data_file:
             data = json.load(data_file)
         cash = str(ctx.author)
@@ -341,8 +212,8 @@ class economy(commands.Cog):
             data = json.dump(data, file)
 
     @commands.command(aliases=["give", "donate"])
-    async def pay(self, ctx, user: discord.Member, amount: float):
-        """Pays inputted user inputted amount"""
+    async def pay(self, ctx, member: discord.Member, amount: float):
+        """Pays a member from your balance"""
         if (amount > 0):
             with open('json/economy.json') as data_file:
                 data = json.load(data_file)
@@ -350,28 +221,28 @@ class economy(commands.Cog):
             if data["money"][cash] < amount:
                 await ctx.send(embed=discord.Embed(title="You don't have enough cash", color=discord.Color.red()))
             else:
-                if str(user) not in data["money"].keys():
-                    data["money"][str(user)] = 1000
+                if str(member) not in data["money"].keys():
+                    data["money"][str(member)] = 1000
                 data["money"][cash] -= amount
-                data["money"][str(user)] += amount
+                data["money"][str(member)] += amount
                 with open('json/economy.json', 'w') as file:
                     data = json.dump(data, file)
-                await ctx.send(embed=discord.Embed(title=f'Sent ${str(amount)} to {str(user)}', color=discord.Color.blue()))
+                await ctx.send(embed=discord.Embed(title=f'Sent ${str(amount)} to {str(member)}', color=discord.Color.blue()))
 
     @commands.command()
     @commands.cooldown(1, 21600, commands.BucketType.user)
     async def salary(self, ctx):
-        """Gives user a salary of 100"""
+        """Gives you a salary of 1000 on a 6 hour cooldown"""
         with open('json/economy.json') as data_file:
             data = json.load(data_file)
         cash = str(ctx.author)
         if cash not in data["money"].keys():
             data["money"][cash] = 1000
-        data["money"][cash] += 100
+        data["money"][cash] += 1000
         with open('json/economy.json', 'w') as file:
             data = json.dump(data, file)
-        await ctx.send(embed=discord.Embed(title=f'Gave {str(ctx.author)} $100', color=discord.Color.blue()))
+        await ctx.send(embed=discord.Embed(title=f'Gave {str(ctx.author)} $1000', color=discord.Color.blue()))
 
 
 def setup(bot):
-    bot.add_cog(economy(bot))
+    bot.add_cog(Economy(bot))
