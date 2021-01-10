@@ -3,20 +3,24 @@ from discord.ext import commands
 import json
 from os import listdir
 from os.path import isfile, join
-import re
-import git
 import copy
 import subprocess
-import os
-import sys
 
 
 class admin(commands.Cog):
+    """For administrative commands."""
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @commands.command(hiiden=True)
+    @commands.is_owner()
+    async def prefix(self, ctx, prefix: str):
+        """Changes the bots command prefix"""
+        self.bot.command_prefix = prefix
+
     @commands.command(hidden=True)
-    @commands.has_any_role('Sneak')
+    @commands.has_permissions(administrator=True)
     async def sudo(self, ctx, channel: discord.TextChannel, who: discord.Member, *, command: str):
         """Run a command as another user optionally in another channel."""
         msg = copy.copy(ctx.message)
@@ -30,7 +34,7 @@ class admin(commands.Cog):
     @commands.command(hidden=True)
     @commands.has_permissions(manage_roles=True)
     async def stopuser(self, ctx, member: discord.Member):
-        """Stops them"""
+        """Stops a user"""
         role = discord.utils.get(member.guild.roles, name='Stop')
         if role in member.roles:
             await member.remove_roles(role)
@@ -38,24 +42,28 @@ class admin(commands.Cog):
             await member.add_roles(role)
 
     @commands.command(hidden=True, aliases=["pull"])
+    @commands.is_owner()
     async def update(self, ctx):
         """ Gets latest commits and applies them from git """
         def run_shell(command):
-            with subprocess.Popen(command, stdout=PIPE, stderr=PIPE, shell=True) as proc:
+            with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True) as proc:
                 return [std.decode("utf-8") for std in proc.communicate()]
 
         pull = await self.bot.loop.run_in_executor(
             None, run_shell, "git pull"
         )
-        for extension in [f.replace('.py', '') for f in listdir('cogs') if isfile(join('cogs', f))]:
-            try:
-                self.bot.reload_extension("cogs." + extension)
-            except Exception as e:
-                if e == f"ExtensionNotLoaded: Extension 'cogs.{extension}' has not been loaded.":
-                    self.bot.load_extension("cogs." + extension)
-                else:
-                    await ctx.send(embed=discord.Embed(title="```{}: {}\n```".format(type(e).__name__, str(e)), color=discord.Color.blurple()))
-        await ctx.send(embed=discord.Embed(title="Pulled latests commits and restarted.", color=discord.Color.blurple()))
+        if pull[0] == "Already up to date.\n":
+            await ctx.send(embed=discord.Embed(title="Bot Is Already Up To Date", color=discord.Color.blurple()))
+        else:
+            for extension in [f.replace('.py', '') for f in listdir('cogs') if isfile(join('cogs', f))]:
+                try:
+                    self.bot.reload_extension("cogs." + extension)
+                except Exception as e:
+                    if e == f"ExtensionNotLoaded: Extension 'cogs.{extension}' has not been loaded.":
+                        self.bot.load_extension("cogs." + extension)
+                    else:
+                        await ctx.send(embed=discord.Embed(title="```{}: {}\n```".format(type(e).__name__, str(e)), color=discord.Color.blurple()))
+            await ctx.send(embed=discord.Embed(title="Pulled latests commits and restarted.", color=discord.Color.blurple()))
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
@@ -83,9 +91,9 @@ class admin(commands.Cog):
             await ctx.send(embed=discord.Embed(title=f'Unbanned {member}', color=discord.Color.dark_blue()))
 
     @commands.command(hidden=True)
-    @commands.has_any_role('Highest Society')
+    @commands.has_permissions(manage_roles=True)
     async def role(self, ctx, member: discord.Member, *, role):
-        """Gives someone a role"""
+        """Gives member a role"""
         role = discord.utils.get(member.guild.roles, name=role.capitalize())
         if role in member.roles:
             await member.remove_roles(role)
@@ -96,20 +104,21 @@ class admin(commands.Cog):
         ctx.send(embed)
 
     @commands.command(hidden=True)
+    @commands.has_permissions(administrator=True)
     async def appinfo(self, ctx):
         """Sends application info about the bot"""
         await ctx.send(await self.bot.application_info())
 
     @commands.command(hidden=True, aliases=['deletecmd', 'removecmd'])
-    @commands.has_any_role('Sneak')
+    @commands.is_owner()
     async def deletecommand(self, ctx, command):
-        """Removes inputted command from the bot"""
+        """Removes command from the bot"""
         self.bot.remove_command(command)
         await ctx.send(embed=discord.Embed(title=f'Removed command {command}'))
 
     @commands.command(hidden=True)
-    @commands.has_any_role('Sneak')
-    async def blacklist(self, ctx, user: discord.Member=None):
+    @commands.has_permissions(administrator=True)
+    async def blacklist(self, ctx, user: discord.Member = None):
         """Blacklists someone from using the bot"""
         with open('json/real.json') as data_file:
             data = json.load(data_file)
@@ -129,7 +138,7 @@ class admin(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
-    @commands.has_any_role('Sneak')
+    @commands.is_owner()
     async def kill(self, ctx):
         """Kills the bot"""
         await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(name="Dying..."))
@@ -137,13 +146,13 @@ class admin(commands.Cog):
         await self.bot.logout()
 
     @commands.command(hidden=True, aliases=['clear, clean'])
-    @commands.has_any_role('Sneak', 'Higher Society')
+    @commands.has_permissions(manage_messages=True)
     async def purge(self, ctx, num: int):
-        """Purges inputed amount of messages"""
+        """Purges messages"""
         await ctx.channel.purge(limit=num+1)
 
     @commands.command(hidden=True)
-    @commands.has_any_role('Sneak')
+    @commands.is_owner()
     async def load(self, ctx, extension_name: str):
         """Loads an extension."""
         extension_name = "cogs." + extension_name
@@ -155,7 +164,7 @@ class admin(commands.Cog):
         await ctx.send(embed=discord.Embed(title=f"{extension_name} loaded.", color=discord.Color.blurple()))
 
     @commands.command(hidden=True)
-    @commands.has_any_role('Sneak')
+    @commands.is_owner()
     async def unload(self, ctx, extension_name: str):
         """Unloads an extension."""
         extension_name = "cogs." + extension_name
@@ -163,7 +172,7 @@ class admin(commands.Cog):
         await ctx.send(embed=discord.Embed(title=f"{extension_name} unloaded.", color=discord.Color.blurple()))
 
     @commands.command(hidden=True)
-    @commands.has_any_role('Sneak')
+    @commands.is_owner()
     async def restart(self, ctx):
         """Restarts all extensions."""
         for extension in [f.replace('.py', '') for f in listdir('cogs') if isfile(join('cogs', f))]:
