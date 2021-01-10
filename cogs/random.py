@@ -2,21 +2,19 @@ import discord
 from discord.ext import commands
 import random
 import asyncio
-import time
-from baseconv import base2, base16, base64
-import datetime
 from bs4 import BeautifulSoup
 import aiohttp
 
 
-class garbage(commands.Cog):
+class Random(commands.Cog):
+    """For commands that don't deserve a unique cog."""
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        global starttime
-        starttime = time.time()
 
     @commands.command()
     async def hug(self, ctx):
+        """Gets a random hug gif from tenor"""
         url = 'https://tenor.com/search/hug-gifs'
         headers = {"User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebkit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36'}
         async with aiohttp.ClientSession(headers=headers) as session:
@@ -29,12 +27,10 @@ class garbage(commands.Cog):
                 images.append(image)
         await ctx.send(random.choice(images))
 
-
-
     @commands.command()
     @commands.has_any_role('Sneak', 'Higher Society', 'High Society')
     async def send(self, ctx, member: discord.Member, *, content):
-        """Sends a DM to someone"""
+        """Gets Snakebot to send a DM to member"""
         try:
             await member.send(content)
             await ctx.send(f'Sent message to {member}')
@@ -78,67 +74,10 @@ class garbage(commands.Cog):
         await ctx.send(embed=discord.Embed(title=message))
 
     @commands.command()
-    async def uptime(self, ctx):
-        """Gets the current uptime of the bot"""
-        uptime = datetime.timedelta(seconds=(time.time() - starttime))
-        await ctx.send(embed=discord.Embed(title=f'Uptime: {str(uptime)[:-4]}', color=discord.Color.blue()))
-
-    @commands.command()
-    async def binary(self, ctx, number: int, decode=None):
-        """Encodes or decodes in binary"""
-        if decode is None:
-            await ctx.send(base2.encode(number))
-        elif decode == "decode":
-            await ctx.send(base2.decode(number))
-
-    @commands.command()
-    async def octal(self, ctx, number, decode=None):
-        """Encodes or decodes in octal decimal"""
-        if decode is None:
-            await ctx.send(oct(int(number)))
-        elif decode == "decode":
-            await ctx.send(int(str(number), 8))
-
-    @commands.command()
-    async def hex(self, ctx, number: int, decode=None):
-        """Encodes or decodes in hexadecimal"""
-        if decode is None:
-            await ctx.send(base16.encode(int(number)))
-        elif decode == "decode":
-            await ctx.send(base16.decode(number))
-
-    @commands.command()
-    async def base(self, ctx, number: int, decode=None):
-        """Encodes or decodes in base64"""
-        if decode is None:
-            await ctx.send(base64.encode(int(number)))
-        elif decode == "decode":
-            await ctx.send(base64.decode(number))
-
-    @commands.command()
     async def slap(self, ctx, target, *, reason):
-        """Slaps targetted user"""
+        """Slaps a member"""
         await ctx.send(ctx.message.author.mention + " slapped " + target + " because " + reason)
-
-    class Slapper(commands.Converter):
-        async def convert(self, ctx, argument):
-            return '{0.author} slapped {1} because *{2}*'.format(ctx, random.choice(ctx.guild.members), argument)
-
-    @commands.command()
-    async def randomslap(self, ctx, *, reason: Slapper):
-        """Slaps a random discord user"""
-        await ctx.send(reason)
-
-    # Spams inputed amount of times
-
-    @commands.command()
-    @commands.has_any_role('Sneak', 'Higher Society')
-    async def spam(self, ctx, amount: int, *, text):
-        """Spams the inputted text an inputted amout of times"""
-        async with ctx.typing():
-            for _ in range(int(amount)):
-                await ctx.send(text)
 
 
 def setup(bot):
-    bot.add_cog(garbage(bot))
+    bot.add_cog(Random(bot))
