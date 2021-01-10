@@ -40,6 +40,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
     }
 
     ytdl = youtube_dl.YoutubeDL(YTDL_OPTIONS)
+    ytdl.cache.remove()
 
     def __init__(self, ctx: commands.Context, source: discord.FFmpegPCMAudio, *, data: dict, volume: float = 0.5):
         super().__init__(source, volume)
@@ -200,8 +201,12 @@ class Song:
         self.requester = source.requester
 
     def create_embed(self):
+        if self.source.duration == "":
+            DURATION = "/"
+        else:
+            DURATION = self.source.duration
         embed = (discord.Embed(title='Now playing', description='```css\n{0.source.title}\n```'.format(self), color=discord.Color.blurple())
-                        .add_field(name='Duration', value=self.source.duration)
+                        .add_field(name='Duration', value=DURATION)
                         .add_field(name='Requested by', value=self.requester.mention)
                         .add_field(name='Uploader', value='[{0.source.uploader}]({0.source.uploader_url})'.format(self))
                         .add_field(name='URL', value='[Click]({0.source.url})'.format(self))
@@ -322,7 +327,9 @@ class VoiceState:
             self.voice = None
 
 
-class music(commands.Cog):
+class Music(commands.Cog):
+    """For the music bot and all it's commands."""
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.voice_states = {}
@@ -401,7 +408,7 @@ class music(commands.Cog):
         if 0 > volume > 100:
             return await ctx.send('Volume must be between 0 and 100')
 
-        ctx.voice_state.volume = volume / 100
+        ctx.voice_state.current.source.volume = volume / 100
         await ctx.send('Volume of the player set to {}%'.format(volume))
 
     @commands.command(name='now', aliases=['current', 'playing'])
@@ -540,7 +547,7 @@ class music(commands.Cog):
     async def _search(self, ctx: commands.Context, *, search: str):
         """Searches youtube.
         It returns an imbed of the first 10 results collected from youtube.
-        Then the user can choose one of the titles by typing a number
+        Then the member can choose one of the titles by typing a number
         in chat or they can cancel by typing "cancel" in chat.
         """
         async with ctx.typing():
@@ -575,4 +582,4 @@ class music(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(music(bot))
+    bot.add_cog(Music(bot))
