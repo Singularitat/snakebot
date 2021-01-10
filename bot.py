@@ -6,9 +6,11 @@ from os.path import isfile, join
 
 
 # Connects to discord, Sets command prefix, Removes default help command
+# Sets discord intents to enable certain gateway features that are necessary
 
-bot = discord.Client()
-bot = commands.Bot(command_prefix=".", help_command=None)
+intents = discord.Intents(guilds=True, members=True, bans=True, emojis=True, voice_states=True, messages=True, reactions=True)
+bot = discord.Client(intents=intents)
+bot = commands.Bot(command_prefix="\\", help_command=None)
 
 # Gets discord TOKEN
 
