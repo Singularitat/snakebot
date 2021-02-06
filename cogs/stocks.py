@@ -12,7 +12,7 @@ class stocks(commands.Cog):
 
     @commands.command()
     async def stocks(self, ctx):
-        """Shows the price of stocks from nz.finance.yahoo.com"""
+        """Shows the price of stocks from yahoo finance."""
         url = "https://nz.finance.yahoo.com/most-active?offset=0&count=200"
         with open("json/economy.json") as file:
             data = ujson.load(file)
@@ -164,15 +164,15 @@ class stocks(commands.Cog):
             symbol = symbol.upper()
             if symbol in data["stocks"]:
                 if data["money"][user] >= cash:
-                    stocks = cash / float(data["stocks"][symbol]["price"])
+                    amount = cash / float(data["stocks"][symbol]["price"])
                     await ctx.send(
                         embed=discord.Embed(
-                            title=f"You bought {stocks} stocks in {symbol}",
+                            title=f"You bought {amount} stocks in {symbol}",
                             color=discord.Color.red(),
                         )
                     )
                     try:
-                        stocks = stocks + data["stocks"][symbol][user]
+                        stocks = amount + data["stocks"][symbol][user]
                     except Exception:
                         pass
                     data["stocks"][symbol][user] = stocks

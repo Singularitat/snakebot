@@ -50,7 +50,7 @@ class events(commands.Cog):
                         await channel.send(
                             f"```{before.author} editted:\n{before.content} >>> {after.content}```"
                         )
-                    except Exception:
+                    except commands.errors.ChannelNotFound:
                         pass
 
     @commands.Cog.listener()
@@ -89,7 +89,7 @@ class events(commands.Cog):
                 await channel.send(
                     f"```{message.author} deleted:\n{message.content.replace('`', '')}```"
                 )
-            except Exception:
+            except commands.errors.ChannelNotFound:
                 pass
 
     @commands.Cog.listener()
@@ -121,7 +121,7 @@ class events(commands.Cog):
         if member in data["notevil"]:
             try:
                 member.add_roles(data["notevil"][str(member.id)])
-            except Exception:
+            except commands.errors.RoleNotFound:
                 pass
 
     @commands.Cog.listener()
@@ -191,6 +191,9 @@ class events(commands.Cog):
 
         handler = {
             discord.Forbidden: "```I do not have the required permissions to run this command.```",
+            commands.errors.ChannelNotFound: "```Could not find channel```",
+            commands.errors.MemberNotFound: "```Could not find member```",
+            commands.errors.UserNotFound: "```Could not find user```",
             commands.errors.DisabledCommand: f"```The {ctx.command} command has been disabled.```",
             commands.errors.NoPrivateMessage: f"```{ctx.command} can not be used in Private Messages.```",
             commands.errors.CheckFailure: "```You aren't allowed to use this command!```",
@@ -211,7 +214,6 @@ class events(commands.Cog):
             message = handler[type(error)]
         except KeyError:
             await ctx.send(f"{error} {type(error)}")
-            pass
         else:
             await ctx.send(message)
 

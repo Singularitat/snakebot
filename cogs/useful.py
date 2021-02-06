@@ -21,8 +21,8 @@ class useful(commands.Cog):
         self.process = psutil.Process()
 
     @commands.command(name="dir")
-    async def _dir(self, ctx, arg, *, object):
-        """Converts arguments to a chosen discord object
+    async def attrib(self, ctx, arg, *, object):
+        """Converts arguments to a chosen discord object.
 
         arg: str
             The argument to be converted.
@@ -63,7 +63,7 @@ class useful(commands.Cog):
 
     @commands.command()
     async def source(self, ctx, *, command: str = None):
-        """Gets the source code of a command from github
+        """Gets the source code of a command from github.
 
         command: str
             The command to find the source code of.
@@ -93,7 +93,7 @@ class useful(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def issue(self, ctx, *, issue):
-        """Appends an issue to the snakebot-todo
+        """Appends an issue to the snakebot-todo.
 
         issue: str
             The issue to append.
@@ -160,7 +160,6 @@ class useful(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         """Check how the bot is doing."""
-
         start = time.monotonic()
         pinger = await ctx.send("Pinging...")
         diff = "%.2f" % (1000 * (time.monotonic() - start))
@@ -173,7 +172,7 @@ class useful(commands.Cog):
 
     @commands.command(aliases=["urbandictionary"])
     async def urban(self, ctx, *, search):
-        """Grabs the definition of something from the urbandictionary
+        """Grabs the definition of something from the urban dictionary.
 
         search: str
             The term to search for.
@@ -285,7 +284,7 @@ class useful(commands.Cog):
                     )
                 )
 
-        except IndexError or ValueError:
+        except IndexError:
             await ctx.send(
                 f"Sorry, please give an integer between `1` and `{titles_len}`"
             )

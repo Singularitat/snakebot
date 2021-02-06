@@ -17,6 +17,7 @@ class RemoveNoise(logging.Filter):
     def __init__(self):
         super().__init__(name="discord.state")
 
+    @staticmethod
     def filter(self, record):
         if record.levelname == "WARNING" and "referencing an unknown" in record.msg:
             return False
@@ -38,7 +39,7 @@ custom_handler.setFormatter(
 log.addHandler(custom_handler)
 
 
-class logging(commands.Cog):
+class logger(commands.Cog):
     """For commands related to logging."""
 
     def __init__(self, bot: commands.Bot) -> None:
@@ -65,4 +66,4 @@ class logging(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(logging(bot))
+    bot.add_cog(logger(bot))

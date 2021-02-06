@@ -205,7 +205,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         return rtrn
 
-    @staticmethod
     def parse_duration(duration: int):
         if duration > 0:
             minutes, seconds = divmod(duration, 60)
@@ -414,7 +413,6 @@ class music(commands.Cog):
     @commands.command(name="join", invoke_without_subcommand=True)
     async def _join(self, ctx: commands.Context):
         """Joins your current voice channel."""
-
         destination = ctx.author.voice.channel
         if ctx.voice_state.voice:
             await ctx.voice_state.voice.move_to(destination)
@@ -431,7 +429,6 @@ class music(commands.Cog):
         channel: discord.VoiceChannel
             The channel to join defaulting to your voice channel.
         """
-
         if not channel and not ctx.author.voice:
             raise VoiceError(
                 "You are neither connected to a voice channel nor specified a channel to join."
@@ -447,7 +444,6 @@ class music(commands.Cog):
     @commands.command(name="leave", aliases=["disconnect"])
     async def _leave(self, ctx: commands.Context):
         """Clears the queue and leaves the voice channel."""
-
         if not ctx.voice_state.voice:
             return await ctx.send("Not connected to any voice channel.")
 
@@ -461,7 +457,6 @@ class music(commands.Cog):
         volume: int
             The volume to be set from 0% to 100%.
         """
-
         if not ctx.voice_state.is_playing:
             return await ctx.send("Nothing being played at the moment.")
 
@@ -487,7 +482,6 @@ class music(commands.Cog):
     @commands.command(name="resume", aliases=["re", "res"])
     async def _resume(self, ctx: commands.Context):
         """Resumes a currently paused song."""
-
         if ctx.voice_state.is_playing and ctx.voice_state.voice.is_paused():
             ctx.voice_state.voice.resume()
             await ctx.message.add_reaction("⏯")
@@ -495,7 +489,6 @@ class music(commands.Cog):
     @commands.command(name="stop")
     async def _stop(self, ctx: commands.Context):
         """Stops playing song and clears the queue."""
-
         ctx.voice_state.songs.clear()
 
         if ctx.voice_state.is_playing:
@@ -505,7 +498,6 @@ class music(commands.Cog):
     @commands.command(name="skip", aliases=["s"])
     async def _skip(self, ctx: commands.Context):
         """Vote to skip a song."""
-
         if not ctx.voice_state.is_playing:
             return await ctx.send("Not playing any music right now...")
 
@@ -536,7 +528,6 @@ class music(commands.Cog):
         page: int
             The page to display defaulting to the first page.
         """
-
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send("Empty queue.")
 
@@ -560,7 +551,6 @@ class music(commands.Cog):
     @commands.command(name="shuffle")
     async def _shuffle(self, ctx: commands.Context):
         """Shuffles the queue."""
-
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send("Empty queue.")
 
@@ -574,7 +564,6 @@ class music(commands.Cog):
         index: int
             The index of the song to remove.
         """
-
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send("Empty queue.")
 
@@ -584,7 +573,6 @@ class music(commands.Cog):
     @commands.command(name="loop")
     async def _loop(self, ctx: commands.Context):
         """Loops the currently playing song."""
-
         if not ctx.voice_state.is_playing:
             return await ctx.send("Nothing being played at the moment.")
 
@@ -599,7 +587,6 @@ class music(commands.Cog):
         searcch: str
             The song to search for.
         """
-
         async with ctx.typing():
             try:
                 source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)

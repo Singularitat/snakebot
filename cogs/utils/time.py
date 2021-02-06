@@ -97,6 +97,7 @@ class UserFriendlyTime(commands.Converter):
 
         self.converter = converter
         self.default = default
+        self.arg = None
 
     async def check_constraints(self, ctx, now, remaining):
         if self.dt < now:
@@ -158,7 +159,7 @@ class UserFriendlyTime(commands.Converter):
             # foo date time
 
             # first the first two cases:
-            dt, status, begin, end, dt_string = elements[0]
+            dt, status, begin, end = elements[0]
 
             if not status.hasDateOrTime:
                 raise commands.BadArgument(
@@ -215,6 +216,7 @@ class UserFriendlyTime(commands.Converter):
 
 
 def human_timedelta(dt, *, source=None, accuracy=3, brief=False, suffix=True):
+    """Coverted time to a humanized format."""
     now = source or datetime.datetime.utcnow()
     # Microsecond free zone
     now = now.replace(microsecond=0)

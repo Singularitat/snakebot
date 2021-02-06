@@ -8,7 +8,7 @@ import config
 
 bot = commands.Bot(
     intents=discord.Intents.all(),
-    command_prefix=commands.when_mentioned_or("."),
+    command_prefix=commands.when_mentioned_or("\\"),
     help_command=None,
     case_insensitive=True,
     owner_id=225708387558490112,

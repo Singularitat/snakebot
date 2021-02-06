@@ -4,10 +4,11 @@ from dateutil.relativedelta import relativedelta
 
 
 def get_matching_emote(guild, emote):
+    """Finds an emoji based off its name."""
     emote_name = emote.split(":")[1]
-    for emote in guild.emojis:
-        if emote.name == emote_name:
-            return emote
+    for emoji in guild.emojis:
+        if emoji.name == emote_name:
+            return emoji
     return emote_name
 
 

@@ -45,7 +45,7 @@ class RoboPages(menus.MenuPages):
 
     @menus.button("\N{INPUT SYMBOL FOR NUMBERS}", position=menus.Last(1.5))
     async def numbered_page(self, payload):
-        """Lets you type a page number to go to"""
+        """Lets you type a page number to go to."""
         channel = self.message.channel
         author_id = payload.user_id
         to_delete = []

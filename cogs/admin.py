@@ -15,6 +15,7 @@ class PerformanceMocker:
     def __init__(self):
         self.loop = asyncio.get_event_loop()
 
+    @staticmethod
     def permissions_for(self, obj):
         perms = discord.Permissions.all()
         return perms
@@ -129,12 +130,11 @@ class admin(commands.Cog):
     @commands.command(hidden=True)
     @commands.is_owner()
     async def perf(self, ctx, *, command):
-        """Checks the timing of a command, attempting to suppress HTTP calls.
+        """Checks the timing of a command, while attempting to suppress HTTP calls.
 
         command: str
             The name of the command.
         """
-
         msg = copy.copy(ctx.message)
         msg.content = ctx.prefix + command
 
@@ -358,25 +358,25 @@ class admin(commands.Cog):
         """
         with open("json/real.json") as file:
             data = ujson.load(file)
-        if discord is None:
+        if member is None:
             embed = discord.Embed(
                 title="Blacklisted users", colour=discord.Color.blue()
             )
             for num in range(len(data["blacklist"])):
                 embed.add_field(name="User:", value=data["blacklist"][num], inline=True)
         else:
-            if discord.id in data["blacklist"]:
-                data["blacklist"].remove(discord.id)
+            if member.id in data["blacklist"]:
+                data["blacklist"].remove(member.id)
                 embed = discord.Embed(
                     title="User Unblacklisted",
-                    description=f"***{discord}*** has been unblacklisted",
+                    description=f"***{member}*** has been unblacklisted",
                     color=discord.Color.blue(),
                 )
             else:
-                data["blacklist"].append(discord.id)
+                data["blacklist"].append(member.id)
                 embed = discord.Embed(
                     title="User Blacklisted",
-                    description=f"**{discord}** has been added to the blacklist",
+                    description=f"**{member}** has been added to the blacklist",
                     color=discord.Color.blue(),
                 )
             with open("json/real.json", "w") as file:

@@ -4,8 +4,8 @@ class plural:
 
     def __format__(self, format_spec):
         v = self.value
-        singular, sep, plural = format_spec.partition("|")
-        plural = plural or f"{singular}s"
+        singular, sep, plur = format_spec.partition("|")
+        plur = plur or f"{singular}s"
         if abs(v) != 1:
             return f"{v} {plural}"
         return f"{v} {singular}"
@@ -59,7 +59,6 @@ class TabularData:
         |  Bob  | 19  |
         +-------+-----+
         """
-
         sep = "+".join("-" * w for w in self._widths)
         sep = f"+{sep}+"
 

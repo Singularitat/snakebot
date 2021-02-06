@@ -24,12 +24,12 @@ class misc(commands.Cog):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
         }
         try:
-            async with aiohttp.ClientSession(headers=headers) as session:
+            async with aiohttp.ClientSession(headers=headers, raise_for_status=True) as session:
                 async with session.get(url) as page:
                     text = lxml.html.fromstring(await page.text())
-        except Exception:
+        except aiohttp.client_exceptions.ClientResponseError:
             await ctx.send(
-                f'Could not find and element with the symbol "{element.upper()}"'
+                f'Could not find and element with the symbol {element.upper()}'
             )
             return
         image = f"http://www.chemicalelements.com{text.xpath('.//img')[1].attrib['src'][2:]}"
@@ -58,19 +58,7 @@ class misc(commands.Cog):
     @commands.command()
     async def invite(self, ctx):
         """Sends the invite link of the bot."""
-        perms = discord.Permissions.none()
-        perms.read_messages = True
-        perms.external_emojis = True
-        perms.send_messages = True
-        perms.manage_roles = True
-        perms.manage_channels = True
-        perms.ban_members = True
-        perms.kick_members = True
-        perms.manage_messages = True
-        perms.embed_links = True
-        perms.read_message_history = True
-        perms.attach_files = True
-        perms.add_reactions = True
+        perms = discord.Permissions.all()
         await ctx.send(f"<{discord.utils.oauth_url(self.bot.client_id, perms)}>")
 
     @commands.command()
@@ -110,7 +98,7 @@ class misc(commands.Cog):
         try:
             await member.send(message)
             await ctx.send(f"Sent message to {member}")
-        except Exception:
+        except discord.errors.Forbidden:
             await ctx.send(f"{member} has DMs disabled for non-friends")
 
     @commands.command()
@@ -122,7 +110,7 @@ class misc(commands.Cog):
         """
         try:
             rolls, limit = map(int, dice.split("d"))
-        except Exception:
+        except ValueError:
             await ctx.send("Format has to be AdX")
             return
         result = ", ".join(str(random.randint(1, limit)) for r in range(rolls))

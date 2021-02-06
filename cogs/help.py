@@ -118,7 +118,6 @@ class HelpMenu(paginator.RoboPages):
     @menus.button("\N{WHITE QUESTION MARK ORNAMENT}", position=menus.Last(5))
     async def show_bot_help(self, payload):
         """Shows how to use the bot."""
-
         embed = discord.Embed(title="Using the bot", colour=discord.Colour.blurple())
         embed.title = "Using the bot"
         embed.description = "Hello! Welcome to the help page."
