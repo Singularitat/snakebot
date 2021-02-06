@@ -21,7 +21,7 @@ class useful(commands.Cog):
         self.process = psutil.Process()
 
     @commands.command(name="dir")
-    async def attrib(self, ctx, arg, *, object):
+    async def attribute(self, ctx, arg, *, object):
         """Converts arguments to a chosen discord object.
 
         arg: str

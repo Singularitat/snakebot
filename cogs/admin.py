@@ -15,11 +15,6 @@ class PerformanceMocker:
     def __init__(self):
         self.loop = asyncio.get_event_loop()
 
-    @staticmethod
-    def permissions_for(self, obj):
-        perms = discord.Permissions.all()
-        return perms
-
     def __getattr__(self, attr):
         return self
 

@@ -172,10 +172,10 @@ class stocks(commands.Cog):
                         )
                     )
                     try:
-                        stocks = amount + data["stocks"][symbol][user]
-                    except Exception:
+                        amount = amount + data["stocks"][symbol][user]
+                    except TypeError:
                         pass
-                    data["stocks"][symbol][user] = stocks
+                    data["stocks"][symbol][user] = amount
                     data["money"][user] -= cash
             else:
                 await ctx.send(

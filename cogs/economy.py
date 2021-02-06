@@ -31,7 +31,7 @@ class economy(commands.Cog):
                     value=f"${data['money'][topbal[num]]:,.2f}",
                     inline=False,
                 )
-            except Exception:
+            except IndexError:
                 await ctx.send(f"```Could only find {num} members```")
                 break
         await ctx.send(embed=embed)
