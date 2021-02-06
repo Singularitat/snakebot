@@ -1,1 +1,442 @@
-{"stocks": {"LGF": {"price": "0.5900"}, "CBD": {"price": "0.8600", "Dr Zeedle#2770": 360.65328139047057, "Mr Wasp#6518": 0.0}, "SUM": {"price": "10.35"}, "VGL": {"price": "1.6100"}, "AIR": {"price": "3.4900", "Dr Zeedle#2770": 10.830606202275206, "Singularity#8953": 0.0, "Mr Wasp#6518": 0.0}, "ARG": {"price": "1.7350"}, "EUF": {"price": "1.6280"}, "SPK": {"price": "4.6600"}, "RYM": {"price": "14.53"}, "USA": {"price": "2.4650", "Singularity#8953": 0.0, "Dr Zeedle#2770": 4.056795131845842}, "USF": {"price": "9.60", "Mr Wasp#6518": 103.30578512396694}, "EMF": {"price": "1.3830"}, "AKC": {"price": "0.5000", "Mr Wasp#6518": 0.0, "Singularity#8953": 0.0}, "APA": {"price": "2.0950"}, "USS": {"price": "4.6340"}, "KPG": {"price": "1.4500"}, "CEN": {"price": "0.9700"}, "WIA": {"price": "1.8450"}, "IPL": {"price": "2.0000"}, "EBO": {"price": "25.84"}, "MET": {"price": "2.1000"}, "FNZ": {"price": "3.2300"}, "OCA": {"price": "1.3900"}, "GNE": {"price": "2.1000"}, "ABB": {"price": "0.4650"}, "USM": {"price": "5.26"}, "HGH": {"price": "1.3700"}, "MEL": {"price": "0.7000"}, "TWF": {"price": "2.5030"}, "FCG": {"price": "0.8100"}, "TPW": {"price": "1.6000"}, "IFT": {"price": "3.0000"}, "PLX": {"price": "1.5500"}, "KMD": {"price": "1.2900"}, "HBL": {"price": "1.3000"}, "USG": {"price": "6.97"}, "EMG": {"price": "2.2600"}, "PFI": {"price": "1.5500"}, "AIA": {"price": "1.0900"}, "FRE": {"price": "8.31"}, "NPF": {"price": "1.5350"}, "FSF": {"price": "4.2400"}, "USV": {"price": "3.2690"}, "NZX": {"price": "2.1500"}, "ZEL": {"price": "2.9300"}, "FPH": {"price": "36.40"}, "NZK": {"price": "1.6800"}, "KFL": {"price": "1.7400"}, "DIV": {"price": "1.2350"}, "SML": {"price": "5.45"}, "WBC": {"price": "1.8000"}, "FBU": {"price": "4.1900"}, "GMB": {"price": "1.1300"}, "MCY": {"price": "2.1500"}, "MLN": {"price": "1.1700"}, "SKC": {"price": "3.5000"}, "PCT": {"price": "1.8000"}, "COO": {"price": "4.3000"}, "CNU": {"price": "1.3500"}, "POT": {"price": "7.66"}, "EUG": {"price": "2.3700"}, "ATM": {"price": "15.46"}, "JPN": {"price": "2.0010"}, "SPG": {"price": "2.3000"}, "GMT": {"price": "2.4100"}, "ESG": {"price": "2.2700"}, "SAN": {"price": "5.61", "Singularity#8953": 5392736.283185841, "Mr Wasp#6518": 3.538707834903976e+31, "Dr Zeedle#2770": 0.0}, "ABA": {"price": "4.3000"}, "SKL": {"price": "2.9600"}, "THL": {"price": "2.4300"}, "GXH": {"price": "1.0300"}, "ARV": {"price": "1.7900"}, "TNZ": {"price": "2.0580"}, "NZP": {"price": "3.4500"}, "VCT": {"price": "4.3700"}, "NZR": {"price": "6.00"}, "FBI": {"price": "3.5000"}, "NZG": {"price": "2.7030"}, "VHP": {"price": "2.9550"}, "WHS": {"price": "2.4500"}, "CHC": {"price": "1.4000"}, "BNZ": {"price": "1.7500", "Singularity#8953": 0.0, "Mr Wasp#6518": 0.0}, "TRA": {"price": "4.7500"}, "SCL": {"price": "5.04"}, "PGW": {"price": "2.9300"}, "GTK": {"price": "1.2700"}, "LIV": {"price": "3.3000"}, "ASP": {"price": "1.3710"}, "WEL": {"price": "2.0000"}, "AFT": {"price": "5.0000"}, "SKT": {"price": "4.3350"}, "NZB": {"price": "3.1860"}, "SRF": {"price": "1.0000"}, "PPH": {"price": "9.26"}, "AUS": {"price": "2.5250"}, "SDL": {"price": "2.5600"}, "ERD": {"price": "4.2000"}, "TLS": {"price": "3.0100"}, "CVT": {"price": "3.2100"}, "NZC": {"price": "2.9590"}, "SKO": {"price": "5.04"}, "MFT": {"price": "54.50"}, "MDZ": {"price": "6.02"}, "ASD": {"price": "1.4900"}, "GBF": {"price": "3.3550"}, "NPH": {"price": "3.5000"}, "NGB": {"price": "2.5440"}, "AMP": {"price": "1.5200"}, "AGG": {"price": "1.3590"}, "BOT": {"price": "3.7780"}, "CO2": {"price": "1.2400"}, "SCT": {"price": "2.0100"}, "FWL": {"price": "2.0000"}, "ANZ": {"price": "21.10"}, "MZY": {"price": "7.32"}, "OZY": {"price": "3.6120"}, "IKE": {"price": "1.0600"}, "BGP": {"price": "4.1700"}, "TLT": {"price": "3.9900"}, "ASR": {"price": "4.8920"}, "RBD": {"price": "12.35"}, "HLG": {"price": "6.00"}, "MMH": {"price": "5.75"}, "MCK": {"price": "1.8000"}, "TWH": {"price": "2.6500"}, "ASF": {"price": "5.53"}, "ENS": {"price": "1.1800"}, "TGG": {"price": "2.7500"}, "AFI": {"price": "6.94"}}, "money": {"Singularity#8953": 2.3086201835808024e+49, "Mr Wasp#6518": 0.0, "Dr Zeedle#2770": 5.181161824242456e+18, "noobs r us#5074": 2499999999.0, "Relocellar#8476": 20.0, "REEE Milk & Biscuits#0282": 314.0, "honeyjune.exe#4332": 2140290.0, "DuckSnake#6518": 1000}, "wins": {"Singularity#8953": {"currentwin": 3, "currentlose": 0, "highestwin": 9, "highestlose": 30, "totallose": 13586, "totalwin": 7484}, "noobs r us#5074": {"currentwin": 1, "currentlose": 0, "totalwin": 2, "totallose": 3, "highestlose": 2, "highestwin": 1}, "Mr Wasp#6518": {"currentwin": 0, "currentlose": 1, "totalwin": 0, "totallose": 1, "highestlose": 0, "highestwin": 0}}}
+{
+  "money": {
+    "225708387558490112": 2.3086201835808024e49,
+    "198686899085246464": 20.0,
+    "198689225766338560": 2499999999.0,
+    "198892706087436288": 5181161824242456000.0,
+    "204807103704072194": 1000,
+    "248052027479818240": 2140290.0,
+    "357232721321394178": 314.0,
+    "744747000293228684": 1001.0
+  },
+  "wins": {
+    "198689225766338560": {
+      "currentlose": 0,
+      "currentwin": 1,
+      "highestlose": 2,
+      "highestwin": 1,
+      "totallose": 3,
+      "totalwin": 2
+    },
+    "204807103704072194": {
+      "currentlose": 1,
+      "currentwin": 0,
+      "highestlose": 0,
+      "highestwin": 0,
+      "totallose": 1,
+      "totalwin": 0
+    },
+    "225708387558490112": {
+      "currentlose": 1,
+      "currentwin": 0,
+      "highestlose": 30,
+      "highestwin": 9,
+      "totallose": 13588,
+      "totalwin": 7485
+    }
+  },
+  "stocks": {
+    "ABA": {
+      "price": "5.15"
+    },
+    "ABB": {
+      "price": "0.3400"
+    },
+    "AFI": {
+      "price": "6.94"
+    },
+    "AFT": {
+      "price": "5.0000"
+    },
+    "AGG": {
+      "price": "1.3520"
+    },
+    "AIA": {
+      "price": "7.19"
+    },
+    "AIR": {
+      "198892706087436288": 10.830606202275206,
+      "204807103704072194": 0.0,
+      "225708387558490112": 0.0,
+      "price": "1.6300"
+    },
+    "AKC": {
+      "204807103704072194": 0.0,
+      "225708387558490112": 0.0,
+      "price": "0.5900"
+    },
+    "AMP": {
+      "price": "1.5200"
+    },
+    "ANZ": {
+      "price": "26.86"
+    },
+    "APA": {
+      "price": "2.3050"
+    },
+    "ARG": {
+      "price": "2.3500"
+    },
+    "ARV": {
+      "price": "1.8400"
+    },
+    "ASD": {
+      "price": "1.6360"
+    },
+    "ASF": {
+      "price": "5.53"
+    },
+    "ASP": {
+      "price": "1.3710"
+    },
+    "ASR": {
+      "price": "4.8920"
+    },
+    "ATM": {
+      "price": "11.07"
+    },
+    "AUS": {
+      "price": "2.8600"
+    },
+    "BGP": {
+      "price": "5.60"
+    },
+    "BNZ": {
+      "204807103704072194": 0.0,
+      "225708387558490112": 0.0,
+      "price": "2.6700"
+    },
+    "BOT": {
+      "price": "4.2870"
+    },
+    "CBD": {
+      "198892706087436288": 360.65328139047057,
+      "204807103704072194": 0.0,
+      "price": "0.5800"
+    },
+    "CEN": {
+      "price": "0.9200"
+    },
+    "CHC": {
+      "price": "1.6900"
+    },
+    "CNU": {
+      "price": "2.7150"
+    },
+    "CO2": {
+      "price": "1.4600"
+    },
+    "COO": {
+      "price": "3.8900"
+    },
+    "CVT": {
+      "price": "3.3000"
+    },
+    "DIV": {
+      "price": "1.3750"
+    },
+    "EBO": {
+      "price": "29.40"
+    },
+    "EMF": {
+      "price": "1.5350"
+    },
+    "EMG": {
+      "price": "2.2600"
+    },
+    "ENS": {
+      "price": "1.1800"
+    },
+    "ERD": {
+      "price": "4.5500"
+    },
+    "ESG": {
+      "price": "2.2700"
+    },
+    "EUF": {
+      "price": "1.7360"
+    },
+    "EUG": {
+      "price": "2.3700"
+    },
+    "FBI": {
+      "price": "2.7900"
+    },
+    "FBU": {
+      "price": "6.57"
+    },
+    "FCG": {
+      "price": "4.5900"
+    },
+    "FNZ": {
+      "price": "3.5000"
+    },
+    "FPH": {
+      "price": "33.50"
+    },
+    "FRE": {
+      "price": "10.75"
+    },
+    "FSF": {
+      "price": "4.6000"
+    },
+    "FWL": {
+      "price": "2.0000"
+    },
+    "GBF": {
+      "price": "3.3730"
+    },
+    "GMB": {
+      "price": "1.0500"
+    },
+    "GMT": {
+      "price": "2.2800"
+    },
+    "GNE": {
+      "price": "2.1600"
+    },
+    "GTK": {
+      "price": "1.4400"
+    },
+    "GXH": {
+      "price": "1.0600"
+    },
+    "HBL": {
+      "price": "1.2400"
+    },
+    "HGH": {
+      "price": "1.8500"
+    },
+    "HLG": {
+      "price": "7.70"
+    },
+    "IFT": {
+      "price": "3.0500"
+    },
+    "IKE": {
+      "price": "1.0400"
+    },
+    "IPL": {
+      "price": "1.9000"
+    },
+    "JPN": {
+      "price": "2.0010"
+    },
+    "KFL": {
+      "price": "2.0000"
+    },
+    "KMD": {
+      "price": "1.3400"
+    },
+    "KPG": {
+      "price": "1.8000"
+    },
+    "LGF": {
+      "price": "1.0800"
+    },
+    "LIV": {
+      "price": "3.7370"
+    },
+    "MCK": {
+      "price": "1.8000"
+    },
+    "MCY": {
+      "price": "2.2900"
+    },
+    "MDZ": {
+      "price": "6.02"
+    },
+    "MEL": {
+      "price": "0.9000"
+    },
+    "MET": {
+      "price": "2.4300"
+    },
+    "MFT": {
+      "price": "54.50"
+    },
+    "MLN": {
+      "price": "1.2800"
+    },
+    "MMH": {
+      "price": "5.75"
+    },
+    "MZY": {
+      "price": "7.32"
+    },
+    "NGB": {
+      "price": "2.5440"
+    },
+    "NPF": {
+      "price": "1.5260"
+    },
+    "NPH": {
+      "price": "3.4600"
+    },
+    "NZB": {
+      "price": "3.1280"
+    },
+    "NZC": {
+      "price": "2.9570"
+    },
+    "NZG": {
+      "price": "2.8180"
+    },
+    "NZK": {
+      "price": "1.5400"
+    },
+    "NZP": {
+      "price": "3.5500"
+    },
+    "NZR": {
+      "price": "6.50"
+    },
+    "NZX": {
+      "price": "2.6000"
+    },
+    "OCA": {
+      "price": "2.4600"
+    },
+    "OZY": {
+      "price": "4.0630"
+    },
+    "PCT": {
+      "price": "1.4800"
+    },
+    "PFI": {
+      "price": "1.8050"
+    },
+    "PGW": {
+      "price": "2.9300"
+    },
+    "PLX": {
+      "price": "1.5500"
+    },
+    "POT": {
+      "price": "7.37"
+    },
+    "PPH": {
+      "price": "1.7700"
+    },
+    "RBD": {
+      "price": "12.35"
+    },
+    "RYM": {
+      "price": "15.85"
+    },
+    "SAN": {
+      "198892706087436288": 0.0,
+      "204807103704072194": 3.538707834903976e31,
+      "225708387558490112": 5392736.283185841,
+      "price": "4.9000"
+    },
+    "SCL": {
+      "price": "4.9300"
+    },
+    "SCT": {
+      "price": "2.0100"
+    },
+    "SDL": {
+      "price": "2.5600"
+    },
+    "SKC": {
+      "price": "3.0400"
+    },
+    "SKL": {
+      "price": "3.8900"
+    },
+    "SKO": {
+      "price": "5.80"
+    },
+    "SKT": {
+      "price": "5.34"
+    },
+    "SML": {
+      "price": "4.5600"
+    },
+    "SPG": {
+      "price": "2.3700"
+    },
+    "SPK": {
+      "price": "4.7500"
+    },
+    "SRF": {
+      "price": "1.0000"
+    },
+    "SUM": {
+      "price": "2.3100"
+    },
+    "TGG": {
+      "price": "2.7500"
+    },
+    "THL": {
+      "price": "2.2000"
+    },
+    "TLS": {
+      "price": "3.0100"
+    },
+    "TLT": {
+      "price": "6.55"
+    },
+    "TNZ": {
+      "price": "2.2440"
+    },
+    "TPW": {
+      "price": "2.2000"
+    },
+    "TRA": {
+      "price": "5.0000"
+    },
+    "TWF": {
+      "price": "2.7170"
+    },
+    "TWH": {
+      "price": "2.6500"
+    },
+    "USA": {
+      "198892706087436288": 4.056795131845842,
+      "225708387558490112": 0.0,
+      "price": "2.4650"
+    },
+    "USF": {
+      "204807103704072194": 103.30578512396694,
+      "price": "10.00"
+    },
+    "USG": {
+      "price": "7.23"
+    },
+    "USM": {
+      "price": "5.26"
+    },
+    "USS": {
+      "price": "4.6340"
+    },
+    "USV": {
+      "price": "3.4630"
+    },
+    "VCT": {
+      "price": "1.5150"
+    },
+    "VGL": {
+      "price": "1.5700"
+    },
+    "VHP": {
+      "price": "3.2400"
+    },
+    "WBC": {
+      "price": "23.58"
+    },
+    "WEL": {
+      "price": "1.9700"
+    },
+    "WHS": {
+      "price": "3.2400"
+    },
+    "WIA": {
+      "price": "2.0000"
+    },
+    "ZEL": {
+      "price": "1.9400"
+    }
+  }
+}
