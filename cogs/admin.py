@@ -1,32 +1,196 @@
 import discord
 from discord.ext import commands
-import json
-from os import listdir
-from os.path import isfile, join
+import ujson
+import os
 import copy
 import subprocess
+import asyncio
+import traceback
+import time
+
+
+class PerformanceMocker:
+    """A mock object that can also be used in await expressions."""
+
+    def __init__(self):
+        self.loop = asyncio.get_event_loop()
+
+    def permissions_for(self, obj):
+        perms = discord.Permissions.all()
+        return perms
+
+    def __getattr__(self, attr):
+        return self
+
+    def __call__(self, *args, **kwargs):
+        return self
+
+    def __repr__(self):
+        return "<PerformanceMocker>"
+
+    def __await__(self):
+        future = self.loop.create_future()
+        future.set_result(self)
+        return future.__await__()
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *args):
+        return self
+
+    def __len__(self):
+        return 0
+
+    def __bool__(self):
+        return False
 
 
 class admin(commands.Cog):
-    """For administrative commands."""
+    """Administrative commands."""
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @commands.command(hidden=True)
+    @commands.guild_only()
+    @commands.is_owner()
+    async def botpermissions(self, ctx, *, channel: discord.TextChannel = None):
+        """Shows the bot's permissions in a specific channel.
+
+        channel: discord.TextChannel
+            The channel to get the bots perrmissions in.
+        """
+        channel = channel or ctx.channel
+        member = ctx.guild.me
+        await self.say_permissions(ctx, member, channel)
+
+    @commands.command()
+    @commands.guild_only()
+    async def permissions(
+        self, ctx, member: discord.Member = None, channel: discord.TextChannel = None
+    ):
+        """Shows a member's permissions in a specific channel.
+
+        member: discord.Member
+            The member to get permissions of.
+        channel: discord.TextChannel
+            The channel to get the permissions in.
+        """
+        channel = channel or ctx.channel
+        if member is None:
+            member = ctx.author
+
+        await self.say_permissions(ctx, member, channel)
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def chunked(self, ctx):
+        """Checks if the current guild is chunked and chunks guild if not."""
+        if ctx.author.guild.chunked:
+            await ctx.send(f"```{ctx.author.guild} is chunked```")
+        else:
+            await ctx.author.guild.chunk()
+            ctx.send(
+                f"```{ctx.author.guild} was not chunked it has now been chunked```"
+            )
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def toggle(self, ctx, command):
+        """Toggles a command from being disabled or enabled.
+
+        command: str
+            The command to be toggled
+        """
+        command = self.bot.get_command(command)
+        if command is None:
+            await ctx.send("```No such command```")
+        else:
+            command.enabled = not command.enabled
+            ternary = "enabled" if command.enabled else "disabled"
+            await ctx.send(
+                f"```Sucessfully {ternary} the {command.qualified_name} command```"
+            )
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def presence(self, ctx, *, presence):
+        """Changes the bots activity.
+
+        presence: str
+            The new activity.
+        """
+        await self.bot.change_presence(
+            status=discord.Status.online,
+            activity=discord.Game(name=presence),
+        )
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def perf(self, ctx, *, command):
+        """Checks the timing of a command, attempting to suppress HTTP calls.
+
+        command: str
+            The name of the command.
+        """
+
+        msg = copy.copy(ctx.message)
+        msg.content = ctx.prefix + command
+
+        new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+
+        # Intercepts the Messageable interface a bit
+        new_ctx._state = PerformanceMocker()
+        new_ctx.channel = PerformanceMocker()
+
+        if new_ctx.command is None:
+            return await ctx.send("No command found")
+
+        start = time.perf_counter()
+        try:
+            await new_ctx.command.invoke(new_ctx)
+        except commands.CommandError:
+            end = time.perf_counter()
+            success = ":negative_squared_cross_mark:"
+            try:
+                await ctx.send(f"```py\n{traceback.format_exc()}\n```")
+            except discord.HTTPException:
+                pass
+        else:
+            end = time.perf_counter()
+            success = ":white_check_mark:"
+
+        await ctx.send(f"Status: {success} Time: {(end - start) * 1000:.2f}ms")
+
     @commands.command(hiiden=True)
     @commands.is_owner()
     async def prefix(self, ctx, prefix: str):
-        """Changes the bots command prefix"""
+        """Changes the bots command prefix.
+
+        prefix: str
+            The new prefix.
+        """
         self.bot.command_prefix = prefix
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
-    async def sudo(self, ctx, channel: discord.TextChannel, who: discord.Member, *, command: str):
-        """Run a command as another user optionally in another channel."""
+    async def sudo(
+        self, ctx, channel: discord.TextChannel, member: discord.Member, *, command: str
+    ):
+        """Run a command as another user optionally in another channel.
+
+        channel: discord.TextChannel
+            The channel to run the command.
+        member: discord.Member
+            The member to run the command as.
+        command: str
+            The command name.
+        """
         msg = copy.copy(ctx.message)
         channel = channel or ctx.channel
         msg.channel = channel
-        msg.author = who
+        msg.author = member
         msg.content = ctx.prefix + command
         new_ctx = await self.bot.get_context(msg, cls=type(ctx))
         await self.bot.invoke(new_ctx)
@@ -34,8 +198,12 @@ class admin(commands.Cog):
     @commands.command(hidden=True)
     @commands.has_permissions(manage_roles=True)
     async def stopuser(self, ctx, member: discord.Member):
-        """Stops a user"""
-        role = discord.utils.get(member.guild.roles, name='Stop')
+        """Gives a user the stop role.
+
+        member: discord.Member
+            The member to give the role.
+        """
+        role = discord.utils.get(member.guild.roles, name="Stop")
         if role in member.roles:
             await member.remove_roles(role)
         else:
@@ -44,146 +212,290 @@ class admin(commands.Cog):
     @commands.command(hidden=True, aliases=["pull"])
     @commands.is_owner()
     async def update(self, ctx):
-        """ Gets latest commits and applies them from git """
+        """Gets latest commits and applies them through git."""
+
         def run_shell(command):
-            with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True) as proc:
+            with subprocess.Popen(
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            ) as proc:
                 return [std.decode("utf-8") for std in proc.communicate()]
 
-        pull = await self.bot.loop.run_in_executor(
-            None, run_shell, "git pull"
-        )
+        pull = await self.bot.loop.run_in_executor(None, run_shell, "git pull")
         if pull[0] == "Already up to date.\n":
-            await ctx.send(embed=discord.Embed(title="Bot Is Already Up To Date", color=discord.Color.blurple()))
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Bot Is Already Up To Date", color=discord.Color.blurple()
+                )
+            )
         else:
-            for extension in [f.replace('.py', '') for f in listdir('cogs') if isfile(join('cogs', f))]:
+            for extension in [
+                f.replace(".py", "")
+                for f in os.listdir("cogs")
+                if os.path.isfile(os.path.join("cogs", f))
+            ]:
                 try:
                     self.bot.reload_extension("cogs." + extension)
                 except Exception as e:
-                    if e == f"ExtensionNotLoaded: Extension 'cogs.{extension}' has not been loaded.":
+                    if (
+                        e
+                        == f"ExtensionNotLoaded: Extension 'cogs.{extension}' has not been loaded."
+                    ):
                         self.bot.load_extension("cogs." + extension)
                     else:
-                        await ctx.send(embed=discord.Embed(title="```{}: {}\n```".format(type(e).__name__, str(e)), color=discord.Color.blurple()))
-            await ctx.send(embed=discord.Embed(title="Pulled latests commits and restarted.", color=discord.Color.blurple()))
+                        await ctx.send(
+                            embed=discord.Embed(
+                                title="```{}: {}\n```".format(type(e).__name__, str(e)),
+                                color=discord.Color.blurple(),
+                            )
+                        )
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Pulled latests commits and restarted.",
+                    color=discord.Color.blurple(),
+                )
+            )
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
     async def downvote(self, ctx, member: discord.Member):
-        """Automatically downvotes someone"""
-        with open('json/real.json') as data_file:
-            data = json.load(data_file)
+        """Automatically downvotes someone.
+
+        member: discord.Member
+            The downvoted member.
+        """
+        with open("json/real.json") as file:
+            data = ujson.load(file)
         if member.id in data["downvote"]:
             data["downvote"].remove(member.id)
         else:
+            await member.edit(voice_channel=None)
             data["downvote"].append(member.id)
-        with open('json/real.json', 'w') as file:
-            data = json.dump(data, file)
+        with open("json/real.json", "w") as file:
+            data = ujson.dump(data, file, indent=2)
 
-    @commands.command(hidden=True, aliases=['ban', 'unban'])
+    @commands.command(aliases=["ban", "unban"])
     @commands.has_permissions(ban_members=True)
-    async def ban_user(self, ctx, member: discord.Member):
-        """Bans someone"""
+    async def ban_member(self, ctx, *, member: discord.Member):
+        """Bans a member.
+
+        member: discord.Member
+            The user to ban.
+        """
         bans = await ctx.guild.bans()
         if member not in bans:
             await member.ban()
-            await ctx.send(embed=discord.Embed(title=f'Banned {member}', color=discord.Color.dark_red()))
+            await ctx.send(
+                embed=discord.Embed(
+                    title=f"Banned {member}", color=discord.Color.dark_red()
+                )
+            )
         else:
-            member.unban()
-            await ctx.send(embed=discord.Embed(title=f'Unbanned {member}', color=discord.Color.dark_blue()))
+            await member.unban()
+            await ctx.send(
+                embed=discord.Embed(
+                    title=f"Unbanned {member}", color=discord.Color.dark_blue()
+                )
+            )
 
-    @commands.command(hidden=True)
+    @commands.command()
+    @commands.has_permissions(kick_members=True)
+    async def kick_member(self, ctx, *, member: discord.Member):
+        """Kicks a member.
+
+        member: discord.Member
+            The user to kick.
+        """
+        await member.kick()
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"Kicked {member}", color=discord.Color.dark_red()
+            )
+        )
+
+    @commands.command()
     @commands.has_permissions(manage_roles=True)
     async def role(self, ctx, member: discord.Member, *, role):
-        """Gives member a role"""
+        """Gives member a role.
+
+        member: discord.Member
+            The member to give the role.
+        role: str
+            The role name.
+        """
         role = discord.utils.get(member.guild.roles, name=role.capitalize())
         if role in member.roles:
             await member.remove_roles(role)
-            embed = discord.Embed(title=f'Gave {member} the role {role}')
+            embed = discord.Embed(title=f"Gave {member} the role {role}")
         else:
             await member.add_roles(role)
-            embed = discord.Embed(title=f'Removed the role {role} from {member}')
+            embed = discord.Embed(title=f"Removed the role {role} from {member}")
         ctx.send(embed)
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
     async def appinfo(self, ctx):
-        """Sends application info about the bot"""
+        """Sends application info about the bot."""
         await ctx.send(await self.bot.application_info())
 
-    @commands.command(hidden=True, aliases=['deletecmd', 'removecmd'])
+    @commands.command(hidden=True, aliases=["deletecmd", "removecmd"])
     @commands.is_owner()
     async def deletecommand(self, ctx, command):
-        """Removes command from the bot"""
-        self.bot.remove_command(command)
-        await ctx.send(embed=discord.Embed(title=f'Removed command {command}'))
+        """Removes command from the bot.
 
-    @commands.command(hidden=True)
+        command: str
+            The command to remove.
+        """
+        self.bot.remove_command(command)
+        await ctx.send(embed=discord.Embed(title=f"Removed command {command}"))
+
+    @commands.command()
     @commands.has_permissions(administrator=True)
-    async def blacklist(self, ctx, user: discord.Member = None):
-        """Blacklists someone from using the bot"""
-        with open('json/real.json') as data_file:
-            data = json.load(data_file)
-        if user is None:
-            embed = discord.Embed(title='Blacklisted users', colour=discord.Color.blue())
+    async def blacklist(self, ctx, member: discord.Member = None):
+        """Blacklists someone from using the bot.
+
+        member: discord.Member
+            The blacklisted member.
+        """
+        with open("json/real.json") as file:
+            data = ujson.load(file)
+        if discord is None:
+            embed = discord.Embed(
+                title="Blacklisted users", colour=discord.Color.blue()
+            )
             for num in range(len(data["blacklist"])):
-                embed.add_field(name='User:', value=data["blacklist"][num], inline=True)
+                embed.add_field(name="User:", value=data["blacklist"][num], inline=True)
         else:
-            if user.id in data["blacklist"]:
-                data["blacklist"].remove(user.id)
-                embed = discord.Embed(title="User Unblacklisted", description='***{0}*** has been unblacklisted'.format(user), color=discord.Color.blue())
+            if discord.id in data["blacklist"]:
+                data["blacklist"].remove(discord.id)
+                embed = discord.Embed(
+                    title="User Unblacklisted",
+                    description=f"***{discord}*** has been unblacklisted",
+                    color=discord.Color.blue(),
+                )
             else:
-                data["blacklist"].append(user.id)
-                embed = discord.Embed(title="User Blacklisted", description='**{0}** has been added to the blacklist'.format(user), color=discord.Color.blue())
-            with open('json/real.json', 'w') as file:
-                data = json.dump(data, file)
+                data["blacklist"].append(discord.id)
+                embed = discord.Embed(
+                    title="User Blacklisted",
+                    description=f"**{discord}** has been added to the blacklist",
+                    color=discord.Color.blue(),
+                )
+            with open("json/real.json", "w") as file:
+                data = ujson.dump(data, file, indent=2)
         await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
     @commands.is_owner()
     async def kill(self, ctx):
-        """Kills the bot"""
-        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(name="Dying..."))
-        await ctx.send(embed=discord.Embed(title='Killing bot'))
+        """Kills the bot."""
+        await self.bot.change_presence(
+            status=discord.Status.online, activity=discord.Game(name="Dying...")
+        )
+        await ctx.send(embed=discord.Embed(title="Killing bot"))
         await self.bot.logout()
 
-    @commands.command(hidden=True, aliases=['clear, clean'])
+    @commands.command(aliases=["clear, clean"])
     @commands.has_permissions(manage_messages=True)
-    async def purge(self, ctx, num: int):
-        """Purges messages"""
-        await ctx.channel.purge(limit=num+1)
+    async def purge(self, ctx, num: int = 20):
+        """Purges messages.
+
+        num: int
+            The number of messages to delete defaults to 20.
+        """
+        await ctx.channel.purge(limit=num + 1)
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def load(self, ctx, extension_name: str):
-        """Loads an extension."""
-        extension_name = "cogs." + extension_name
+    async def load(self, ctx, extension: str):
+        """Loads an extension.
+
+        extension: str
+            The extension to load.
+        """
+        extension = "cogs." + extension
         try:
-            self.bot.load_extension(extension_name)
+            self.bot.load_extension(extension)
         except (AttributeError, ImportError) as e:
-            await ctx.send(embed=discord.Embed(title="```py\n{}: {}\n```".format(type(e).__name__, str(e)), color=discord.Color.blurple()))
+            await ctx.send(
+                embed=discord.Embed(
+                    title="```py\n{}: {}\n```".format(type(e).__name__, str(e)),
+                    color=discord.Color.blurple(),
+                )
+            )
             return
-        await ctx.send(embed=discord.Embed(title=f"{extension_name} loaded.", color=discord.Color.blurple()))
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"{extension} loaded.", color=discord.Color.blurple()
+            )
+        )
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def unload(self, ctx, extension_name: str):
-        """Unloads an extension."""
-        extension_name = "cogs." + extension_name
-        self.bot.unload_extension(extension_name)
-        await ctx.send(embed=discord.Embed(title=f"{extension_name} unloaded.", color=discord.Color.blurple()))
+    async def unload(self, ctx, extension: str):
+        """Unloads an extension.
+
+        extension: str
+            The extension to unload.
+        """
+        extension = "cogs." + extension
+        self.bot.unload_extension(extension)
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"{extension} unloaded.", color=discord.Color.blurple()
+            )
+        )
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def reload(self, ctx, extension: str):
+        """Reloads an extension.
+
+        extension: str
+            The extension to reload.
+        """
+        extension = "cogs." + extension
+        self.bot.reload_extension(extension)
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"{extension} reloaded.", color=discord.Color.blurple()
+            )
+        )
 
     @commands.command(hidden=True)
     @commands.is_owner()
     async def restart(self, ctx):
         """Restarts all extensions."""
-        for extension in [f.replace('.py', '') for f in listdir('cogs') if isfile(join('cogs', f))]:
+        for extension in [
+            f.replace(".py", "")
+            for f in os.listdir("cogs")
+            if os.path.isfile(os.path.join("cogs", f))
+        ]:
             try:
                 self.bot.reload_extension("cogs." + extension)
             except Exception as e:
-                if e == f"ExtensionNotLoaded: Extension 'cogs.{extension}' has not been loaded.":
+                if (
+                    e
+                    == f"ExtensionNotLoaded: Extension 'cogs.{extension}' has not been loaded."
+                ):
                     self.bot.load_extension("cogs." + extension)
                 else:
-                    await ctx.send(embed=discord.Embed(title="```{}: {}\n```".format(type(e).__name__, str(e)), color=discord.Color.blurple()))
-        await ctx.send(embed=discord.Embed(title="Extensions restarted.", color=discord.Color.blurple()))
+                    await ctx.send(
+                        embed=discord.Embed(
+                            title="```{}: {}\n```".format(type(e).__name__, str(e)),
+                            color=discord.Color.blurple(),
+                        )
+                    )
+        await ctx.send(
+            embed=discord.Embed(
+                title="Extensions restarted.", color=discord.Color.blurple()
+            )
+        )
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def revive(self, ctx):
+        """Kills the bot then revives it."""
+        await self.bot.logout()
+        os.system("python ./bot.py")
 
 
 def setup(bot):
