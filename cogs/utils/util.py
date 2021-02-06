@@ -4,17 +4,15 @@ from dateutil.relativedelta import relativedelta
 
 
 def get_matching_emote(guild, emote):
-    emote_name = emote.split(':')[1]
-    matching_emote = None
+    emote_name = emote.split(":")[1]
     for emote in guild.emojis:
         if emote.name == emote_name:
-            matching_emote = emote
-    return matching_emote
+            return emote
+    return emote_name
 
 
 def _stringify_time_unit(value: int, unit: str) -> str:
-    """
-    Returns a string to represent a value and time unit, ensuring that it uses the right plural form of the unit.
+    """Returns a string to represent a value and time unit, ensuring that it uses the right plural form of the unit.
     >>> _stringify_time_unit(1, "seconds")
     "1 second"
     >>> _stringify_time_unit(24, "hours")
@@ -24,17 +22,17 @@ def _stringify_time_unit(value: int, unit: str) -> str:
     """
     if unit == "seconds" and value == 0:
         return "0 seconds"
-    elif value == 1:
+    if value == 1:
         return f"{value} {unit[:-1]}"
-    elif value == 0:
+    if value == 0:
         return f"less than a {unit[:-1]}"
-    else:
-        return f"{value} {unit}"
+    return f"{value} {unit}"
 
 
-def humanize_delta(delta: relativedelta, precision: str = "seconds", max_units: int = 6) -> str:
-    """
-    Returns a human-readable version of the relativedelta.
+def humanize_delta(
+    delta: relativedelta, precision: str = "seconds", max_units: int = 6
+) -> str:
+    """Returns a human-readable version of the relativedelta.
     precision specifies the smallest unit of time to include (e.g. "seconds", "minutes").
     max_units specifies the maximum number of units of time to include (e.g. 1 may include days but not hours).
     """
@@ -74,9 +72,10 @@ def humanize_delta(delta: relativedelta, precision: str = "seconds", max_units: 
     return humanized
 
 
-def time_since(past_datetime: datetime.datetime, precision: str = "seconds", max_units: int = 6) -> str:
-    """
-    Takes a datetime and returns a human-readable string that describes how long ago that datetime was.
+def time_since(
+    past_datetime: datetime.datetime, precision: str = "seconds", max_units: int = 6
+) -> str:
+    """Takes a datetime and returns a human-readable string that describes how long ago that datetime was.
     precision specifies the smallest unit of time to include (e.g. "seconds", "minutes").
     max_units specifies the maximum number of units of time to include (e.g. 1 may include days but not hours).
     """
@@ -92,25 +91,25 @@ def find_nth_occurrence(string: str, substring: str, n: int):
     """Return index of `n`th occurrence of `substring` in `string`, or None if not found."""
     index = 0
     for _ in range(n):
-        index = string.find(substring, index+1)
+        index = string.find(substring, index + 1)
         if index == -1:
             return None
     return index
 
 
 def remove_html_tags(text):
-    """Removes html tags from a string"""
-    clean = re.compile('<.*?>')
-    return re.sub(clean, '', text)
+    """Removes html tags from a string."""
+    clean = re.compile("<.*?>")
+    return re.sub(clean, "", text)
 
 
 def clean_non_letters(text):
-    """Removes non alphabet characters from a string"""
-    clean = re.compile('[^a-zA-Z]')
-    return re.sub(clean, '', text)
+    """Removes non-alphabet characters from a string."""
+    clean = re.compile("[^a-zA-Z]")
+    return re.sub(clean, "", text)
 
 
 def clean_non_numbers(text):
-    """Removes non numbers from a string"""
-    clean = re.compile(r'[^\d.]+')
-    return re.sub(clean, '', text)
+    """Removes non-numeric characters from a string."""
+    clean = re.compile(r"[^\d.]+")
+    return re.sub(clean, "", text)
