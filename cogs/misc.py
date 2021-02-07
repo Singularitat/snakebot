@@ -4,6 +4,8 @@ import random
 import asyncio
 import aiohttp
 import lxml.html
+import config
+import ujson
 
 
 class misc(commands.Cog):
@@ -71,20 +73,18 @@ class misc(commands.Cog):
         await ctx.send(member.avatar_url)
 
     @commands.command()
-    async def hug(self, ctx):
-        """Gets a random hug gif from tenor."""
-        url = "https://tenor.com/search/hug-gifs"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
-        }
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.get(url) as page:
-                soup = lxml.html.fromstring(await page.text())
-        images = []
-        for a in soup.xpath("//img"):
-            if a.attrib["src"].startswith("https://media.tenor.com"):
-                images.append(a.attrib["src"])
-        await ctx.send(random.choice(images))
+    async def hug(self, ctx, *, search='hug'):
+        """Gets a random gif from tenor defaulting to a hug gif.
+
+        search: str
+            The gif search term.
+        """
+        url = f"https://g.tenor.com/v1/search?q={search}&key={config.tenor}&limit=50"
+        async with aiohttp.ClientSession() as session:
+            raw_response = await session.get(url)
+            response = await raw_response.text()
+        tenor = ujson.loads(response)
+        await ctx.send(random.choice(tenor['results'])['media'][0]['gif']['url'])
 
     @commands.command()
     async def send(self, ctx, member: discord.Member, *, message):

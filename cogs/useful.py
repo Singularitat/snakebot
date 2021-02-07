@@ -20,7 +20,7 @@ class useful(commands.Cog):
         self.bot = bot
         self.process = psutil.Process()
 
-    @commands.command(name="dir")
+    @commands.command()
     async def argument(self, ctx, arg, *, object):
         """Converts arguments to a chosen discord object.
 

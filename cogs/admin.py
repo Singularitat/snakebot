@@ -490,6 +490,7 @@ class admin(commands.Cog):
     async def revive(self, ctx):
         """Kills the bot then revives it."""
         await self.bot.logout()
+        # Add a check for if its linux or windows
         os.system("python ./bot.py")
 
 
