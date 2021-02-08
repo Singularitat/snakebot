@@ -11,6 +11,7 @@ import os
 import lxml.html
 import re
 import psutil
+import config
 
 
 class useful(commands.Cog):
@@ -289,58 +290,50 @@ class useful(commands.Cog):
                 f"Sorry, please give an integer between `1` and `{titles_len}`"
             )
 
-    @commands.command(aliases=["btc"])
-    async def bitcoin(self, ctx, currency="NZD"):
-        """Grabs the current bitcoin price in some supported currencys.
+    @commands.command(aliases=['coin', 'bitcoin', 'btc'])
+    async def crypto(self, ctx, crypto: str = 'BTC', currency='NZD'):
+        """Gets some information about crypto currencies.
 
+        crypto: str
+            The name or symbol to search for.
         currency: str
-            The currency to show the price in defaults to NZD.
+            The currency to return the price in.
         """
-        currency = currency.upper()
-        try:
-            url = "https://blockchain.info/ticker"
-            async with aiohttp.ClientSession() as session:
-                raw_response = await session.get(url)
-                response = await raw_response.text()
-                bitcoin = ujson.loads(response)
-                symbol = bitcoin[currency]["symbol"]
-            url = f"https://blockchain.info/tobtc?currency={currency}&value=1"
-            async with aiohttp.ClientSession() as session:
-                raw_response = await session.get(url)
-                response = await raw_response.text()
-                price = ujson.loads(response)
-            embed = discord.Embed(colour=discord.Color.purple())
-            embed.set_author(name=f"Current Bitcoin price in {currency}")
-            embed.add_field(
-                name="Bitcoin Price:",
-                value=f'{symbol}{bitcoin[currency]["last"]:,.2f} {currency}',
-                inline=True,
-            )
-            embed.add_field(
-                name=f"1 {currency} is worth:",
-                value=f"{str(round(price, 5))} bitcoins",
-                inline=True,
-            )
-            if currency == "NZD":
-                with open("json/bitcoin.json") as file:
-                    data = ujson.load(file)
-                embed.add_field(
-                    name=f"Change from {data[1]}",
-                    value=f'{bitcoin[currency]["last"] - data[0]:,.2f}',
-                    inline=True,
-                )
-                data = [
-                    bitcoin[currency]["last"],
-                    (str(ctx.message.created_at))[5:-7],
-                ]
-                with open("json/bitcoin.json", "w") as file:
-                    data = ujson.dump(data, file, indent=2)
-            embed.set_footer(icon_url=self.bot.user.avatar_url, text="Go way hat you™")
-            await ctx.send(embed=embed)
-        except KeyError:
-            await ctx.send(
-                "Only works for USD, AUD, BRL, CAD, CHF, CLP, CNY, DKK, EUR, GBP, HKD, INR, ISK, JPY, KRW, NZD, PLN, RUB, SEK, SGD, THB, TRY, TWD"
-            )
+        url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+        parameters = {
+          'start': '1',
+          'limit': '150',
+          'convert': currency
+        }
+        headers = {
+          'Accepts': 'application/json',
+          'X-CMC_PRO_API_KEY': config.coinmarketcap,
+        }
+        async with aiohttp.ClientSession() as session:
+            raw_response = await session.get(url, params=parameters, headers=headers)
+            response = await raw_response.text()
+        cry = ujson.loads(response)['data']
+        for index, coin in enumerate(cry):
+            if coin['name'].lower() == crypto.lower() or coin['symbol'] == crypto.upper():
+                coin = cry[index]
+                break
+        embed = discord.Embed(colour=discord.Colour.blurple())
+        embed.set_author(
+            name=f"{coin['name']} [{coin['symbol']}]",
+        )
+        embed.add_field(
+            name="Price", value=f"${round(coin['quote']['NZD']['price'], 2)}", inline=False
+        )
+        embed.add_field(
+            name="Circulating/Max Supply", value=f"{coin['circulating_supply']}/{coin['max_supply']}", inline=False
+        )
+        embed.add_field(
+            name="Market Cap", value=f"${coin['quote']['NZD']['market_cap']}", inline=False
+        )
+        embed.add_field(
+            name="24h Change", value=f"{coin['quote']['NZD']['percent_change_24h']}%", inline=False
+        )
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def covid(self, ctx, *, country="nz"):
@@ -375,7 +368,7 @@ class useful(commands.Cog):
                     response = ujson.loads(response)
             embed = discord.Embed(colour=discord.Color.red())
             embed.set_author(
-                name="Cornavirus " + response["country"] + ":",
+                name=f"Cornavirus {response['country']}:",
                 icon_url=response["countryInfo"]["flag"],
             )
             embed.add_field(

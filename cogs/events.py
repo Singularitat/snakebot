@@ -174,20 +174,20 @@ class events(commands.Cog):
         else:
             parameter = ""
 
-            if hasattr(error, "name"):
-                name = error.name
-            else:
-                name = None
+        if hasattr(error, "name"):
+            name = error.name
+        else:
+            name = None
 
-                if hasattr(error, "missing_roles"):
-                    roles = error.missing_roles
-                else:
-                    roles = None
+        if hasattr(error, "missing_roles"):
+            roles = error.missing_roles
+        else:
+            roles = None
 
-                    if hasattr(error, "missing_perms"):
-                        permissions = error.missing_perms
-                    else:
-                        permissions = None
+        if hasattr(error, "missing_perms"):
+            permissions = error.missing_perms
+        else:
+            permissions = None
 
         handler = {
             discord.Forbidden: "```I do not have the required permissions to run this command.```",
