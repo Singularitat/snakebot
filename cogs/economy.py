@@ -258,7 +258,8 @@ class economy(commands.Cog):
         ]
         if remove != 0:
             emojis = emojis[-remove]
-        quad, triple, dd, double, none, win, lose, highestlose, highestwin, iswin = (
+        quad, triple, dd, double, none, win, lose, highestlose, highestwin, run, iswin = (
+            0,
             0,
             0,
             0,
@@ -273,7 +274,8 @@ class economy(commands.Cog):
         if amount > 100000:
             await ctx.send("```Choose a lower number```")
         else:
-            for i in range(amount):
+            while run < amount:
+                run += 1
                 a, b, c, d = (
                     random.choice(emojis),
                     random.choice(emojis),
@@ -313,7 +315,7 @@ class economy(commands.Cog):
                 * (1 / amount)
             ) * 100
             embed = discord.Embed(
-                title=f"Chances from {amount} attempts", color=discord.Color.blue()
+                title=f"Chances from {run} attempts", color=discord.Color.blue()
             )
             embed.add_field(
                 name="Quad: ",
@@ -348,7 +350,7 @@ class economy(commands.Cog):
                 name="Highest lose streak: ", value=highestlose, inline=True
             )
             embed.add_field(
-                name="Time taken: ", value=str(time.time() - start)[:-4], inline=True
+                name="Time taken: ", value=f"{round(time.time() - start, 3)}s", inline=True
             )
             embed.set_footer(icon_url=self.bot.user.avatar_url, text="Go way hat you™")
             await ctx.send(embed=embed)

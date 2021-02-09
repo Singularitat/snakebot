@@ -211,8 +211,8 @@ class admin(commands.Cog):
 
         def run_shell(command):
             with subprocess.Popen(
-                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            ) as proc:
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    shell=True) as proc:
                 return [std.decode("utf-8") for std in proc.communicate()]
 
         pull = await self.bot.loop.run_in_executor(None, run_shell, "git pull")
@@ -223,6 +223,7 @@ class admin(commands.Cog):
                 )
             )
         else:
+            await self.bot.loop.run_in_executor(None, run_shell, "poetry install")
             for extension in [
                 f.replace(".py", "")
                 for f in os.listdir("cogs")

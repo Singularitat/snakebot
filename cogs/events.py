@@ -261,7 +261,7 @@ Boot time: {round(time.time()-psutil.Process(os.getpid()).create_time(), 3)}s
             data = ujson.dump(data, file, indent=2)
 
     @commands.Cog.listener()
-    async def on_command_completion(self, ctx):
+    async def on_command(self, ctx):
         """Resets command cooldown for owners.
 
         ctx: commands.Context

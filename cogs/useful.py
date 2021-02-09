@@ -22,7 +22,7 @@ class useful(commands.Cog):
         self.process = psutil.Process()
 
     @commands.command()
-    async def argument(self, ctx, arg, *, object):
+    async def argument(self, ctx, arg, *, obj):
         """Converts arguments to a chosen discord object.
 
         arg: str
@@ -30,7 +30,7 @@ class useful(commands.Cog):
         object: str
             The object to attempt to convert to.
         """
-        object = object.replace(" ", "").lower()
+        obj = obj.replace(" ", "").lower()
         objects = {
             "member": commands.MemberConverter(),
             "user": commands.UserConverter(),
@@ -45,9 +45,9 @@ class useful(commands.Cog):
             "emoji": commands.EmojiConverter(),
             "partialemoji": commands.PartialEmojiConverter(),
         }
-        if object in objects:
-            object = await objects[object].convert(ctx, arg)
-            await ctx.send(dir(object))
+        if obj in objects:
+            obj = await objects[obj].convert(ctx, arg)
+            await ctx.send(dir(obj))
         else:
             await ctx.send("```Could not find object```")
 
@@ -315,23 +315,23 @@ class useful(commands.Cog):
         cry = ujson.loads(response)['data']
         for index, coin in enumerate(cry):
             if coin['name'].lower() == crypto.lower() or coin['symbol'] == crypto.upper():
-                coin = cry[index]
+                crypto = cry[index]
                 break
         embed = discord.Embed(colour=discord.Colour.blurple())
         embed.set_author(
-            name=f"{coin['name']} [{coin['symbol']}]",
+            name=f"{crypto['name']} [{crypto['symbol']}]",
         )
         embed.add_field(
-            name="Price", value=f"${round(coin['quote']['NZD']['price'], 2)}", inline=False
+            name="Price", value=f"${round(crypto['quote']['NZD']['price'], 2)}", inline=False
         )
         embed.add_field(
-            name="Circulating/Max Supply", value=f"{coin['circulating_supply']}/{coin['max_supply']}", inline=False
+            name="Circulating/Max Supply", value=f"{crypto['circulating_supply']}/{crypto['max_supply']}", inline=False
         )
         embed.add_field(
-            name="Market Cap", value=f"${coin['quote']['NZD']['market_cap']}", inline=False
+            name="Market Cap", value=f"${crypto['quote']['NZD']['market_cap']}", inline=False
         )
         embed.add_field(
-            name="24h Change", value=f"{coin['quote']['NZD']['percent_change_24h']}%", inline=False
+            name="24h Change", value=f"{crypto['quote']['NZD']['percent_change_24h']}%", inline=False
         )
         await ctx.send(embed=embed)
 
