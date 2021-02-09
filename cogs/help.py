@@ -17,7 +17,8 @@ class BotHelpPageSource(menus.ListPageSource):
         self.help_command = help_command
         self.prefix = help_command.clean_prefix
 
-    def format_commands(self, cog, commands):
+    @staticmethod
+    def format_commands(cog, commands):
         # A field can only have 1024 characters so we need to paginate a bit
         # just in case it doesn't fit perfectly
         # However, we have 6 per page so I'll try cutting it off at around 800 instead
@@ -167,7 +168,8 @@ class PaginatedHelpCommand(commands.HelpCommand):
         if isinstance(error, commands.CommandInvokeError):
             await ctx.send(str(error.original))
 
-    def get_command_signature(self, command):
+    @staticmethod
+    def get_command_signature(command):
         parent = command.full_parent_name
         if len(command.aliases) > 0:
             aliases = "|".join(command.aliases)

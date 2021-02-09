@@ -400,19 +400,12 @@ class music(commands.Cog):
 
     def cog_check(self, ctx: commands.Context):
         if not ctx.guild:
-            raise commands.NoPrivateMessage(
-                "This command can't be used in DM channels."
-            )
+            raise commands.NoPrivateMessage(self.__cog_name__)
 
         return True
 
     async def cog_before_invoke(self, ctx: commands.Context):
         ctx.voice_state = self.get_voice_state(ctx)
-
-    async def cog_command_error(
-        self, ctx: commands.Context, error: commands.CommandError
-    ):
-        await ctx.send(f"```{error}```")
 
     @commands.command(name="join", invoke_without_subcommand=True)
     async def _join(self, ctx: commands.Context):

@@ -269,7 +269,7 @@ class admin(commands.Cog):
         with open("json/real.json", "w") as file:
             data = ujson.dump(data, file, indent=2)
 
-    @commands.command(aliases=["ban", "unban"])
+    @commands.command(name="ban", aliases=["unban"])
     @commands.has_permissions(ban_members=True)
     async def ban_member(self, ctx, *, member: discord.Member):
         """Bans a member.
@@ -293,7 +293,7 @@ class admin(commands.Cog):
                 )
             )
 
-    @commands.command()
+    @commands.command(name="kick")
     @commands.has_permissions(kick_members=True)
     async def kick_member(self, ctx, *, member: discord.Member):
         """Kicks a member.

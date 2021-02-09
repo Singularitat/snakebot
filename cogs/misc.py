@@ -114,10 +114,7 @@ class misc(commands.Cog):
             await ctx.send("Format has to be AdX")
             return
         result = ", ".join(str(random.randint(1, limit)) for r in range(rolls))
-        total = result.split(", ")
-        for i in range(0, len(total)):
-            total[i] = int(total[i])
-        total = sum(total)
+        total = sum([int(item) for item in result.split(", ")])
         await ctx.send(f"Results: {result} Total: {total}")
 
     @commands.command()
