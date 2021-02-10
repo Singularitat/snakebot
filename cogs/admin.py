@@ -495,5 +495,6 @@ class admin(commands.Cog):
         os.system("python ./bot.py")
 
 
-def setup(bot):
+def setup(bot: commands.Bot) -> None:
+    """Starts admin cog."""
     bot.add_cog(admin(bot))

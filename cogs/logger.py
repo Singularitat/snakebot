@@ -65,5 +65,6 @@ class logger(commands.Cog):
             log.setLevel(logging.CRITICAL)
 
 
-def setup(bot):
+def setup(bot: commands.Bot) -> None:
+    """Starts logger cog."""
     bot.add_cog(logger(bot))

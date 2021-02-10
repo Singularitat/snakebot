@@ -161,5 +161,6 @@ class misc(commands.Cog):
         )
 
 
-def setup(bot):
+def setup(bot: commands.Bot) -> None:
+    """Starts misc cog."""
     bot.add_cog(misc(bot))

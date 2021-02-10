@@ -270,5 +270,6 @@ Boot time: {round(time.time()-psutil.Process(os.getpid()).create_time(), 3)}s
             ctx.command.reset_cooldown(ctx)
 
 
-def setup(bot):
+def setup(bot: commands.Bot) -> None:
+    """Starts events cog."""
     bot.add_cog(events(bot))

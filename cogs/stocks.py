@@ -187,5 +187,6 @@ class stocks(commands.Cog):
                 data = ujson.dump(data, file, indent=2)
 
 
-def setup(bot):
+def setup(bot: commands.Bot) -> None:
+    """Starts stocks cog."""
     bot.add_cog(stocks(bot))

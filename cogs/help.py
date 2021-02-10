@@ -243,5 +243,6 @@ class meta(commands.Cog):
         self.bot.help_command = self.old_help_command
 
 
-def setup(bot):
+def setup(bot: commands.Bot) -> None:
+    """Starts meta cog."""
     bot.add_cog(meta(bot))

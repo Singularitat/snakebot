@@ -638,5 +638,6 @@ class music(commands.Cog):
             raise commands.CommandError("Bot is already in a voice channel.")
 
 
-def setup(bot):
+def setup(bot: commands.Bot) -> None:
+    """Starts music cog."""
     bot.add_cog(music(bot))

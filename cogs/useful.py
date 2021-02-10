@@ -400,5 +400,6 @@ class useful(commands.Cog):
             )
 
 
-def setup(bot):
+def setup(bot: commands.Bot) -> None:
+    """Starts useful cog."""
     bot.add_cog(useful(bot))

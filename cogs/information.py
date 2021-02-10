@@ -129,4 +129,5 @@ class information(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
+    """Starts information cog."""
     bot.add_cog(information(bot))

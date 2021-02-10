@@ -434,5 +434,6 @@ class economy(commands.Cog):
         )
 
 
-def setup(bot):
+def setup(bot: commands.Bot) -> None:
+    """Starts economy cog."""
     bot.add_cog(economy(bot))
