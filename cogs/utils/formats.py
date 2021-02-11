@@ -4,7 +4,7 @@ class plural:
 
     def __format__(self, format_spec):
         v = self.value
-        singular, sep, plur = format_spec.partition("|")
+        singular, plur = format_spec.partition("|")[::2]
         plur = plur or f"{singular}s"
         if abs(v) != 1:
             return f"{v} {plural}"

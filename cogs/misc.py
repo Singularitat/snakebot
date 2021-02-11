@@ -26,12 +26,14 @@ class misc(commands.Cog):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
         }
         try:
-            async with aiohttp.ClientSession(headers=headers, raise_for_status=True) as session:
+            async with aiohttp.ClientSession(
+                headers=headers, raise_for_status=True
+            ) as session:
                 async with session.get(url) as page:
                     text = lxml.html.fromstring(await page.text())
         except aiohttp.client_exceptions.ClientResponseError:
             await ctx.send(
-                f'Could not find and element with the symbol {element.upper()}'
+                f"Could not find and element with the symbol {element.upper()}"
             )
             return
         image = f"http://www.chemicalelements.com{text.xpath('.//img')[1].attrib['src'][2:]}"
@@ -73,7 +75,7 @@ class misc(commands.Cog):
         await ctx.send(member.avatar_url)
 
     @commands.command()
-    async def hug(self, ctx, *, search='hug'):
+    async def hug(self, ctx, *, search="hug"):
         """Gets a random gif from tenor defaulting to a hug gif.
 
         search: str
@@ -84,7 +86,7 @@ class misc(commands.Cog):
             raw_response = await session.get(url)
             response = await raw_response.text()
         tenor = ujson.loads(response)
-        await ctx.send(random.choice(tenor['results'])['media'][0]['gif']['url'])
+        await ctx.send(random.choice(tenor["results"])["media"][0]["gif"]["url"])
 
     @commands.command()
     async def send(self, ctx, member: discord.Member, *, message):

@@ -98,9 +98,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
                     break
 
             if process_info is None:
-                raise YTDLError(
-                    f"Couldn't find anything that matches `{search}`"
-                )
+                raise YTDLError(f"Couldn't find anything that matches `{search}`")
 
         webpage_url = process_info["webpage_url"]
         partial = functools.partial(cls.ytdl.extract_info, webpage_url, download=False)
@@ -511,9 +509,7 @@ class music(commands.Cog):
                 await ctx.message.add_reaction("⏭")
                 ctx.voice_state.skip()
             else:
-                await ctx.send(
-                    f"Skip vote added, currently at **{total_votes}/1**"
-                )
+                await ctx.send(f"Skip vote added, currently at **{total_votes}/1**")
 
         else:
             await ctx.send("You have already voted to skip this song.")
@@ -610,9 +606,7 @@ class music(commands.Cog):
             try:
                 source = await YTDLSource.search_source(ctx, search, loop=self.bot.loop)
             except YTDLError as e:
-                await ctx.send(
-                    f"An error occurred while processing this request: {e}"
-                )
+                await ctx.send(f"An error occurred while processing this request: {e}")
             else:
                 if source == "sel_invalid":
                     await ctx.send("Invalid selection")

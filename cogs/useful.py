@@ -290,8 +290,8 @@ class useful(commands.Cog):
                 f"Sorry, please give an integer between `1` and `{titles_len}`"
             )
 
-    @commands.command(aliases=['coin', 'bitcoin', 'btc'])
-    async def crypto(self, ctx, crypto: str = 'BTC', currency='NZD'):
+    @commands.command(aliases=["coin", "bitcoin", "btc"])
+    async def crypto(self, ctx, crypto: str = "BTC", currency="NZD"):
         """Gets some information about crypto currencies.
 
         crypto: str
@@ -299,22 +299,21 @@ class useful(commands.Cog):
         currency: str
             The currency to return the price in.
         """
-        url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
-        parameters = {
-          'start': '1',
-          'limit': '150',
-          'convert': currency
-        }
+        url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
+        parameters = {"start": "1", "limit": "150", "convert": currency}
         headers = {
-          'Accepts': 'application/json',
-          'X-CMC_PRO_API_KEY': config.coinmarketcap,
+            "Accepts": "application/json",
+            "X-CMC_PRO_API_KEY": config.coinmarketcap,
         }
         async with aiohttp.ClientSession() as session:
             raw_response = await session.get(url, params=parameters, headers=headers)
             response = await raw_response.text()
-        cry = ujson.loads(response)['data']
+        cry = ujson.loads(response)["data"]
         for index, coin in enumerate(cry):
-            if coin['name'].lower() == crypto.lower() or coin['symbol'] == crypto.upper():
+            if (
+                coin["name"].lower() == crypto.lower()
+                or coin["symbol"] == crypto.upper()
+            ):
                 crypto = cry[index]
                 break
         embed = discord.Embed(colour=discord.Colour.blurple())
@@ -322,16 +321,24 @@ class useful(commands.Cog):
             name=f"{crypto['name']} [{crypto['symbol']}]",
         )
         embed.add_field(
-            name="Price", value=f"${round(crypto['quote']['NZD']['price'], 2)}", inline=False
+            name="Price",
+            value=f"${round(crypto['quote']['NZD']['price'], 2)}",
+            inline=False,
         )
         embed.add_field(
-            name="Circulating/Max Supply", value=f"{crypto['circulating_supply']}/{crypto['max_supply']}", inline=False
+            name="Circulating/Max Supply",
+            value=f"{crypto['circulating_supply']}/{crypto['max_supply']}",
+            inline=False,
         )
         embed.add_field(
-            name="Market Cap", value=f"${crypto['quote']['NZD']['market_cap']}", inline=False
+            name="Market Cap",
+            value=f"${crypto['quote']['NZD']['market_cap']}",
+            inline=False,
         )
         embed.add_field(
-            name="24h Change", value=f"{crypto['quote']['NZD']['percent_change_24h']}%", inline=False
+            name="24h Change",
+            value=f"{crypto['quote']['NZD']['percent_change_24h']}%",
+            inline=False,
         )
         await ctx.send(embed=embed)
 

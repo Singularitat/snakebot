@@ -258,7 +258,19 @@ class economy(commands.Cog):
         ]
         if remove != 0:
             emojis = emojis[-remove]
-        quad, triple, dd, double, none, win, lose, highestlose, highestwin, run, iswin = (
+        (
+            quad,
+            triple,
+            dd,
+            double,
+            none,
+            win,
+            lose,
+            highestlose,
+            highestwin,
+            run,
+            iswin,
+        ) = (
             0,
             0,
             0,
@@ -350,7 +362,9 @@ class economy(commands.Cog):
                 name="Highest lose streak: ", value=highestlose, inline=True
             )
             embed.add_field(
-                name="Time taken: ", value=f"{round(time.time() - start, 3)}s", inline=True
+                name="Time taken: ",
+                value=f"{round(time.time() - start, 3)}s",
+                inline=True,
             )
             embed.set_footer(icon_url=self.bot.user.avatar_url, text="Go way hat you™")
             await ctx.send(embed=embed)

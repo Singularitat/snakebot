@@ -141,7 +141,6 @@ class SimplePageSource(menus.ListPageSource):
 
 class SimplePages(RoboPages):
     """A simple pagination session reminiscent of the old Pages interface.
-
     Basically an embed with some normal formatting.
     """
 
