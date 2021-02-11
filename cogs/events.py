@@ -221,7 +221,7 @@ class events(commands.Cog):
     async def on_ready(self):
         """Called when the bot is done preparing the data received from Discord."""
         if not hasattr(self.bot, "uptime"):
-            self.bot.uptime = datetime.datetime.utcnow()
+            self.bot.uptime = datetime.datetime.now()
         print(
             f"""Logged in as {self.bot.user.name}
 Discord.py version: {discord.__version__}

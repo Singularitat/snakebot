@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import textwrap
-from .utils import time, util
+from .utils import util
 
 
 class information(commands.Cog):
@@ -13,7 +13,7 @@ class information(commands.Cog):
     @commands.command()
     async def uptime(self, ctx):
         """Shows the bots uptime."""
-        await ctx.send(f"**{time.human_timedelta(self.bot.uptime, suffix=False)}**")
+        await ctx.send(f"**{util.pretty_date(self.bot.uptime)}**")
 
     @commands.command()
     async def roles(self, ctx, member: discord.Member):

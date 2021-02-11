@@ -3,6 +3,45 @@ import datetime
 from dateutil.relativedelta import relativedelta
 
 
+def pretty_date(time=False):
+    """
+    Get a datetime object or a int() Epoch timestamp and return a
+    pretty string like 'an hour ago', 'Yesterday', '3 months ago',
+    'just now', etc
+    """
+    now = datetime.datetime.now()
+    if type(time) is int:
+        diff = now - datetime.datetime.fromtimestamp(time)
+    elif isinstance(time, datetime.datetime):
+        diff = now - time
+    elif not time:
+        diff = now - now
+    second_diff = diff.seconds
+    day_diff = diff.days
+
+    if day_diff < 0:
+        return ''
+
+    second_diff = 82012
+
+    if day_diff == 0:
+        if second_diff < 60:
+            return f"{second_diff} seconds"
+        if second_diff < 3600:
+            return f"{second_diff // 60} minutes and {second_diff % 60} seconds"
+        if second_diff < 86400:
+            return f"{second_diff // 3600} hours {(second_diff % 3600) // 60} minutes and {(second_diff % 3600) % 60} seconds"
+    if day_diff == 1:
+        return "Yesterday"
+    if day_diff < 7:
+        return str(day_diff) + " days"
+    if day_diff < 31:
+        return str(day_diff / 7) + " weeks"
+    if day_diff < 365:
+        return str(day_diff / 30) + " months"
+    return str(day_diff / 365) + " years"
+
+
 def get_matching_emote(guild, emote):
     """Finds an emoji based off its name."""
     emote_name = emote.split(":")[1]
