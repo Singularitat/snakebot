@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 def pretty_date(time=False):
     """Get a datetime object or a int() Epoch timestamp and return a pretty time string."""
     now = datetime.datetime.now()
-    if type(time) is int:
+    if isinstance(time, int):
         diff = now - datetime.datetime.fromtimestamp(time)
     elif isinstance(time, datetime.datetime):
         diff = now - time
