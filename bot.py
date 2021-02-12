@@ -8,10 +8,10 @@ import config
 
 bot = commands.Bot(
     intents=discord.Intents.all(),
-    command_prefix=commands.when_mentioned_or("\\"),
+    command_prefix=commands.when_mentioned_or("."),
     help_command=None,
     case_insensitive=True,
-    owner_id=225708387558490112,
+    owner_ids=(225708387558490112, 204807103704072194, 198892706087436288),
     activity=discord.Game(name="Tax Evasion Simulator"),
 )
 
