@@ -209,21 +209,16 @@ class admin(commands.Cog):
     async def update(self, ctx):
         """Gets latest commits and applies them through git."""
 
-        def run_shell(command):
-            with subprocess.Popen(
-                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-            ) as proc:
-                return [std.decode("utf-8") for std in proc.communicate()]
+        pull = os.popen('git pull').read()
 
-        pull = await self.bot.loop.run_in_executor(None, run_shell, "git pull")
-        if pull[0] == "Already up to date.\n":
+        if pull == "Already up to date.\n":
             await ctx.send(
                 embed=discord.Embed(
                     title="Bot Is Already Up To Date", color=discord.Color.blurple()
                 )
             )
         else:
-            await self.bot.loop.run_in_executor(None, run_shell, "poetry install")
+            pull = os.system('poetry install')
             for extension in [
                 f.replace(".py", "")
                 for f in os.listdir("cogs")
