@@ -70,7 +70,7 @@ class RoboPages(menus.MenuPages):
 
         try:
             await channel.delete_messages(to_delete)
-        except Exception:
+        except AttributeError:
             pass
 
 
