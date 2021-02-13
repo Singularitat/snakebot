@@ -3,7 +3,6 @@ from discord.ext import commands
 import ujson
 import os
 import copy
-import subprocess
 import asyncio
 import traceback
 import time
