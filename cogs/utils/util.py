@@ -27,15 +27,13 @@ def pretty_date(time=False):
             return f"{second_diff // 60} minutes and {second_diff % 60} seconds"
         if second_diff < 86400:
             return f"{second_diff // 3600} hours {(second_diff % 3600) // 60} minutes and {(second_diff % 3600) % 60} seconds"
-    if day_diff == 1:
-        return "Yesterday"
     if day_diff < 7:
-        return str(day_diff) + " days"
+        return f"{day_diff} days"
     if day_diff < 31:
-        return str(day_diff / 7) + " weeks"
+        return f"{day_diff / 7} weeks"
     if day_diff < 365:
-        return str(day_diff / 30) + " months"
-    return str(day_diff / 365) + " years"
+        return f"{day_diff / 30} months"
+    return f"{day_diff / 365} years"
 
 
 def get_matching_emote(guild, emote):
