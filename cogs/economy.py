@@ -317,11 +317,11 @@ class economy(commands.Cog):
                     iswin = False
                     lose += 1
                     win = 0
-                    highestwin = max(highestwin, win)
+                    highestlose = max(highestlose, lose)
                 if iswin is True:
                     win += 1
                     lose = 0
-                    highestlose = max(highestlose, lose)
+                    highestwin = max(highestwin, win)
             total = (
                 ((quad * 100) + (triple * 15) + (dd * 20) + (double * 1.5) - (none))
                 * (1 / amount)
