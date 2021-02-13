@@ -207,7 +207,7 @@ class admin(commands.Cog):
     @commands.is_owner()
     async def update(self, ctx):
         """Gets latest commits and applies them through git."""
-        pull = os.popen('git pull').read()
+        pull = os.popen("git pull").read()
 
         if pull == "Already up to date.\n":
             await ctx.send(
@@ -216,7 +216,7 @@ class admin(commands.Cog):
                 )
             )
         else:
-            pull = os.system('poetry install')
+            pull = os.system("poetry install")
             for extension in [
                 f.replace(".py", "")
                 for f in os.listdir("cogs")
