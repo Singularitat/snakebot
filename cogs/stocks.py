@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import ujson
-from .utils.economy import stockgrab
+from .utils.economy import stockgrab, stockupdate
 
 
 class stocks(commands.Cog):
@@ -64,12 +64,7 @@ class stocks(commands.Cog):
         symbol = symbol.upper()
         with open("json/economy.json") as file:
             data = ujson.load(file)
-        for stock in await stockgrab(url):
-            if float(stock[2]) >= 1 or stock[0][:3] in data["stocks"]:
-                try:
-                    data["stocks"][stock[0][:3]]["price"] = stock[2]
-                except KeyError:
-                    pass
+        await stockupdate(data, url)
         for stock in data["stocks"]:
             if stock == symbol:
                 await ctx.send(
@@ -102,12 +97,7 @@ class stocks(commands.Cog):
         with open("json/economy.json") as file:
             data = ujson.load(file)
         symbol = symbol.upper()
-        for stock in await stockgrab(url):
-            if float(stock[2]) >= 1 or stock[0][:3] in data["stocks"]:
-                try:
-                    data["stocks"][stock[0][:3]]["price"] = stock[2]
-                except KeyError:
-                    pass
+        await stockupdate(data, url)
         if symbol in data["stocks"]:
             if amount <= data["stocks"][symbol][user]:
                 cash = amount * float(data["stocks"][symbol]["price"])
@@ -130,7 +120,7 @@ class stocks(commands.Cog):
             data = ujson.dump(data, file, indent=2)
 
     @commands.command()
-    async def invest(self, ctx, symbol=None, cash=False):
+    async def invest(self, ctx, symbol=None, cash=None):
         """Buys stock or if nothing is passed in it shows the price of some stocks.
 
         symbol: str
@@ -140,7 +130,7 @@ class stocks(commands.Cog):
         """
         url = "https://nz.finance.yahoo.com/most-active?offset=0&count=200"
         user = str(ctx.author.id)
-        if not cash:
+        if cash:
             cash = float(cash)
         if symbol is None:
             embed = discord.Embed(colour=discord.Color.blue())
@@ -155,12 +145,7 @@ class stocks(commands.Cog):
         else:
             with open("json/economy.json") as file:
                 data = ujson.load(file)
-            for stock in await stockgrab(url):
-                if float(stock[2]) >= 1 or stock[0][:3] in data["stocks"]:
-                    try:
-                        data["stocks"][stock[0][:3]]["price"] = stock[2]
-                    except KeyError:
-                        data["stocks"][stock[0][:3]] = {}
+            await stockupdate(data, url)
             symbol = symbol.upper()
             if symbol in data["stocks"]:
                 if data["money"][user] >= cash:

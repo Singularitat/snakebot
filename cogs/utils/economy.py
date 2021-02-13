@@ -19,3 +19,12 @@ async def stockgrab(url):
             cols = [ele.text_content().strip() for ele in cols]
             stockdata.append([ele for ele in cols if ele])
     return stockdata
+
+
+async def stockupdate(data, url):
+    for stock in await stockgrab(url):
+        if float(stock[2]) >= 1 or stock[0][:3] in data["stocks"]:
+            try:
+                data["stocks"][stock[0][:3]]["price"] = stock[2]
+            except KeyError:
+                data["stocks"][stock[0][:3]] = {}
