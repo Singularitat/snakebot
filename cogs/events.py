@@ -236,7 +236,7 @@ Boot time: {round(time.time()-psutil.Process(os.getpid()).create_time(), 3)}s
 
         ctx: commands.Context
         """
-        if ctx.author.id == self.bot.owner_id:
+        if ctx.author.id in self.bot.owner_ids:
             return True
         with open("json/real.json") as file:
             data = ujson.load(file)
@@ -266,7 +266,7 @@ Boot time: {round(time.time()-psutil.Process(os.getpid()).create_time(), 3)}s
 
         ctx: commands.Context
         """
-        if ctx.author.id == self.bot.owner_id:
+        if ctx.author.id in self.bot.owner_ids:
             ctx.command.reset_cooldown(ctx)
 
 
