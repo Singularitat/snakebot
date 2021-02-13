@@ -64,7 +64,12 @@ class stocks(commands.Cog):
         symbol = symbol.upper()
         with open("json/economy.json") as file:
             data = ujson.load(file)
+
         await stockupdate(data, url)
+
+        with open("json/economy.json", "w") as file:
+            data = ujson.dump(data, file, indent=2)
+
         for stock in data["stocks"]:
             if stock == symbol:
                 await ctx.send(
@@ -73,15 +78,12 @@ class stocks(commands.Cog):
                         color=discord.Color.blue(),
                     )
                 )
-                break
-        if symbol != stock:
-            await ctx.send(
-                embed=discord.Embed(
-                    title=f"No stock found for {symbol}", color=discord.Color.red()
-                )
+                return
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"No stock found for {symbol}", color=discord.Color.red()
             )
-        with open("json/economy.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
+        )
 
     @commands.command()
     async def sellstock(self, ctx, symbol, amount: float):
