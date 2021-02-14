@@ -130,7 +130,7 @@ class admin(commands.Cog):
             The name of the command.
         """
         msg = copy.copy(ctx.message)
-        msg.content = ctx.prefix + command
+        msg.content = f"{ctx.prefix}{command}"
 
         new_ctx = await self.bot.get_context(msg, cls=type(ctx))
 
@@ -185,7 +185,7 @@ class admin(commands.Cog):
         channel = channel or ctx.channel
         msg.channel = channel
         msg.author = member
-        msg.content = ctx.prefix + command
+        msg.content = f"{ctx.prefix}{command}"
         new_ctx = await self.bot.get_context(msg, cls=type(ctx))
         await self.bot.invoke(new_ctx)
 
@@ -217,26 +217,17 @@ class admin(commands.Cog):
             )
         else:
             pull = os.system("poetry install")
-            for extension in [
-                f.replace(".py", "")
-                for f in os.listdir("cogs")
-                if os.path.isfile(os.path.join("cogs", f))
-            ]:
-                try:
-                    self.bot.reload_extension("cogs." + extension)
-                except Exception as e:
-                    if (
-                        e
-                        == f"ExtensionNotLoaded: Extension 'cogs.{extension}' has not been loaded."
-                    ):
-                        self.bot.load_extension("cogs." + extension)
-                    else:
-                        await ctx.send(
-                            embed=discord.Embed(
-                                title="```{}: {}\n```".format(type(e).__name__, str(e)),
-                                color=discord.Color.blurple(),
-                            )
-                        )
+
+            msg = copy.copy(ctx.message)
+            msg.content = f"{ctx.prefix}restart"
+
+            new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+
+            new_ctx._state = PerformanceMocker()
+            new_ctx.channel = PerformanceMocker()
+
+            await new_ctx.command.invoke(new_ctx)
+
             await ctx.send(
                 embed=discord.Embed(
                     title="Pulled latests commits and restarted.",
@@ -400,7 +391,7 @@ class admin(commands.Cog):
         extension: str
             The extension to load.
         """
-        extension = "cogs." + extension
+        extension = f"cogs.{extension}"
         try:
             self.bot.load_extension(extension)
         except (AttributeError, ImportError) as e:
@@ -425,7 +416,7 @@ class admin(commands.Cog):
         extension: str
             The extension to unload.
         """
-        extension = "cogs." + extension
+        extension = f"cogs.{extension}"
         self.bot.unload_extension(extension)
         await ctx.send(
             embed=discord.Embed(
@@ -441,7 +432,7 @@ class admin(commands.Cog):
         extension: str
             The extension to reload.
         """
-        extension = "cogs." + extension
+        extension = f"cogs.{extension}"
         self.bot.reload_extension(extension)
         await ctx.send(
             embed=discord.Embed(
@@ -459,13 +450,13 @@ class admin(commands.Cog):
             if os.path.isfile(os.path.join("cogs", f))
         ]:
             try:
-                self.bot.reload_extension("cogs." + extension)
+                self.bot.reload_extension(f"cogs.{extension}")
             except Exception as e:
                 if (
                     e
                     == f"ExtensionNotLoaded: Extension 'cogs.{extension}' has not been loaded."
                 ):
-                    self.bot.load_extension("cogs." + extension)
+                    self.bot.load_extension(f"cogs.{extension}")
                 else:
                     await ctx.send(
                         embed=discord.Embed(
