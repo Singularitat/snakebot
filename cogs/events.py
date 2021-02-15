@@ -62,7 +62,7 @@ class events(commands.Cog):
         if not message.content or message.content.startswith(
             f"{self.bot.command_prefix}issue"
         ):
-            return
+            pass
         else:
             self.bot.snipe_message = (message.content, message.author.name)
             if "@everyone" in message.content or "@here" in message.content:
