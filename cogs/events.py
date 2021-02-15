@@ -62,8 +62,9 @@ class events(commands.Cog):
         if not message.content or message.content.startswith(
             f"{self.bot.command_prefix}issue"
         ):
-            pass
+            return
         else:
+            self.bot.snipe_message = (message.content, message.author.name)
             if "@everyone" in message.content or "@here" in message.content:
                 timesince = (
                     datetime.datetime.utcfromtimestamp(time.time()) - message.created_at

@@ -22,6 +22,12 @@ class useful(commands.Cog):
         self.process = psutil.Process()
 
     @commands.command()
+    async def snipe(self, ctx):
+        """Snipes the last deleted message."""
+        message, member = self.bot.snipe_message
+        await ctx.send(f"```{member} deleted:\n{message}```")
+
+    @commands.command()
     async def argument(self, ctx, arg, *, obj):
         """Converts arguments to a chosen discord object.
 
