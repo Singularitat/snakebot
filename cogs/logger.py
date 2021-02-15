@@ -30,7 +30,7 @@ class RemoveNoise(logging.Filter):
         super().__init__(name="discord.state")
 
     @staticmethod
-    def filter(self, record):
+    def filter(record):
         if record.levelname == "WARNING" and "referencing an unknown" in record.msg:
             return False
         return True
