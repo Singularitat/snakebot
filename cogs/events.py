@@ -173,17 +173,19 @@ class events(commands.Cog):
         if isinstance(error, discord.Forbidden):
             message = "I do not have the required permissions to run this command."
 
-        elif isinstance(error, commands.errors.ChannelNotFound):
-            message = "Channel not found"
+        elif isinstance(error, commands.BadArgument):
+            ctx.command.reset_cooldown(ctx)
+            message = f"{error}\n\nUsage:\n```{ctx.prefix}{ctx.command} {ctx.command.signature}```"
+
+        elif isinstance(error, commands.errors.MissingRequiredArgument):
+            ctx.command.reset_cooldown(ctx)
+            message = f"Missing parameter: {error.param}"
 
         elif isinstance(error, commands.errors.MissingAnyRole):
             message = f"You are missing required roles: {error.missing_roles}"
 
         elif isinstance(error, commands.errors.MissingPermissions):
             message = f"You are missing required permissions: {error.missing_perms}"
-
-        elif isinstance(error, commands.errors.MissingRequiredArgument):
-            message = f"Missing parameter: {error.param}"
 
         elif isinstance(error, commands.errors.ExtensionAlreadyLoaded):
             message = f"{error.name} is already loaded"
