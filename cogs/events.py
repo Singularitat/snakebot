@@ -48,7 +48,7 @@ class events(commands.Cog):
                     try:
                         channel = discord.utils.get(after.guild.channels, name="logs")
                         await channel.send(
-                            f"```{before.author} editted:\n{before.content} >>> {after.content}```"
+                            f"{before.author} editted:\n{before.content} >>> {after.content}"
                         )
                     except commands.errors.ChannelNotFound:
                         pass
@@ -88,7 +88,7 @@ class events(commands.Cog):
             try:
                 channel = discord.utils.get(message.guild.channels, name="logs")
                 await channel.send(
-                    f"```{message.author} deleted:\n{message.content.replace('`', '')}```"
+                    f"{message.author} deleted:\n{message.content.replace('`', '')}"
                 )
             except commands.errors.ChannelNotFound:
                 pass
@@ -170,53 +170,40 @@ class events(commands.Cog):
         if isinstance(error, ignored):
             return
 
-        if hasattr(error, "param"):
-            parameter = str(error.param).split(":")[0]
-        else:
-            parameter = ""
+        if isinstance(error, discord.Forbidden):
+            message = "I do not have the required permissions to run this command."
 
-        if hasattr(error, "name"):
-            name = error.name
-        else:
-            name = None
+        elif isinstance(error, commands.errors.ChannelNotFound):
+            message = "Channel not found"
 
-        if hasattr(error, "missing_roles"):
-            roles = error.missing_roles
-        else:
-            roles = None
+        elif isinstance(error, commands.errors.MissingAnyRole):
+            message = f"You are missing required roles: {error.missing_roles}"
 
-        if hasattr(error, "missing_perms"):
-            permissions = error.missing_perms
-        else:
-            permissions = None
+        elif isinstance(error, commands.errors.MissingPermissions):
+            message = f"You are missing required permissions: {error.missing_perms}"
 
-        handler = {
-            discord.Forbidden: "```I do not have the required permissions to run this command.```",
-            commands.errors.ChannelNotFound: "```Could not find channel```",
-            commands.errors.MemberNotFound: "```Could not find member```",
-            commands.errors.UserNotFound: "```Could not find user```",
-            commands.errors.DisabledCommand: "```This command has been disabled.```",
-            commands.errors.NoPrivateMessage: "```This command cannot be used in private messages.```",
-            commands.errors.CheckFailure: "```You aren't allowed to use this command!```",
-            commands.errors.MissingAnyRole: f"```You are missing required roles: {roles}```",
-            commands.errors.MissingPermissions: f"```You are missing required permissions: {permissions}```",
-            commands.errors.MemberNotFound: f"```{error}```",
-            commands.errors.CommandOnCooldown: f"```{error}```",
-            commands.errors.BadArgument: f"```{error}```",
-            commands.errors.MissingRequiredArgument: f"```Missing parameter: {parameter}```",
-            commands.errors.ExtensionAlreadyLoaded: f"```{name} is already loaded```",
-            commands.errors.ExtensionNotFound: f"```{name} was not found```",
-            commands.errors.ExtensionNotLoaded: f"```{name} failed to load```",
-            commands.errors.BotMissingAnyRole: f"```{self.bot.user.name} is missing required roles: {roles}```",
-            commands.errors.BotMissingPermissions: f"```{self.bot.user.name} is missing required permissions: {permissions}```",
-        }
+        elif isinstance(error, commands.errors.MissingRequiredArgument):
+            message = f"Missing parameter: {error.param}"
 
-        try:
-            message = handler[type(error)]
-        except KeyError:
-            await ctx.send(f"{error} {type(error)}")
+        elif isinstance(error, commands.errors.ExtensionAlreadyLoaded):
+            message = f"{error.name} is already loaded"
+
+        elif isinstance(error, commands.errors.ExtensionNotFound):
+            message = f"{error.name} was not found"
+
+        elif isinstance(error, commands.errors.ExtensionNotLoaded):
+            message = f"{error.name} failed to load"
+
+        elif isinstance(error, commands.errors.BotMissingAnyRole):
+            message = f"{self.bot.user.name} is missing required roles: {error.missing_roles}"
+
+        elif isinstance(error, commands.errors.BotMissingPermissions):
+            message = f"{self.bot.user.name} is missing required permissions: {error.missing_perms}"
+
         else:
-            await ctx.send(message)
+            message = error
+
+        await ctx.send(f"```{message}```")
 
     @commands.Cog.listener()
     async def on_ready(self):
