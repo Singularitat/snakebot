@@ -217,16 +217,12 @@ class admin(commands.Cog):
             )
         else:
             pull = os.system("poetry install")
+            await self.bot.logout()
 
-            msg = copy.copy(ctx.message)
-            msg.content = f"{ctx.prefix}restart"
-
-            new_ctx = await self.bot.get_context(msg, cls=type(ctx))
-
-            new_ctx._state = PerformanceMocker()
-            new_ctx.channel = PerformanceMocker()
-
-            await new_ctx.command.invoke(new_ctx)
+            if os.name == "nt":
+                os.system("python ./bot.py")
+            else:
+                os.system("nohup python3 bot.py &")
 
             await ctx.send(
                 embed=discord.Embed(
@@ -475,8 +471,10 @@ class admin(commands.Cog):
     async def revive(self, ctx):
         """Kills the bot then revives it."""
         await self.bot.logout()
-        # Add a check for if its linux or windows
-        os.system("python ./bot.py")
+        if os.name == "nt":
+            os.system("python ./bot.py")
+        else:
+            os.system("nohup python3 bot.py &")
 
 
 def setup(bot: commands.Bot) -> None:
