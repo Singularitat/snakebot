@@ -371,6 +371,7 @@ class admin(commands.Cog):
 
     @commands.command(aliases=["clear, clean"])
     @commands.has_permissions(manage_messages=True)
+    @commands.guild_only()
     async def purge(self, ctx, num: int = 20):
         """Purges messages.
 
@@ -378,6 +379,30 @@ class admin(commands.Cog):
             The number of messages to delete defaults to 20.
         """
         await ctx.channel.purge(limit=num + 1)
+
+    @commands.command(name="purge_till", hidden=True, aliases=["purget", "purgetill"])
+    @commands.has_permissions(manage_messages=True)
+    @commands.guild_only()
+    async def purge_till(self, ctx, message_id: int):
+        """Clear messages in a channel until the given message_id. Given ID is not deleted."""
+        try:
+            message = await ctx.fetch_message(message_id)
+        except discord.errors.NotFound:
+            await ctx.send("```Message could not be found in this channel```")
+            return
+
+        await ctx.channel.purge(after=message)
+
+    @commands.command(name="purge_user", hidden=True, aliases=["purgeu", "purgeuser"])
+    @commands.has_permissions(manage_messages=True)
+    @commands.guild_only()
+    async def purge_user(self, ctx, user: discord.User, num_messages: int = 100):
+        """Clear all messagges of <User> withing the last [n=100] messages."""
+
+        def check(msg):
+            return msg.author.id == user.id
+
+        await ctx.channel.purge(limit=num_messages, check=check, before=None)
 
     @commands.command(hidden=True)
     @commands.is_owner()
