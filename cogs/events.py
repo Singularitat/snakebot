@@ -197,7 +197,9 @@ class events(commands.Cog):
             message = f"{error.name} failed to load"
 
         elif isinstance(error, commands.errors.BotMissingAnyRole):
-            message = f"{self.bot.user.name} is missing required roles: {error.missing_roles}"
+            message = (
+                f"{self.bot.user.name} is missing required roles: {error.missing_roles}"
+            )
 
         elif isinstance(error, commands.errors.BotMissingPermissions):
             message = f"{self.bot.user.name} is missing required permissions: {error.missing_perms}"

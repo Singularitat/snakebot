@@ -231,24 +231,6 @@ class admin(commands.Cog):
                 )
             )
 
-    @commands.command(hidden=True)
-    @commands.has_permissions(administrator=True)
-    async def downvote(self, ctx, member: discord.Member):
-        """Automatically downvotes someone.
-
-        member: discord.Member
-            The downvoted member.
-        """
-        with open("json/real.json") as file:
-            data = ujson.load(file)
-        if member.id in data["downvote"]:
-            data["downvote"].remove(member.id)
-        else:
-            await member.edit(voice_channel=None)
-            data["downvote"].append(member.id)
-        with open("json/real.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
-
     @commands.command(name="ban", aliases=["unban"])
     @commands.has_permissions(ban_members=True)
     async def ban_member(self, ctx, *, member: discord.Member):
@@ -323,6 +305,41 @@ class admin(commands.Cog):
         """
         self.bot.remove_command(command)
         await ctx.send(embed=discord.Embed(title=f"Removed command {command}"))
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def downvote(self, ctx, member: discord.Member = None):
+        """Automatically downvotes someone.
+
+        member: discord.Member
+            The downvoted member.
+        """
+        with open("json/real.json") as file:
+            data = ujson.load(file)
+        if member is None:
+            embed = discord.Embed(
+                title="Downvoted users", colour=discord.Color.blue()
+            )
+            for num in range(len(data["downvote"])):
+                embed.add_field(name="User:", value=data["downvote"][num], inline=True)
+        else:
+            if member.id in data["downvote"]:
+                data["downvote"].remove(member.id)
+                embed = discord.Embed(
+                    title="User Undownvoted",
+                    description=f"***{member}*** has been removed from the downvote list",
+                    color=discord.Color.blue(),
+                )
+            else:
+                data["downvote"].append(member.id)
+                embed = discord.Embed(
+                    title="User Downvoted",
+                    description=f"**{member}** has been added to the downvote list",
+                    color=discord.Color.blue(),
+                )
+            with open("json/real.json", "w") as file:
+                data = ujson.dump(data, file, indent=2)
+        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.has_permissions(administrator=True)
