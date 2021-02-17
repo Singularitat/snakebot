@@ -412,6 +412,92 @@ class useful(commands.Cog):
                 "Not a valid country e.g NZ, New Zealand, US, USA, Canada, all"
             )
 
+    @commands.command(name="github", aliases=["gh"])
+    @commands.cooldown(1, 60, commands.BucketType.member)
+    async def get_github_info(self, ctx: commands.Context, username: str) -> None:
+        """Fetches a members's GitHub information."""
+
+        async with ctx.typing():
+            async with aiohttp.ClientSession() as session:
+                raw_response = await session.get(f"https://api.github.com/users/{username}")
+                response = await raw_response.text()
+                user_data = ujson.loads(response)
+
+            if user_data.get("message") is not None:
+                await ctx.send(
+                    embed=discord.Embed(
+                        title=f"The profile for `{username}` was not found.",
+                        colour=discord.Colour.red(),
+                    )
+                )
+                return
+
+            async with aiohttp.ClientSession() as session:
+                raw_response = await session.get(user_data["organizations_url"])
+                response = await raw_response.text()
+                org_data = ujson.loads(response)
+
+            orgs = [
+                f"[{org['login']}](https://github.com/{org['login']})"
+                for org in org_data
+            ]
+            orgs_to_add = " | ".join(orgs)
+
+            gists = user_data["public_gists"]
+
+            if user_data["blog"].startswith("http"):
+                blog = user_data["blog"]
+            elif user_data["blog"]:
+                blog = f"https://{user_data['blog']}"
+            else:
+                blog = "No website link available"
+
+            embed = discord.Embed(
+                title=f"`{user_data['login']}`'s GitHub profile info",
+                description=f"```{user_data['bio']}```\n"
+                if user_data["bio"] is not None
+                else "",
+                colour=0x7289DA,
+                url=user_data["html_url"],
+                timestamp=datetime.datetime.strptime(
+                    user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"
+                ),
+            )
+            embed.set_thumbnail(url=user_data["avatar_url"])
+            embed.set_footer(text="Account created at")
+
+            if user_data["type"] == "User":
+
+                embed.add_field(
+                    name="Followers",
+                    value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)",
+                )
+                embed.add_field(name="\u200b", value="\u200b")
+                embed.add_field(
+                    name="Following",
+                    value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)",
+                )
+
+            embed.add_field(
+                name="Public repos",
+                value=f"[{user_data['public_repos']}]({user_data['html_url']}?tab=repositories)",
+            )
+            embed.add_field(name="\u200b", value="\u200b")
+
+            if user_data["type"] == "User":
+                embed.add_field(
+                    name="Gists", value=f"[{gists}](https://gist.github.com/{username})"
+                )
+
+                embed.add_field(
+                    name=f"Organization{'s' if len(orgs)!=1 else ''}",
+                    value=orgs_to_add if orgs else "No organizations",
+                )
+                embed.add_field(name="\u200b", value="\u200b")
+            embed.add_field(name="Website", value=blog)
+
+        await ctx.send(embed=embed)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts useful cog."""
