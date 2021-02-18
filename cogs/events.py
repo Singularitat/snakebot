@@ -38,19 +38,20 @@ class events(commands.Cog):
         after: discord.Message
             The new message.
         """
-        if not after.content or before == after:
-            pass
+        if not after.content or before.content == after.content:
+            return
         else:
             if after.author != self.bot.user:
+                self.bot.editsnipe_message = (before.content, after.content, after.author.name)
                 if after.content.startswith("https"):
                     pass
                 else:
                     try:
                         channel = discord.utils.get(after.guild.channels, name="logs")
                         await channel.send(
-                            f"{before.author} editted:\n{before.content} >>> {after.content}"
+                            f"{before.author} edited:\n{before.content} >>> {after.content}"
                         )
-                    except commands.errors.ChannelNotFound:
+                    except AttributeError:
                         pass
 
     @commands.Cog.listener()
@@ -175,7 +176,7 @@ class events(commands.Cog):
 
         elif isinstance(error, commands.BadArgument):
             ctx.command.reset_cooldown(ctx)
-            message = f"{error}\n\nUsage:\n```{ctx.prefix}{ctx.command} {ctx.command.signature}```"
+            message = f"{error}\n\nUsage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}"
 
         elif isinstance(error, commands.errors.MissingRequiredArgument):
             ctx.command.reset_cooldown(ctx)
