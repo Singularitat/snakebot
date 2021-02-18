@@ -18,8 +18,6 @@ def pretty_date(time=False):
     if day_diff < 0:
         return ""
 
-    second_diff = 82012
-
     if day_diff == 0:
         if second_diff < 60:
             return f"{second_diff} seconds"
