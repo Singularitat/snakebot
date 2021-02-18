@@ -156,34 +156,34 @@ class information(commands.Cog):
         embed.colour = member.top_role.colour if roles else discord.Colour.blurple()
         return embed
 
-        @commands.command()
-        async def source(self, ctx, *, command: str = None):
-            """Gets the source code of a command from github.
+    @commands.command()
+    async def source(self, ctx, *, command: str = None):
+        """Gets the source code of a command from github.
 
-            command: str
-                The command to find the source code of.
-            """
-            if command is None:
-                return await ctx.send("https://github.com/Singularitat/snakebot")
+        command: str
+            The command to find the source code of.
+        """
+        if command is None:
+            return await ctx.send("https://github.com/Singularitat/snakebot")
 
-            if command == "help":
-                src = type(self.bot.help_command)
-                filename = inspect.getsourcefile(src)
-            else:
-                obj = self.bot.get_command(command.replace(".", " "))
-                if obj is None:
-                    return await ctx.send("Could not find command.")
+        if command == "help":
+            src = type(self.bot.help_command)
+            filename = inspect.getsourcefile(src)
+        else:
+            obj = self.bot.get_command(command.replace(".", " "))
+            if obj is None:
+                return await ctx.send("Could not find command.")
 
-                src = obj.callback.__code__
-                filename = src.co_filename
+            src = obj.callback.__code__
+            filename = src.co_filename
 
-            lines, lineno = inspect.getsourcelines(src)
-            cog = os.path.relpath(filename).replace("\\", "/")
+        lines, lineno = inspect.getsourcelines(src)
+        cog = os.path.relpath(filename).replace("\\", "/")
 
-            final_url = f"<https://github.com/Singularitat/snakebot/blob/main/{cog}#L{lineno}-L{lineno + len(lines) - 1}>"
-            if len(f'```py\n{"".join(lines)}```') <= 2000:
-                await ctx.send(f'```py\n{("".join(lines)).replace("`", "")}```')
-            await ctx.send(final_url)
+        final_url = f"<https://github.com/Singularitat/snakebot/blob/main/{cog}#L{lineno}-L{lineno + len(lines) - 1}>"
+        if len(f'```py\n{"".join(lines)}```') <= 2000:
+            await ctx.send(f'```py\n{("".join(lines)).replace("`", "")}```')
+        await ctx.send(final_url)
 
 
 def setup(bot: commands.Bot) -> None:
