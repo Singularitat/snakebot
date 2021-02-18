@@ -144,7 +144,7 @@ class admin(commands.Cog):
         start = time.perf_counter()
         try:
             await new_ctx.command.invoke(new_ctx)
-            ctx.command.reset_cooldown(new_ctx)
+            new_ctx.command.reset_cooldown(new_ctx)
         except commands.CommandError:
             end = time.perf_counter()
             success = ":negative_squared_cross_mark:"
