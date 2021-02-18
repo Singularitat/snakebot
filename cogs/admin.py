@@ -218,19 +218,20 @@ class admin(commands.Cog):
             )
         else:
             pull = os.system("poetry install")
+
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Pulled latests commits, now restarting.",
+                    color=discord.Color.blurple(),
+                )
+            )
+
             await self.bot.logout()
 
             if os.name == "nt":
                 os.system("python ./bot.py")
             else:
                 os.system("nohup python3 bot.py &")
-
-            await ctx.send(
-                embed=discord.Embed(
-                    title="Pulled latests commits and restarted.",
-                    color=discord.Color.blurple(),
-                )
-            )
 
     @commands.command(name="ban", aliases=["unban"])
     @commands.has_permissions(ban_members=True)
@@ -513,6 +514,12 @@ class admin(commands.Cog):
     @commands.is_owner()
     async def revive(self, ctx):
         """Kills the bot then revives it."""
+        await ctx.send(
+            embed=discord.Embed(
+                title="Killing bot.",
+                color=discord.Color.blurple(),
+            )
+        )
         await self.bot.logout()
         if os.name == "nt":
             os.system("python ./bot.py")
