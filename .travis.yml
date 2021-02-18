@@ -1,4 +1,5 @@
 name: Nuitka tests
+language: python
 
 on:
   pull_request: {}
