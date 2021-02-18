@@ -139,11 +139,12 @@ class admin(commands.Cog):
         new_ctx.channel = PerformanceMocker()
 
         if new_ctx.command is None:
-            return await ctx.send("No command found")
+            return await ctx.send("```No command found```")
 
         start = time.perf_counter()
         try:
             await new_ctx.command.invoke(new_ctx)
+            ctx.command.reset_cooldown(new_ctx)
         except commands.CommandError:
             end = time.perf_counter()
             success = ":negative_squared_cross_mark:"
