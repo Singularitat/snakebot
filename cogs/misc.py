@@ -162,6 +162,30 @@ class misc(commands.Cog):
             f"{ctx.message.author.mention} slapped {member} because {reason}"
         )
 
+    @commands.command()
+    async def bar(self, ctx, graph_data: commands.Greedy[int] = None):
+        """Sends a bar graph based of inputted numbers.
+
+        e.g: bar 1 2 3
+
+        graph_data: commands.Greedy[int]
+            A list of graph_data
+        """
+        max_val = max(graph_data)
+        bar_graph = ""
+
+        for val in range(max_val+1, 0, -1):
+            for index in range(len(graph_data)):
+                if graph_data[index] - val > -1:
+                    bar_graph += "|    |"
+                elif graph_data[index] - val == -1:
+                    bar_graph += " ____ "
+                else:
+                    bar_graph += "      "
+            bar_graph += "\n"
+        bar_graph += "------"*len(graph_data)
+        await ctx.send(f"```{bar_graph}```")
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts misc cog."""
