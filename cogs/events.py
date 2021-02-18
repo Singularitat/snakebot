@@ -40,19 +40,19 @@ class events(commands.Cog):
         """
         if not after.content or before.content == after.content:
             return
-        else:
-            if after.author != self.bot.user:
-                self.bot.editsnipe_message = (before.content, after.content, after.author.name)
-                if after.content.startswith("https"):
+
+        if after.author != self.bot.user:
+            self.bot.editsnipe_message = (before.content, after.content, after.author.name)
+            if after.content.startswith("https"):
+                pass
+            else:
+                try:
+                    channel = discord.utils.get(after.guild.channels, name="logs")
+                    await channel.send(
+                        f"{before.author} edited:\n{before.content} >>> {after.content}"
+                    )
+                except AttributeError:
                     pass
-                else:
-                    try:
-                        channel = discord.utils.get(after.guild.channels, name="logs")
-                        await channel.send(
-                            f"{before.author} edited:\n{before.content} >>> {after.content}"
-                        )
-                    except AttributeError:
-                        pass
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -63,36 +63,36 @@ class events(commands.Cog):
         if not message.content or message.content.startswith(
             f"{self.bot.command_prefix}issue"
         ):
+            return
+
+        self.bot.snipe_message = (message.content, message.author.name)
+        if "@everyone" in message.content or "@here" in message.content:
+            timesince = (
+                datetime.datetime.utcfromtimestamp(time.time()) - message.created_at
+            )
+            if timesince.total_seconds() < 360:
+                general = discord.utils.get(message.guild.channels, name="logs")
+                embed = discord.Embed(colour=discord.Colour.blurple())
+                embed.description = textwrap.dedent(
+                    f"""
+                        **{message.author} has ghosted pinged**
+                        For their crimes they have been downvoted
+                    """
+                )
+                await general.send(embed=embed)
+                with open("json/real.json") as file:
+                    data = ujson.load(file)
+                if message.author.id not in data["downvote"]:
+                    data["downvote"].append(message.author.id)
+                with open("json/real.json", "w") as file:
+                    data = ujson.dump(data, file, indent=2)
+        try:
+            channel = discord.utils.get(message.guild.channels, name="logs")
+            await channel.send(
+                f"{message.author} deleted:\n{message.content.replace('`', '')}"
+            )
+        except commands.errors.ChannelNotFound:
             pass
-        else:
-            self.bot.snipe_message = (message.content, message.author.name)
-            if "@everyone" in message.content or "@here" in message.content:
-                timesince = (
-                    datetime.datetime.utcfromtimestamp(time.time()) - message.created_at
-                )
-                if timesince.total_seconds() < 360:
-                    general = discord.utils.get(message.guild.channels, name="logs")
-                    embed = discord.Embed(colour=discord.Colour.blurple())
-                    embed.description = textwrap.dedent(
-                        f"""
-                            **{message.author} has ghosted pinged**
-                            For their crimes they have been downvoted
-                        """
-                    )
-                    await general.send(embed=embed)
-                    with open("json/real.json") as file:
-                        data = ujson.load(file)
-                    if message.author.id not in data["downvote"]:
-                        data["downvote"].append(message.author.id)
-                    with open("json/real.json", "w") as file:
-                        data = ujson.dump(data, file, indent=2)
-            try:
-                channel = discord.utils.get(message.guild.channels, name="logs")
-                await channel.send(
-                    f"{message.author} deleted:\n{message.content.replace('`', '')}"
-                )
-            except commands.errors.ChannelNotFound:
-                pass
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
