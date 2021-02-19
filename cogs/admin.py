@@ -319,9 +319,7 @@ class admin(commands.Cog):
         with open("json/real.json") as file:
             data = ujson.load(file)
         if member is None:
-            embed = discord.Embed(
-                title="Downvoted users", colour=discord.Color.blue()
-            )
+            embed = discord.Embed(title="Downvoted users", colour=discord.Color.blue())
             for num in range(len(data["downvote"])):
                 embed.add_field(name="User:", value=data["downvote"][num], inline=True)
         else:

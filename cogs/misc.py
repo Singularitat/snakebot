@@ -174,7 +174,7 @@ class misc(commands.Cog):
         max_val = max(graph_data)
         bar_graph = ""
 
-        for val in range(max_val+1, 0, -1):
+        for val in range(max_val + 1, 0, -1):
             for index in range(len(graph_data)):
                 if graph_data[index] - val > -1:
                     bar_graph += "|    |"
@@ -183,7 +183,7 @@ class misc(commands.Cog):
                 else:
                     bar_graph += "      "
             bar_graph += "\n"
-        bar_graph += "------"*len(graph_data)
+        bar_graph += "------" * len(graph_data)
         await ctx.send(f"```{bar_graph}```")
 
 

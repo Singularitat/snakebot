@@ -42,7 +42,11 @@ class events(commands.Cog):
             return
 
         if after.author != self.bot.user:
-            self.bot.editsnipe_message = (before.content, after.content, after.author.name)
+            self.bot.editsnipe_message = (
+                before.content,
+                after.content,
+                after.author.name,
+            )
             if after.content.startswith("https"):
                 pass
             else:
@@ -126,8 +130,10 @@ class events(commands.Cog):
         """
         if reaction.message.author == user:
             return
-        time = (datetime.datetime.now()-reaction.message.created_at).total_seconds()-46800
-        if time < 1800:
+        time_since = (
+            datetime.datetime.now() - reaction.message.created_at
+        ).total_seconds() - 46800
+        if time_since < 1800:
             return
         if reaction.custom_emoji:
             with open("json/real.json") as file:
@@ -171,7 +177,9 @@ class events(commands.Cog):
 
         elif isinstance(error, commands.BadArgument):
             ctx.command.reset_cooldown(ctx)
-            message = f"{error}\n\nUsage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}"
+            message = (
+                f"{error}\n\nUsage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}"
+            )
 
         elif isinstance(error, commands.errors.MissingRequiredArgument):
             ctx.command.reset_cooldown(ctx)

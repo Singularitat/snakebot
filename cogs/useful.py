@@ -373,7 +373,9 @@ class useful(commands.Cog):
         """Fetches a members's GitHub information."""
         async with ctx.typing():
             async with aiohttp.ClientSession() as session:
-                raw_response = await session.get(f"https://api.github.com/users/{username}")
+                raw_response = await session.get(
+                    f"https://api.github.com/users/{username}"
+                )
                 response = await raw_response.text()
                 user_data = ujson.loads(response)
 
