@@ -95,38 +95,6 @@ class events(commands.Cog):
             pass
 
     @commands.Cog.listener()
-    async def on_member_update(self, before, after):
-        """Updates a members stored information.
-
-        before: discord.Member
-            The updated member's old info.
-        after: discord.Member
-            The updated member's new info.
-        """
-        with open("json/real.json") as file:
-            data = ujson.load(file)
-        data["notevil"][str(after.id)] = []
-        for role in after.roles:
-            if str(role.name) != "@everyone" and role < after.guild.me.top_role:
-                data["notevil"][str(after.id)].append(str(role.name))
-        with open("json/real.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
-
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
-        """Adds back someones roles if they have joined server before.
-
-        member: discord.Member
-        """
-        with open("json/real.json") as file:
-            data = ujson.load(file)
-        if member in data["notevil"]:
-            try:
-                member.add_roles(data["notevil"][str(member.id)])
-            except commands.errors.RoleNotFound:
-                pass
-
-    @commands.Cog.listener()
     async def on_message(self, message):
         """Sends and error message if someone blacklisted sends a command.
 
@@ -139,7 +107,7 @@ class events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_clear(self, message, reactions):
-        """The event triggered when the reactions on a message are cleared.
+        """The event called when the reactions on a message are cleared.
 
         message: discord.Message
         reactions: List[discord.Reaction]
@@ -148,6 +116,33 @@ class events(commands.Cog):
             data = ujson.load(file)
         if message.author.id in data["downvote"]:
             await message.add_reaction("<:downvote:766414744730206228>")
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        """The event called when a reaction is added to a message in the bots cache.
+
+        reaction: discord.Reaction
+        user: Union[discord.User, discord.Member]
+        """
+        if reaction.message.author == user:
+            return
+        time = (datetime.datetime.now()-reaction.message.created_at).total_seconds()-46800
+        if time < 1800:
+            return
+        if reaction.custom_emoji:
+            with open("json/real.json") as file:
+                data = ujson.load(file)
+            member = str(reaction.message.author.id)
+            if reaction.emoji.name == "downvote":
+                if member not in data["karma"]:
+                    data["karma"][member] = 0
+                data["karma"][member] -= 1
+            elif reaction.emoji.name == "upvote":
+                if member not in data["karma"]:
+                    data["karma"][member] = 0
+                data["karma"][member] += 1
+            with open("json/real.json", "w") as file:
+                data = ujson.dump(data, file, indent=2)
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -237,21 +232,6 @@ Boot time: {round(time.time()-psutil.Process(os.getpid()).create_time(), 3)}s
             ctx.author.id not in data["blacklist"]
             and ctx.author.id not in data["downvote"]
         )
-
-    @commands.Cog.listener()
-    async def on_guild_role_delete(self, role):
-        """Updates member data as a role has been deleted.
-
-        role: discord.Role
-            The deleted role.
-        """
-        with open("json/real.json") as file:
-            data = ujson.load(file)
-        for member in data["notevil"]:
-            if role in data["notevil"][member]:
-                data["notevil"][member].remove(role)
-        with open("json/real.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
 
     @commands.Cog.listener()
     async def on_command(self, ctx):
