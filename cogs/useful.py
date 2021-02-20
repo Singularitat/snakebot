@@ -18,6 +18,24 @@ class useful(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    async def time(self, ctx, *, command):
+        """Runs a command whilst timing it.
+
+        command: str
+            The command to run including arguments.
+        """
+        ctx.content = f"{ctx.prefix}{command}"
+
+        ctx = await self.bot.get_context(ctx, cls=type(ctx))
+
+        if ctx.command is None:
+            return await ctx.send("```No command found```")
+
+        start = time.time()
+        await ctx.command.invoke(ctx)
+        await ctx.send(f"`Time: {(time.time() - start) * 1000:.2f}ms`")
+
+    @commands.command()
     async def snipe(self, ctx):
         """Snipes the last deleted message."""
         try:
@@ -35,8 +53,8 @@ class useful(commands.Cog):
         except AttributeError:
             await ctx.send("```No edited messages found```")
 
-    @commands.command()
-    async def argument(self, ctx, arg, *, obj):
+    @commands.command(aliases=["arg"])
+    async def argument(self, ctx, arg, obj, subarg=None):
         """Converts arguments to a chosen discord object.
 
         arg: str
@@ -49,19 +67,28 @@ class useful(commands.Cog):
             "member": commands.MemberConverter(),
             "user": commands.UserConverter(),
             "message": commands.MessageConverter(),
-            "textchannel": commands.TextChannelConverter(),
-            "voicechannel": commands.VoiceChannelConverter(),
-            "categorychannel": commands.CategoryChannelConverter(),
+            "text": commands.TextChannelConverter(),
+            "voice": commands.VoiceChannelConverter(),
+            "category": commands.CategoryChannelConverter(),
             "invite": commands.InviteConverter(),
             "role": commands.RoleConverter(),
             "game": commands.GameConverter(),
-            "color": commands.ColourConverter(),
+            "colour": commands.ColourConverter(),
+            "color": commands.ColorConverter(),
             "emoji": commands.EmojiConverter(),
-            "partialemoji": commands.PartialEmojiConverter(),
+            "partial": commands.PartialEmojiConverter(),
         }
         if obj in objects:
-            obj = await objects[obj].convert(ctx, arg)
-            await ctx.send(dir(obj))
+            try:
+                obj = await objects[obj].convert(ctx, arg)
+            except commands.BadArgument:
+                await ctx.send("```Conversion failed, P.S. doesn't work for default discord emojis```")
+            else:
+                if subarg:
+                    attr = getattr(obj, subarg)
+                    await ctx.send(f"```{attr}\n\n{dir(attr)}```")
+                else:
+                    await ctx.send(f"```{obj}\n\n{dir(obj)}```")
         else:
             await ctx.send("```Could not find object```")
 

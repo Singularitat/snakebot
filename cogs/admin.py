@@ -127,7 +127,7 @@ class admin(commands.Cog):
         """Checks the timing of a command, while attempting to suppress HTTP calls.
 
         command: str
-            The name of the command.
+            The command to run including arguments.
         """
         msg = copy.copy(ctx.message)
         msg.content = f"{ctx.prefix}{command}"
@@ -222,7 +222,7 @@ class admin(commands.Cog):
 
             await ctx.send(
                 embed=discord.Embed(
-                    title="Pulled latests commits, now restarting.",
+                    title="Pulled latests commits, restarting.",
                     color=discord.Color.blurple(),
                 )
             )
