@@ -208,6 +208,7 @@ class admin(commands.Cog):
     @commands.is_owner()
     async def update(self, ctx):
         """Gets latest commits and applies them through git."""
+        os.system("git stash")
         pull = os.popen("git pull").read()
 
         if pull == "Already up to date.\n":
@@ -217,7 +218,7 @@ class admin(commands.Cog):
                 )
             )
         else:
-            pull = os.system("poetry install")
+            os.system("poetry install")
 
             await ctx.send(
                 embed=discord.Embed(
