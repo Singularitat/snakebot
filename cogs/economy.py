@@ -124,7 +124,7 @@ class economy(commands.Cog):
                 if a == b == c == d:
                     winnings = 100
                 elif (a == b == c) or (a == c == d) or (a == b == d) or (b == c == d):
-                    winnings = 15
+                    winnings = 10
                 elif (
                     (a == b)
                     and (d == c)
@@ -133,11 +133,11 @@ class economy(commands.Cog):
                     or (d == b)
                     and (a == c)
                 ):
-                    winnings = 20
+                    winnings = 15
                 elif (
                     (a == b) or (a == c) or (b == c) or (d == c) or (d == b) or (d == a)
                 ):
-                    winnings = 1.5
+                    winnings = 1
                 else:
                     winnings = -1
                     result = "lost"
@@ -323,7 +323,7 @@ class economy(commands.Cog):
                     lose = 0
                     highestwin = max(highestwin, win)
             total = (
-                ((quad * 100) + (triple * 15) + (dd * 20) + (double * 1.5) - (none))
+                ((quad * 100) + (triple * 10) + (dd * 15) + (double * 1) - (none))
                 * (1 / amount)
             ) * 100
             embed = discord.Embed(
@@ -373,7 +373,7 @@ class economy(commands.Cog):
     async def balance(self, ctx, members: commands.Greedy[discord.Member] = None):
         """Gets a members balance.
 
-        member: commands.Greedy[discord.Member]
+        members: commands.Greedy[discord.Member]
             A list of members whos balances will be returned.
         """
         with open("json/economy.json") as file:
@@ -381,7 +381,6 @@ class economy(commands.Cog):
         if not members:
             members = [ctx.author]
         embed = discord.Embed(
-            title=" ",
             color=discord.Color.blue(),
         )
         for member in members:
