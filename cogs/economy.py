@@ -114,7 +114,7 @@ class economy(commands.Cog):
             with open("json/economy.json") as file:
                 data = ujson.load(file)
             user = str(ctx.author.id)
-            if user not in data["money"].keys():
+            if user not in data["money"]:
                 data["money"][user] = 1000
             if data["money"][user] <= 1:
                 data["money"][user] += 1
@@ -149,7 +149,7 @@ class economy(commands.Cog):
                     inline=True,
                 )
                 data["money"][user] = data["money"][user] + bet * winnings
-                if user not in data["wins"].keys():
+                if user not in data["wins"]:
                     data["wins"][user] = {
                         "currentwin": 0,
                         "currentlose": 0,
@@ -386,7 +386,7 @@ class economy(commands.Cog):
         )
         for member in members:
             user = str(member.id)
-            if user not in data["money"].keys():
+            if user not in data["money"]:
                 data["money"][user] = 1000
             embed.add_field(
                 name=f"{member}'s balance: ",
@@ -417,7 +417,7 @@ class economy(commands.Cog):
                     )
                 )
             else:
-                if str(member.id) not in data["money"].keys():
+                if str(member.id) not in data["money"]:
                     data["money"][str(member.id)] = 1000
                 data["money"][user] -= amount
                 data["money"][str(member.id)] += amount
@@ -436,7 +436,7 @@ class economy(commands.Cog):
         with open("json/economy.json") as file:
             data = ujson.load(file)
         user = str(ctx.author.id)
-        if user not in data["money"].keys():
+        if user not in data["money"]:
             data["money"][user] = 1000
         data["money"][user] += 1000
         with open("json/economy.json", "w") as file:
