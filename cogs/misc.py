@@ -14,6 +14,28 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @commands.command()
+    async def karma(self, ctx, member: discord.Member = None):
+        """Gets a members karma.
+
+        member: discord.Member
+            A member whos karma will be returned.
+        """
+        with open("json/real.json") as file:
+            data = ujson.load(file)
+        if not member:
+            member = ctx.author
+        embed = discord.Embed(
+            color=discord.Color.blue(),
+        )
+        embed.add_field(
+            name=f"{member}'s karma: ",
+            value=f"{data['karma'][str(member.id)]}",
+        )
+        await ctx.send(embed=embed)
+        with open("json/real.json", "w") as file:
+            data = ujson.dump(data, file, indent=2)
+
     @commands.command(aliases=["element"])
     async def atom(self, ctx, element):
         """Displays information for a given atom.
