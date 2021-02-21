@@ -53,7 +53,7 @@ class events(commands.Cog):
                 try:
                     channel = discord.utils.get(after.guild.channels, name="logs")
                     await channel.send(
-                        f"{before.author} edited:\n{before.content} >>> {after.content}"
+                        f"```{before.author} edited:\n{before.content} >>> {after.content}```"
                     )
                 except AttributeError:
                     pass
@@ -93,7 +93,7 @@ class events(commands.Cog):
         try:
             channel = discord.utils.get(message.guild.channels, name="logs")
             await channel.send(
-                f"{message.author} deleted:\n{message.content.replace('`', '')}"
+                f"```{message.author} deleted:\n{message.content.replace('`', '')}```"
             )
         except commands.errors.ChannelNotFound:
             pass
