@@ -167,6 +167,7 @@ class admin(commands.Cog):
             The new prefix.
         """
         self.bot.command_prefix = prefix
+        await ctx.send(f"Prefix changed to {prefix}")
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
