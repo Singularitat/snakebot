@@ -120,6 +120,7 @@ class admin(commands.Cog):
             status=discord.Status.online,
             activity=discord.Game(name=presence),
         )
+        await ctx.send(f"Changed presence to {presence}")
 
     @commands.command(hidden=True)
     @commands.is_owner()
