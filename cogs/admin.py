@@ -205,6 +205,7 @@ class admin(commands.Cog):
             await member.remove_roles(role)
         else:
             await member.add_roles(role)
+            await ctx.send(f"Stopped {member}")
 
     @commands.command(hidden=True, aliases=["pull"])
     @commands.is_owner()
