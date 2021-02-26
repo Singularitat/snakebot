@@ -48,6 +48,24 @@ class admin(commands.Cog):
         self.bot = bot
 
     @commands.command(hidden=True)
+    async def edit(self, ctx, message_id, message_content):
+        """Edits one of the bots messages.
+
+        message_id: str
+            The id of the message you want to edit.
+        message_content: str
+            What you want to change the message to.
+        """
+        message = await ctx.fetch_message(message_id)
+        await message.edit(content=message_content)
+        await ctx.send("```Edited message```")
+
+    @edit.error
+    async def edit_handler(self, ctx, error):
+        """Error handler for edit command."""
+        await ctx.send("```I cannot edit this message```")
+
+    @commands.command(hidden=True)
     @commands.guild_only()
     @commands.is_owner()
     async def botpermissions(self, ctx, *, channel: discord.TextChannel = None):
@@ -192,7 +210,7 @@ class admin(commands.Cog):
         new_ctx = await self.bot.get_context(msg, cls=type(ctx))
         await self.bot.invoke(new_ctx)
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, aliases=["stopu"])
     @commands.has_permissions(manage_roles=True)
     async def stopuser(self, ctx, member: discord.Member):
         """Gives a user the stop role.
@@ -203,6 +221,7 @@ class admin(commands.Cog):
         role = discord.utils.get(member.guild.roles, name="Stop")
         if role in member.roles:
             await member.remove_roles(role)
+            await ctx.send(f"Unstopped {member}")
         else:
             await member.add_roles(role)
             await ctx.send(f"Stopped {member}")
@@ -293,7 +312,7 @@ class admin(commands.Cog):
         else:
             await member.add_roles(role)
             embed = discord.Embed(title=f"Removed the role {role} from {member}")
-        ctx.send(embed)
+        await ctx.send(embed)
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
