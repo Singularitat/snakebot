@@ -6,6 +6,7 @@ import aiohttp
 import lxml.html
 import config
 import ujson
+import unicodedata
 
 
 class misc(commands.Cog):
@@ -13,6 +14,37 @@ class misc(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    @commands.command()
+    async def char(self, ctx, char: str, number: int = 26):
+        """Sends the characters that come after a character in unicode.
+
+        char: str
+            The character to find the following unicode characters of.
+        number: int
+            The number of characters to find.
+        """
+        await ctx.send("".join(chr(ord(char) + i) for i in range(number)))
+
+    @commands.command()
+    async def charinfo(self, ctx, *, characters: str):
+        """Shows you information about a number of characters.
+
+        Only up to 25 characters at a time.
+
+        characters: str
+            The characters to find information about.
+        """
+
+        def to_string(c):
+            digit = f"{ord(c):x}"
+            name = unicodedata.name(c, "Name not found.")
+            return f"`\\U{digit:>08}`: {name} - {c} \N{EM DASH} <http://www.fileformat.info/info/unicode/char/{digit}>"
+
+        msg = "\n".join(map(to_string, characters))
+        if len(msg) > 2000:
+            return await ctx.send("Output too long to display.")
+        await ctx.send(msg)
 
     @commands.command()
     async def karma(self, ctx, member: discord.Member = None):
