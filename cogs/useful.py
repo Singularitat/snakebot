@@ -82,7 +82,9 @@ class useful(commands.Cog):
             try:
                 obj = await objects[obj].convert(ctx, arg)
             except commands.BadArgument:
-                await ctx.send("```Conversion failed, P.S. doesn't work for default discord emojis```")
+                await ctx.send(
+                    "```Conversion failed, P.S. doesn't work for default discord emojis```"
+                )
             else:
                 if subarg:
                     attr = getattr(obj, subarg)
