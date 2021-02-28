@@ -42,7 +42,7 @@ class information(commands.Cog):
     @commands.command()
     async def uptime(self, ctx):
         """Shows the bots uptime."""
-        await ctx.send(f"**{util.pretty_date(self.bot.uptime)}**")
+        await ctx.send(f"**{util.time_since(self.bot.uptime)}**")
 
     @commands.command()
     async def roles(self, ctx, member: discord.Member):
@@ -63,7 +63,7 @@ class information(commands.Cog):
 
     @commands.command(
         name="server",
-        aliases=["server_info", "guild", "guild_info", "info", "information"],
+        aliases=["guild", "info"],
     )
     async def server_info(self, ctx):
         """Sends an embed of server information."""
