@@ -183,22 +183,10 @@ class events(commands.Cog):
 
         elif isinstance(error, commands.errors.MissingRequiredArgument):
             ctx.command.reset_cooldown(ctx)
-            message = f"Missing parameter: {error.param}"
-
-        elif isinstance(error, commands.errors.MissingAnyRole):
-            message = f"You are missing required roles: {error.missing_roles}"
-
-        elif isinstance(error, commands.errors.MissingPermissions):
-            message = f"You are missing required permissions: {error.missing_perms}"
-
-        elif isinstance(error, commands.errors.ExtensionAlreadyLoaded):
-            message = f"{error.name} is already loaded"
+            message = error
 
         elif isinstance(error, commands.errors.ExtensionNotFound):
-            message = f"{error.name} was not found"
-
-        elif isinstance(error, commands.errors.ExtensionNotLoaded):
-            message = f"{error.name} failed to load"
+            message = f"Extension '{error.name}' was not found."
 
         elif isinstance(error, commands.errors.BotMissingAnyRole):
             message = (
@@ -217,7 +205,7 @@ class events(commands.Cog):
     async def on_ready(self):
         """Called when the bot is done preparing the data received from Discord."""
         if not hasattr(self.bot, "uptime"):
-            self.bot.uptime = datetime.datetime.now()
+            self.bot.uptime = datetime.datetime.utcnow()
         print(
             f"""Logged in as {self.bot.user.name}
 Discord.py version: {discord.__version__}
