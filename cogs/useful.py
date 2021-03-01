@@ -20,12 +20,11 @@ class useful(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def rrole(self, ctx, *emojis):
-        """Starts a slightly interactive session to create a reaction role
+        """Starts a slightly interactive session to create a reaction role.
 
         emojis: tuple
-            A tuple of emojis
+            A tuple of emojis.
         """
-
         await ctx.message.delete()
 
         if emojis == ():
@@ -70,7 +69,7 @@ class useful(commands.Cog):
         with open("json/reaction_roles.json") as file:
             data = ujson.load(file)
 
-        data[str(message.id)] = {emoji: role for (emoji, role) in zip(emojis, roles)}
+        data[str(message.id)] = dict(zip(emojis, roles))
 
         with open("json/reaction_roles.json", "w") as file:
             data = ujson.dump(data, file, indent=2)
