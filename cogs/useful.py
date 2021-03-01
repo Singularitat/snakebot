@@ -35,14 +35,14 @@ class useful(commands.Cog):
 
         tmp_msg = await ctx.send("Send an brief for every emote Seperated by ;")
 
-        breifs = await ctx.bot.wait_for("message", timeout=60.0, check=check)
+        breifs = await ctx.bot.wait_for("message", timeout=300.0, check=check)
 
         await tmp_msg.delete()
         await breifs.delete()
 
         tmp_msg = await ctx.send("Send an role id/name for every role Seperated by ;")
 
-        roles = await ctx.bot.wait_for("message", timeout=60.0, check=check)
+        roles = await ctx.bot.wait_for("message", timeout=300.0, check=check)
 
         await tmp_msg.delete()
         await roles.delete()
