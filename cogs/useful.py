@@ -18,6 +18,64 @@ class useful(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    @commands.is_owner()
+    async def rrole(self, ctx, *emojis):
+        """Starts a slightly interactive session to create a reaction role
+
+        emojis: tuple
+            A tuple of emojis
+        """
+
+        await ctx.message.delete()
+
+        if emojis == ():
+            return await ctx.send("Put emotes as arguments in the command e.g rrole :fire:")
+
+        def check(message: discord.Message) -> bool:
+            return message.author.id == ctx.author.id and message.channel == ctx.channel
+
+        tmp_msg = await ctx.send("Send an brief for every emote Seperated by ;")
+
+        breifs = await ctx.bot.wait_for("message", timeout=60.0, check=check)
+
+        await tmp_msg.delete()
+        await breifs.delete()
+
+        tmp_msg = await ctx.send("Send an role id/name for every role Seperated by ;")
+
+        roles = await ctx.bot.wait_for("message", timeout=60.0, check=check)
+
+        await tmp_msg.delete()
+        await roles.delete()
+
+        roles = roles.content.split(";")
+
+        for index, role in enumerate(roles):
+            if not role.isnumeric():
+                try:
+                    role = discord.utils.get(ctx.guild.roles, name=role)
+                    roles[index] = role.id
+                except commands.errors.RoleNotFound:
+                    return await ctx.send(f"Could not find role {index}")
+
+        msg = "**Role Menu:**\nReact for a role.\n"
+
+        for emoji, message in zip(emojis, breifs.content.split(";")):
+            msg += f"\n{emoji}: `{message}`\n"
+        message = await ctx.send(msg)
+
+        for emoji in emojis:
+            await message.add_reaction(emoji)
+
+        with open("json/reaction_roles.json") as file:
+            data = ujson.load(file)
+
+        data[str(message.id)] = {emoji: role for (emoji, role) in zip(emojis, roles)}
+
+        with open("json/reaction_roles.json", "w") as file:
+            data = ujson.dump(data, file, indent=2)
+
+    @commands.command()
     async def time(self, ctx, *, command):
         """Runs a command whilst timing it.
 
