@@ -7,11 +7,64 @@ import time
 import datetime
 import textwrap
 import psutil
+from chatterbot import ChatBot
+from chatterbot.trainers import ChatterBotCorpusTrainer
+
+
+chatbot = ChatBot(
+    'Snakebot',
+    storage_adapter='chatterbot.storage.SQLStorageAdapter',
+    database_uri='sqlite:///cogs/db/database.sqlite3'
+)
+trainer = ChatterBotCorpusTrainer(chatbot)
 
 
 class events(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        if payload.member == self.bot.user:
+            return
+
+        with open("json/reaction_roles.json") as file:
+            data = ujson.load(file)
+
+        message_id = str(payload.message_id)
+
+        if str(payload.emoji) in data[message_id]:
+            id = int(data[message_id][str(payload.emoji)])
+        elif payload.emoji.name in data[message_id]:
+            id = int(data[message_id][payload.emoji.name])
+        else:
+            return
+
+        guild = self.bot.get_guild(payload.guild_id)
+        role = discord.utils.get(guild.roles, id=id)
+        await payload.member.add_roles(role)
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload):
+        if payload.member == self.bot.user:
+            return
+
+        with open("json/reaction_roles.json") as file:
+            data = ujson.load(file)
+
+        message_id = str(payload.message_id)
+
+        if str(payload.emoji) in data[message_id]:
+            id = int(data[message_id][str(payload.emoji)])
+        elif payload.emoji.name in data[message_id]:
+            id = int(data[message_id][payload.emoji.name])
+        else:
+            return
+
+        guild = self.bot.get_guild(payload.guild_id)
+        role = discord.utils.get(guild.roles, id=id)
+        member = discord.utils.get(guild.members, id=payload.user_id)
+        await member.remove_roles(role)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -66,7 +119,7 @@ class events(commands.Cog):
         """
         if not message.content or message.content.startswith(
             f"{self.bot.command_prefix}issue"
-        ):
+        ) or message.author == self.bot.user:
             return
 
         self.bot.snipe_message = (message.content, message.author.name)
@@ -108,6 +161,8 @@ class events(commands.Cog):
             data = ujson.load(file)
         if message.author.id in data["downvote"]:
             await message.add_reaction("<:downvote:766414744730206228>")
+        if str(message.channel) == 'snake-chat' and message.author != self.bot.user:
+            await message.channel.send(chatbot.get_response(str(message.content)))
 
     @commands.Cog.listener()
     async def on_reaction_clear(self, message, reactions):
