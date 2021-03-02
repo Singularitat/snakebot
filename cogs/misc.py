@@ -16,7 +16,7 @@ class misc(commands.Cog):
         self.bot = bot
 
     @commands.command(name="hex")
-    async def _hex(self, ctx, number):
+    async def _hex(self, ctx, number: int):
         """Shows a number in hexadecimal prefixed with “0x”.
 
         number: int
@@ -25,7 +25,7 @@ class misc(commands.Cog):
         await ctx.send(hex(number).replace("0x", ""))
 
     @commands.command(name="oct")
-    async def _oct(self, ctx, number):
+    async def _oct(self, ctx, number: int):
         """Shows a number in octal prefixed with “0o”.
 
         number: int
@@ -34,7 +34,7 @@ class misc(commands.Cog):
         await ctx.send(oct(number).replace("0o", ""))
 
     @commands.command(name="bin")
-    async def _bin(self, ctx, number):
+    async def _bin(self, ctx, number: int):
         """Shows a number in binary prefixed with “0b”.
 
         number: int
