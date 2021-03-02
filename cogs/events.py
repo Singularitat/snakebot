@@ -12,9 +12,9 @@ from chatterbot.trainers import ChatterBotCorpusTrainer
 
 
 chatbot = ChatBot(
-    'Snakebot',
-    storage_adapter='chatterbot.storage.SQLStorageAdapter',
-    database_uri='sqlite:///cogs/db/database.sqlite3'
+    "Snakebot",
+    storage_adapter="chatterbot.storage.SQLStorageAdapter",
+    database_uri="sqlite:///cogs/db/database.sqlite3",
 )
 trainer = ChatterBotCorpusTrainer(chatbot)
 
@@ -33,16 +33,17 @@ class events(commands.Cog):
 
         message_id = str(payload.message_id)
 
-        if str(payload.emoji) in data[message_id]:
-            id = int(data[message_id][str(payload.emoji)])
-        elif payload.emoji.name in data[message_id]:
-            id = int(data[message_id][payload.emoji.name])
-        else:
-            return
+        if message_id in data:
+            if str(payload.emoji) in data[message_id]:
+                id = int(data[message_id][str(payload.emoji)])
+            elif str(payload.emoji.name) in data[message_id]:
+                id = int(data[message_id][str(payload.emoji.name)])
+            else:
+                return
 
-        guild = self.bot.get_guild(payload.guild_id)
-        role = discord.utils.get(guild.roles, id=id)
-        await payload.member.add_roles(role)
+            guild = self.bot.get_guild(payload.guild_id)
+            role = discord.utils.get(guild.roles, id=id)
+            await payload.member.add_roles(role)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -105,8 +106,11 @@ class events(commands.Cog):
             else:
                 try:
                     channel = discord.utils.get(after.guild.channels, name="logs")
+                    if '`' in before.content or '`' in after.content:
+                        before_msg = before.content.replace('`', '')
+                        after_msg = after.content.replace('`', '')
                     await channel.send(
-                        f"```{before.author} edited:\n{before.content} >>> {after.content}```"
+                        f"```{before.author} edited:\n{before_msg} >>> {after_msg}```"
                     )
                 except AttributeError:
                     pass
@@ -117,9 +121,11 @@ class events(commands.Cog):
 
         message: discord.Message
         """
-        if not message.content or message.content.startswith(
-            f"{self.bot.command_prefix}issue"
-        ) or message.author == self.bot.user:
+        if (
+            not message.content
+            or message.content.startswith(f"{self.bot.command_prefix}issue")
+            or message.author == self.bot.user
+        ):
             return
 
         self.bot.snipe_message = (message.content, message.author.name)
@@ -143,13 +149,11 @@ class events(commands.Cog):
                     data["downvote"].append(message.author.id)
                 with open("json/real.json", "w") as file:
                     data = ujson.dump(data, file, indent=2)
-        try:
-            channel = discord.utils.get(message.guild.channels, name="logs")
+        channel = discord.utils.get(message.guild.channels, name="logs")
+        if channel is not None:
             await channel.send(
                 f"```{message.author} deleted:\n{message.content.replace('`', '')}```"
             )
-        except commands.errors.ChannelNotFound:
-            pass
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -161,7 +165,7 @@ class events(commands.Cog):
             data = ujson.load(file)
         if message.author.id in data["downvote"]:
             await message.add_reaction("<:downvote:766414744730206228>")
-        if str(message.channel) == 'snake-chat' and message.author != self.bot.user:
+        if str(message.channel) == "snake-chat" and message.author != self.bot.user:
             await message.channel.send(chatbot.get_response(str(message.content)))
 
     @commands.Cog.listener()
