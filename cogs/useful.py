@@ -9,6 +9,7 @@ import string
 import lxml.html
 import re
 import config
+import asyncio
 
 
 class useful(commands.Cog):
@@ -16,6 +17,23 @@ class useful(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    @staticmethod
+    async def await_for_message(ctx, message):
+        def check(message: discord.Message) -> bool:
+            return message.author.id == ctx.author.id and message.channel == ctx.channel
+
+        tmp_msg = await ctx.send(message)
+
+        try:
+            message = await ctx.bot.wait_for("message", timeout=300.0, check=check)
+        except asyncio.TimeoutError:
+            await ctx.send("Timed out")
+
+        await tmp_msg.delete()
+        await message.delete()
+
+        return message
 
     @commands.command()
     @commands.is_owner()
@@ -25,27 +43,23 @@ class useful(commands.Cog):
         emojis: tuple
             A tuple of emojis.
         """
+
         await ctx.message.delete()
 
         if emojis == ():
-            return await ctx.send("Put emotes as arguments in the command e.g rrole :fire:")
+            return await ctx.send(
+                "Put emojis as arguments in the command e.g rrole :fire:"
+            )
 
-        def check(message: discord.Message) -> bool:
-            return message.author.id == ctx.author.id and message.channel == ctx.channel
-
-        tmp_msg = await ctx.send("Send an brief for every emote Seperated by ;")
-
-        breifs = await ctx.bot.wait_for("message", timeout=300.0, check=check)
-
-        await tmp_msg.delete()
-        await breifs.delete()
-
-        tmp_msg = await ctx.send("Send an role id/name for every role Seperated by ;")
-
-        roles = await ctx.bot.wait_for("message", timeout=300.0, check=check)
-
-        await tmp_msg.delete()
-        await roles.delete()
+        channel = await self.await_for_message(
+            ctx, "Send the channel you want the message to be in"
+        )
+        breifs = await self.await_for_message(
+            ctx, "Send an brief for every emote Seperated by ;"
+        )
+        roles = await self.await_for_message(
+            ctx, "Send an role id/name for every role Seperated by ;"
+        )
 
         roles = roles.content.split(";")
 
@@ -59,9 +73,9 @@ class useful(commands.Cog):
 
         msg = "**Role Menu:**\nReact for a role.\n"
 
-        for emoji, message in zip(emojis, breifs.content.split(";")):
-            msg += f"\n{emoji}: `{message}`\n"
-        message = await ctx.send(msg)
+        for emoji, breif in zip(emojis, breifs.content.split(";")):
+            msg += f"\n{emoji}: `{breif}`\n"
+        message = await channel.channel.send(msg)
 
         for emoji in emojis:
             await message.add_reaction(emoji)
@@ -70,6 +84,53 @@ class useful(commands.Cog):
             data = ujson.load(file)
 
         data[str(message.id)] = dict(zip(emojis, roles))
+
+        with open("json/reaction_roles.json", "w") as file:
+            data = ujson.dump(data, file, indent=2)
+
+    @commands.command()
+    async def redit(self, ctx, message: discord.Message, *emojis):
+        """Edit a reaction role message.
+
+        message: discord.Message
+            The id of the reaction roles message.
+        emojis: tuple
+            A tuple of emojis.
+        """
+        msg = message.content
+
+        breifs = await self.await_for_message(
+            ctx, "Send an brief for every emote Seperated by ;"
+        )
+        roles = await self.await_for_message(
+            ctx, "Send an role id/name for every role Seperated by ;"
+        )
+
+        roles = roles.content.split(";")
+
+        for index, role in enumerate(roles):
+            if not role.isnumeric():
+                try:
+                    role = discord.utils.get(ctx.guild.roles, name=role)
+                    roles[index] = role.id
+                except commands.errors.RoleNotFound:
+                    return await ctx.send(f"Could not find role {index}")
+
+        msg += "\n"
+
+        for emoji, breif in zip(emojis, breifs.content.split(";")):
+            msg += f"\n{emoji}: `{breif}`\n"
+
+        await message.edit(content=msg)
+
+        for emoji in emojis:
+            await message.add_reaction(emoji)
+
+        with open("json/reaction_roles.json") as file:
+            data = ujson.load(file)
+
+        for emoji, role in zip(emojis, roles):
+            data[str(message.id)][emoji] = role
 
         with open("json/reaction_roles.json", "w") as file:
             data = ujson.dump(data, file, indent=2)
