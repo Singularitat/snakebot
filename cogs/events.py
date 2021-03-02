@@ -192,7 +192,7 @@ class events(commands.Cog):
         time_since = (
             datetime.datetime.now() - reaction.message.created_at
         ).total_seconds() - 46800
-        if time_since < 1800:
+        if time_since > 1800:
             return
         if reaction.custom_emoji:
             with open("json/real.json") as file:
