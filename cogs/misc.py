@@ -15,6 +15,33 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @commands.command(name="hex")
+    async def _hex(self, ctx, number):
+        """Shows a number in hexadecimal prefixed with “0x”.
+
+        number: int
+            The number you want to convert.
+        """
+        await ctx.send(hex(number).replace("0x", ""))
+
+    @commands.command(name="oct")
+    async def _oct(self, ctx, number):
+        """Shows a number in octal prefixed with “0o”.
+
+        number: int
+            The number you want to convert.
+        """
+        await ctx.send(oct(number).replace("0o", ""))
+
+    @commands.command(name="bin")
+    async def _bin(self, ctx, number):
+        """Shows a number in binary prefixed with “0b”.
+
+        number: int
+            The number you want to convert.
+        """
+        await ctx.send(bin(number).replace("0b", ""))
+
     @commands.command()
     async def char(self, ctx, char: str, number: int = 26):
         """Sends the characters that come after a character in unicode.
