@@ -1,3 +1,6 @@
+json/
+*.json
+
 # Database
 database.sqlite3
 
