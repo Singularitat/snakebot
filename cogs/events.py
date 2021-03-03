@@ -107,10 +107,10 @@ class events(commands.Cog):
                 try:
                     channel = discord.utils.get(after.guild.channels, name="logs")
                     if '`' in before.content or '`' in after.content:
-                        before_msg = before.content.replace('`', '')
-                        after_msg = after.content.replace('`', '')
+                        before.content = before.content.replace('`', '')
+                        after.content = after.content.replace('`', '')
                     await channel.send(
-                        f"```{before.author} edited:\n{before_msg} >>> {after_msg}```"
+                        f"```{before.author} edited:\n{before.content} >>> {after.content}```"
                     )
                 except AttributeError:
                     pass
@@ -256,7 +256,8 @@ class events(commands.Cog):
             message = f"{self.bot.user.name} is missing required permissions: {error.missing_perms}"
 
         else:
-            message = error
+            print(f"Unhandled error {dir(error)}")
+            return
 
         await ctx.send(f"```{message}```")
 
