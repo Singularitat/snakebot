@@ -7,14 +7,18 @@ import time
 import datetime
 import textwrap
 import psutil
-from chatterbot import ChatBot
+import chatterbot
 from chatterbot.trainers import ChatterBotCorpusTrainer
+from concurrent.futures import ThreadPoolExecutor
+import asyncio
 
 
-chatbot = ChatBot(
+chatbot = chatterbot.ChatBot(
     "Snakebot",
     storage_adapter="chatterbot.storage.SQLStorageAdapter",
     database_uri="sqlite:///cogs/db/database.sqlite3",
+    logic_adapters=["chatterbot.logic.BestMatch"],
+    filters=[chatterbot.filters.get_recent_repeated_responses],
 )
 trainer = ChatterBotCorpusTrainer(chatbot)
 
@@ -106,9 +110,9 @@ class events(commands.Cog):
             else:
                 try:
                     channel = discord.utils.get(after.guild.channels, name="logs")
-                    if '`' in before.content or '`' in after.content:
-                        before.content = before.content.replace('`', '')
-                        after.content = after.content.replace('`', '')
+                    if "`" in before.content or "`" in after.content:
+                        before.content = before.content.replace("`", "")
+                        after.content = after.content.replace("`", "")
                     await channel.send(
                         f"```{before.author} edited:\n{before.content} >>> {after.content}```"
                     )
@@ -166,7 +170,13 @@ class events(commands.Cog):
         if message.author.id in data["downvote"]:
             await message.add_reaction("<:downvote:766414744730206228>")
         if str(message.channel) == "snake-chat" and message.author != self.bot.user:
-            await message.channel.send(chatbot.get_response(str(message.content)))
+
+            def _get_response():
+                return chatbot.get_response(str(message.content))
+
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(ThreadPoolExecutor(), _get_response)
+            await message.channel.send(response)
 
     @commands.Cog.listener()
     async def on_reaction_clear(self, message, reactions):
