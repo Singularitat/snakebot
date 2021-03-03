@@ -21,7 +21,7 @@ class stocks(commands.Cog):
             if len(msg + f"{stock[0][:3]}: ${stock[2]}") > 1996:
                 return await ctx.send(f"{msg}```")
             msg += f"{stock[0][:3]}: ${stock[2]}"
-            msg += " "*(9 - len(stock[2]))
+            msg += " " * (9 - len(stock[2]))
 
     @commands.command()
     async def stockbal(self, ctx, symbol):
@@ -34,7 +34,9 @@ class stocks(commands.Cog):
             data = ujson.load(file)
         symbol = symbol.upper()
         if ctx.author.id in data["stocks"][symbol]:
-            await ctx.send(f"```You have {data['stockbal'][str(ctx.author.id)][symbol]} stocks in {symbol}```")
+            await ctx.send(
+                f"```You have {data['stockbal'][str(ctx.author.id)][symbol]} stocks in {symbol}```"
+            )
         else:
             await ctx.send(f"```You have never invested in {symbol}```")
 
@@ -42,9 +44,9 @@ class stocks(commands.Cog):
     async def stockprofile(self, ctx):
         with open("json/economy.json") as file:
             data = ujson.load(file)
-        if data['stockbal'][str(ctx.author.id)]:
+        if data["stockbal"][str(ctx.author.id)]:
             msg = f"```{ctx.message.author}'s stock profile"
-            for stock in data['stockbal'][str(ctx.author.id)]:
+            for stock in data["stockbal"][str(ctx.author.id)]:
                 msg += f"\n{stock}: {data['stockbal'][str(ctx.author.id)][stock]}"
             await ctx.send(f"{msg}```")
         else:
@@ -105,7 +107,9 @@ class stocks(commands.Cog):
 
                 await ctx.send(f"```Sold {amount} stocks for ${cash}```")
             else:
-                await ctx.send(f"```You dont have enough stocks you have {amount} stocks```")
+                await ctx.send(
+                    f"```You dont have enough stocks you have {amount} stocks```"
+                )
         else:
             await ctx.send(f"```You have never invested in {symbol}```")
         with open("json/economy.json", "w") as file:
@@ -121,7 +125,9 @@ class stocks(commands.Cog):
             The amount of money to invest.
         """
         if symbol is not None and cash is None:
-            return await ctx.send(f"```Usage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}```")
+            return await ctx.send(
+                f"```Usage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}```"
+            )
 
         url = "https://nz.finance.yahoo.com/most-active?offset=0&count=200"
         user = str(ctx.author.id)
