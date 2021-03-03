@@ -23,8 +23,7 @@ async def stockgrab(url):
 
 async def stockupdate(data, url):
     for stock in await stockgrab(url):
-        if float(stock[2]) >= 1 or stock[0][:3] in data["stocks"]:
-            try:
-                data["stocks"][stock[0][:3]]["price"] = stock[2]
-            except KeyError:
-                data["stocks"][stock[0][:3]] = {}
+        tmp = stock[0][:3]
+        if tmp not in data["stocks"]:
+            data["stocks"][tmp] = {}
+        data["stocks"][tmp] = float(stock[2])
