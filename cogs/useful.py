@@ -34,7 +34,7 @@ class useful(commands.Cog):
                 r = await response.json()
         if 'message' in r and r['message'] == 'Supplied language is not supported by Piston':
             await ctx.send(f"No support for language {lang}")
-        elif not len(r['output']):
+        elif not r['output']:
             await ctx.send("No output")
         else:
             await ctx.send(f"```{r['output']}```")
