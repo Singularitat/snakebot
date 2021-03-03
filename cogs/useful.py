@@ -18,6 +18,17 @@ class useful(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @commands.command(name="removereact")
+    async def _remove_reaction(self, ctx, message: discord.Message, reaction):
+        """Removes a reaction from a message.
+
+        message: discord.Message
+            The id of the message you want to remove the reaction from.
+        reaction: Union[discord.Emoji, str]
+            The reaction to remove.
+        """
+        await message.clear_reaction(reaction)
+
     @staticmethod
     async def await_for_message(ctx, message):
         def check(message: discord.Message) -> bool:
