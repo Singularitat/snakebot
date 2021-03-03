@@ -142,13 +142,16 @@ class economy(commands.Cog):
                     winnings = -1
                     result = "lost"
                     color = discord.Color.red()
+
+                data["money"][user] = data["money"][user] + bet * winnings
+
                 embed = discord.Embed(
                     title=f"[ {a} {b} {c} {d} ]",
                     description=f"You {result} ${bet*(abs(winnings)):,.2f}",
                     color=color,
-                    inline=True,
+                    inline=True
                 )
-                data["money"][user] = data["money"][user] + bet * winnings
+                embed.set_footer(text=f"Balance: {data['money'][user]}")
                 if user not in data["wins"]:
                     data["wins"][user] = {
                         "currentwin": 0,
