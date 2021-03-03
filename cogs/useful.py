@@ -32,6 +32,20 @@ class useful(commands.Cog):
                 r = await response.json()
         await ctx.send(f"```{r['output']}```")
 
+    @commands.command()
+    async def runP2(self, ctx, *, code):
+        """Runs python2 code.
+
+        code: str
+            The code to run.
+        """
+        code = re.sub("```python|```py|```", "", code)
+        async with aiohttp.ClientSession() as session:
+            data = {'language': "python2", 'source': code, 'args': "", 'stdin': "", 'log': 0}
+            async with session.post("https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)) as response:
+                r = await response.json()
+        await ctx.send(f"```{r['output']}```")
+
     @commands.command(name="removereact")
     async def _remove_reaction(self, ctx, message: discord.Message, reaction):
         """Removes a reaction from a message.
