@@ -16,31 +16,43 @@ class misc(commands.Cog):
         self.bot = bot
 
     @commands.command(name="hex")
-    async def _hex(self, ctx, number: int):
+    async def _hex(self, ctx, number, convert: bool = False):
         """Shows a number in hexadecimal prefixed with “0x”.
 
-        number: int
+        number: str
             The number you want to convert.
+        convert: bool
+            If you want to convert to decimal or not
         """
-        await ctx.send(hex(number).replace("0x", ""))
+        if convert:
+            return await ctx.send(f"```{int(number, 16)}```")
+        await ctx.send(f"```{hex(int(number))}```")
 
     @commands.command(name="oct")
-    async def _oct(self, ctx, number: int):
+    async def _oct(self, ctx, number, convert: bool = False):
         """Shows a number in octal prefixed with “0o”.
 
-        number: int
+        number: str
             The number you want to convert.
+        convert: bool
+            If you want to convert to decimal or not
         """
-        await ctx.send(oct(number).replace("0o", ""))
+        if convert:
+            return await ctx.send(f"```{int(number, 8)}```")
+        await ctx.send(f"```{oct(int(number))}```")
 
     @commands.command(name="bin")
-    async def _bin(self, ctx, number: int):
+    async def _bin(self, ctx, number, convert: bool = False):
         """Shows a number in binary prefixed with “0b”.
 
-        number: int
+        number: str
             The number you want to convert.
+        convert: bool
+            If you want to convert to decimal or not
         """
-        await ctx.send(bin(number).replace("0b", ""))
+        if convert:
+            return await ctx.send(f"```{int(number, 2)}```")
+        await ctx.send(f"```{bin(int(number))}```")
 
     @commands.command()
     async def char(self, ctx, char: str, number: int = 26):
