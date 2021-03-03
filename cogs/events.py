@@ -59,17 +59,18 @@ class events(commands.Cog):
 
         message_id = str(payload.message_id)
 
-        if str(payload.emoji) in data[message_id]:
-            id = int(data[message_id][str(payload.emoji)])
-        elif payload.emoji.name in data[message_id]:
-            id = int(data[message_id][payload.emoji.name])
-        else:
-            return
+        if message_id in data:
+            if str(payload.emoji) in data[message_id]:
+                id = int(data[message_id][str(payload.emoji)])
+            elif payload.emoji.name in data[message_id]:
+                id = int(data[message_id][payload.emoji.name])
+            else:
+                return
 
-        guild = self.bot.get_guild(payload.guild_id)
-        role = discord.utils.get(guild.roles, id=id)
-        member = discord.utils.get(guild.members, id=payload.user_id)
-        await member.remove_roles(role)
+            guild = self.bot.get_guild(payload.guild_id)
+            role = discord.utils.get(guild.roles, id=id)
+            member = discord.utils.get(guild.members, id=payload.user_id)
+            await member.remove_roles(role)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
