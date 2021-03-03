@@ -39,6 +39,12 @@ class useful(commands.Cog):
         else:
             await ctx.send(f"```{r['output']}```")
 
+    @run.error
+    async def run_handler(self, ctx, error):
+        """Error handler for run command."""
+        if isinstance(error, commands.errors.MissingRequiredArgument):
+            await ctx.send(f"```Usage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}```")
+
     @commands.command(name="removereact")
     async def _remove_reaction(self, ctx, message: discord.Message, reaction):
         """Removes a reaction from a message.
