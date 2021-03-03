@@ -27,15 +27,17 @@ class useful(commands.Cog):
         code: str
             The code to run.
         """
-        code = re.sub("```\w+\n|```", "", code)
+        code = re.sub(r"```\w+\n|```", "", code)
         async with aiohttp.ClientSession() as session:
             data = {'language': lang, 'source': code, 'args': "", 'stdin': "", 'log': 0}
             async with session.post("https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)) as response:
                 r = await response.json()
-        if 'message' in r:
-            if r['message'] == 'Supplied language is not supported by Piston':
-                await ctx.send(f"No support for language {lang}")
-        await ctx.send(f"```{r['output']}```")
+        if 'message' in r and r['message'] == 'Supplied language is not supported by Piston':
+            await ctx.send(f"No support for language {lang}")
+        elif not len(r['output']):
+            await ctx.send("No output")
+        else:
+            await ctx.send(f"```{r['output']}```")
 
     @commands.command(name="removereact")
     async def _remove_reaction(self, ctx, message: discord.Message, reaction):
