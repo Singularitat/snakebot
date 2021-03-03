@@ -19,18 +19,25 @@ class useful(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def run(self, ctx, *, code):
+    async def run(self, ctx, lang, *, code):
         """Runs python3 code.
 
+        lang: str
+            The programming language.
         code: str
             The code to run.
         """
-        code = re.sub("```python|```py|```", "", code)
+        code = re.sub(r"```\w+\n|```", "", code)
         async with aiohttp.ClientSession() as session:
-            data = {'language': "python3", 'source': code, 'args': "", 'stdin': "", 'log': 0}
+            data = {'language': lang, 'source': code, 'args': "", 'stdin': "", 'log': 0}
             async with session.post("https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)) as response:
                 r = await response.json()
-        await ctx.send(f"```{r['output']}```")
+        if 'message' in r and r['message'] == 'Supplied language is not supported by Piston':
+            await ctx.send(f"No support for language {lang}")
+        elif not r['output']:
+            await ctx.send("No output")
+        else:
+            await ctx.send(f"```{r['output']}```")
 
     @commands.command(name="removereact")
     async def _remove_reaction(self, ctx, message: discord.Message, reaction):
