@@ -157,7 +157,7 @@ class misc(commands.Cog):
             data = ujson.load(file)
         if not member:
             member = ctx.author
-        if member not in data["karma"]:
+        if str(member.id) not in data["karma"]:
             data["karma"][str(member.id)] = 0
         embed = discord.Embed(
             color=discord.Color.blue(),
