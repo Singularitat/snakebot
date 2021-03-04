@@ -28,6 +28,16 @@ class misc(commands.Cog):
             return await ctx.send(f"```{int(number, 16)}```")
         await ctx.send(f"```{hex(int(number))}```")
 
+    @commands.command(name="hexadd")
+    async def _hexadd(self, ctx, *numbers):
+        """Adds an infinite amount of hex values.
+
+        numbers: tuple
+            The hex numbers you want to add together.
+        """
+        result = sum(int(num, 16) for num in numbers)
+        await ctx.send(f"```Hex: {hex(result)} Binary: {result}```")
+
     @commands.command(name="oct")
     async def _oct(self, ctx, number, convert: bool = False):
         """Shows a number in octal prefixed with “0o”.
@@ -41,6 +51,16 @@ class misc(commands.Cog):
             return await ctx.send(f"```{int(number, 8)}```")
         await ctx.send(f"```{oct(int(number))}```")
 
+    @commands.command(name="octadd")
+    async def _octadd(self, ctx, *numbers):
+        """Adds an infinite amount of oct values.
+
+        numbers: tuple
+            The oct numbers you want to add together.
+        """
+        result = sum(int(num, 8) for num in numbers)
+        await ctx.send(f"```Oct: {oct(result)} Decimal: {result}```")
+
     @commands.command(name="bin")
     async def _bin(self, ctx, number, convert: bool = False):
         """Shows a number in binary prefixed with “0b”.
@@ -53,6 +73,16 @@ class misc(commands.Cog):
         if convert:
             return await ctx.send(f"```{int(number, 2)}```")
         await ctx.send(f"```{bin(int(number))}```")
+
+    @commands.command(name="binadd")
+    async def _binadd(self, ctx, *numbers):
+        """Adds an infinite amount of binary values.
+
+        numbers: tuple
+            The binary numbers you want to add together.
+        """
+        result = sum(int(num, 2) for num in numbers)
+        await ctx.send(f"```Binary: {bin(result)} Decimal: {result}```")
 
     @commands.command()
     async def char(self, ctx, char: str, number: int = 26):
