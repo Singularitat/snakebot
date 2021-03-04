@@ -370,6 +370,7 @@ class admin(commands.Cog):
                     color=discord.Color.blue(),
                 )
             else:
+                await member.edit(voice_channel=None)
                 data["downvote"].append(member.id)
                 embed = discord.Embed(
                     title="User Downvoted",
