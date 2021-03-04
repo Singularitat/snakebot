@@ -7,6 +7,7 @@ import lxml.html
 import config
 import ujson
 import unicodedata
+import math
 
 
 class misc(commands.Cog):
@@ -36,7 +37,17 @@ class misc(commands.Cog):
             The hex numbers you want to add together.
         """
         result = sum(int(num, 16) for num in numbers)
-        await ctx.send(f"```Hex: {hex(result)} Binary: {result}```")
+        await ctx.send(f"```Hex: {hex(result)} Decimal: {result}```")
+
+    @commands.command(name="hexmult")
+    async def _hexmult(self, ctx, *numbers):
+        """Multiplys an infinite amount of hex values.
+
+        numbers: tuple
+            The hex numbers you want to multiply together.
+        """
+        result = math.prod(int(num, 16) for num in numbers)
+        await ctx.send(f"```Hex: {hex(result)} Decimal: {result}```")
 
     @commands.command(name="oct")
     async def _oct(self, ctx, number, convert: bool = False):
@@ -61,6 +72,16 @@ class misc(commands.Cog):
         result = sum(int(num, 8) for num in numbers)
         await ctx.send(f"```Oct: {oct(result)} Decimal: {result}```")
 
+    @commands.command(name="octmult")
+    async def _octmult(self, ctx, *numbers):
+        """Multiplys an infinite amount of oct values.
+
+        numbers: tuple
+            The oct numbers you want to multiply together.
+        """
+        result = math.prod(int(num, 8) for num in numbers)
+        await ctx.send(f"```Oct: {oct(result)} Decimal: {result}```")
+
     @commands.command(name="bin")
     async def _bin(self, ctx, number, convert: bool = False):
         """Shows a number in binary prefixed with “0b”.
@@ -82,6 +103,16 @@ class misc(commands.Cog):
             The binary numbers you want to add together.
         """
         result = sum(int(num, 2) for num in numbers)
+        await ctx.send(f"```Binary: {bin(result)} Decimal: {result}```")
+
+    @commands.command(name="binmult")
+    async def _binmult(self, ctx, *numbers):
+        """Multiplys an infinite amount of binary values.
+
+        numbers: tuple
+            The binary numbers you want to multiply together.
+        """
+        result = math.prod(int(num, 2) for num in numbers)
         await ctx.send(f"```Binary: {bin(result)} Decimal: {result}```")
 
     @commands.command()
