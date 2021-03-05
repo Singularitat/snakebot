@@ -88,7 +88,6 @@ class useful(commands.Cog):
         emojis: tuple
             A tuple of emojis.
         """
-
         await ctx.message.delete()
 
         if emojis == ():
