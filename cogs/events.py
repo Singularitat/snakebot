@@ -29,6 +29,11 @@ class events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        """Gives roles based off reaction added if message in reaction_roles.json.
+
+        payload: discord.RawReactionActionEvent
+            A payload of raw data about the reaction and member.
+        """
         if payload.member == self.bot.user:
             return
 
@@ -51,6 +56,11 @@ class events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
+        """Removes roles based off reaction added if message in reaction_roles.json.
+
+        payload: discord.RawReactionActionEvent
+            A payload of raw data about the reaction and member.
+        """
         if payload.member == self.bot.user:
             return
 
@@ -267,8 +277,7 @@ class events(commands.Cog):
             message = f"{self.bot.user.name} is missing required permissions: {error.missing_perms}"
 
         else:
-            print(f"Unhandled error {dir(error)}")
-            return
+            message = error
 
         await ctx.send(f"```{message}```")
 
