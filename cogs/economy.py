@@ -149,7 +149,7 @@ class economy(commands.Cog):
                     title=f"[ {a} {b} {c} {d} ]",
                     description=f"You {result} ${bet*(abs(winnings)):,.2f}",
                     color=color,
-                    inline=True
+                    inline=True,
                 )
                 embed.set_footer(text=f"Balance: {data['money'][user]}")
                 if user not in data["wins"]:
