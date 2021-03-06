@@ -20,7 +20,7 @@ class useful(commands.Cog):
 
     @commands.command()
     async def run(self, ctx, lang, *, code):
-        """Runs python3 code.
+        """Runs code.
 
         lang: str
             The programming language.
