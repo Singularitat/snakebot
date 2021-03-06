@@ -66,10 +66,18 @@ class admin(commands.Cog):
         await ctx.send("```I cannot edit this message```")
 
     async def say_permissions(self, ctx, member, channel):
+        """Sends an embed containing a members permissions in a channel.
+
+        member: discord.Member
+            The member to get permissions of.
+        channel: discord.TextChannel
+            The channel to get the permissions in.
+        """
         permissions = channel.permissions_for(member)
         e = discord.Embed(colour=member.colour)
         avatar = member.avatar_url_as(static_format="png")
         e.set_author(name=str(member), url=avatar)
+
         allowed, denied = [], []
         for name, value in permissions:
             name = name.replace("_", " ").replace("guild", "server").title()
@@ -121,7 +129,7 @@ class admin(commands.Cog):
             await ctx.send(f"```{ctx.author.guild} is chunked```")
         else:
             await ctx.author.guild.chunk()
-            ctx.send(
+            await ctx.send(
                 f"```{ctx.author.guild} was not chunked it has now been chunked```"
             )
 

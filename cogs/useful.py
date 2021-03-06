@@ -20,7 +20,7 @@ class useful(commands.Cog):
 
     @commands.command()
     async def run(self, ctx, lang, *, code):
-        """Runs python3 code.
+        """Runs code.
 
         lang: str
             The programming language.
@@ -29,12 +29,17 @@ class useful(commands.Cog):
         """
         code = re.sub(r"```\w+\n|```", "", code)
         async with aiohttp.ClientSession() as session:
-            data = {'language': lang, 'source': code, 'args': "", 'stdin': "", 'log': 0}
-            async with session.post("https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)) as response:
+            data = {"language": lang, "source": code, "args": "", "stdin": "", "log": 0}
+            async with session.post(
+                "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
+            ) as response:
                 r = await response.json()
-        if 'message' in r and r['message'] == 'Supplied language is not supported by Piston':
+        if (
+            "message" in r
+            and r["message"] == "Supplied language is not supported by Piston"
+        ):
             await ctx.send(f"No support for language {lang}")
-        elif not r['output']:
+        elif not r["output"]:
             await ctx.send("No output")
         else:
             await ctx.send(f"```{r['output']}```")
@@ -43,7 +48,9 @@ class useful(commands.Cog):
     async def run_handler(self, ctx, error):
         """Error handler for run command."""
         if isinstance(error, commands.errors.MissingRequiredArgument):
-            await ctx.send(f"```Usage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}```")
+            await ctx.send(
+                f"```Usage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}```"
+            )
 
     @commands.command(name="removereact")
     async def _remove_reaction(self, ctx, message: discord.Message, reaction):
@@ -81,7 +88,6 @@ class useful(commands.Cog):
         emojis: tuple
             A tuple of emojis.
         """
-
         await ctx.message.delete()
 
         if emojis == ():
@@ -376,7 +382,7 @@ class useful(commands.Cog):
                 for search_result in search_results:
                     if "may refer to" not in search_result["snippet"]:
                         pages.append(search_result["title"])
-            except Exception:
+            except KeyError:
                 pages = None
         return pages
 

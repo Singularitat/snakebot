@@ -22,9 +22,7 @@ bot = commands.Bot(
 
 if __name__ == "__main__":
     for extension in [
-        f.name.replace(".py", "")
-        for f in os.scandir("cogs")
-        if f.is_file()
+        f.name.replace(".py", "") for f in os.scandir("cogs") if f.is_file()
     ]:
         try:
             bot.load_extension(f"cogs.{extension}")
