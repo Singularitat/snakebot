@@ -382,7 +382,7 @@ class useful(commands.Cog):
                 for search_result in search_results:
                     if "may refer to" not in search_result["snippet"]:
                         pages.append(search_result["title"])
-            except Exception:
+            except KeyError:
                 pages = None
         return pages
 
