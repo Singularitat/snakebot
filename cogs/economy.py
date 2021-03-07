@@ -27,7 +27,7 @@ class economy(commands.Cog):
         for num in range(amount):
             try:
                 embed.add_field(
-                    name=await self.bot.fetch_user(topbal[num]),
+                    name=self.bot.get_user(int(topbal[num])),
                     value=f"${data['money'][topbal[num]]:,.2f}",
                     inline=False,
                 )
