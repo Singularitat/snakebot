@@ -67,7 +67,7 @@ class logger(commands.Cog):
         """
         if level.upper == "DEBUG":
             logging.getLogger().setLevel(logging.DEBUG)
-        if level.upper == "info":
+        if level.upper == "INFO":
             logging.getLogger().setLevel(logging.INFO)
         if level.upper == "WARNING":
             logging.getLogger().setLevel(logging.WARNING)
