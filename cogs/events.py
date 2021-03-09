@@ -44,14 +44,14 @@ class events(commands.Cog):
 
         if message_id in data:
             if str(payload.emoji) in data[message_id]:
-                id = int(data[message_id][str(payload.emoji)])
+                role_id = int(data[message_id][str(payload.emoji)])
             elif str(payload.emoji.name) in data[message_id]:
-                id = int(data[message_id][str(payload.emoji.name)])
+                role_id = int(data[message_id][str(payload.emoji.name)])
             else:
                 return
 
             guild = self.bot.get_guild(payload.guild_id)
-            role = discord.utils.get(guild.roles, id=id)
+            role = discord.utils.get(guild.roles, id=role_id)
             await payload.member.add_roles(role)
 
     @commands.Cog.listener()
