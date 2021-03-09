@@ -12,12 +12,12 @@ lxml = "^4.6.2"
 psutil = "^5.8.0"
 ujson = "^4.0.2"
 discord-ext-menus = {git = "https://github.com/Rapptz/discord-ext-menus"}
-ChatterBot = "1.0.4"
+python-dateutil = "^2.8.1"
 
 [tool.poetry.dev-dependencies]
 async-timeout = "3.0.1"
 "discord.py" = {extras = ["voice"], version = "^1.6.0"}
-youtube_dl = "^2020.12.12"
+youtube_dl = "^2021.3.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
