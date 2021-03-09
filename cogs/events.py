@@ -29,7 +29,10 @@ class events(commands.Cog):
 
             guild = self.bot.get_guild(payload.guild_id)
             role = discord.utils.get(guild.roles, id=role_id)
-            return role
+            if payload.event_type == "REACTION_REMOVE":
+                return (role, guild)
+            else:
+                return role
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -52,12 +55,9 @@ class events(commands.Cog):
         payload: discord.RawReactionActionEvent
             A payload of raw data about the reaction and member.
         """
-        if payload.member == self.bot.user:
-            return
-
-        role = self.reaction_role_check(payload)
+        role, guild = self.reaction_role_check(payload)
         if role is not None:
-            member = self.bot.get_member(payload.user_id)
+            member = discord.utils.get(guild.members, id=payload.user_id)
             await member.remove_roles(role)
 
     @commands.Cog.listener()
