@@ -31,8 +31,7 @@ class events(commands.Cog):
             role = discord.utils.get(guild.roles, id=role_id)
             if payload.event_type == "REACTION_REMOVE":
                 return (role, guild)
-            else:
-                return role
+            return role
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
