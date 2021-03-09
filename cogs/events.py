@@ -13,6 +13,26 @@ class events(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    async def reaction_role_check(self, payload):
+        with open("json/reaction_roles.json") as file:
+            data = ujson.load(file)
+
+        message_id = str(payload.message_id)
+
+        if message_id in data:
+            if str(payload.emoji) in data[message_id]:
+                role_id = int(data[message_id][str(payload.emoji)])
+            elif payload.emoji.name in data[message_id]:
+                role_id = int(data[message_id][payload.emoji.name])
+            else:
+                return None
+
+            guild = self.bot.get_guild(payload.guild_id)
+            role = discord.utils.get(guild.roles, id=role_id)
+            if payload.event_type == "REACTION_REMOVE":
+                return (role, guild)
+            return role
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         """Gives roles based off reaction added if message in reaction_roles.json.
@@ -23,21 +43,8 @@ class events(commands.Cog):
         if payload.member == self.bot.user:
             return
 
-        with open("json/reaction_roles.json") as file:
-            data = ujson.load(file)
-
-        message_id = str(payload.message_id)
-
-        if message_id in data:
-            if str(payload.emoji) in data[message_id]:
-                id = int(data[message_id][str(payload.emoji)])
-            elif str(payload.emoji.name) in data[message_id]:
-                id = int(data[message_id][str(payload.emoji.name)])
-            else:
-                return
-
-            guild = self.bot.get_guild(payload.guild_id)
-            role = discord.utils.get(guild.roles, id=id)
+        role = self.reaction_role_check(payload)
+        if role is not None:
             await payload.member.add_roles(role)
 
     @commands.Cog.listener()
@@ -47,24 +54,8 @@ class events(commands.Cog):
         payload: discord.RawReactionActionEvent
             A payload of raw data about the reaction and member.
         """
-        if payload.member == self.bot.user:
-            return
-
-        with open("json/reaction_roles.json") as file:
-            data = ujson.load(file)
-
-        message_id = str(payload.message_id)
-
-        if message_id in data:
-            if str(payload.emoji) in data[message_id]:
-                id = int(data[message_id][str(payload.emoji)])
-            elif payload.emoji.name in data[message_id]:
-                id = int(data[message_id][payload.emoji.name])
-            else:
-                return
-
-            guild = self.bot.get_guild(payload.guild_id)
-            role = discord.utils.get(guild.roles, id=id)
+        role, guild = self.reaction_role_check(payload)
+        if role is not None:
             member = discord.utils.get(guild.members, id=payload.user_id)
             await member.remove_roles(role)
 
