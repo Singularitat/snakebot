@@ -43,7 +43,7 @@ class events(commands.Cog):
         if payload.member == self.bot.user:
             return
 
-        role = self.reaction_role_check(payload)
+        role = await self.reaction_role_check(payload)
         if role is not None:
             await payload.member.add_roles(role)
 
@@ -54,7 +54,10 @@ class events(commands.Cog):
         payload: discord.RawReactionActionEvent
             A payload of raw data about the reaction and member.
         """
-        role, guild = self.reaction_role_check(payload)
+        try:
+            role, guild = await self.reaction_role_check(payload)
+        except TypeError:
+            return
         if role is not None:
             member = discord.utils.get(guild.members, id=payload.user_id)
             await member.remove_roles(role)
