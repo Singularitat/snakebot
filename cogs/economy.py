@@ -21,9 +21,7 @@ class economy(commands.Cog):
         with open("json/economy.json") as file:
             data = ujson.load(file)
         topbal = sorted(data["money"], key=data["money"].get, reverse=True)[:amount]
-        embed = discord.Embed(
-            title=f"Top {amount} Balances", color=discord.Color.blue()
-        )
+        embed = discord.Embed(color=discord.Color.blue())
         for num in range(amount):
             try:
                 embed.add_field(
@@ -33,7 +31,9 @@ class economy(commands.Cog):
                 )
             except IndexError:
                 await ctx.send(f"```Could only find {num} members```")
+                num -= 1
                 break
+        embed.title = f"Top {num+1} Balances"
         await ctx.send(embed=embed)
 
     @commands.command()
