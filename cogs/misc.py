@@ -34,17 +34,11 @@ class misc(commands.Cog):
         else:
             base = int(num_base)
 
-        numbers = re.sub(r'[^\w]', ' ', args)
-        operators = re.sub(r'[?!^\w]', ' ', args)
-        numbers = [str(int(num, base)) for num in [*filter(None, numbers.split(" "))]]
-        operators = [*filter(None, operators.split(" "))]
+        operators = re.sub(r'\d+', "%s", args)
+        numbers = re.findall(r'\d+', args)
+        numbers = [str(int(num, base)) for num in numbers]
 
-        code = ""
-        for i, num in enumerate(numbers):
-            try:
-                code += num + operators[i]
-            except IndexError:
-                code += num
+        code = operators % tuple(numbers)
 
         async with aiohttp.ClientSession() as session:
             data = {"language": "python", "source": f"print({code})", "args": "", "stdin": "", "log": 0}
@@ -55,6 +49,7 @@ class misc(commands.Cog):
 
         if r['stderr']:
             return await ctx.send("```Invalid```")
+
         if num_base.lower() == "hex":
             result = hex(int(r['output']))
         elif num_base.lower() == "oct":
@@ -63,6 +58,7 @@ class misc(commands.Cog):
             result = bin(int(r['output']))
         else:
             result = r['output']
+
         await ctx.send(f"```{num_base.capitalize()}: {result} Decimal: {r['output']}```")
 
     @commands.command(name="hex")
