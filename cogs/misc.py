@@ -33,25 +33,29 @@ class misc(commands.Cog):
             base = 2
         else:
             base = int(num_base)
-        conversion = re.sub(r'[^\w]', ' ', args)
+
+        numbers = re.sub(r'[^\w]', ' ', args)
         operators = re.sub(r'[?!^\w]', ' ', args)
-        nums = [str(int(num, base)) for num in [*filter(None, conversion.split(" "))]]
+        numbers = [str(int(num, base)) for num in [*filter(None, numbers.split(" "))]]
         operators = [*filter(None, operators.split(" "))]
+
         code = ""
-        for i, num in enumerate(nums):
+        for i, num in enumerate(numbers):
             try:
                 code += num + operators[i]
             except IndexError:
                 code += num
+
         async with aiohttp.ClientSession() as session:
             data = {"language": "python", "source": f"print({code})", "args": "", "stdin": "", "log": 0}
             async with session.post(
                 "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
             ) as response:
                 r = await response.json()
+
         if r['stderr']:
             return await ctx.send("```Invalid```")
-        await ctx.send(f"```{num_base.capitalize()}: {hex(int(float(r['output'])))} Decimal: {int(float(r['output']))} ```")
+        await ctx.send(f"```{num_base.capitalize()}: {hex(int(float(r['output'])))} Decimal: {int(float(r['output']))}```")
 
     @commands.command(name="hex")
     async def _hex(self, ctx, number, convert: bool = False):

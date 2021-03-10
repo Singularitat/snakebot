@@ -170,7 +170,7 @@ class information(commands.Cog):
             src = type(self.bot.help_command)
             filename = inspect.getsourcefile(src)
         else:
-            obj = self.bot.get_command(command.replace(".", " "))
+            obj = self.bot.get_command(command)
             if obj is None:
                 return await ctx.send("Could not find command.")
 
