@@ -3,15 +3,6 @@ import datetime
 from dateutil.relativedelta import relativedelta
 
 
-def get_matching_emote(guild, emote):
-    """Finds an emoji based off its name."""
-    emote_name = emote.split(":")[1]
-    for emoji in guild.emojis:
-        if emoji.name == emote_name:
-            return emoji
-    return emote_name
-
-
 def _stringify_time_unit(value: int, unit: str) -> str:
     """Returns a string to represent a value and time unit, ensuring that it uses the right plural form of the unit.
     >>> _stringify_time_unit(1, "seconds")
