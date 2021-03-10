@@ -84,10 +84,10 @@ class information(commands.Cog):
         idle_users = sum(
             [member.status is discord.Status.idle for member in ctx.guild.members]
         )
-        offline = util.get_matching_emote(ctx.guild, ":offline:")
-        online = util.get_matching_emote(ctx.guild, ":online:")
-        dnd = util.get_matching_emote(ctx.guild, ":dnd:")
-        idle = util.get_matching_emote(ctx.guild, ":idle:")
+        offline = "<:offline:766076363048222740>"
+        online = "<:online:766076316512157768>"
+        dnd = "<:dnd:766197955597959208>"
+        idle = "<:idle:766197981955096608>"
         embed = discord.Embed(colour=discord.Colour.blurple())
         embed.description = textwrap.dedent(
             f"""
