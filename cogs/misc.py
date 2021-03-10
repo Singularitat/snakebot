@@ -55,7 +55,15 @@ class misc(commands.Cog):
 
         if r['stderr']:
             return await ctx.send("```Invalid```")
-        await ctx.send(f"```{num_base.capitalize()}: {hex(int(float(r['output'])))} Decimal: {int(float(r['output']))}```")
+        if num_base.lower() == "hex":
+            result = hex(int(r['output']))
+        elif num_base.lower() == "oct":
+            result = oct(int(r['output']))
+        elif num_base.lower() == "bin":
+            result = bin(int(r['output']))
+        else:
+            result = r['output']
+        await ctx.send(f"```{num_base.capitalize()}: {result} Decimal: {r['output']}```")
 
     @commands.command(name="hex")
     async def _hex(self, ctx, number, convert: bool = False):
