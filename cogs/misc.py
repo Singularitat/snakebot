@@ -7,7 +7,6 @@ import lxml.html
 import config
 import ujson
 import unicodedata
-import math
 import re
 
 
@@ -42,7 +41,7 @@ class misc(commands.Cog):
         for i, num in enumerate(nums):
             try:
                 code += num + operators[i]
-            except:
+            except IndexError:
                 code += num
         async with aiohttp.ClientSession() as session:
             data = {"language": "python", "source": f"print({code})", "args": "", "stdin": "", "log": 0}
