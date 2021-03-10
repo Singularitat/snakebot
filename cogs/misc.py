@@ -8,6 +8,7 @@ import config
 import ujson
 import unicodedata
 import math
+import re
 
 
 class misc(commands.Cog):
@@ -15,6 +16,43 @@ class misc(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    @commands.command()
+    async def calc(self, ctx, num_base, *, args):
+        """Does math.
+
+        num_base: str
+            The base you want to calculate in.
+        args: str
+            A str of arguments to calculate.
+        """
+        if num_base.lower() == "hex":
+            base = 16
+        elif num_base.lower() == "oct":
+            base = 8
+        elif num_base.lower() == "bin":
+            base = 2
+        else:
+            base = int(num_base)
+        conversion = re.sub(r'[^\w]', ' ', args)
+        operators = re.sub(r'[?!^\w]', ' ', args)
+        nums = [str(int(num, base)) for num in [*filter(None, conversion.split(" "))]]
+        operators = [*filter(None, operators.split(" "))]
+        code = ""
+        for i, num in enumerate(nums):
+            try:
+                code += num + operators[i]
+            except:
+                code += num
+        async with aiohttp.ClientSession() as session:
+            data = {"language": "python", "source": f"print({code})", "args": "", "stdin": "", "log": 0}
+            async with session.post(
+                "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
+            ) as response:
+                r = await response.json()
+        if r['stderr']:
+            return await ctx.send("```Invalid```")
+        await ctx.send(f"```{num_base.capitalize()}: {hex(int(float(r['output'])))} Decimal: {int(float(r['output']))} ```")
 
     @commands.command(name="hex")
     async def _hex(self, ctx, number, convert: bool = False):
@@ -29,26 +67,6 @@ class misc(commands.Cog):
             return await ctx.send(f"```{int(number, 16)}```")
         await ctx.send(f"```{hex(int(number))}```")
 
-    @commands.command(name="hexadd")
-    async def _hexadd(self, ctx, *numbers):
-        """Adds an infinite amount of hex values.
-
-        numbers: tuple
-            The hex numbers you want to add together.
-        """
-        result = sum(int(num, 16) for num in numbers)
-        await ctx.send(f"```Hex: {hex(result)} Decimal: {result}```")
-
-    @commands.command(name="hexmult")
-    async def _hexmult(self, ctx, *numbers):
-        """Multiplys an infinite amount of hex values.
-
-        numbers: tuple
-            The hex numbers you want to multiply together.
-        """
-        result = math.prod(int(num, 16) for num in numbers)
-        await ctx.send(f"```Hex: {hex(result)} Decimal: {result}```")
-
     @commands.command(name="oct")
     async def _oct(self, ctx, number, convert: bool = False):
         """Shows a number in octal prefixed with “0o”.
@@ -62,26 +80,6 @@ class misc(commands.Cog):
             return await ctx.send(f"```{int(number, 8)}```")
         await ctx.send(f"```{oct(int(number))}```")
 
-    @commands.command(name="octadd")
-    async def _octadd(self, ctx, *numbers):
-        """Adds an infinite amount of oct values.
-
-        numbers: tuple
-            The oct numbers you want to add together.
-        """
-        result = sum(int(num, 8) for num in numbers)
-        await ctx.send(f"```Oct: {oct(result)} Decimal: {result}```")
-
-    @commands.command(name="octmult")
-    async def _octmult(self, ctx, *numbers):
-        """Multiplys an infinite amount of oct values.
-
-        numbers: tuple
-            The oct numbers you want to multiply together.
-        """
-        result = math.prod(int(num, 8) for num in numbers)
-        await ctx.send(f"```Oct: {oct(result)} Decimal: {result}```")
-
     @commands.command(name="bin")
     async def _bin(self, ctx, number, convert: bool = False):
         """Shows a number in binary prefixed with “0b”.
@@ -94,26 +92,6 @@ class misc(commands.Cog):
         if convert:
             return await ctx.send(f"```{int(number, 2)}```")
         await ctx.send(f"```{bin(int(number))}```")
-
-    @commands.command(name="binadd")
-    async def _binadd(self, ctx, *numbers):
-        """Adds an infinite amount of binary values.
-
-        numbers: tuple
-            The binary numbers you want to add together.
-        """
-        result = sum(int(num, 2) for num in numbers)
-        await ctx.send(f"```Binary: {bin(result)} Decimal: {result}```")
-
-    @commands.command(name="binmult")
-    async def _binmult(self, ctx, *numbers):
-        """Multiplys an infinite amount of binary values.
-
-        numbers: tuple
-            The binary numbers you want to multiply together.
-        """
-        result = math.prod(int(num, 2) for num in numbers)
-        await ctx.send(f"```Binary: {bin(result)} Decimal: {result}```")
 
     @commands.command()
     async def char(self, ctx, char: str, number: int = 26):
