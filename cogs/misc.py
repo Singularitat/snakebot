@@ -41,7 +41,7 @@ class misc(commands.Cog):
         code = operators % tuple(numbers)
 
         async with aiohttp.ClientSession() as session:
-            data = {"language": "python", "source": f"print({code})", "args": "", "stdin": "", "log": 0}
+            data = {"language": "python", "source": f"print(round({code}))", "args": "", "stdin": "", "log": 0}
             async with session.post(
                 "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
             ) as response:
