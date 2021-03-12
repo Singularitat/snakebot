@@ -48,7 +48,7 @@ class admin(commands.Cog):
         self.bot = bot
 
     @commands.command(hidden=True)
-    async def edit(self, ctx, message_id, message_content):
+    async def edit(self, ctx, message_id, *, message_content):
         """Edits one of the bots messages.
 
         message_id: str
