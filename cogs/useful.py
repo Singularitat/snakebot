@@ -28,12 +28,14 @@ class useful(commands.Cog):
             The code to run.
         """
         code = re.sub(r"```\w+\n|```", "", code)
-        async with aiohttp.ClientSession() as session:
-            data = {"language": lang, "source": code, "args": "", "stdin": "", "log": 0}
-            async with session.post(
-                "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
-            ) as response:
-                r = await response.json()
+
+        data = {"language": lang, "source": code, "args": "", "stdin": "", "log": 0}
+
+        async with aiohttp.ClientSession() as session, session.post(
+            "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
+        ) as response:
+            r = await response.json()
+
         if (
             "message" in r
             and r["message"] == "Supplied language is not supported by Piston"
@@ -292,9 +294,10 @@ class useful(commands.Cog):
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
         }
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.get(url) as page:
-                soup = lxml.html.fromstring(await page.text())
+        async with aiohttp.ClientSession(headers=headers) as session, session.get(
+            url
+        ) as page:
+            soup = lxml.html.fromstring(await page.text())
         images = []
         for a in soup.xpath('.//img[@class="rg_i Q4LuWd"]'):
             try:
@@ -315,9 +318,10 @@ class useful(commands.Cog):
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
         }
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.get(url) as page:
-                soup = lxml.html.fromstring(await page.text())
+        async with aiohttp.ClientSession(headers=headers) as session, session.get(
+            url
+        ) as page:
+            soup = lxml.html.fromstring(await page.text())
         images = []
         for a in soup.xpath('.//a[@class="iusc"]'):
             images.append(ujson.loads(a.attrib["m"])["turl"])
