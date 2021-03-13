@@ -87,7 +87,7 @@ class economy(commands.Cog):
         bet: float
             The amount of money you are betting.
         """
-        emojis = [
+        emojis = (
             ":apple:",
             ":tangerine:",
             ":pear:",
@@ -103,7 +103,7 @@ class economy(commands.Cog):
             ":coconut:",
             ":peach:",
             ":mango:",
-        ]
+        )
         if bet > 0:
             a, b, c, d = (
                 random.choice(emojis),
@@ -228,7 +228,6 @@ class economy(commands.Cog):
             value=data["wins"][user]["highestwin"],
             inline=True,
         )
-        embed.set_footer(icon_url=self.bot.user.avatar_url, text="Go way hat you™")
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -242,7 +241,7 @@ class economy(commands.Cog):
             The amount of emojis to remove from the slot list deaulting to 0.
         """
         start = time.time()
-        emojis = [
+        emojis = (
             ":apple:",
             ":tangerine:",
             ":pear:",
@@ -258,7 +257,7 @@ class economy(commands.Cog):
             ":coconut:",
             ":peach:",
             ":mango:",
-        ]
+        )
         if remove != 0:
             emojis = emojis[-remove]
         (
@@ -369,7 +368,6 @@ class economy(commands.Cog):
                 value=f"{round(time.time() - start, 3)}s",
                 inline=True,
             )
-            embed.set_footer(icon_url=self.bot.user.avatar_url, text="Go way hat you™")
             await ctx.send(embed=embed)
 
     @commands.command(aliases=["bal"])
