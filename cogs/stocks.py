@@ -135,7 +135,6 @@ class stocks(commands.Cog):
         if symbol is None:
             embed = discord.Embed(colour=discord.Color.blue())
             embed.set_author(name="Stocks")
-            embed.set_footer(icon_url=self.bot.user.avatar_url, text="Go way hat you™")
 
             for stock in await stockgrab(url):
                 if float(stock[2]) >= 1:
