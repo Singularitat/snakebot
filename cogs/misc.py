@@ -165,9 +165,8 @@ class misc(commands.Cog):
         try:
             async with aiohttp.ClientSession(
                 headers=headers, raise_for_status=True
-            ) as session:
-                async with session.get(url) as page:
-                    text = lxml.html.fromstring(await page.text())
+            ) as session, session.get(url) as page:
+                text = lxml.html.fromstring(await page.text())
         except aiohttp.client_exceptions.ClientResponseError:
             await ctx.send(
                 f"Could not find and element with the symbol {element.upper()}"
