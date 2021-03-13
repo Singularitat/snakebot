@@ -33,32 +33,40 @@ class misc(commands.Cog):
         else:
             base = int(num_base)
 
-        operators = re.sub(r'\d+', "%s", args)
-        numbers = re.findall(r'\d+', args)
+        operators = re.sub(r"\d+", "%s", args)
+        numbers = re.findall(r"\d+", args)
         numbers = [str(int(num, base)) for num in numbers]
 
         code = operators % tuple(numbers)
 
-        async with aiohttp.ClientSession() as session:
-            data = {"language": "python", "source": f"print(round({code}))", "args": "", "stdin": "", "log": 0}
-            async with session.post(
-                "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
-            ) as response:
-                r = await response.json()
+        data = {
+            "language": "python",
+            "source": f"print(round({code}))",
+            "args": "",
+            "stdin": "",
+            "log": 0,
+        }
 
-        if r['stderr']:
+        async with aiohttp.ClientSession() as session, session.post(
+            "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
+        ) as response:
+            r = await response.json()
+
+        if r["stderr"]:
             return await ctx.send("```Invalid```")
 
         if num_base.lower() == "hex":
-            result = hex(int(r['output']))
+            result = hex(int(r["output"]))
         elif num_base.lower() == "oct":
-            result = oct(int(r['output']))
+            result = oct(int(r["output"]))
         elif num_base.lower() == "bin":
-            result = bin(int(r['output']))
+            result = bin(int(r["output"]))
         else:
-            result = r['output']
+            result = r["output"]
 
-        await ctx.send(f"```{num_base.capitalize()}: {result} Decimal: {r['output']}```")
+        await ctx.send(
+            f"```{num_base.capitalize()}: {result} Decimal: {r['output']}```"
+        )
 
     @commands.command(name="hex")
     async def _hex(self, ctx, number, convert: bool = False):
