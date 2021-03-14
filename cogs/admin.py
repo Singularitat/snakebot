@@ -336,8 +336,8 @@ class admin(commands.Cog):
             if data["downvote"] == []:
                 return await ctx.send("```No downvoted members```")
             embed = discord.Embed(title="Downvoted users", colour=discord.Color.blue())
-            for member in data["downvote"]:
-                embed.add_field(name="User:", value=member, inline=True)
+            for id in data["downvote"]:
+                embed.add_field(name="User:", value=id, inline=True)
         else:
             if member.id in data["downvote"]:
                 data["downvote"].remove(member.id)
@@ -374,8 +374,8 @@ class admin(commands.Cog):
             embed = discord.Embed(
                 title="Blacklisted users", colour=discord.Color.blue()
             )
-            for member in data["blacklist"]:
-                embed.add_field(name="User:", value=member, inline=True)
+            for id in data["blacklist"]:
+                embed.add_field(name="User:", value=id, inline=True)
         else:
             if member.id in data["blacklist"]:
                 data["blacklist"].remove(member.id)
@@ -578,9 +578,9 @@ class admin(commands.Cog):
         else:
             await ctx.send("```No Errors```")
 
-    async def open_json(self, file, msg):
+    async def open_json(self, file_path, msg):
         try:
-            with open(file) as file:
+            with open(file_path) as file:
                 try:
                     data = ujson.load(file)
                 except ValueError:
