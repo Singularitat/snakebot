@@ -2,14 +2,16 @@ import lxml.html
 import aiohttp
 
 
-async def stockgrab(url):
+async def stockgrab():
     """Grabs some information abouts stocks from yahoo finance."""
+    url = "https://nz.finance.yahoo.com/most-active?offset=0&count=200"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
     }
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(url) as page:
-            soup = lxml.html.fromstring(await page.text())
+    async with aiohttp.ClientSession(headers=headers) as session, session.get(
+        url
+    ) as page:
+        soup = lxml.html.fromstring(await page.text())
     stockdata = []
     for table in soup.xpath('.//table[@class="W(100%)"]'):
         table_body = table.find("tbody")
@@ -21,9 +23,10 @@ async def stockgrab(url):
     return stockdata
 
 
-async def stockupdate(data, url):
-    for stock in await stockgrab(url):
-        tmp = stock[0][:3]
-        if tmp not in data["stocks"]:
-            data["stocks"][tmp] = {}
-        data["stocks"][tmp] = float(stock[2])
+async def stockupdate(data):
+    for stock in await stockgrab():
+        if len(stock[0]) == 6:
+            tmp = stock[0][:3]
+            if tmp not in data["stocks"]:
+                data["stocks"][tmp] = {}
+            data["stocks"][tmp] = float(stock[2])

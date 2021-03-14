@@ -477,7 +477,7 @@ class useful(commands.Cog):
         )
         embed.add_field(
             name="Price",
-            value=f"${round(crypto['quote']['NZD']['price'], 2):,.2f}",
+            value=f"${crypto['quote']['NZD']['price']:,.2f}",
             inline=False,
         )
         embed.add_field(
