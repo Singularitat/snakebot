@@ -42,24 +42,7 @@ class information(commands.Cog):
     @commands.command()
     async def uptime(self, ctx):
         """Shows the bots uptime."""
-        await ctx.send(f"**{util.time_since(self.bot.uptime)}**")
-
-    @commands.command()
-    async def roles(self, ctx, member: discord.Member):
-        """Sends a list of the roles a member has.
-
-        member: discord.Member
-            The member to get the roles of.
-        """
-        role_list = []
-        for role in member.roles:
-            if str(role.name) != "@everyone":
-                role_list.append(f"*{role.name}*")
-        await ctx.send(
-            embed=discord.Embed(
-                title=str(role_list)[1:-1], color=discord.Color.dark_gold()
-            )
-        )
+        await ctx.send(f"**{util.time_since(self.bot.uptime)[:-4]}**")
 
     @commands.command(
         name="server",

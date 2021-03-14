@@ -58,7 +58,6 @@ class admin(commands.Cog):
         """
         message = await ctx.fetch_message(message_id)
         await message.edit(content=message_content)
-        await ctx.send("```Edited message```")
 
     @edit.error
     async def edit_handler(self, ctx, error):
@@ -123,18 +122,6 @@ class admin(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def chunked(self, ctx):
-        """Checks if the current guild is chunked and chunks guild if not."""
-        if ctx.author.guild.chunked:
-            await ctx.send(f"```{ctx.author.guild} is chunked```")
-        else:
-            await ctx.author.guild.chunk()
-            await ctx.send(
-                f"```{ctx.author.guild} was not chunked it has now been chunked```"
-            )
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
     async def toggle(self, ctx, command):
         """Toggles a command from being disabled or enabled.
 
@@ -163,7 +150,6 @@ class admin(commands.Cog):
             status=discord.Status.online,
             activity=discord.Game(name=presence),
         )
-        await ctx.send(f"Changed presence to {presence}")
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -191,16 +177,16 @@ class admin(commands.Cog):
             new_ctx.command.reset_cooldown(new_ctx)
         except commands.CommandError:
             end = time.perf_counter()
-            success = ":negative_squared_cross_mark:"
+            success = "Failure"
             try:
                 await ctx.send(f"```py\n{traceback.format_exc()}\n```")
             except discord.HTTPException:
                 pass
         else:
             end = time.perf_counter()
-            success = ":white_check_mark:"
+            success = "Success"
 
-        await ctx.send(f"Status: {success} Time: {(end - start) * 1000:.2f}ms")
+        await ctx.send(f"```{success}; {(end - start) * 1000:.2f}ms```")
 
     @commands.command(hiiden=True)
     @commands.is_owner()
@@ -211,7 +197,7 @@ class admin(commands.Cog):
             The new prefix.
         """
         self.bot.command_prefix = prefix
-        await ctx.send(f"Prefix changed to {prefix}")
+        await ctx.send(f"```Prefix changed to {prefix}```")
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
@@ -234,22 +220,6 @@ class admin(commands.Cog):
         msg.content = f"{ctx.prefix}{command}"
         new_ctx = await self.bot.get_context(msg, cls=type(ctx))
         await self.bot.invoke(new_ctx)
-
-    @commands.command(hidden=True, aliases=["stopu"])
-    @commands.has_permissions(manage_roles=True)
-    async def stopuser(self, ctx, member: discord.Member):
-        """Gives a user the stop role.
-
-        member: discord.Member
-            The member to give the role.
-        """
-        role = discord.utils.get(member.guild.roles, name="Stop")
-        if role in member.roles:
-            await member.remove_roles(role)
-            await ctx.send(f"Unstopped {member}")
-        else:
-            await member.add_roles(role)
-            await ctx.send(f"Stopped {member}")
 
     @commands.command(hidden=True, aliases=["pull"])
     @commands.is_owner()
@@ -329,20 +299,17 @@ class admin(commands.Cog):
         role: str
             The role name.
         """
-        role = discord.utils.get(member.guild.roles, name=role.capitalize())
+        role = discord.utils.get(member.guild.roles, name=role)
+        if role is None:
+            role = discord.utils.get(member.guild.roles, name=role.capitalize())
+            if role is None:
+                return await ctx.send("```Could not find role```")
         if role in member.roles:
             await member.remove_roles(role)
-            embed = discord.Embed(title=f"Gave {member} the role {role}")
+            await ctx.send(f"Gave {member} the role {role}")
         else:
             await member.add_roles(role)
-            embed = discord.Embed(title=f"Removed the role {role} from {member}")
-        await ctx.send(embed)
-
-    @commands.command(hidden=True)
-    @commands.has_permissions(administrator=True)
-    async def appinfo(self, ctx):
-        """Sends application info about the bot."""
-        await ctx.send(await self.bot.application_info())
+            await ctx.send(f"Removed the role {role} from {member}")
 
     @commands.command(hidden=True, aliases=["deletecmd", "removecmd"])
     @commands.is_owner()
@@ -353,7 +320,7 @@ class admin(commands.Cog):
             The command to remove.
         """
         self.bot.remove_command(command)
-        await ctx.send(embed=discord.Embed(title=f"Removed command {command}"))
+        await ctx.send(embed=discord.Embed(title=f"```Removed command {command}```"))
 
     @commands.command()
     @commands.has_permissions(administrator=True)
@@ -366,9 +333,11 @@ class admin(commands.Cog):
         with open("json/real.json") as file:
             data = ujson.load(file)
         if member is None:
+            if data["downvote"] == []:
+                return await ctx.send("```No downvoted members```")
             embed = discord.Embed(title="Downvoted users", colour=discord.Color.blue())
-            for num in range(len(data["downvote"])):
-                embed.add_field(name="User:", value=data["downvote"][num], inline=True)
+            for member_id in data["downvote"]:
+                embed.add_field(name="User:", value=member_id, inline=True)
         else:
             if member.id in data["downvote"]:
                 data["downvote"].remove(member.id)
@@ -400,11 +369,13 @@ class admin(commands.Cog):
         with open("json/real.json") as file:
             data = ujson.load(file)
         if member is None:
+            if data["blacklist"] == []:
+                return await ctx.send("```No blacklisted members```")
             embed = discord.Embed(
                 title="Blacklisted users", colour=discord.Color.blue()
             )
-            for num in range(len(data["blacklist"])):
-                embed.add_field(name="User:", value=data["blacklist"][num], inline=True)
+            for member_id in data["blacklist"]:
+                embed.add_field(name="User:", value=member_id, inline=True)
         else:
             if member.id in data["blacklist"]:
                 data["blacklist"].remove(member.id)
@@ -571,6 +542,61 @@ class admin(commands.Cog):
             os.system("python ./bot.py")
         else:
             os.system("nohup python3 bot.py &")
+
+    @commands.command(hidden=True, name="fixjson")
+    async def fix_json(self, ctx):
+        """Fixes the bots json files if they are broken."""
+        msg = ""
+
+        # Fixing economy.json
+
+        data, msg = await self.open_json("json/economy.json", msg)
+
+        msg = await self.check_keys(data, msg, "money", "stockbal", "wins", "stocks")
+
+        with open("json/economy.json", "w") as file:
+            data = ujson.dump(data, file, indent=2)
+
+        # Fixing reaction_roles.json
+
+        data, msg = await self.open_json("json/reaction_roles.json", msg)
+
+        with open("json/reaction_roles.json", "w") as file:
+            data = ujson.dump(data, file, indent=2)
+
+        # Fixing real.json
+
+        data, msg = await self.open_json("json/real.json", msg)
+
+        msg = await self.check_keys(data, msg, "blacklist", "downvote", "karma")
+
+        with open("json/real.json", "w") as file:
+            data = ujson.dump(data, file, indent=2)
+
+        if msg:
+            await ctx.send(f"```{msg}```")
+        else:
+            await ctx.send("```No Errors```")
+
+    async def open_json(self, file_path, msg):
+        try:
+            with open(file_path) as file:
+                try:
+                    data = ujson.load(file)
+                except ValueError:
+                    data = {}
+                    msg += f"Error loading {file.name}\n"
+        except FileNotFoundError:
+            data = {}
+            msg += f"{file} not found\n"
+        return data, msg
+
+    async def check_keys(self, data, msg, *keys):
+        for key in keys:
+            if key not in data:
+                data[key] = {}
+                msg += f"{key} not found\n"
+        return msg
 
 
 def setup(bot: commands.Bot) -> None:

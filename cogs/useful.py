@@ -353,7 +353,6 @@ class useful(commands.Cog):
                 inline=False,
             )
             embed.add_field(name="Upvotes", value=defin["thumbs_up"], inline=False)
-            embed.set_footer(icon_url=self.bot.user.avatar_url, text="Go way hat you™")
             await ctx.send(embed=embed)
         else:
             embed = discord.Embed(
@@ -478,17 +477,17 @@ class useful(commands.Cog):
         )
         embed.add_field(
             name="Price",
-            value=f"${round(crypto['quote']['NZD']['price'], 2)}",
+            value=f"${crypto['quote']['NZD']['price']:,.2f}",
             inline=False,
         )
         embed.add_field(
             name="Circulating/Max Supply",
-            value=f"{crypto['circulating_supply']}/{crypto['max_supply']}",
+            value=f"{crypto['circulating_supply']:,}/{crypto['max_supply']:,}",
             inline=False,
         )
         embed.add_field(
             name="Market Cap",
-            value=f"${crypto['quote']['NZD']['market_cap']}",
+            value=f"${crypto['quote']['NZD']['market_cap']:,.2f}",
             inline=False,
         )
         embed.add_field(
@@ -505,30 +504,13 @@ class useful(commands.Cog):
         country: str - The country to search for
         """
         try:
-            if len(country) > 2:
-                url = "https://corona.lmao.ninja/v3/covid-19/countries/"
-                async with aiohttp.ClientSession() as session:
-                    raw_response = await session.get(url)
-                    response = await raw_response.text()
-                    response = ujson.loads(response)
-                    if len(country) == 3:
-                        country = country.upper()
-                    else:
-                        country = country.title()
-                    y = 0
-                    for x in response:
-                        if x["country"] == country:
-                            response = response[y]
-                            break
-                        y += 1
-            else:
-                url = "https://corona.lmao.ninja/v3/covid-19/countries/" + country
-                if country.lower() == "all":
-                    url = "https://corona.lmao.ninja/v3/covid-19/all"
-                async with aiohttp.ClientSession() as session:
-                    raw_response = await session.get(url)
-                    response = await raw_response.text()
-                    response = ujson.loads(response)
+            url = "https://corona.lmao.ninja/v3/covid-19/countries/" + country
+            if country.lower() == "all":
+                url = "https://corona.lmao.ninja/v3/covid-19/all"
+            async with aiohttp.ClientSession() as session:
+                raw_response = await session.get(url)
+                response = await raw_response.text()
+                response = ujson.loads(response)
             embed = discord.Embed(colour=discord.Color.red())
             embed.set_author(
                 name=f"Cornavirus {response['country']}:",
