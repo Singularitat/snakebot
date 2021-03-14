@@ -546,7 +546,6 @@ class admin(commands.Cog):
     @commands.command(hidden=True, name="fixjson")
     async def fix_json(self, ctx):
         """Fixes the bots json files if they are broken."""
-
         msg = ""
 
         # Fixing economy.json
