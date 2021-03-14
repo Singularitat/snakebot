@@ -333,9 +333,11 @@ class admin(commands.Cog):
         with open("json/real.json") as file:
             data = ujson.load(file)
         if member is None:
+            if data["downvote"] == []:
+                return await ctx.send("```No downvoted members```")
             embed = discord.Embed(title="Downvoted users", colour=discord.Color.blue())
-            for num in range(len(data["downvote"])):
-                embed.add_field(name="User:", value=data["downvote"][num], inline=True)
+            for member in data["downvote"]:
+                embed.add_field(name="User:", value=member, inline=True)
         else:
             if member.id in data["downvote"]:
                 data["downvote"].remove(member.id)
@@ -367,11 +369,13 @@ class admin(commands.Cog):
         with open("json/real.json") as file:
             data = ujson.load(file)
         if member is None:
+            if data["blacklist"] == []:
+                return await ctx.send("```No blacklisted members```")
             embed = discord.Embed(
                 title="Blacklisted users", colour=discord.Color.blue()
             )
-            for num in range(len(data["blacklist"])):
-                embed.add_field(name="User:", value=data["blacklist"][num], inline=True)
+            for member in data["blacklist"]:
+                embed.add_field(name="User:", value=member, inline=True)
         else:
             if member.id in data["blacklist"]:
                 data["blacklist"].remove(member.id)
@@ -541,91 +545,59 @@ class admin(commands.Cog):
 
     @commands.command(hidden=True, name="fixjson")
     async def fix_json(self, ctx):
-        """Fixes the bots json files if they are broken"""
+        """Fixes the bots json files if they are broken."""
 
         msg = ""
 
         # Fixing economy.json
 
-        try:
-            with open("json/economy.json") as file:
-                try:
-                    data = ujson.load(file)
-                except ValueError:
-                    data = {}
-                    msg += "economy.json errored while loading\n"
-        except FileNotFoundError:
-            data = {
-                    "money": {},
-                    "stockbal": {},
-                    "wins": {},
-                    "stocks": {}
-                    }
-            msg += "economy.json was not found\n"
-        else:
-            if "money" not in data:
-                data["money"] = {}
-                msg += "Money not found in economy.json\n"
-            if "stockbal" not in data:
-                data["stockbal"] = {}
-                msg += "Stockbal not found in economy.json\n"
-            if "wins" not in data:
-                data["wins"] = {}
-                msg += "Wins not found in economy.json\n"
-            if "stocks" not in data:
-                data["stocks"] = {}
-                msg += "Stocks not found in economy.json\n"
+        data, msg = await self.open_json("json/economy.json", msg)
+
+        msg = await self.check_keys(data, msg, "money", "stockbal", "wins", "stocks")
+
         with open("json/economy.json", "w") as file:
             data = ujson.dump(data, file, indent=2)
 
         # Fixing reaction_roles.json
 
-        try:
-            with open("json/reaction_roles.json") as file:
-                try:
-                    data = ujson.load(file)
-                except ValueError:
-                    data = {}
-                    msg += "reaction_roles.json errored while loading\n"
-        except FileNotFoundError:
-            data = {}
-            msg += "reaction_roles.json was not found\n"
+        data, msg = await self.open_json("json/reaction_roles.json", msg)
+
         with open("json/reaction_roles.json", "w") as file:
             data = ujson.dump(data, file, indent=2)
 
         # Fixing real.json
 
-        try:
-            with open("json/real.json") as file:
-                try:
-                    data = ujson.load(file)
-                except ValueError:
-                    data = {}
-                    msg += "real.json errored while loading\n"
-        except FileNotFoundError:
-            data = {
-                    "blacklist": {},
-                    "downvote": {},
-                    "karma": {}
-                    }
-            msg += "real.json was not found\n"
-        else:
-            if "blacklist" not in data:
-                data["blacklist"] = {}
-                msg += "Blacklist not in real.json\n"
-            if "downvote" not in data:
-                data["downvote"] = {}
-                msg += "Downvote not in real.json\n"
-            if "karma" not in data:
-                data["karma"] = {}
-                msg += "Karma not in real.json\n"
+        data, msg = await self.open_json("json/real.json", msg)
+
+        msg = await self.check_keys(data, msg, "blacklist", "downvote", "karma")
+
         with open("json/real.json", "w") as file:
             data = ujson.dump(data, file, indent=2)
 
         if msg:
             await ctx.send(f"```{msg}```")
         else:
-            await ctx.send("```No errors```")
+            await ctx.send("```No Errors```")
+
+    async def open_json(self, file, msg):
+        try:
+            with open(file) as file:
+                try:
+                    data = ujson.load(file)
+                except ValueError:
+                    data = {}
+                    msg += f"Error loading {file.name}\n"
+        except FileNotFoundError:
+            data = {}
+            msg += f"{file} not found\n"
+        return data, msg
+
+    async def check_keys(self, data, msg, *keys):
+        for key in keys:
+            if key not in data:
+                data[key] = {}
+                msg += f"{key} not found\n"
+        return msg
 
 
 def setup(bot: commands.Bot) -> None:
