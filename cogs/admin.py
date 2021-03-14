@@ -336,8 +336,8 @@ class admin(commands.Cog):
             if data["downvote"] == []:
                 return await ctx.send("```No downvoted members```")
             embed = discord.Embed(title="Downvoted users", colour=discord.Color.blue())
-            for id in data["downvote"]:
-                embed.add_field(name="User:", value=id, inline=True)
+            for member_id in data["downvote"]:
+                embed.add_field(name="User:", value=member_id, inline=True)
         else:
             if member.id in data["downvote"]:
                 data["downvote"].remove(member.id)
@@ -374,8 +374,8 @@ class admin(commands.Cog):
             embed = discord.Embed(
                 title="Blacklisted users", colour=discord.Color.blue()
             )
-            for id in data["blacklist"]:
-                embed.add_field(name="User:", value=id, inline=True)
+            for member_id in data["blacklist"]:
+                embed.add_field(name="User:", value=member_id, inline=True)
         else:
             if member.id in data["blacklist"]:
                 data["blacklist"].remove(member.id)
