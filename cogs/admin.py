@@ -539,6 +539,94 @@ class admin(commands.Cog):
         else:
             os.system("nohup python3 bot.py &")
 
+    @commands.command(hidden=True, name="fixjson")
+    async def fix_json(self, ctx):
+        """Fixes the bots json files if they are broken"""
+
+        msg = ""
+
+        # Fixing economy.json
+
+        try:
+            with open("json/economy.json") as file:
+                try:
+                    data = ujson.load(file)
+                except ValueError:
+                    data = {}
+                    msg += "economy.json errored while loading\n"
+        except FileNotFoundError:
+            data = {
+                    "money": {},
+                    "stockbal": {},
+                    "wins": {},
+                    "stocks": {}
+                    }
+            msg += "economy.json was not found\n"
+        else:
+            if "money" not in data:
+                data["money"] = {}
+                msg += "Money not found in economy.json\n"
+            if "stockbal" not in data:
+                data["stockbal"] = {}
+                msg += "Stockbal not found in economy.json\n"
+            if "wins" not in data:
+                data["wins"] = {}
+                msg += "Wins not found in economy.json\n"
+            if "stocks" not in data:
+                data["stocks"] = {}
+                msg += "Stocks not found in economy.json\n"
+        with open("json/economy.json", "w") as file:
+            data = ujson.dump(data, file, indent=2)
+
+        # Fixing reaction_roles.json
+
+        try:
+            with open("json/reaction_roles.json") as file:
+                try:
+                    data = ujson.load(file)
+                except ValueError:
+                    data = {}
+                    msg += "reaction_roles.json errored while loading\n"
+        except FileNotFoundError:
+            data = {}
+            msg += "reaction_roles.json was not found\n"
+        with open("json/reaction_roles.json", "w") as file:
+            data = ujson.dump(data, file, indent=2)
+
+        # Fixing real.json
+
+        try:
+            with open("json/real.json") as file:
+                try:
+                    data = ujson.load(file)
+                except ValueError:
+                    data = {}
+                    msg += "real.json errored while loading\n"
+        except FileNotFoundError:
+            data = {
+                    "blacklist": {},
+                    "downvote": {},
+                    "karma": {}
+                    }
+            msg += "real.json was not found\n"
+        else:
+            if "blacklist" not in data:
+                data["blacklist"] = {}
+                msg += "Blacklist not in real.json\n"
+            if "downvote" not in data:
+                data["downvote"] = {}
+                msg += "Downvote not in real.json\n"
+            if "karma" not in data:
+                data["karma"] = {}
+                msg += "Karma not in real.json\n"
+        with open("json/real.json", "w") as file:
+            data = ujson.dump(data, file, indent=2)
+
+        if msg:
+            await ctx.send(f"```{msg}```")
+        else:
+            await ctx.send("```No errors```")
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts admin cog."""
