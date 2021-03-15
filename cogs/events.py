@@ -253,8 +253,8 @@ class events(commands.Cog):
         if isinstance(error, discord.Forbidden):
             message = "I do not have the required permissions to run this command."
 
-        elif isinstance(error, commands.BadArgument) or isinstance(
-            error, commands.errors.MissingRequiredArgument
+        elif isinstance(
+            error, (commands.BadArgument, commands.errors.MissingRequiredArgument)
         ):
             ctx.command.reset_cooldown(ctx)
             message = (
