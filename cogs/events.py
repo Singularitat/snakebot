@@ -73,10 +73,17 @@ class events(commands.Cog):
         after: discord.VoiceState
             The new voice state.
         """
-        with open("json/real.json") as file:
-            data = ujson.load(file)
-        if member.id in data["downvote"] and after.channel is not None:
-            await member.edit(voice_channel=None)
+        try:
+            with open("json/real.json") as file:
+                data = ujson.load(file)
+
+            if member.id in data["downvote"] and after.channel is not None:
+                await member.edit(voice_channel=None)
+        except FileNotFoundError:
+            with open("json/real.json", "w") as file:
+                data = ujson.dump(
+                    {"blacklist": {}, "downvote": {}, "karma": {}}, file, indent=2
+                )
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
@@ -156,10 +163,17 @@ class events(commands.Cog):
 
         message: discord.Message
         """
-        with open("json/real.json") as file:
-            data = ujson.load(file)
-        if message.author.id in data["downvote"]:
-            await message.add_reaction("<:downvote:766414744730206228>")
+        try:
+            with open("json/real.json") as file:
+                data = ujson.load(file)
+
+            if message.author.id in data["downvote"]:
+                await message.add_reaction("<:downvote:766414744730206228>")
+        except FileNotFoundError:
+            with open("json/real.json", "w") as file:
+                data = ujson.dump(
+                    {"blacklist": {}, "downvote": {}, "karma": {}}, file, indent=2
+                )
 
     @commands.Cog.listener()
     async def on_reaction_clear(self, message, reactions):
@@ -168,10 +182,17 @@ class events(commands.Cog):
         message: discord.Message
         reactions: List[discord.Reaction]
         """
-        with open("json/real.json") as file:
-            data = ujson.load(file)
-        if message.author.id in data["downvote"]:
-            await message.add_reaction("<:downvote:766414744730206228>")
+        try:
+            with open("json/real.json") as file:
+                data = ujson.load(file)
+
+            if message.author.id in data["downvote"]:
+                await message.add_reaction("<:downvote:766414744730206228>")
+        except FileNotFoundError:
+            with open("json/real.json", "w") as file:
+                data = ujson.dump(
+                    {"blacklist": {}, "downvote": {}, "karma": {}}, file, indent=2
+                )
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -182,23 +203,29 @@ class events(commands.Cog):
         """
         if reaction.message.author == user:
             return
+
         time_since = (
             datetime.datetime.now() - reaction.message.created_at
         ).total_seconds() - 46800
+
         if time_since > 1800:
             return
+
         if reaction.custom_emoji:
             with open("json/real.json") as file:
                 data = ujson.load(file)
             member = str(reaction.message.author.id)
+
             if reaction.emoji.name == "downvote":
                 if member not in data["karma"]:
                     data["karma"][member] = 0
                 data["karma"][member] -= 1
+
             elif reaction.emoji.name == "upvote":
                 if member not in data["karma"]:
                     data["karma"][member] = 0
                 data["karma"][member] += 1
+
             with open("json/real.json", "w") as file:
                 data = ujson.dump(data, file, indent=2)
 
@@ -220,22 +247,19 @@ class events(commands.Cog):
 
         error = getattr(error, "original", error)
 
-        ignored = commands.errors.CommandNotFound
-        if isinstance(error, ignored):
+        if isinstance(error, commands.errors.CommandNotFound):
             return
 
         if isinstance(error, discord.Forbidden):
             message = "I do not have the required permissions to run this command."
 
-        elif isinstance(error, commands.BadArgument):
+        elif isinstance(error, commands.BadArgument) or isinstance(
+            error, commands.errors.MissingRequiredArgument
+        ):
             ctx.command.reset_cooldown(ctx)
             message = (
                 f"{error}\n\nUsage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}"
             )
-
-        elif isinstance(error, commands.errors.MissingRequiredArgument):
-            ctx.command.reset_cooldown(ctx)
-            message = error
 
         elif isinstance(error, commands.errors.ExtensionNotFound):
             message = f"Extension '{error.name}' was not found."
