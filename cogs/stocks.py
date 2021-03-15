@@ -47,7 +47,7 @@ class stocks(commands.Cog):
 
     @commands.command(aliases=["stockprof", "stockp"])
     async def stockprofile(self, ctx, member: discord.Member = None):
-        """Gets someone's stock profile"""
+        """Gets someone's stock profile."""
         with open("json/economy.json") as file:
             data = ujson.load(file)
 
