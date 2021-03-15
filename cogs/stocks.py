@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 import ujson
-from .utils.economy import stockgrab, stockupdate
 
 
 class stocks(commands.Cog):
@@ -13,14 +12,18 @@ class stocks(commands.Cog):
     @commands.command()
     async def stocks(self, ctx):
         """Shows the price of stocks from yahoo finance."""
+        with open("json/economy.json") as file:
+            data = ujson.load(file)
+
         msg = "```Stocks\n"
         i = 0
-        for stock in sorted(await stockgrab()):
-            if len(stock[0]) == 6:
-                if i % 6 == 0:
-                    msg += "\n"
-                i += 1
-                msg += f"{stock[0][:3]}: ${stock[2]:<9}"
+
+        for stock in data["stocks"]:
+            if i % 6 == 0:
+                msg += "\n"
+            i += 1
+            msg += f"{stock}: ${data['stocks'][stock]:<9}"
+
         await ctx.send(f"{msg}```")
 
     @commands.command()
@@ -32,7 +35,9 @@ class stocks(commands.Cog):
         """
         with open("json/economy.json") as file:
             data = ujson.load(file)
+
         symbol = symbol.upper()
+
         if ctx.author.id in data["stocks"][symbol]:
             await ctx.send(
                 f"```You have {data['stockbal'][str(ctx.author.id)][symbol]:.2f} stocks in {symbol}```"
@@ -41,13 +46,20 @@ class stocks(commands.Cog):
             await ctx.send(f"```You have never invested in {symbol}```")
 
     @commands.command(aliases=["stockprof", "stockp"])
-    async def stockprofile(self, ctx):
+    async def stockprofile(self, ctx, member: discord.Member = None):
+        """Gets someone's stock profile."""
         with open("json/economy.json") as file:
             data = ujson.load(file)
-        if str(ctx.author.id) in data["stockbal"]:
+
+        if member is None:
+            member = ctx.author
+
+        if str(member.id) in data["stockbal"]:
             msg = f"```{ctx.message.author}'s stock profile"
-            for stock in data["stockbal"][str(ctx.author.id)]:
-                msg += f"\n{stock}: {data['stockbal'][str(ctx.author.id)][stock]:.2f}"
+
+            for stock in data["stockbal"][str(member.id)]:
+                msg += f"\n{stock}: {data['stockbal'][str(member.id)][stock]:.2f}"
+
             await ctx.send(f"{msg}```")
         else:
             await ctx.send("```You have never invested```")
@@ -62,11 +74,6 @@ class stocks(commands.Cog):
         symbol = symbol.upper()
         with open("json/economy.json") as file:
             data = ujson.load(file)
-
-        await stockupdate(data)
-
-        with open("json/economy.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
 
         if symbol in data["stocks"]:
             await ctx.send(f"```1 {symbol} is worth ${data['stocks'][symbol]}```")
@@ -87,7 +94,7 @@ class stocks(commands.Cog):
             print(file)
             data = ujson.load(file)
         symbol = symbol.upper()
-        await stockupdate(data)
+
         if symbol in data["stocks"]:
             if user not in data["money"]:
                 data["money"][user] = 1000
@@ -127,24 +134,22 @@ class stocks(commands.Cog):
 
         user = str(ctx.author.id)
 
+        with open("json/economy.json") as file:
+            data = ujson.load(file)
+
         if symbol is None:
             embed = discord.Embed(colour=discord.Color.blue())
             embed.set_author(name="Stocks")
 
-            for stock in await stockgrab():
-                if float(stock[2]) >= 1:
-                    embed.add_field(
-                        name=stock[0][:3], value=f"${stock[2]}", inline=True
-                    )
+            for num, stock in enumerate(data["stocks"]):
+                embed.add_field(name=stock[0][:3], value=f"${stock[2]}", inline=True)
+                if num == 24:
+                    return
             await ctx.send(embed=embed)
         else:
-            with open("json/economy.json") as file:
-                data = ujson.load(file)
-
             if user not in data["money"]:
                 data["money"][user] = 1000
 
-            await stockupdate(data)
             symbol = symbol.upper()
 
             if symbol in data["stocks"]:

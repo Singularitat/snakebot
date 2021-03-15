@@ -543,6 +543,26 @@ class admin(commands.Cog):
         else:
             os.system("nohup python3 bot.py &")
 
+    async def open_json(self, file_path, msg):
+        try:
+            with open(file_path) as file:
+                try:
+                    data = ujson.load(file)
+                except ValueError:
+                    data = {}
+                    msg += f"Error loading {file.name}\n"
+        except FileNotFoundError:
+            data = {}
+            msg += f"{file} not found\n"
+        return data, msg
+
+    async def check_keys(self, data, msg, *keys):
+        for key in keys:
+            if key not in data:
+                data[key] = {}
+                msg += f"{key} not found\n"
+        return msg
+
     @commands.command(hidden=True, name="fixjson")
     async def fix_json(self, ctx):
         """Fixes the bots json files if they are broken."""
@@ -577,26 +597,6 @@ class admin(commands.Cog):
             await ctx.send(f"```{msg}```")
         else:
             await ctx.send("```No Errors```")
-
-    async def open_json(self, file_path, msg):
-        try:
-            with open(file_path) as file:
-                try:
-                    data = ujson.load(file)
-                except ValueError:
-                    data = {}
-                    msg += f"Error loading {file.name}\n"
-        except FileNotFoundError:
-            data = {}
-            msg += f"{file} not found\n"
-        return data, msg
-
-    async def check_keys(self, data, msg, *keys):
-        for key in keys:
-            if key not in data:
-                data[key] = {}
-                msg += f"{key} not found\n"
-        return msg
 
 
 def setup(bot: commands.Bot) -> None:

@@ -80,6 +80,34 @@ class economy(commands.Cog):
                 )
             )
 
+    async def streak_update(self, data, member, result):
+        if member not in data["wins"]:
+            data["wins"][member] = {
+                "currentwin": 0,
+                "currentlose": 0,
+                "highestwin": 0,
+                "highestlose": 0,
+                "totallose": 0,
+                "totalwin": 0,
+            }
+        if result == "won":
+            data["wins"][member]["currentwin"] += 1
+            data["wins"][member]["totalwin"] += 1
+            if (
+                data["wins"][member]["highestlose"]
+                < data["wins"][member]["currentlose"]
+            ):
+                data["wins"][member]["highestlose"] = data["wins"][member][
+                    "currentlose"
+                ]
+            data["wins"][member]["currentlose"] = 0
+        else:
+            if data["wins"][member]["highestwin"] < data["wins"][member]["currentwin"]:
+                data["wins"][member]["highestwin"] = data["wins"][member]["currentwin"]
+            data["wins"][member]["totallose"] += 1
+            data["wins"][member]["currentwin"] = 0
+            data["wins"][member]["currentlose"] += 1
+
     @commands.command(aliases=["slots"])
     async def slot(self, ctx, bet: float):
         """Rolls the slot machine.
@@ -113,12 +141,12 @@ class economy(commands.Cog):
             )
             with open("json/economy.json") as file:
                 data = ujson.load(file)
-            user = str(ctx.author.id)
-            if user not in data["money"]:
-                data["money"][user] = 1000
-            if data["money"][user] <= 1:
-                data["money"][user] += 1
-            if data["money"][user] >= bet:
+            member = str(ctx.author.id)
+            if member not in data["money"]:
+                data["money"][member] = 1000
+            if data["money"][member] <= 1:
+                data["money"][member] += 1
+            if data["money"][member] >= bet:
                 result = "won"
                 color = discord.Color.blue()
                 if a == b == c == d:
@@ -143,7 +171,7 @@ class economy(commands.Cog):
                     result = "lost"
                     color = discord.Color.red()
 
-                data["money"][user] = data["money"][user] + bet * winnings
+                data["money"][member] = data["money"][member] + bet * winnings
 
                 embed = discord.Embed(
                     title=f"[ {a} {b} {c} {d} ]",
@@ -151,38 +179,10 @@ class economy(commands.Cog):
                     color=color,
                     inline=True,
                 )
-                embed.set_footer(text=f"Balance: {data['money'][user]}")
-                if user not in data["wins"]:
-                    data["wins"][user] = {
-                        "currentwin": 0,
-                        "currentlose": 0,
-                        "highestwin": 0,
-                        "highestlose": 0,
-                        "totallose": 0,
-                        "totalwin": 0,
-                    }
-                if result == "won":
-                    data["wins"][user]["currentwin"] += 1
-                    data["wins"][user]["totalwin"] += 1
-                    if (
-                        data["wins"][user]["highestlose"]
-                        < data["wins"][user]["currentlose"]
-                    ):
-                        data["wins"][user]["highestlose"] = data["wins"][user][
-                            "currentlose"
-                        ]
-                    data["wins"][user]["currentlose"] = 0
-                else:
-                    if (
-                        data["wins"][user]["highestwin"]
-                        < data["wins"][user]["currentwin"]
-                    ):
-                        data["wins"][user]["highestwin"] = data["wins"][user][
-                            "currentwin"
-                        ]
-                    data["wins"][user]["totallose"] += 1
-                    data["wins"][user]["currentwin"] = 0
-                    data["wins"][user]["currentlose"] += 1
+                embed.set_footer(text=f"Balance: {data['money'][member]}")
+
+                await self.streak_update(data, member, result)
+
                 with open("json/economy.json", "w") as file:
                     data = ujson.dump(data, file, indent=2)
             else:
