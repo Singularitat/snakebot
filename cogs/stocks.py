@@ -10,20 +10,32 @@ class stocks(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def stocks(self, ctx):
-        """Shows the price of stocks from yahoo finance."""
+    async def stocks(self, ctx, order="low"):
+        """Shows the price of stocks from yahoo finance.
+
+        order: str
+            The order you want the stocks to be in [high/low].
+        """
         with open("json/economy.json") as file:
             data = ujson.load(file)
 
-        msg = "```Stocks\n"
-        i = 0
+        if order.lower() == "low":
+            stocks = sorted(data["stocks"], key=data["stocks"].get)
+        elif order.lower() == "high":
+            stocks = sorted(data["stocks"], key=data["stocks"].get, reverse=True)
+        else:
+            stocks = sorted(data["stocks"])
 
-        for stock in data["stocks"]:
+        msg = "```\n"
+        i = 1
+
+        for stock in stocks:
             if len(msg + f"{stock}: ${data['stocks'][stock]:<9}") < 2000:
                 if i % 6 == 0:
-                    msg += "\n"
+                    msg += f"{stock}: ${data['stocks'][stock]}\n"
+                else:
+                    msg += f"{stock}: ${data['stocks'][stock]:<9}"
                 i += 1
-                msg += f"{stock}: ${data['stocks'][stock]:<9}"
 
         await ctx.send(f"{msg}```")
 
@@ -92,7 +104,6 @@ class stocks(commands.Cog):
         """
         user = str(ctx.author.id)
         with open("json/economy.json") as file:
-            print(file)
             data = ujson.load(file)
         symbol = symbol.upper()
 
