@@ -19,10 +19,11 @@ class stocks(commands.Cog):
         i = 0
 
         for stock in data["stocks"]:
-            if i % 6 == 0:
-                msg += "\n"
-            i += 1
-            msg += f"{stock}: ${data['stocks'][stock]:<9}"
+            if len(msg + f"{stock}: ${data['stocks'][stock]:<9}") < 2000:
+                if i % 6 == 0:
+                    msg += "\n"
+                i += 1
+                msg += f"{stock}: ${data['stocks'][stock]:<9}"
 
         await ctx.send(f"{msg}```")
 
