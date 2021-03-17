@@ -144,7 +144,7 @@ class misc(commands.Cog):
             color=discord.Color.blue(),
         )
         embed.add_field(
-            name=f"{member}'s karma: ",
+            name=f"{member.display_name}'s karma: ",
             value=f"{data['karma'][str(member.id)]}",
         )
         await ctx.send(embed=embed)
@@ -235,9 +235,9 @@ class misc(commands.Cog):
         """
         try:
             await member.send(message)
-            await ctx.send(f"```Sent message to {member}```")
+            await ctx.send(f"```Sent message to {member.display_name}```")
         except discord.errors.Forbidden:
-            await ctx.send(f"```{member} has DMs disabled for non-friends```")
+            await ctx.send(f"```{member.display_name} has DMs disabled for non-friends```")
 
     @commands.command()
     async def roll(self, ctx, dice: str):
@@ -279,7 +279,7 @@ class misc(commands.Cog):
             The reason for the slap.
         """
         await ctx.send(
-            f"{ctx.message.author.mention} slapped {member} because {reason}"
+            f"{ctx.message.author.mention} slapped {member.display_name} because {reason}"
         )
 
     @commands.command()

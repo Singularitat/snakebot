@@ -25,7 +25,7 @@ class economy(commands.Cog):
         for num in range(amount):
             try:
                 embed.add_field(
-                    name=self.bot.get_user(int(topbal[num])),
+                    name=self.bot.get_user(int(topbal[num])).display_name,
                     value=f"${data['money'][topbal[num]]:,.2f}",
                     inline=False,
                 )
@@ -389,7 +389,7 @@ class economy(commands.Cog):
             if user not in data["money"]:
                 data["money"][user] = 1000
             embed.add_field(
-                name=f"{member}'s balance: ",
+                name=f"{member.display_name}'s balance: ",
                 value=f"${data['money'][user]:,.2f}",
                 inline=False,
             )
@@ -425,7 +425,7 @@ class economy(commands.Cog):
                     data = ujson.dump(data, file, indent=2)
                 await ctx.send(
                     embed=discord.Embed(
-                        title=f"Sent ${amount} to {member}", color=discord.Color.blue()
+                        title=f"Sent ${amount} to {member.display_name}", color=discord.Color.blue()
                     )
                 )
 
@@ -443,7 +443,7 @@ class economy(commands.Cog):
             data = ujson.dump(data, file, indent=2)
         await ctx.send(
             embed=discord.Embed(
-                title=f"Gave {str(ctx.author)} $1000", color=discord.Color.blue()
+                title=f"Paid {ctx.author.display_name} $1000", color=discord.Color.blue()
             )
         )
 
