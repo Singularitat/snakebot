@@ -20,16 +20,16 @@ class stocks(commands.Cog):
             data = ujson.load(file)
 
         if order.lower() == "low":
-            stocks = sorted(data["stocks"], key=data["stocks"].get)
+            stock_data = sorted(data["stocks"], key=data["stocks"].get)
         elif order.lower() == "high":
-            stocks = sorted(data["stocks"], key=data["stocks"].get, reverse=True)
+            stock_data = sorted(data["stocks"], key=data["stocks"].get, reverse=True)
         else:
-            stocks = sorted(data["stocks"])
+            stock_data = sorted(data["stocks"])
 
         msg = "```\n"
         i = 1
 
-        for stock in stocks:
+        for stock in stock_data:
             if len(msg + f"{stock}: ${data['stocks'][stock]:<9}") < 2000:
                 if i % 6 == 0:
                     msg += f"{stock}: ${data['stocks'][stock]}\n"

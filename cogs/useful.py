@@ -5,7 +5,6 @@ import random
 import aiohttp
 import time
 import datetime
-import string
 import lxml.html
 import re
 import config
@@ -83,105 +82,6 @@ class useful(commands.Cog):
         return message
 
     @commands.command()
-    @commands.is_owner()
-    async def rrole(self, ctx, *emojis):
-        """Starts a slightly interactive session to create a reaction role.
-
-        emojis: tuple
-            A tuple of emojis.
-        """
-        await ctx.message.delete()
-
-        if emojis == ():
-            return await ctx.send(
-                "Put emojis as arguments in the command e.g rrole :fire:"
-            )
-
-        channel = await self.await_for_message(
-            ctx, "Send the channel you want the message to be in"
-        )
-        breifs = await self.await_for_message(
-            ctx, "Send an brief for every emote Seperated by ;"
-        )
-        roles = await self.await_for_message(
-            ctx, "Send an role id/name for every role Seperated by ;"
-        )
-
-        roles = roles.content.split(";")
-
-        for index, role in enumerate(roles):
-            if not role.isnumeric():
-                try:
-                    role = discord.utils.get(ctx.guild.roles, name=role)
-                    roles[index] = role.id
-                except commands.errors.RoleNotFound:
-                    return await ctx.send(f"Could not find role {index}")
-
-        msg = "**Role Menu:**\nReact for a role.\n"
-
-        for emoji, breif in zip(emojis, breifs.content.split(";")):
-            msg += f"\n{emoji}: `{breif}`\n"
-        message = await channel.channel.send(msg)
-
-        for emoji in emojis:
-            await message.add_reaction(emoji)
-
-        with open("json/reaction_roles.json") as file:
-            data = ujson.load(file)
-
-        data[str(message.id)] = dict(zip(emojis, roles))
-
-        with open("json/reaction_roles.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
-
-    @commands.command()
-    async def redit(self, ctx, message: discord.Message, *emojis):
-        """Edit a reaction role message.
-
-        message: discord.Message
-            The id of the reaction roles message.
-        emojis: tuple
-            A tuple of emojis.
-        """
-        msg = message.content
-
-        breifs = await self.await_for_message(
-            ctx, "Send an brief for every emote Seperated by ;"
-        )
-        roles = await self.await_for_message(
-            ctx, "Send an role id/name for every role Seperated by ;"
-        )
-
-        roles = roles.content.split(";")
-
-        for index, role in enumerate(roles):
-            if not role.isnumeric():
-                try:
-                    role = discord.utils.get(ctx.guild.roles, name=role)
-                    roles[index] = role.id
-                except commands.errors.RoleNotFound:
-                    return await ctx.send(f"Could not find role {index}")
-
-        msg += "\n"
-
-        for emoji, breif in zip(emojis, breifs.content.split(";")):
-            msg += f"\n{emoji}: `{breif}`\n"
-
-        await message.edit(content=msg)
-
-        for emoji in emojis:
-            await message.add_reaction(emoji)
-
-        with open("json/reaction_roles.json") as file:
-            data = ujson.load(file)
-
-        for emoji, role in zip(emojis, roles):
-            data[str(message.id)][emoji] = role
-
-        with open("json/reaction_roles.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
-
-    @commands.command()
     async def time(self, ctx, *, command):
         """Runs a command whilst timing it.
 
@@ -257,30 +157,6 @@ class useful(commands.Cog):
                     await ctx.send(f"```{obj}\n\n{dir(obj)}```")
         else:
             await ctx.send("```Could not find object```")
-
-    @commands.command()
-    @commands.is_owner()
-    async def issue(self, ctx, *, issue):
-        """Appends an issue to the snakebot-todo.
-
-        issue: str
-            The issue to append.
-        """
-        await ctx.channel.purge(limit=1)
-        channel = self.bot.get_channel(776616587322327061)
-        message = await channel.fetch_message(787153490996494336)
-        issues = str(message.content).replace("`", "")
-        issuelist = issues.split("\n")
-        issue = string.capwords(issue)
-        if issue[0:6] == "Delete":
-            issuelist.remove(f"{issue[7:]}")
-            issues = "\n".join(issuelist)
-            await message.edit(content=f"""```{issues}```""")
-        else:
-            await message.edit(
-                content=f"""```{issues}
-{issue}```"""
-            )
 
     @commands.command()
     async def google(self, ctx, *, search):
