@@ -151,6 +151,25 @@ class misc(commands.Cog):
         with open("json/real.json", "w") as file:
             data = ujson.dump(data, file, indent=2)
 
+    @commands.command(aliases=["kboard"])
+    async def karmaboard(self, ctx):
+        """Displays the top 5 and bottom 5 members karma."""
+        with open("json/real.json") as file:
+            data = ujson.load(file)
+        sorted_karma = sorted(data["karma"], key=data["karma"].get, reverse=True)
+        embed = discord.Embed(title="Karma Board", color=discord.Color.blue())
+        embed.add_field(
+            name="Top Five",
+            value="\n".join([f"{self.bot.get_user(int(m)).display_name}: {data['karma'][m]}" for m in sorted_karma[:5]]),
+            inline=False,
+        )
+        embed.add_field(
+            name="Bottom Five",
+            value="\n".join([f"{self.bot.get_user(int(m)).display_name}: {data['karma'][m]}" for m in sorted_karma[-5:]]),
+            inline=False,
+        )
+        await ctx.send(embed=embed)
+
     @commands.command(aliases=["element"])
     async def atom(self, ctx, element):
         """Displays information for a given atom.
