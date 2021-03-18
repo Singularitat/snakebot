@@ -101,7 +101,7 @@ class events(commands.Cog):
             self.bot.editsnipe_message = (
                 before.content,
                 after.content,
-                after.author.name,
+                after.author.display_name,
             )
             if after.content.startswith("https"):
                 pass
@@ -130,7 +130,7 @@ class events(commands.Cog):
         ):
             return
 
-        self.bot.snipe_message = (message.content, message.author.name)
+        self.bot.snipe_message = (message.content, message.author.display_name)
         if "@everyone" in message.content or "@here" in message.content:
             timesince = (
                 datetime.datetime.utcfromtimestamp(time.time()) - message.created_at

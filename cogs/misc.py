@@ -144,12 +144,31 @@ class misc(commands.Cog):
             color=discord.Color.blue(),
         )
         embed.add_field(
-            name=f"{member}'s karma: ",
+            name=f"{member.display_name}'s karma: ",
             value=f"{data['karma'][str(member.id)]}",
         )
         await ctx.send(embed=embed)
         with open("json/real.json", "w") as file:
             data = ujson.dump(data, file, indent=2)
+
+    @commands.command(aliases=["kboard"])
+    async def karmaboard(self, ctx):
+        """Displays the top 5 and bottom 5 members karma."""
+        with open("json/real.json") as file:
+            data = ujson.load(file)
+        sorted_karma = sorted(data["karma"], key=data["karma"].get, reverse=True)
+        embed = discord.Embed(title="Karma Board", color=discord.Color.blue())
+        embed.add_field(
+            name="Top Five",
+            value="\n".join([f"{self.bot.get_user(int(m)).display_name}: {data['karma'][m]}" for m in sorted_karma[:5]]),
+            inline=False,
+        )
+        embed.add_field(
+            name="Bottom Five",
+            value="\n".join([f"{self.bot.get_user(int(m)).display_name}: {data['karma'][m]}" for m in sorted_karma[-5:]]),
+            inline=False,
+        )
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["element"])
     async def atom(self, ctx, element):
@@ -235,9 +254,9 @@ class misc(commands.Cog):
         """
         try:
             await member.send(message)
-            await ctx.send(f"```Sent message to {member}```")
+            await ctx.send(f"```Sent message to {member.display_name}```")
         except discord.errors.Forbidden:
-            await ctx.send(f"```{member} has DMs disabled for non-friends```")
+            await ctx.send(f"```{member.display_name} has DMs disabled for non-friends```")
 
     @commands.command()
     async def roll(self, ctx, dice: str):
@@ -279,7 +298,7 @@ class misc(commands.Cog):
             The reason for the slap.
         """
         await ctx.send(
-            f"{ctx.message.author.mention} slapped {member} because {reason}"
+            f"{ctx.message.author.mention} slapped {member.display_name} because {reason}"
         )
 
     @commands.command()

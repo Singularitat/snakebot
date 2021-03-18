@@ -68,7 +68,7 @@ class stocks(commands.Cog):
             member = ctx.author
 
         if str(member.id) in data["stockbal"]:
-            msg = f"```{ctx.message.author}'s stock profile"
+            msg = f"```{member.display_name}'s stock profile"
 
             for stock in data["stockbal"][str(member.id)]:
                 msg += f"\n{stock}: {data['stockbal'][str(member.id)][stock]:.2f}"
