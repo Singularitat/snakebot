@@ -160,12 +160,22 @@ class misc(commands.Cog):
         embed = discord.Embed(title="Karma Board", color=discord.Color.blue())
         embed.add_field(
             name="Top Five",
-            value="\n".join([f"{self.bot.get_user(int(m)).display_name}: {data['karma'][m]}" for m in sorted_karma[:5]]),
+            value="\n".join(
+                [
+                    f"{self.bot.get_user(int(m)).display_name}: {data['karma'][m]}"
+                    for m in sorted_karma[:5]
+                ]
+            ),
             inline=False,
         )
         embed.add_field(
             name="Bottom Five",
-            value="\n".join([f"{self.bot.get_user(int(m)).display_name}: {data['karma'][m]}" for m in sorted_karma[-5:]]),
+            value="\n".join(
+                [
+                    f"{self.bot.get_user(int(m)).display_name}: {data['karma'][m]}"
+                    for m in sorted_karma[-5:]
+                ]
+            ),
             inline=False,
         )
         await ctx.send(embed=embed)
@@ -256,7 +266,9 @@ class misc(commands.Cog):
             await member.send(message)
             await ctx.send(f"```Sent message to {member.display_name}```")
         except discord.errors.Forbidden:
-            await ctx.send(f"```{member.display_name} has DMs disabled for non-friends```")
+            await ctx.send(
+                f"```{member.display_name} has DMs disabled for non-friends```"
+            )
 
     @commands.command()
     async def roll(self, ctx, dice: str):
