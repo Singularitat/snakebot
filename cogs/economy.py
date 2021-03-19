@@ -179,7 +179,7 @@ class economy(commands.Cog):
                     color=color,
                     inline=True,
                 )
-                embed.set_footer(text=f"Balance: {data['money'][member]}")
+                embed.set_footer(text=f"Balance: ${data['money'][member]}")
 
                 await self.streak_update(data, member, result)
 
@@ -421,13 +421,17 @@ class economy(commands.Cog):
                     data["money"][str(member.id)] = 1000
                 data["money"][user] -= amount
                 data["money"][str(member.id)] += amount
+
+                embed = discord.Embed(
+                    title=f"Sent ${amount} to {member.display_name}",
+                    color=discord.Color.blue()
+                )
+                embed.set_footer(text=f"New Balance: ${data['money'][user]}")
+
                 with open("json/economy.json", "w") as file:
                     data = ujson.dump(data, file, indent=2)
-                await ctx.send(
-                    embed=discord.Embed(
-                        title=f"Sent ${amount} to {member.display_name}", color=discord.Color.blue()
-                    )
-                )
+
+                await ctx.send(embed=embed)
 
     @commands.command()
     @commands.cooldown(1, 21600, commands.BucketType.user)
@@ -435,17 +439,22 @@ class economy(commands.Cog):
         """Gives you a salary of 1000 on a 6 hour cooldown."""
         with open("json/economy.json") as file:
             data = ujson.load(file)
-        user = str(ctx.author.id)
-        if user not in data["money"]:
-            data["money"][user] = 1000
-        data["money"][user] += 1000
+        member = str(ctx.author.id)
+
+        if member not in data["money"]:
+            data["money"][member] = 1000
+        data["money"][member] += 1000
+
+        embed = discord.Embed(
+            title=f"Paid {ctx.author.display_name} $1000",
+            color=discord.Color.blue()
+        )
+        embed.set_footer(text=f"Balance: ${data['money'][member]}")
+
         with open("json/economy.json", "w") as file:
             data = ujson.dump(data, file, indent=2)
-        await ctx.send(
-            embed=discord.Embed(
-                title=f"Paid {ctx.author.display_name} $1000", color=discord.Color.blue()
-            )
-        )
+
+        await ctx.send(embed=embed)
 
 
 def setup(bot: commands.Bot) -> None:
