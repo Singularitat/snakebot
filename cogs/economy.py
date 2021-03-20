@@ -12,7 +12,7 @@ class economy(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def baltop(self, ctx, amount: int = 3):
+    async def baltop(self, ctx, amount: int = 10):
         """Gets the top balances.
 
         amount: int
@@ -22,18 +22,16 @@ class economy(commands.Cog):
             data = ujson.load(file)
         topbal = sorted(data["money"], key=data["money"].get, reverse=True)[:amount]
         embed = discord.Embed(color=discord.Color.blue())
-        for num in range(amount):
-            try:
-                embed.add_field(
-                    name=self.bot.get_user(int(topbal[num])).display_name,
-                    value=f"${data['money'][topbal[num]]:,.2f}",
-                    inline=False,
-                )
-            except IndexError:
-                await ctx.send(f"```Could only find {num} members```")
-                num -= 1
-                break
-        embed.title = f"Top {num+1} Balances"
+        embed.add_field(
+            name=f"Top {len(topbal)} Balances",
+            value="\n".join(
+                [
+                    f"**{self.bot.get_user(int(m)).display_name}:** ${data['money'][m]:,.2f}"
+                    for m in topbal
+                ]
+            ),
+            inline=False,
+        )
         await ctx.send(embed=embed)
 
     @commands.command()
