@@ -127,8 +127,7 @@ class apis(commands.Cog):
 
     @commands.command()
     async def xkcd(self, ctx):
-        """Gets a random xkcd comic"""
-
+        """Gets a random xkcd comic."""
         num = random.randint(0, 2438)
 
         url = f"https://xkcd.com/{num}/info.0.json"
