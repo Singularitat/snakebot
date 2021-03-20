@@ -80,9 +80,12 @@ class apis(commands.Cog):
         await ctx.send(image["url"])
 
     @commands.command()
-    async def dog2(self, ctx):
+    async def dog2(self, ctx, breed=None):
         """Gets a random dog image."""
-        url = "https://dog.ceo/api/breeds/image/random"
+        if breed:
+            url = f"https://dog.ceo/api/breed/{breed}/images/random"
+        else:
+            url = "https://dog.ceo/api/breeds/image/random"
 
         image = await self.get_json(url)
 
