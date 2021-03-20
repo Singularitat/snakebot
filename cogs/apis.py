@@ -71,7 +71,7 @@ class apis(commands.Cog):
         await ctx.send(f"https://http.cat/{status}")
 
     @commands.command()
-    async def dog(self, ctx):
+    async def dog2(self, ctx):
         """Gets a random dog image."""
         url = "https://random.dog/woof.json"
 
@@ -80,7 +80,7 @@ class apis(commands.Cog):
         await ctx.send(image["url"])
 
     @commands.command()
-    async def dog2(self, ctx, breed=None):
+    async def dog(self, ctx, breed=None):
         """Gets a random dog image."""
         if breed:
             url = f"https://dog.ceo/api/breed/{breed}/images/random"

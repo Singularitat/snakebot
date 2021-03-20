@@ -7,6 +7,7 @@ import asyncio
 import traceback
 import time
 import string
+import subprocess
 
 
 class PerformanceMocker:
@@ -173,20 +174,26 @@ class owner(commands.Cog):
         new_ctx = await self.bot.get_context(msg, cls=type(ctx))
         await self.bot.invoke(new_ctx)
 
+    async def run_process(self, command):
+        process = await asyncio.create_subprocess_shell(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = await process.communicate()
+
+        return " ".join([output.decode() for output in result]).split()
+
     @commands.command(hidden=True, aliases=["pull"])
     @commands.is_owner()
     async def update(self, ctx):
         """Gets latest commits and applies them through git."""
-        pull = os.popen("git pull").read()
+        pull = await self.run_process("git pull")
 
-        if pull == "Already up to date.\n":
+        if pull == ['Already', 'up', 'to', 'date.']:
             await ctx.send(
                 embed=discord.Embed(
                     title="Bot Is Already Up To Date", color=discord.Color.blurple()
                 )
             )
         else:
-            os.system("poetry install")
+            await self.run_process("poetry install")
 
             await ctx.send(
                 embed=discord.Embed(
@@ -198,9 +205,9 @@ class owner(commands.Cog):
             await self.bot.logout()
 
             if os.name == "nt":
-                os.system("python ./bot.py")
+                await self.run_process("python ./bot.py")
             else:
-                os.system("nohup python3 bot.py &")
+                await self.run_process("nohup python3 bot.py &")
 
     @commands.command(hidden=True, aliases=["deletecmd", "removecmd"])
     @commands.is_owner()
