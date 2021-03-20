@@ -3,6 +3,8 @@ import lxml
 import aiohttp
 import datetime
 import os
+import asyncio
+import subprocess
 from discord.ext import commands, tasks
 
 
@@ -67,17 +69,23 @@ class background_tasks(commands.Cog):
             with open("json/economy.json", "w") as file:
                 data = ujson.dump(data, file, indent=2)
 
+    async def run_process(self, command):
+        process = await asyncio.create_subprocess_shell(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = await process.communicate()
+
+        return " ".join([output.decode() for output in result]).split()
+
     @tasks.loop(minutes=10)
     async def update_bot(self):
         """Checks for updates every 10 minutes and then updates if needed."""
-        pull = os.popen("git pull").read()
+        pull = await self.run_process("git pull")
 
-        if pull == "Already up to date.\n":
+        if pull == ['Already', 'up', 'to', 'date.']:
             return
 
-        diff = os.popen("git diff --name-only HEAD@{0} HEAD@{1}").read().replace("cogs/", "").split()
+        diff = await self.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
 
-        os.system("poetry install")
+        await self.run_process("poetry install")
 
         for extension in [
             f.replace(".py", "")
