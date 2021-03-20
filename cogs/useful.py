@@ -4,10 +4,8 @@ import ujson
 import random
 import aiohttp
 import time
-import datetime
 import lxml.html
 import re
-import config
 import asyncio
 
 
@@ -203,309 +201,58 @@ class useful(commands.Cog):
             images.append(ujson.loads(a.attrib["m"])["turl"])
         await ctx.send(random.choice(images))
 
-    @commands.command(aliases=["urbandictionary"])
-    async def urban(self, ctx, *, search):
-        """Grabs the definition of something from the urban dictionary.
-
-        search: str
-            The term to search for.
-        """
-        url = f"https://api.urbandictionary.com/v0/define?term={search}"
-        async with aiohttp.ClientSession() as session:
-            raw_response = await session.get(url)
-            response = await raw_response.text()
-            urban = ujson.loads(response)
-        if urban["list"]:
-            defin = random.choice(urban["list"])
-            embed = discord.Embed(colour=discord.Color.red())
-            embed.add_field(
-                name=f"Definition of {search}",
-                value=re.sub(r"\[(.*?)\]", r"\1", defin["definition"]),
-                inline=False,
-            )
-            embed.add_field(
-                name="Example",
-                value=re.sub(r"\[(.*?)\]", r"\1", defin["example"]),
-                inline=False,
-            )
-            embed.add_field(name="Upvotes", value=defin["thumbs_up"], inline=False)
-            await ctx.send(embed=embed)
-        else:
-            embed = discord.Embed(
-                title="No results found", color=discord.Color.blue(), inline=False
-            )
-            await ctx.send(embed=embed)
-
-    @staticmethod
-    def formatted_wiki_url(index: int, title: str) -> str:
-        """Formating wikipedia link with index and title.
-
-        index: int
-        title: str
-        """
-        return f'`{index}` [{title}]({f"https://en.wikipedia.org/wiki/{title}".format(title=title.replace(" ", "_"))})'
-
-    async def search_wikipedia(self, search_term: str):
-        """Search wikipedia and return the first 10 pages found.
-
-        search_term: str
-        """
-        pages = []
-        async with aiohttp.ClientSession() as session:
-            response = await session.get(
-                f"https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={search_term}&format=json"
-            )
-            try:
-                data = await response.ujson()
-                search_results = data["query"]["search"]
-                for search_result in search_results:
-                    if "may refer to" not in search_result["snippet"]:
-                        pages.append(search_result["title"])
-            except KeyError:
-                pages = None
-        return pages
-
-    @commands.command(name="wikipedia", aliases=["wiki"])
-    async def wikipedia_search_command(
-        self, ctx: commands.Context, *, search: str
-    ) -> None:
-        """Return list of results containing your search query from wikipedia.
-
-        search: str
-            The term to search wikipedia for.
-        """
-        titles = await self.search_wikipedia(search)
-
-        def check(message: discord.Message) -> bool:
-            return message.author.id == ctx.author.id and message.channel == ctx.channel
-
-        if not titles:
-            await ctx.send("Could not find a wikipedia article using that search term")
-            return
-
-        async with ctx.typing():
-            s_desc = "\n".join(
-                self.formatted_wiki_url(index, title)
-                for index, title in enumerate(titles, start=1)
-            )
-            embed = discord.Embed(
-                colour=discord.Color.blue(),
-                title=f"Wikipedia results for `{search}`",
-                description=s_desc,
-            )
-            embed.timestamp = datetime.datetime.utcnow()
-            await ctx.send(embed=embed)
-        embed = discord.Embed(
-            colour=discord.Color.green(), description="Enter number to choose"
-        )
-        titles_len = len(titles)
-        try:
-            message = await ctx.bot.wait_for("message", timeout=60.0, check=check)
-            response_from_user = await self.bot.get_context(message)
-
-            if response_from_user.command:
-                return
-
-            response = int(message.content)
-            if response <= 0:
-                await ctx.send(f"Give an integer between `1` and `{titles_len}`")
-            else:
-                await ctx.send(
-                    "https://en.wikipedia.org/wiki/{title}".format(
-                        title=titles[response - 1].replace(" ", "_")
-                    )
-                )
-
-        except IndexError:
-            await ctx.send(
-                f"Sorry, please give an integer between `1` and `{titles_len}`"
-            )
-
-    @commands.command(aliases=["coin", "bitcoin", "btc"])
-    async def crypto(self, ctx, crypto: str = "BTC", currency="NZD"):
-        """Gets some information about crypto currencies.
-
-        crypto: str
-            The name or symbol to search for.
-        currency: str
-            The currency to return the price in.
-        """
-        url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
-        parameters = {"start": "1", "limit": "150", "convert": currency}
-        headers = {
-            "Accepts": "application/json",
-            "X-CMC_PRO_API_KEY": config.coinmarketcap,
-        }
-        async with aiohttp.ClientSession() as session:
-            raw_response = await session.get(url, params=parameters, headers=headers)
-            response = await raw_response.text()
-        cry = ujson.loads(response)["data"]
-        for index, coin in enumerate(cry):
-            if (
-                coin["name"].lower() == crypto.lower()
-                or coin["symbol"] == crypto.upper()
-            ):
-                crypto = cry[index]
-                break
-        embed = discord.Embed(colour=discord.Colour.blurple())
-        embed.set_author(
-            name=f"{crypto['name']} [{crypto['symbol']}]",
-        )
-        embed.add_field(
-            name="Price",
-            value=f"${crypto['quote']['NZD']['price']:,.2f}",
-            inline=False,
-        )
-        embed.add_field(
-            name="Circulating/Max Supply",
-            value=f"{crypto['circulating_supply']:,}/{crypto['max_supply']:,}",
-            inline=False,
-        )
-        embed.add_field(
-            name="Market Cap",
-            value=f"${crypto['quote']['NZD']['market_cap']:,.2f}",
-            inline=False,
-        )
-        embed.add_field(
-            name="24h Change",
-            value=f"{crypto['quote']['NZD']['percent_change_24h']}%",
-            inline=False,
-        )
-        await ctx.send(embed=embed)
-
     @commands.command()
-    async def covid(self, ctx, *, country="nz"):
-        """Shows current coronavirus cases, defaults to New Zealand.
+    async def calc(self, ctx, num_base, *, args):
+        """Does math.
 
-        country: str - The country to search for
+        num_base: str
+            The base you want to calculate in.
+        args: str
+            A str of arguments to calculate.
         """
-        try:
-            url = "https://corona.lmao.ninja/v3/covid-19/countries/" + country
-            if country.lower() == "all":
-                url = "https://corona.lmao.ninja/v3/covid-19/all"
-            async with aiohttp.ClientSession() as session:
-                raw_response = await session.get(url)
-                response = await raw_response.text()
-                response = ujson.loads(response)
-            embed = discord.Embed(colour=discord.Color.red())
-            embed.set_author(
-                name=f"Cornavirus {response['country']}:",
-                icon_url=response["countryInfo"]["flag"],
-            )
-            embed.add_field(
-                name="Total Cases", value=f"{response['cases']:,}", inline=True
-            )
-            embed.add_field(
-                name="Total Deaths", value=f"{response['deaths']:,}", inline=True
-            )
-            embed.add_field(
-                name="Active Cases", value=f"{response['active']:,}", inline=True
-            )
-            embed.add_field(
-                name="Cases Today", value=f"{response['todayCases']:,}", inline=True
-            )
-            embed.add_field(
-                name="Deaths Today", value=f"{response['todayDeaths']:,}", inline=True
-            )
-            embed.add_field(
-                name="Recovered Total", value=f"{response['recovered']:,}", inline=True
-            )
-            embed.set_footer(
-                icon_url=self.bot.user.avatar_url,
-                text=f'Go way hat you™   Updated {round(time.time() - (response["updated"]/1000))}s ago',
-            )
-            await ctx.send(embed=embed)
-        except KeyError:
-            await ctx.send(
-                "Not a valid country e.g NZ, New Zealand, US, USA, Canada, all"
-            )
+        if num_base.lower() == "hex":
+            base = 16
+        elif num_base.lower() == "oct":
+            base = 8
+        elif num_base.lower() == "bin":
+            base = 2
+        else:
+            base = int(num_base)
 
-    @commands.command(name="github", aliases=["gh"])
-    @commands.cooldown(1, 60, commands.BucketType.member)
-    async def get_github_info(self, ctx: commands.Context, username: str) -> None:
-        """Fetches a members's GitHub information."""
-        async with ctx.typing():
-            async with aiohttp.ClientSession() as session:
-                raw_response = await session.get(
-                    f"https://api.github.com/users/{username}"
-                )
-                response = await raw_response.text()
-                user_data = ujson.loads(response)
+        operators = re.sub(r"\d+", "%s", args)
+        numbers = re.findall(r"\d+", args)
+        numbers = [str(int(num, base)) for num in numbers]
 
-            if user_data.get("message") is not None:
-                await ctx.send(
-                    embed=discord.Embed(
-                        title=f"The profile for `{username}` was not found.",
-                        colour=discord.Colour.red(),
-                    )
-                )
-                return
+        code = operators % tuple(numbers)
 
-            async with aiohttp.ClientSession() as session:
-                raw_response = await session.get(user_data["organizations_url"])
-                response = await raw_response.text()
-                org_data = ujson.loads(response)
+        data = {
+            "language": "python",
+            "source": f"print(round({code}))",
+            "args": "",
+            "stdin": "",
+            "log": 0,
+        }
 
-            orgs = [
-                f"[{org['login']}](https://github.com/{org['login']})"
-                for org in org_data
-            ]
-            orgs_to_add = " | ".join(orgs)
+        async with aiohttp.ClientSession() as session, session.post(
+            "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
+        ) as response:
+            r = await response.json()
 
-            gists = user_data["public_gists"]
+        if r["stderr"]:
+            return await ctx.send("```Invalid```")
 
-            if user_data["blog"].startswith("http"):
-                blog = user_data["blog"]
-            elif user_data["blog"]:
-                blog = f"https://{user_data['blog']}"
-            else:
-                blog = "No website link available"
+        if num_base.lower() == "hex":
+            result = hex(int(r["output"]))
+        elif num_base.lower() == "oct":
+            result = oct(int(r["output"]))
+        elif num_base.lower() == "bin":
+            result = bin(int(r["output"]))
+        else:
+            result = r["output"]
 
-            embed = discord.Embed(
-                title=f"`{user_data['login']}`'s GitHub profile info",
-                description=f"```{user_data['bio']}```\n"
-                if user_data["bio"] is not None
-                else "",
-                colour=0x7289DA,
-                url=user_data["html_url"],
-                timestamp=datetime.datetime.strptime(
-                    user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"
-                ),
-            )
-            embed.set_thumbnail(url=user_data["avatar_url"])
-            embed.set_footer(text="Account created at")
-
-            if user_data["type"] == "User":
-
-                embed.add_field(
-                    name="Followers",
-                    value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)",
-                )
-                embed.add_field(name="\u200b", value="\u200b")
-                embed.add_field(
-                    name="Following",
-                    value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)",
-                )
-
-            embed.add_field(
-                name="Public repos",
-                value=f"[{user_data['public_repos']}]({user_data['html_url']}?tab=repositories)",
-            )
-            embed.add_field(name="\u200b", value="\u200b")
-
-            if user_data["type"] == "User":
-                embed.add_field(
-                    name="Gists", value=f"[{gists}](https://gist.github.com/{username})"
-                )
-
-                embed.add_field(
-                    name=f"Organization{'s' if len(orgs)!=1 else ''}",
-                    value=orgs_to_add if orgs else "No organizations",
-                )
-                embed.add_field(name="\u200b", value="\u200b")
-            embed.add_field(name="Website", value=blog)
-
-        await ctx.send(embed=embed)
+        await ctx.send(
+            f"```{num_base.capitalize()}: {result} Decimal: {r['output']}```"
+        )
 
 
 def setup(bot: commands.Bot) -> None:
