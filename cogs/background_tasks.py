@@ -2,6 +2,7 @@ import ujson
 import lxml
 import aiohttp
 import datetime
+import os
 from discord.ext import commands, tasks
 
 
@@ -9,6 +10,7 @@ class background_tasks(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.update_stocks.start()
+        self.update_bot.start()
 
     async def stockgrab(self, url):
         """Grabs some information abouts stocks from yahoo finance.
@@ -64,6 +66,33 @@ class background_tasks(commands.Cog):
             )
             with open("json/economy.json", "w") as file:
                 data = ujson.dump(data, file, indent=2)
+
+    @tasks.loop(minutes=10)
+    async def update_bot(self):
+        """Checks for updates every 10 minutes and then updates if needed."""
+        pull = os.popen("git pull").read()
+
+        if pull == "Already up to date.\n":
+            return
+
+        diff = os.popen("git diff --name-only HEAD@{0} HEAD@{1}").read().replace("cogs/", "").split()
+
+        os.system("poetry install")
+
+        for extension in [
+            f.replace(".py", "")
+            for f in os.listdir("cogs")
+            if os.path.isfile(os.path.join("cogs", f))
+            and f in diff
+        ]:
+            try:
+                self.bot.reload_extension(f"cogs.{extension}")
+            except Exception as e:
+                if (
+                    e
+                    == f"ExtensionNotLoaded: Extension 'cogs.{extension}' has not been loaded."
+                ):
+                    self.bot.load_extension(f"cogs.{extension}")
 
 
 def setup(bot):
