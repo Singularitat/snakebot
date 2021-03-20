@@ -275,6 +275,9 @@ class events(commands.Cog):
         else:
             message = error
 
+        if message is None:
+            return
+
         await ctx.send(f"```{message}```")
 
     @commands.Cog.listener()
