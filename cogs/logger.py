@@ -9,6 +9,8 @@ session = requests.Session()
 
 class RequestsHandler(logging.Handler):
     def emit(self, record):
+        if not hasattr(config, 'loggingtoken') or not config.loggingtoken:
+            return
         try:
             log_entry = json.loads(self.format(record))
         except json.decoder.JSONDecodeError:
