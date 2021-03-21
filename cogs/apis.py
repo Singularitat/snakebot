@@ -5,6 +5,7 @@ import discord
 import re
 import datetime
 import config
+import ujson
 
 
 class apis(commands.Cog):
@@ -437,6 +438,20 @@ class apis(commands.Cog):
             embed.add_field(name="Website", value=blog)
 
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def tenor(self, ctx, *, search):
+        """Gets a random gif from tenor based off a search.
+
+        search: str
+            The gif search term.
+        """
+        url = f"https://g.tenor.com/v1/search?q={search}&key={config.tenor}&limit=50"
+        async with aiohttp.ClientSession() as session:
+            raw_response = await session.get(url)
+            response = await raw_response.text()
+        tenor = ujson.loads(response)
+        await ctx.send(random.choice(tenor["results"])["media"][0]["gif"]["url"])
 
 
 def setup(bot: commands.Bot) -> None:

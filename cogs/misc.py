@@ -3,7 +3,6 @@ from discord.ext import commands
 import random
 import aiohttp
 import lxml.html
-import config
 import ujson
 import unicodedata
 
@@ -184,20 +183,6 @@ class misc(commands.Cog):
             The member to show the avatar of.
         """
         await ctx.send(member.avatar_url)
-
-    @commands.command()
-    async def hug(self, ctx, *, search="hug"):
-        """Gets a random gif from tenor defaulting to a hug gif.
-
-        search: str
-            The gif search term.
-        """
-        url = f"https://g.tenor.com/v1/search?q={search}&key={config.tenor}&limit=50"
-        async with aiohttp.ClientSession() as session:
-            raw_response = await session.get(url)
-            response = await raw_response.text()
-        tenor = ujson.loads(response)
-        await ctx.send(random.choice(tenor["results"])["media"][0]["gif"]["url"])
 
     @commands.command()
     async def send(self, ctx, member: discord.Member, *, message):
