@@ -46,8 +46,8 @@ class background_tasks(commands.Cog):
             The yahoo finance url to fetch stocks from.
         """
         for stock in await self.stockgrab(url):
-            if len(stock[0]) == 6 and stock[2] != "N/A" and float(stock[2]) != 0:
-                tmp = stock[0][:3]
+            if len(stock[0]) <= 6 and stock[2] != "N/A" and float(stock[2]) != 0:
+                tmp = stock[0].replace(".NZ", "")
                 if tmp not in data["stocks"]:
                     data["stocks"][tmp] = {}
                 data["stocks"][tmp] = float(stock[2])
@@ -65,6 +65,9 @@ class background_tasks(commands.Cog):
             )
             await self.stockupdate(
                 data, "https://nz.finance.yahoo.com/most-active?offset=200&count=200"
+            )
+            await self.stockupdate(
+                data, "https://finance.yahoo.com/most-active?offset=0&count=200"
             )
             with open("json/economy.json", "w") as file:
                 data = ujson.dump(data, file, indent=2)
