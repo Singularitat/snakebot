@@ -107,12 +107,16 @@ class economy(commands.Cog):
             data["wins"][member]["currentlose"] += 1
 
     @commands.command(aliases=["slots"])
-    async def slot(self, ctx, bet: float):
+    async def slot(self, ctx, bet):
         """Rolls the slot machine.
 
-        bet: float
+        bet: str
             The amount of money you are betting.
         """
+        try:
+            bet = float(bet.replace(",", ""))
+        except ValueError:
+            return await ctx.send(f"```Invalid bet. e.g {ctx.prefix}slot 1000```")
         emojis = (
             ":apple:",
             ":tangerine:",
