@@ -201,35 +201,25 @@ class economy(commands.Cog):
                 )
             )
 
-    @commands.command()
+    @commands.command(aliases=["streaks"])
     async def streak(self, ctx):
         """Gets your streaks on the slot machine."""
         with open("json/economy.json") as file:
             data = ujson.load(file)
         user = str(ctx.author.id)
-        embed = discord.Embed(title="Wins/Loses", color=discord.Color.blue())
+        if user not in data["wins"]:
+            return
+        embed = discord.Embed(color=discord.Color.blue())
         embed.add_field(
-            name="Current loses", value=data["wins"][user]["currentlose"], inline=True
-        )
-        embed.add_field(
-            name="Current Wins", value=data["wins"][user]["currentwin"], inline=True
-        )
-        embed.add_field(
-            name="Total losses", value=data["wins"][user]["totallose"], inline=True
-        )
-        embed.add_field(
-            name="Total wins", value=data["wins"][user]["totalwin"], inline=True
-        )
-        embed.add_field(
-            name="Highest loss streak",
-            value=data["wins"][user]["highestlose"],
-            inline=True,
-        )
-        embed.add_field(
-            name="Highest win streak",
-            value=data["wins"][user]["highestwin"],
-            inline=True,
-        )
+            name="**Wins/Loses**", value=f"""
+            **Total Wins:** {data["wins"][user]["totalwin"]}
+            **Total Losses:** {data["wins"][user]["totallose"]}
+            **Current Wins:** {data["wins"][user]["currentwin"]}
+            **Current Loses:** {data["wins"][user]["currentlose"]}
+            **Highest Win Streak:** {data["wins"][user]["highestwin"]}
+            **Highest Loss Streak:** {data["wins"][user]["highestlose"]}
+            """
+            )
         await ctx.send(embed=embed)
 
     @commands.command()
