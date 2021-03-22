@@ -119,12 +119,22 @@ class stocks(commands.Cog):
                 data["stockbal"][user][symbol] = 0
                 return await ctx.send(f"```You have never invested in {symbol}```")
 
+            if data["stockbal"][user][symbol] < amount:
+                return await ctx.send(f"```Not enough stock you have: {data['stockbal'][user][symbol]}```")
+
             cash = amount * float(data["stocks"][symbol])
 
             data["stockbal"][user][symbol] -= amount
             data["money"][user] += cash
 
-            await ctx.send(f"```Sold {amount:.2f} stocks for ${cash:.2f}```")
+            embed = discord.Embed(
+                title=f"Sold {amount:.2f} stocks for ${cash:.2f}",
+                color=discord.Color.blurple(),
+                inline=True,
+            )
+            embed.set_footer(text=f"Balance: ${data['money'][user]}")
+
+            await ctx.send(embed=embed)
         else:
             await ctx.send(f"```Couldn't find stock {symbol}```")
         with open("json/economy.json", "w") as file:
@@ -167,7 +177,6 @@ class stocks(commands.Cog):
             if symbol in data["stocks"]:
                 if data["money"][user] >= cash:
                     amount = cash / float(data["stocks"][symbol])
-                    await ctx.send(f"```You bought {amount:.2f} stocks in {symbol}```")
 
                     if user not in data["stockbal"]:
                         data["stockbal"][user] = {}
@@ -177,6 +186,15 @@ class stocks(commands.Cog):
 
                     data["stockbal"][user][symbol] += amount
                     data["money"][user] -= cash
+
+                    embed = discord.Embed(
+                        title=f"You bought {amount:.2f} stocks in {symbol}",
+                        color=discord.Color.blurple(),
+                        inline=True,
+                    )
+                    embed.set_footer(text=f"Balance: ${data['money'][user]}")
+
+                    await ctx.send(embed=embed)
                 else:
                     await ctx.send("```You don't have enough cash```")
             else:
