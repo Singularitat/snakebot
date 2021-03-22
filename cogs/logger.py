@@ -21,7 +21,7 @@ class RequestsHandler(logging.Handler):
                 "line": record.lineno,
                 "time": record.asctime,
             }
-        return session.post(
+        session.post(
             f"https://snakebotdashboard.qw.ms/api/log/new?token={config.loggingtoken}",
             json=log_entry,
         )
