@@ -87,6 +87,7 @@ class background_tasks(commands.Cog):
             return
 
         diff = await self.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
+        diff = [ext.replace("/cogs", "") for ext in diff if ext[:5] == "/cogs"]
 
         await self.run_process("poetry install")
 
