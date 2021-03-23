@@ -50,10 +50,11 @@ class stocks(commands.Cog):
             data = ujson.load(file)
 
         symbol = symbol.upper()
+        member = str(ctx.author.id)
 
-        if ctx.author.id in data["stocks"][symbol]:
+        if symbol in data["stockbal"][member]:
             await ctx.send(
-                f"```You have {data['stockbal'][str(ctx.author.id)][symbol]:.2f} stocks in {symbol}```"
+                f"```You have {data['stockbal'][member][symbol]:.2f} stocks in {symbol}```"
             )
         else:
             await ctx.send(f"```You have never invested in {symbol}```")
