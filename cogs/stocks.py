@@ -69,12 +69,15 @@ class stocks(commands.Cog):
             member = ctx.author
 
         if str(member.id) in data["stockbal"]:
-            msg = f"```{member.display_name}'s stock profile"
+
+            net_value = 0
+            msg = f"{member.display_name}'s stock profile:\n"
 
             for stock in data["stockbal"][str(member.id)]:
-                msg += f"\n{stock}: {data['stockbal'][str(member.id)][stock]:.2f}"
+                msg += f"\n{stock}: {data['stockbal'][str(member.id)][stock]:<15.2f} Price: ${data['stocks'][stock]}"
+                net_value += data['stockbal'][str(member.id)][stock] * data['stocks'][stock]
 
-            await ctx.send(f"{msg}```")
+            await ctx.send(f"```{msg}\n\nNet Value: ${net_value:.2f}```")
         else:
             await ctx.send("```You have never invested```")
 

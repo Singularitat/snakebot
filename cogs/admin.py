@@ -227,7 +227,7 @@ class admin(commands.Cog):
         """
         await ctx.channel.purge(limit=num + 1)
 
-    @commands.command(name="purge_till", hidden=True, aliases=["purget", "purgetill"])
+    @commands.command(hidden=True, aliases=["purget"])
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     async def purge_till(self, ctx, message_id: int):
@@ -240,7 +240,7 @@ class admin(commands.Cog):
 
         await ctx.channel.purge(after=message)
 
-    @commands.command(name="purge_user", hidden=True, aliases=["purgeu", "purgeuser"])
+    @commands.command(hidden=True, aliases=["purgeu"])
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     async def purge_user(self, ctx, user: discord.User, num_messages: int = 100):

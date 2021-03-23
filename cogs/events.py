@@ -247,7 +247,7 @@ class events(commands.Cog):
 
         error = getattr(error, "original", error)
 
-        if isinstance(error, commands.errors.CommandNotFound):
+        if isinstance(error, (commands.errors.CommandNotFound, KeyError)):
             return
 
         if isinstance(error, discord.Forbidden):
@@ -275,7 +275,7 @@ class events(commands.Cog):
         else:
             message = error
 
-        if message is None:
+        if len(message) == 0:
             return
 
         await ctx.send(f"```{message}```")
