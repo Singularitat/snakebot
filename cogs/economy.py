@@ -181,7 +181,7 @@ class economy(commands.Cog):
                     color=color,
                     inline=True,
                 )
-                embed.set_footer(text=f"Balance: ${data['money'][member]}")
+                embed.set_footer(text=f"Balance: ${data['money'][member]:,}")
 
                 await self.streak_update(data, member, result)
 
@@ -202,28 +202,31 @@ class economy(commands.Cog):
             )
 
     @commands.command(aliases=["streaks"])
-    async def streak(self, ctx):
+    async def streak(self, ctx, member: discord.Member = None):
         """Gets your streaks on the slot machine."""
         with open("json/economy.json") as file:
             data = ujson.load(file)
-        user = str(ctx.author.id)
-        if user not in data["wins"]:
+        if member:
+            member = str(member.id)
+        else:
+            member = str(ctx.author.id)
+        if member not in data["wins"]:
             return
         embed = discord.Embed(color=discord.Color.blue())
         embed.add_field(
             name="**Wins/Loses**", value=f"""
-            **Total Wins:** {data["wins"][user]["totalwin"]}
-            **Total Losses:** {data["wins"][user]["totallose"]}
-            **Current Wins:** {data["wins"][user]["currentwin"]}
-            **Current Loses:** {data["wins"][user]["currentlose"]}
-            **Highest Win Streak:** {data["wins"][user]["highestwin"]}
-            **Highest Loss Streak:** {data["wins"][user]["highestlose"]}
+            **Total Wins:** {data["wins"][member]["totalwin"]}
+            **Total Losses:** {data["wins"][member]["totallose"]}
+            **Current Wins:** {data["wins"][member]["currentwin"]}
+            **Current Loses:** {data["wins"][member]["currentlose"]}
+            **Highest Win Streak:** {data["wins"][member]["highestwin"]}
+            **Highest Loss Streak:** {data["wins"][member]["highestlose"]}
             """
             )
         await ctx.send(embed=embed)
 
     @commands.command()
-    @commands.cooldown(1, 5400, commands.BucketType.user)
+    @commands.cooldown(1, 60, commands.BucketType.user)
     async def chances(self, ctx, amount: int, remove: int = 0):
         """Sends simulated chances of the slot machine.
 
@@ -441,7 +444,7 @@ class economy(commands.Cog):
             title=f"Paid {ctx.author.display_name} $1000",
             color=discord.Color.blue()
         )
-        embed.set_footer(text=f"Balance: ${data['money'][member]}")
+        embed.set_footer(text=f"Balance: ${data['money'][member]:,}")
 
         with open("json/economy.json", "w") as file:
             data = ujson.dump(data, file, indent=2)
