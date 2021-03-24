@@ -6,7 +6,6 @@ import aiohttp
 import time
 import lxml.html
 import re
-import asyncio
 
 
 class useful(commands.Cog):
@@ -61,23 +60,6 @@ class useful(commands.Cog):
             The reaction to remove.
         """
         await message.clear_reaction(reaction)
-
-    @staticmethod
-    async def await_for_message(ctx, message):
-        def check(message: discord.Message) -> bool:
-            return message.author.id == ctx.author.id and message.channel == ctx.channel
-
-        tmp_msg = await ctx.send(message)
-
-        try:
-            message = await ctx.bot.wait_for("message", timeout=300.0, check=check)
-        except asyncio.TimeoutError:
-            await ctx.send("Timed out")
-
-        await tmp_msg.delete()
-        await message.delete()
-
-        return message
 
     @commands.command()
     async def time(self, ctx, *, command):
@@ -145,7 +127,7 @@ class useful(commands.Cog):
                 obj = await objects[obj].convert(ctx, arg)
             except commands.BadArgument:
                 await ctx.send(
-                    "```Conversion failed, P.S. doesn't work for default discord emojis```"
+                    "```Conversion failed```"
                 )
             else:
                 if subarg:
