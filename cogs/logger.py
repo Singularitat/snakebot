@@ -3,8 +3,8 @@ import logging
 
 
 if str(logging.getLogger("discord").handlers) == "[<NullHandler (NOTSET)>]":
-    logger = logging.getLogger("discord")
-    logger.setLevel(logging.INFO)
+    log = logging.getLogger("discord")
+    log.setLevel(logging.INFO)
 
     handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="a")
 
@@ -14,7 +14,7 @@ if str(logging.getLogger("discord").handlers) == "[<NullHandler (NOTSET)>]":
         )
     )
 
-    logger.addHandler(handler)
+    log.addHandler(handler)
 
 
 class logger(commands.Cog):

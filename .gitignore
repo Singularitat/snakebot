@@ -1,3 +1,7 @@
+# Logs
+discord.log
+
+# Json files
 json/
 *.json
 

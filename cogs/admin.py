@@ -90,7 +90,6 @@ class admin(commands.Cog):
         member: discord.Member
             The user to ban.
         """
-
         await member.ban()
         await ctx.send(
             embed=discord.Embed(
