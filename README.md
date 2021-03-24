@@ -21,7 +21,6 @@ the bot is with the following template:
 
 ```py
 token = '' # your bot's token
-loggingtoken = '' # This is a token for logging to a website bot will work without it
 tenor = '' # tenor key for the hug command from https://tenor.com/developer/dashboard
 coinmarketcap = '' # coinmarketcap key for crypto command from https://pro.coinmarketcap.com/
 ```
