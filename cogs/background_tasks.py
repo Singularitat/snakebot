@@ -73,7 +73,9 @@ class background_tasks(commands.Cog):
                 data = ujson.dump(data, file, indent=2)
 
     async def run_process(self, command):
-        process = await asyncio.create_subprocess_shell(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = await asyncio.create_subprocess_shell(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         result = await process.communicate()
 
         return " ".join([output.decode() for output in result]).split()
@@ -83,7 +85,7 @@ class background_tasks(commands.Cog):
         """Checks for updates every 10 minutes and then updates if needed."""
         pull = await self.run_process("git pull")
 
-        if pull == ['Already', 'up', 'to', 'date.']:
+        if pull == ["Already", "up", "to", "date."]:
             return
 
         diff = await self.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
@@ -94,8 +96,7 @@ class background_tasks(commands.Cog):
         for extension in [
             f.replace(".py", "")
             for f in os.listdir("cogs")
-            if os.path.isfile(os.path.join("cogs", f))
-            and f in diff
+            if os.path.isfile(os.path.join("cogs", f)) and f in diff
         ]:
             try:
                 self.bot.reload_extension(f"cogs.{extension}")
