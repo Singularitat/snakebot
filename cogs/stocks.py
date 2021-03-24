@@ -75,7 +75,9 @@ class stocks(commands.Cog):
 
             for stock in data["stockbal"][str(member.id)]:
                 msg += f"\n{stock}: {data['stockbal'][str(member.id)][stock]:<15.2f} Price: ${data['stocks'][stock]}"
-                net_value += data['stockbal'][str(member.id)][stock] * data['stocks'][stock]
+                net_value += (
+                    data["stockbal"][str(member.id)][stock] * data["stocks"][stock]
+                )
 
             await ctx.send(f"```{msg}\n\nNet Value: ${net_value:.2f}```")
         else:
@@ -107,8 +109,10 @@ class stocks(commands.Cog):
             The amount of stock to sell.
         """
         user = str(ctx.author.id)
+
         with open("json/economy.json") as file:
             data = ujson.load(file)
+
         symbol = symbol.upper()
 
         if symbol in data["stocks"]:
@@ -136,14 +140,14 @@ class stocks(commands.Cog):
 
     @commands.command()
     async def invest(self, ctx, symbol=None, cash: float = None):
-        """Buys stock or if nothing is passed in it shows the price of some stocks.
+        """Invests in stocks.
 
         symbol: str
             The symbol of the stock to buy.
         cash: int
             The amount of money to invest.
         """
-        if symbol is not None and cash is None:
+        if symbol is None or cash is None:
             return await ctx.send(
                 f"```Usage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}```"
             )
@@ -153,40 +157,33 @@ class stocks(commands.Cog):
         with open("json/economy.json") as file:
             data = ujson.load(file)
 
-        if symbol is None:
-            embed = discord.Embed(colour=discord.Color.blue())
-            embed.set_author(name="Stocks")
+        if user not in data["money"]:
+            data["money"][user] = 1000
 
-            for num, stock in enumerate(data["stocks"]):
-                embed.add_field(name=stock[0][:3], value=f"${stock[2]}", inline=True)
-                if num == 24:
-                    return
-            await ctx.send(embed=embed)
-        else:
-            if user not in data["money"]:
-                data["money"][user] = 1000
+        symbol = symbol.upper()
 
-            symbol = symbol.upper()
+        if symbol in data["stocks"]:
+            if data["money"][user] >= cash:
+                amount = cash / float(data["stocks"][symbol])
+                await ctx.send(f"```You bought {amount:.2f} stocks in {symbol}```")
 
-            if symbol in data["stocks"]:
-                if data["money"][user] >= cash:
-                    amount = cash / float(data["stocks"][symbol])
-                    await ctx.send(f"```You bought {amount:.2f} stocks in {symbol}```")
+                if user not in data["stockbal"]:
+                    data["stockbal"][user] = {}
 
-                    if user not in data["stockbal"]:
-                        data["stockbal"][user] = {}
+                if symbol not in data["stockbal"][user]:
+                    data["stockbal"][user][symbol] = 0
 
-                    if symbol not in data["stockbal"][user]:
-                        data["stockbal"][user][symbol] = 0
+                data["stockbal"][user][symbol] += amount
+                data["money"][user] -= cash
 
-                    data["stockbal"][user][symbol] += amount
-                    data["money"][user] -= cash
-                else:
-                    await ctx.send("```You don't have enough cash```")
             else:
-                await ctx.send(f"```No stock found for {symbol}```")
-            with open("json/economy.json", "w") as file:
-                data = ujson.dump(data, file, indent=2)
+                await ctx.send("```You don't have enough cash```")
+
+        else:
+            await ctx.send(f"```No stock found for {symbol}```")
+
+        with open("json/economy.json", "w") as file:
+            data = ujson.dump(data, file, indent=2)
 
 
 def setup(bot: commands.Bot) -> None:
