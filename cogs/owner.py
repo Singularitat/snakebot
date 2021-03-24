@@ -175,7 +175,9 @@ class owner(commands.Cog):
         await self.bot.invoke(new_ctx)
 
     async def run_process(self, command):
-        process = await asyncio.create_subprocess_shell(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = await asyncio.create_subprocess_shell(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         result = await process.communicate()
 
         return " ".join([output.decode() for output in result]).split()
@@ -186,7 +188,7 @@ class owner(commands.Cog):
         """Gets latest commits and applies them through git."""
         pull = await self.run_process("git pull")
 
-        if pull == ['Already', 'up', 'to', 'date.']:
+        if pull == ["Already", "up", "to", "date."]:
             await ctx.send(
                 embed=discord.Embed(
                     title="Bot Is Already Up To Date", color=discord.Color.blurple()
@@ -488,6 +490,23 @@ class owner(commands.Cog):
 
         with open("json/reaction_roles.json", "w") as file:
             data = ujson.dump(data, file, indent=2)
+
+    @staticmethod
+    async def await_for_message(ctx, message):
+        def check(message: discord.Message) -> bool:
+            return message.author.id == ctx.author.id and message.channel == ctx.channel
+
+        tmp_msg = await ctx.send(message)
+
+        try:
+            message = await ctx.bot.wait_for("message", timeout=300.0, check=check)
+        except asyncio.TimeoutError:
+            await ctx.send("Timed out")
+
+        await tmp_msg.delete()
+        await message.delete()
+
+        return message
 
 
 def setup(bot: commands.Bot) -> None:
