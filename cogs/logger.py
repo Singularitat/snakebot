@@ -1,56 +1,20 @@
 from discord.ext import commands
 import logging
-import requests
-import config
-import json
-
-session = requests.Session()
 
 
-class RequestsHandler(logging.Handler):
-    def emit(self, record):
-        if not hasattr(config, 'loggingtoken') or not config.loggingtoken:
-            return
-        try:
-            log_entry = json.loads(self.format(record))
-        except json.decoder.JSONDecodeError:
-            log_entry = {
-                "message": record.msg,
-                "level": record.levelname,
-                "name": record.name,
-                "line": record.lineno,
-                "time": record.asctime,
-            }
-        session.post(
-            f"https://snakebotdashboard.qw.ms/api/log/new?token={config.loggingtoken}",
-            json=log_entry,
+if str(logging.getLogger("discord").handlers) == "[<NullHandler (NOTSET)>]":
+    logger = logging.getLogger("discord")
+    logger.setLevel(logging.INFO)
+
+    handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="a")
+
+    handler.setFormatter(
+        logging.Formatter(
+            '{"message": "%(message)s", "level": "%(levelname)s", "time": "%(asctime)s"}'
         )
-
-
-class RemoveNoise(logging.Filter):
-    def __init__(self):
-        super().__init__(name="discord.state")
-
-    @staticmethod
-    def filter(record):
-        if record.levelname == "WARNING" and "referencing an unknown" in record.msg:
-            return False
-        return True
-
-
-logging.getLogger("discord")
-logging.getLogger("discord.http")
-logging.getLogger("discord.state").addFilter(RemoveNoise())
-
-log = logging.getLogger()
-log.setLevel(logging.INFO)
-custom_handler = RequestsHandler()
-custom_handler.setFormatter(
-    logging.Formatter(
-        '{"message": "%(message)s", "level": "%(levelname)s", "name": "%(name)s", "line": "%(lineno)d", "time": "%(asctime)s"}'
     )
-)
-log.addHandler(custom_handler)
+
+    logger.addHandler(handler)
 
 
 class logger(commands.Cog):
@@ -68,15 +32,15 @@ class logger(commands.Cog):
             The new logging level.
         """
         if level.upper == "DEBUG":
-            logging.getLogger().setLevel(logging.DEBUG)
+            logging.getLogger("discord").setLevel(logging.DEBUG)
         if level.upper == "INFO":
-            logging.getLogger().setLevel(logging.INFO)
+            logging.getLogger("discord").setLevel(logging.INFO)
         if level.upper == "WARNING":
-            logging.getLogger().setLevel(logging.WARNING)
+            logging.getLogger("discord").setLevel(logging.WARNING)
         if level.upper == "ERROR":
-            logging.getLogger().setLevel(logging.ERROR)
+            logging.getLogger("discord").setLevel(logging.ERROR)
         if level.upper == "CRITICAL":
-            logging.getLogger().setLevel(logging.CRITICAL)
+            logging.getLogger("discord").setLevel(logging.CRITICAL)
 
 
 def setup(bot: commands.Bot) -> None:
