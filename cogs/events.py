@@ -7,6 +7,7 @@ import time
 import datetime
 import textwrap
 import psutil
+import logging
 
 
 class events(commands.Cog):
@@ -273,9 +274,15 @@ class events(commands.Cog):
             message = f"{self.bot.user.name} is missing required permissions: {error.missing_perms}"
 
         else:
+            logging.getLogger("discord").info(
+                f"Unhandled Error: {ctx.command.qualified_name}, Error: {error}"
+            )
             message = error
 
-        if len(message) == 0:
+        if len(str(message)) == 0:
+            logging.getLogger("discord").warning(
+                f"{ctx.command.qualified_name}, Error: {error}"
+            )
             return
 
         await ctx.send(f"```{message}```")
@@ -314,6 +321,9 @@ Boot time: {round(time.time()-psutil.Process(os.getpid()).create_time(), 3)}s
 
         ctx: commands.Context
         """
+        logging.getLogger("discord").info(
+            f"{ctx.author.id} ran the command {ctx.command.qualified_name}"
+        )
         if ctx.author.id in self.bot.owner_ids:
             ctx.command.reset_cooldown(ctx)
 

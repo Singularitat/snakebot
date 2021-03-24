@@ -32,7 +32,7 @@ class information(commands.Cog):
     async def usage(self, ctx):
         """Shows the bot's memory and cpu usage."""
         memory_usage = self.process.memory_full_info().uss / 1024 ** 2
-        cpu_usage = self.process.cpu_percent() / psutil.cpu_count()
+        cpu_usage = self.process.cpu_percent()
 
         embed = discord.Embed(color=discord.Color.teal())
         embed.add_field(name="Memory Usage: ", value=f"**{memory_usage:.2f} MiB**")

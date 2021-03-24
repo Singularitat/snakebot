@@ -82,29 +82,20 @@ class admin(commands.Cog):
 
         await self.say_permissions(ctx, member, channel)
 
-    @commands.command(name="ban", aliases=["unban"])
+    @commands.command(name="ban")
     @commands.has_permissions(ban_members=True)
-    async def ban_member(self, ctx, *, member: discord.Member):
+    async def ban_member(self, ctx, member: discord.Member):
         """Bans a member.
 
         member: discord.Member
             The user to ban.
         """
-        bans = await ctx.guild.bans()
-        if member not in bans:
-            await member.ban()
-            await ctx.send(
-                embed=discord.Embed(
-                    title=f"Banned {member}", color=discord.Color.dark_red()
-                )
+        await member.ban()
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"Banned {member}", color=discord.Color.dark_red()
             )
-        else:
-            await member.unban()
-            await ctx.send(
-                embed=discord.Embed(
-                    title=f"Unbanned {member}", color=discord.Color.dark_blue()
-                )
-            )
+        )
 
     @commands.command(name="kick")
     @commands.has_permissions(kick_members=True)

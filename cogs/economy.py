@@ -214,26 +214,25 @@ class economy(commands.Cog):
             return
         embed = discord.Embed(color=discord.Color.blue())
         embed.add_field(
-            name="**Wins/Loses**", value=f"""
+            name="**Wins/Loses**",
+            value=f"""
             **Total Wins:** {data["wins"][member]["totalwin"]}
             **Total Losses:** {data["wins"][member]["totallose"]}
             **Current Wins:** {data["wins"][member]["currentwin"]}
             **Current Loses:** {data["wins"][member]["currentlose"]}
             **Highest Win Streak:** {data["wins"][member]["highestwin"]}
             **Highest Loss Streak:** {data["wins"][member]["highestlose"]}
-            """
-            )
+            """,
+        )
         await ctx.send(embed=embed)
 
     @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.user)
-    async def chances(self, ctx, amount: int, remove: int = 0):
+    async def chances(self, ctx, amount: int):
         """Sends simulated chances of the slot machine.
 
         amount: int
             The amount of times to simulate the slot machine maxing at 100000.
-        remove: int
-            The amount of emojis to remove from the slot list deaulting to 0.
         """
         start = time.time()
         emojis = (
@@ -253,8 +252,7 @@ class economy(commands.Cog):
             ":peach:",
             ":mango:",
         )
-        if remove != 0:
-            emojis = emojis[-remove]
+
         (
             quad,
             triple,
@@ -366,29 +364,75 @@ class economy(commands.Cog):
             await ctx.send(embed=embed)
 
     @commands.command(aliases=["bal"])
-    async def balance(self, ctx, members: commands.Greedy[discord.Member] = None):
+    async def balance(self, ctx, member: discord.Member = None):
         """Gets a members balance.
 
-        members: commands.Greedy[discord.Member]
-            A list of members whos balances will be returned.
+        members: discord.Member
+            The member whos balance will be returned.
         """
         with open("json/economy.json") as file:
             data = ujson.load(file)
-        if not members:
-            members = [ctx.author]
-        embed = discord.Embed(
-            color=discord.Color.blue(),
+
+        if not member:
+            member = ctx.author
+
+        user = str(member.id)
+
+        if user not in data["money"]:
+            data["money"][user] = 1000
+
+        embed = discord.Embed(color=discord.Color.blue())
+
+        embed.add_field(
+            name=f"{member.display_name}'s balance",
+            value=f"${data['money'][user]:,.2f}",
+            inline=False,
         )
-        for member in members:
-            user = str(member.id)
-            if user not in data["money"]:
-                data["money"][user] = 1000
-            embed.add_field(
-                name=f"{member.display_name}'s balance: ",
-                value=f"${data['money'][user]:,.2f}",
-                inline=False,
-            )
+
         await ctx.send(embed=embed)
+
+        with open("json/economy.json", "w") as file:
+            data = ujson.dump(data, file, indent=2)
+
+    @commands.command(aliases=["networth"])
+    async def net(self, ctx, member: discord.Member = None):
+        """Gets a members net worth.
+
+        members: discord.Member
+            The member whos net worth will be returned.
+        """
+        with open("json/economy.json") as file:
+            data = ujson.load(file)
+
+        if not member:
+            member = ctx.author
+
+        user = str(member.id)
+
+        if user not in data["money"]:
+            data["money"][user] = 1000
+
+        stock_value = sum(
+            [
+                stock[1] * data["stocks"][stock[0]]
+                for stock in data["stockbal"][user].items()
+            ]
+        )
+
+        embed = discord.Embed(color=discord.Color.blue())
+
+        embed.add_field(
+            name=f"{member.display_name}'s net worth",
+            value=f"${data['money'][user] + stock_value:,.2f}",
+            inline=False,
+        )
+
+        embed.set_footer(
+            text=f"Stocks: ${stock_value:,.2f}\nBalance: ${data['money'][user]:,.2f}"
+        )
+
+        await ctx.send(embed=embed)
+
         with open("json/economy.json", "w") as file:
             data = ujson.dump(data, file, indent=2)
 
@@ -419,7 +463,7 @@ class economy(commands.Cog):
 
                 embed = discord.Embed(
                     title=f"Sent ${amount} to {member.display_name}",
-                    color=discord.Color.blue()
+                    color=discord.Color.blue(),
                 )
                 embed.set_footer(text=f"New Balance: ${data['money'][user]}")
 
@@ -441,8 +485,7 @@ class economy(commands.Cog):
         data["money"][member] += 1000
 
         embed = discord.Embed(
-            title=f"Paid {ctx.author.display_name} $1000",
-            color=discord.Color.blue()
+            title=f"Paid {ctx.author.display_name} $1000", color=discord.Color.blue()
         )
         embed.set_footer(text=f"Balance: ${data['money'][member]:,}")
 

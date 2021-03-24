@@ -108,7 +108,9 @@ class apis(commands.Cog):
         text: str
             The text you want to encode.
         """
-        await ctx.send(f"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={text}")
+        await ctx.send(
+            f"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={text}"
+        )
 
     @commands.command()
     async def decode(self, ctx, qrcode):
@@ -333,9 +335,7 @@ class apis(commands.Cog):
                 name=f"Cornavirus {data['country']}:",
                 icon_url=data["countryInfo"]["flag"],
             )
-            embed.add_field(
-                name="Total Cases", value=f"{data['cases']:,}", inline=True
-            )
+            embed.add_field(name="Total Cases", value=f"{data['cases']:,}", inline=True)
             embed.add_field(
                 name="Total Deaths", value=f"{data['deaths']:,}", inline=True
             )
