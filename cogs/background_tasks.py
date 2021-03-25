@@ -1,4 +1,3 @@
-import ujson
 import lxml
 import aiohttp
 import datetime
@@ -11,6 +10,7 @@ from discord.ext import commands, tasks
 class background_tasks(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.stocks = self.bot.db.prefixed_db(b"stocks-")
         self.update_stocks.start()
         self.update_bot.start()
 
@@ -37,40 +37,32 @@ class background_tasks(commands.Cog):
                 stockdata.append([ele for ele in cols if ele])
         return stockdata
 
-    async def stockupdate(self, data, url):
+    async def stockupdate(self, url):
         """Fetches stocks then updates the json files.
 
-        data: dict
-            The economy json file.
         url: str
             The yahoo finance url to fetch stocks from.
         """
-        for stock in await self.stockgrab(url):
-            if len(stock[0]) <= 6 and stock[2] != "N/A" and float(stock[2]) != 0:
-                tmp = stock[0].replace(".NZ", "")
-                if tmp not in data["stocks"]:
-                    data["stocks"][tmp] = {}
-                data["stocks"][tmp] = float(stock[2])
+        with self.stocks.write_batch() as wb:
+            for stock in await self.stockgrab(url):
+                if len(stock[0]) <= 6 and stock[2] != "N/A" and float(stock[2]) != 0:
+                    wb.put(stock[0].replace(".NZ", "").encode(), stock[2].encode())
 
     @tasks.loop(minutes=30)
     async def update_stocks(self):
         """Updates stock prices every half hour."""
         time = datetime.datetime.now()
         # Check if the stock market is open
-        if time.hour >= 9 and time.hour <= 17:
-            with open("json/economy.json") as file:
-                data = ujson.load(file)
+        if time.hour >= 9 and time.hour <= 17 or (self.stocks.get(b"GME") is None):
             await self.stockupdate(
-                data, "https://nz.finance.yahoo.com/most-active?offset=0&count=200"
+                "https://nz.finance.yahoo.com/most-active?offset=0&count=200"
             )
             await self.stockupdate(
-                data, "https://nz.finance.yahoo.com/most-active?offset=200&count=200"
+                "https://nz.finance.yahoo.com/most-active?offset=200&count=200"
             )
             await self.stockupdate(
-                data, "https://finance.yahoo.com/most-active?offset=0&count=200"
+                "https://finance.yahoo.com/most-active?offset=0&count=200"
             )
-            with open("json/economy.json", "w") as file:
-                data = ujson.dump(data, file, indent=2)
 
     async def run_process(self, command):
         process = await asyncio.create_subprocess_shell(
