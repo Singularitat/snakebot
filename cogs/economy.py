@@ -193,7 +193,6 @@ class economy(commands.Cog):
     @commands.command(aliases=["streaks"])
     async def streak(self, ctx, member: discord.Member = None):
         """Gets your streaks on the slot machine."""
-
         if member:
             member = str(member.id).encode()
 
