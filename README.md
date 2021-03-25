@@ -36,3 +36,4 @@ coinmarketcap = '' # coinmarketcap key for crypto command from https://pro.coinm
 - ujson
 - youtube_dl
 - python-dateutil
+- plyvel-win32
