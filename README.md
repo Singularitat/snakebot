@@ -13,6 +13,10 @@ You should be able to run it on earlier versions but I haven't tried
 or
 `poetry install`
 
+If you are running linux plyvel-win32 won't install so you will have to run `pip install plyvel`
+
+If it fails to install on Debian or Ubuntu try `apt-get install libleveldb1v5 libleveldb-dev`
+
 
 3. **Setup configuration**
 
@@ -36,4 +40,4 @@ coinmarketcap = '' # coinmarketcap key for crypto command from https://pro.coinm
 - ujson
 - youtube_dl
 - python-dateutil
-- plyvel-win32
+- plyvel-win32 or plyvel
