@@ -42,8 +42,8 @@ class stocks(commands.Cog):
 
         if not stockbal:
             return await ctx.send("```You have never invested```")
-        else:
-            stockbal = ujson.loads(stockbal.decode())
+
+        stockbal = ujson.loads(stockbal.decode())
 
         if symbol not in stockbal:
             return await ctx.send(f"```You have never invested in {symbol}```")
@@ -65,8 +65,8 @@ class stocks(commands.Cog):
 
         if not stockbal:
             return await ctx.send("```You have never invested```")
-        else:
-            stockbal = ujson.loads(stockbal.decode())
+
+        stockbal = ujson.loads(stockbal.decode())
 
         net_value = 0
         msg = f"{member.display_name}'s stock profile:\n"
@@ -90,9 +90,9 @@ class stocks(commands.Cog):
         stock = self.stocks.get(symbol.encode())
 
         if stock:
-            await ctx.send(f"```1 {symbol} is worth ${stock.decode()}```")
-        else:
-            await ctx.send(f"```No stock found for {symbol}```")
+            return await ctx.send(f"```1 {symbol} is worth ${stock.decode()}```")
+
+        await ctx.send(f"```No stock found for {symbol}```")
 
     @commands.command()
     async def sellstock(self, ctx, symbol, amount: float):
@@ -115,8 +115,8 @@ class stocks(commands.Cog):
 
         if not stockbal:
             return await ctx.send(f"```You have never invested in {symbol}```")
-        else:
-            stockbal = ujson.loads(stockbal.decode())
+
+        stockbal = ujson.loads(stockbal.decode())
 
         if stockbal[symbol] < amount:
             return await ctx.send(
