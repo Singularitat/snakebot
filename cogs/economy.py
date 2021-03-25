@@ -10,6 +10,8 @@ class economy(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.bal = self.bot.db.prefixed_db(b"bal-")
+        self.wins = self.bot.db.prefixed_db(b"wins-")
 
     @commands.command()
     async def baltop(self, ctx, amount: int = 10):
@@ -18,19 +20,19 @@ class economy(commands.Cog):
         amount: int
             The amount of balances to get defaulting to 3.
         """
-        with open("json/economy.json") as file:
-            data = ujson.load(file)
-        topbal = sorted(data["money"], key=data["money"].get, reverse=True)[:amount]
+        topbal = sorted([(float(b), int(m)) for m, b in self.bal], reverse=True)[
+            :amount
+        ]
+
         embed = discord.Embed(color=discord.Color.blue())
         embed.add_field(
             name=f"Top {len(topbal)} Balances",
             value="\n".join(
                 [
-                    f"**{self.bot.get_user(int(m)).display_name}:** ${data['money'][m]:,.2f}"
-                    for m in topbal
+                    f"**{self.bot.get_user(member).display_name}:** ${bal:,.2f}"
+                    for bal, member in topbal
                 ]
             ),
-            inline=False,
         )
         await ctx.send(embed=embed)
 
@@ -44,32 +46,30 @@ class economy(commands.Cog):
         if bet > 0:
             lottery = random.randint(1, 100)
             number = random.randint(1, 100)
-            with open("json/economy.json") as file:
-                data = ujson.load(file)
-            user = str(ctx.author.id)
-            if data["money"][user] < bet:
+
+            member = str(ctx.author.id).encode()
+            bal = self.bal.get(member)
+
+            if bal is None:
+                bal = 1000
+            else:
+                bal = float(bal)
+
+            if bal < bet:
                 embed = discord.Embed(
-                    title="You don't have enough cash",
-                    color=discord.Color.blue(),
-                    inline=True,
+                    title="You don't have enough cash", color=discord.Color.blue()
                 )
             else:
                 if lottery == number:
-                    data["money"][user] += bet * 99
+                    self.bal.put(member, str(bal + bet * 99).encode())
                     embed = discord.Embed(
-                        title=f"You won ${bet * 99}",
-                        color=discord.Color.blue(),
-                        inline=True,
+                        title=f"You won ${bet * 99}", color=discord.Color.blue()
                     )
                 else:
-                    data["money"][user] -= bet
+                    self.bal.put(member, str(bal - bet).encode())
                     embed = discord.Embed(
-                        title=f"You lost ${bet}",
-                        color=discord.Color.blue(),
-                        inline=True,
+                        title=f"You lost ${bet}", color=discord.Color.blue()
                     )
-            with open("json/economy.json", "w") as file:
-                data = ujson.dump(data, file, indent=2)
             await ctx.send(embed=embed)
         else:
             await ctx.send(
@@ -78,33 +78,27 @@ class economy(commands.Cog):
                 )
             )
 
-    async def streak_update(self, data, member, result):
-        if member not in data["wins"]:
-            data["wins"][member] = {
-                "currentwin": 0,
-                "currentlose": 0,
-                "highestwin": 0,
-                "highestlose": 0,
-                "totallose": 0,
-                "totalwin": 0,
-            }
-        if result == "won":
-            data["wins"][member]["currentwin"] += 1
-            data["wins"][member]["totalwin"] += 1
-            if (
-                data["wins"][member]["highestlose"]
-                < data["wins"][member]["currentlose"]
-            ):
-                data["wins"][member]["highestlose"] = data["wins"][member][
-                    "currentlose"
-                ]
-            data["wins"][member]["currentlose"] = 0
+    async def streak_update(self, member, result):
+        data = self.wins.get(member)
+
+        if not data:
+            data = {"currentwin": 0, "currentlose": 0, "highestwin": 0, "highestlose": 0, "totallose": 0, "totalwin": 0}
         else:
-            if data["wins"][member]["highestwin"] < data["wins"][member]["currentwin"]:
-                data["wins"][member]["highestwin"] = data["wins"][member]["currentwin"]
-            data["wins"][member]["totallose"] += 1
-            data["wins"][member]["currentwin"] = 0
-            data["wins"][member]["currentlose"] += 1
+            data = ujson.loads(data.decode())
+
+        if result == "won":
+            if data["highestlose"] < data["currentlose"]:
+                data["highestlose"] = data["currentlose"]
+            data["totalwin"] += 1
+            data["currentwin"] += 1
+            data["currentlose"] = 0
+        else:
+            if data["highestwin"] < data["currentwin"]:
+                data["highestwin"] = data["currentwin"]
+            data["totallose"] += 1
+            data["currentlose"] += 1
+            data["currentwin"] = 0
+        self.wins.put(member, ujson.dumps(data).encode())
 
     @commands.command(aliases=["slots"])
     async def slot(self, ctx, bet):
@@ -117,6 +111,32 @@ class economy(commands.Cog):
             bet = float(bet.replace(",", ""))
         except ValueError:
             return await ctx.send(f"```Invalid bet. e.g {ctx.prefix}slot 1000```")
+
+        if bet < 0:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Bet must be positive", color=discord.Color.red()
+                )
+            )
+
+        member = str(ctx.author.id).encode()
+        bal = self.bal.get(member)
+
+        if bal is None:
+            bal = 1000
+        else:
+            bal = float(bal)
+
+        if bal <= 1:
+            bal += 1
+
+        if bal < bet:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="You don't have enough cash", color=discord.Color.red()
+                )
+            )
+
         emojis = (
             ":apple:",
             ":tangerine:",
@@ -134,94 +154,69 @@ class economy(commands.Cog):
             ":peach:",
             ":mango:",
         )
-        if bet > 0:
-            a, b, c, d = (
-                random.choice(emojis),
-                random.choice(emojis),
-                random.choice(emojis),
-                random.choice(emojis),
-            )
-            with open("json/economy.json") as file:
-                data = ujson.load(file)
-            member = str(ctx.author.id)
-            if member not in data["money"]:
-                data["money"][member] = 1000
-            if data["money"][member] <= 1:
-                data["money"][member] += 1
-            if data["money"][member] >= bet:
-                result = "won"
-                color = discord.Color.blue()
-                if a == b == c == d:
-                    winnings = 100
-                elif (a == b == c) or (a == c == d) or (a == b == d) or (b == c == d):
-                    winnings = 10
-                elif (
-                    (a == b)
-                    and (d == c)
-                    or (b == c)
-                    and (d == a)
-                    or (d == b)
-                    and (a == c)
-                ):
-                    winnings = 15
-                elif (
-                    (a == b) or (a == c) or (b == c) or (d == c) or (d == b) or (d == a)
-                ):
-                    winnings = 1
-                else:
-                    winnings = -1
-                    result = "lost"
-                    color = discord.Color.red()
 
-                data["money"][member] = data["money"][member] + bet * winnings
+        a, b, c, d = (
+            random.choice(emojis),
+            random.choice(emojis),
+            random.choice(emojis),
+            random.choice(emojis),
+        )
 
-                embed = discord.Embed(
-                    title=f"[ {a} {b} {c} {d} ]",
-                    description=f"You {result} ${bet*(abs(winnings)):,.2f}",
-                    color=color,
-                    inline=True,
-                )
-                embed.set_footer(text=f"Balance: ${data['money'][member]:,}")
-
-                await self.streak_update(data, member, result)
-
-                with open("json/economy.json", "w") as file:
-                    data = ujson.dump(data, file, indent=2)
-            else:
-                embed = discord.Embed(
-                    title="You don't have enough cash",
-                    color=discord.Color.red(),
-                    inline=True,
-                )
-            await ctx.send(embed=embed)
+        result = "won"
+        color = discord.Color.blue()
+        if a == b == c == d:
+            winnings = 100
+        elif (a == b == c) or (a == c == d) or (a == b == d) or (b == c == d):
+            winnings = 10
+        elif (a == b) and (d == c) or (b == c) and (d == a) or (d == b) and (a == c):
+            winnings = 15
+        elif (a == b) or (a == c) or (b == c) or (d == c) or (d == b) or (d == a):
+            winnings = 1
         else:
-            await ctx.send(
-                embed=discord.Embed(
-                    title="Bet must be positive", color=discord.Color.red()
-                )
-            )
+            winnings = -1
+            result = "lost"
+            color = discord.Color.red()
+
+        bal += bet * winnings
+        self.bal.put(member, str(bal).encode())
+
+        embed = discord.Embed(
+            title=f"[ {a} {b} {c} {d} ]",
+            description=f"You {result} ${bet*(abs(winnings)):,.2f}",
+            color=color
+        )
+        embed.set_footer(text=f"Balance: ${bal:,}")
+
+        await ctx.send(embed=embed)
+        await self.streak_update(member, result)
 
     @commands.command(aliases=["streaks"])
     async def streak(self, ctx, member: discord.Member = None):
         """Gets your streaks on the slot machine."""
-        with open("json/economy.json") as file:
-            data = ujson.load(file)
+
         if member:
-            member = str(member.id)
+            member = str(member.id).encode()
+
         else:
-            member = str(ctx.author.id)
-        if member not in data["wins"]:
+            member = str(ctx.author.id).encode()
+
+        wins = self.wins.get(member)
+
+        if not wins:
             return
+
+        wins = ujson.loads(wins.decode())
+
         embed = discord.Embed(color=discord.Color.blue())
         embed.add_field(
             name="**Wins/Loses**",
             value=f"""
-            **Total Wins:** {data["wins"][member]["totalwin"]}
-            **Total Losses:** {data["wins"][member]["totallose"]}
-            **Current Wins:** {data["wins"][member]["currentwin"]}
-            **Current Loses:** {data["wins"][member]["currentlose"]}
-            **Highest Win Streak:** {data["wins"][member]["highestwin"]}
-            **Highest Loss Streak:** {data["wins"][member]["highestlose"]}
+            **Total Wins:** {wins["totalwin"]}
+            **Total Losses:** {wins["totallose"]}
+            **Current Wins:** {wins["currentwin"]}
+            **Current Loses:** {wins["currentlose"]}
+            **Highest Win Streak:** {wins["highestwin"]}
+            **Highest Loss Streak:** {wins["highestlose"]}
             """,
         )
         await ctx.send(embed=embed)
@@ -253,19 +248,7 @@ class economy(commands.Cog):
             ":mango:",
         )
 
-        (
-            quad,
-            triple,
-            dd,
-            double,
-            none,
-            win,
-            lose,
-            highestlose,
-            highestwin,
-            run,
-            iswin,
-        ) = (
+        (quad, triple, dd, double, none, win, lose, hl, hw, run, iswin,) = (
             0,
             0,
             0,
@@ -312,55 +295,55 @@ class economy(commands.Cog):
                     iswin = False
                     lose += 1
                     win = 0
-                    highestlose = max(highestlose, lose)
+                    hl = max(hl, lose)
                 if iswin is True:
                     win += 1
                     lose = 0
-                    highestwin = max(highestwin, win)
+                    hw = max(hw, win)
             total = (
                 ((quad * 100) + (triple * 10) + (dd * 15) + (double * 1) - (none))
                 * (1 / amount)
             ) * 100
+
             embed = discord.Embed(
                 title=f"Chances from {run} attempts", color=discord.Color.blue()
             )
             embed.add_field(
                 name="Quad: ",
-                value=f"{quad}, {round(((quad*(1/amount))*100), 2)}%",
+                value=f"{quad}, {quad/amount*100:.2f}%",
                 inline=True,
             )
             embed.add_field(
                 name="Triple: ",
-                value=f"{triple}, {round(((triple*(1/amount))*100), 2)}%",
+                value=f"{triple}, {triple/amount*100:.2f}%",
                 inline=True,
             )
             embed.add_field(
                 name="Double double: ",
-                value=f"{dd}, {round(((dd*(1/amount))*100), 2)}%",
+                value=f"{dd}, {dd/amount*100:.2f}%",
                 inline=True,
             )
             embed.add_field(
                 name="Double: ",
-                value=f"{double}, {round(((double*(1/amount))*100), 2)}%",
+                value=f"{double}, {double/amount*100:.2f}%",
                 inline=True,
             )
             embed.add_field(
                 name="None: ",
-                value=f"{none}, {round(((none*(1/amount))*100), 2)}%",
+                value=f"{none}, {none/amount*100:.2f}%",
                 inline=True,
             )
             embed.add_field(
-                name="Percentage gain/loss: ", value=f"{round(total, 2)}%", inline=True
+                name="Percentage gain/loss: ", value=f"{total:.2f}%", inline=True
             )
-            embed.add_field(name="Highest win streak: ", value=highestwin, inline=True)
-            embed.add_field(
-                name="Highest lose streak: ", value=highestlose, inline=True
-            )
+            embed.add_field(name="Highest win streak: ", value=hw, inline=True)
+            embed.add_field(name="Highest lose streak: ", value=hl, inline=True)
             embed.add_field(
                 name="Time taken: ",
-                value=f"{round(time.time() - start, 3)}s",
+                value=f"{time.time() - start:.3f}s",
                 inline=True,
             )
+
             await ctx.send(embed=embed)
 
     @commands.command(aliases=["bal"])
@@ -370,71 +353,27 @@ class economy(commands.Cog):
         members: discord.Member
             The member whos balance will be returned.
         """
-        with open("json/economy.json") as file:
-            data = ujson.load(file)
-
         if not member:
             member = ctx.author
 
-        user = str(member.id)
+        member_id = str(member.id).encode()
 
-        if user not in data["money"]:
-            data["money"][user] = 1000
+        bal = self.bal.get(member_id)
+
+        if not bal:
+            bal = 1000
+        else:
+            bal = float(bal)
 
         embed = discord.Embed(color=discord.Color.blue())
 
         embed.add_field(
             name=f"{member.display_name}'s balance",
-            value=f"${data['money'][user]:,.2f}",
-            inline=False,
+            value=f"${bal:,.2f}",
+            inline=False
         )
 
         await ctx.send(embed=embed)
-
-        with open("json/economy.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
-
-    @commands.command(aliases=["networth"])
-    async def net(self, ctx, member: discord.Member = None):
-        """Gets a members net worth.
-
-        members: discord.Member
-            The member whos net worth will be returned.
-        """
-        with open("json/economy.json") as file:
-            data = ujson.load(file)
-
-        if not member:
-            member = ctx.author
-
-        user = str(member.id)
-
-        if user not in data["money"]:
-            data["money"][user] = 1000
-
-        stock_value = sum(
-            [
-                stock[1] * data["stocks"][stock[0]]
-                for stock in data["stockbal"][user].items()
-            ]
-        )
-
-        embed = discord.Embed(color=discord.Color.blue())
-
-        embed.add_field(
-            name=f"{member.display_name}'s net worth",
-            value=f"${data['money'][user] + stock_value:,.2f}",
-            inline=False,
-        )
-
-        embed.set_footer(
-            text=f"Stocks: ${stock_value:,.2f}\nBalance: ${data['money'][user]:,.2f}"
-        )
-
-        await ctx.send(embed=embed)
-
-        with open("json/economy.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
 
     @commands.command(aliases=["give", "donate"])
     async def pay(self, ctx, member: discord.Member, amount: float):
@@ -446,29 +385,31 @@ class economy(commands.Cog):
             The amount you are paying.
         """
         if amount > 0:
-            with open("json/economy.json") as file:
-                data = ujson.load(file)
-            user = str(ctx.author.id)
-            if data["money"][user] < amount:
+            member_id = str(ctx.author.id).encode()
+            bal = self.bal.get(member_id)
+
+            if not bal:
+                bal = 1000
+            else:
+                bal = float(bal)
+
+            if bal < amount:
                 await ctx.send(
                     embed=discord.Embed(
                         title="You don't have enough cash", color=discord.Color.red()
                     )
                 )
             else:
-                if str(member.id) not in data["money"]:
-                    data["money"][str(member.id)] = 1000
-                data["money"][user] -= amount
-                data["money"][str(member.id)] += amount
+                bal -= amount
+                bal += amount
 
                 embed = discord.Embed(
                     title=f"Sent ${amount} to {member.display_name}",
                     color=discord.Color.blue(),
                 )
-                embed.set_footer(text=f"New Balance: ${data['money'][user]}")
+                embed.set_footer(text=f"New Balance: ${bal}")
 
-                with open("json/economy.json", "w") as file:
-                    data = ujson.dump(data, file, indent=2)
+                self.bal.put(member_id, str(bal).encode())
 
                 await ctx.send(embed=embed)
 
@@ -476,21 +417,22 @@ class economy(commands.Cog):
     @commands.cooldown(1, 21600, commands.BucketType.user)
     async def salary(self, ctx):
         """Gives you a salary of 1000 on a 6 hour cooldown."""
-        with open("json/economy.json") as file:
-            data = ujson.load(file)
-        member = str(ctx.author.id)
+        member = str(ctx.author.id).encode()
+        bal = self.bal.get(member)
 
-        if member not in data["money"]:
-            data["money"][member] = 1000
-        data["money"][member] += 1000
+        if not bal:
+            bal = 1000
+        else:
+            bal = float(bal)
+
+        bal += 1000
 
         embed = discord.Embed(
             title=f"Paid {ctx.author.display_name} $1000", color=discord.Color.blue()
         )
-        embed.set_footer(text=f"Balance: ${data['money'][member]:,}")
+        embed.set_footer(text=f"Balance: ${bal:,}")
 
-        with open("json/economy.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
+        self.bal.put(member, str(bal).encode())
 
         await ctx.send(embed=embed)
 
