@@ -6,3 +6,4 @@ psutil
 ujson
 youtube_dl
 python-dateutil
+plyvel-win32
