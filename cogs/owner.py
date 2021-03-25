@@ -16,6 +16,12 @@ class PerformanceMocker:
     def __init__(self):
         self.loop = asyncio.get_event_loop()
 
+    def permissions_for(self, obj):
+        perms = discord.Permissions.all()
+        perms.embed_links = False
+        perms.add_reactions = False
+        return perms
+
     def __getattr__(self, attr):
         return self
 
@@ -48,6 +54,7 @@ class owner(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.rrole = self.bot.db.prefixed_db(b"rrole-")
 
     @commands.command()
     @commands.is_owner()
@@ -335,62 +342,6 @@ class owner(commands.Cog):
         else:
             os.system("nohup python3 bot.py &")
 
-    async def open_json(self, file_path, msg):
-        try:
-            with open(file_path) as file:
-                try:
-                    data = ujson.load(file)
-                except ValueError:
-                    data = {}
-                    msg += f"Error loading {file.name}\n"
-        except FileNotFoundError:
-            data = {}
-            msg += f"{file} not found\n"
-        return data, msg
-
-    async def check_keys(self, data, msg, *keys):
-        for key in keys:
-            if key not in data:
-                data[key] = {}
-                msg += f"{key} not found\n"
-        return msg
-
-    @commands.command(hidden=True, name="fixjson")
-    @commands.is_owner()
-    async def fix_json(self, ctx):
-        """Fixes the bots json files if they are broken."""
-        msg = ""
-
-        # Fixing economy.json
-
-        data, msg = await self.open_json("json/economy.json", msg)
-
-        msg = await self.check_keys(data, msg, "money", "stockbal", "wins", "stocks")
-
-        with open("json/economy.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
-
-        # Fixing reaction_roles.json
-
-        data, msg = await self.open_json("json/reaction_roles.json", msg)
-
-        with open("json/reaction_roles.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
-
-        # Fixing real.json
-
-        data, msg = await self.open_json("json/real.json", msg)
-
-        msg = await self.check_keys(data, msg, "blacklist", "downvote", "karma")
-
-        with open("json/real.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
-
-        if msg:
-            await ctx.send(f"```{msg}```")
-        else:
-            await ctx.send("```No Errors```")
-
     @commands.command()
     @commands.is_owner()
     async def rrole(self, ctx, *emojis):
@@ -435,13 +386,9 @@ class owner(commands.Cog):
         for emoji in emojis:
             await message.add_reaction(emoji)
 
-        with open("json/reaction_roles.json") as file:
-            data = ujson.load(file)
-
-        data[str(message.id)] = dict(zip(emojis, roles))
-
-        with open("json/reaction_roles.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
+        self.rrole.put(
+            str(message.id).encode(), ujson.dumps(dict(zip(emojis, roles))).encode()
+        )
 
     @commands.command()
     @commands.is_owner()
@@ -453,6 +400,11 @@ class owner(commands.Cog):
         emojis: tuple
             A tuple of emojis.
         """
+        reaction = self.rrole.get(str(message.id).encode())
+
+        if not reaction:
+            return await ctx.send("```Message not found```")
+
         msg = message.content
 
         breifs = await self.await_for_message(
@@ -482,14 +434,12 @@ class owner(commands.Cog):
         for emoji in emojis:
             await message.add_reaction(emoji)
 
-        with open("json/reaction_roles.json") as file:
-            data = ujson.load(file)
+        reaction = ujson.loads(reaction.decode())
 
         for emoji, role in zip(emojis, roles):
-            data[str(message.id)][emoji] = role
+            reaction[emoji] = role
 
-        with open("json/reaction_roles.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
+        self.rrole.put(str(message.id).encode(), ujson.dumps(reaction).encode())
 
     @staticmethod
     async def await_for_message(ctx, message):

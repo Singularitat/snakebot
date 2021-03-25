@@ -8,7 +8,36 @@ class admin(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.blacklist = self.bot.db.prefixed_db(b"blacklist-")
+        self.bal = self.bot.db.prefixed_db(b"bal-")
+        self.wins = self.bot.db.prefixed_db(b"wins-")
+        self.karma = self.bot.db.prefixed_db(b"karma-")
+        self.stocks = self.bot.db.prefixed_db(b"stocks-")
+        self.stockbal = self.bot.db.prefixed_db(b"stockbal-")
+        self.rrole = self.bot.db.prefixed_db(b"rrole-")
 
+    @commands.command()
+    async def migrate(self, ctx):
+        with open("json/economy.json") as file:
+            data = ujson.load(file)
+        for member in data["money"]:
+            self.bal.put(member.encode(), str(data["money"][member]).encode())
+        for member in data["stockbal"]:
+            self.stockbal.put(
+                member.encode(), ujson.dumps(data["stockbal"][member]).encode()
+            )
+        for member in data["wins"]:
+            self.wins.put(member.encode(), ujson.dumps(data["wins"][member]).encode())
+        with open("json/real.json") as file:
+            data = ujson.load(file)
+        for member in data["karma"]:
+            self.karma.put(member.encode(), str(data["karma"][member]).encode())
+        with open("json/reaction_roles.json") as file:
+            data = ujson.load(file)
+        for message_id in data:
+            self.rrole.put(message_id.encode(), ujson.dumps(data[message_id]).encode())
+
+    @commands.has_permissions(administrator=True)
     @commands.command(hidden=True)
     async def edit(self, ctx, message_id, *, message_content):
         """Edits one of the bots messages.
@@ -142,32 +171,34 @@ class admin(commands.Cog):
         member: discord.Member
             The downvoted member.
         """
-        with open("json/real.json") as file:
-            data = ujson.load(file)
         if member is None:
-            if data["downvote"] == []:
+            if self.blacklist is None:
                 return await ctx.send("```No downvoted members```")
+
             embed = discord.Embed(title="Downvoted users", colour=discord.Color.blue())
-            for member_id in data["downvote"]:
-                embed.add_field(name="User:", value=member_id, inline=True)
+            for member_id in self.blacklist.iterator(include_value=False):
+                embed.add_field(name="Member:", value=member_id.decode(), inline=True)
+
         else:
-            if member.id in data["downvote"]:
-                data["downvote"].remove(member.id)
+            user = str(member.id).encode()
+
+            if self.blacklist.get(user):
+                self.blacklist.delete(user)
                 embed = discord.Embed(
                     title="User Undownvoted",
                     description=f"***{member}*** has been removed from the downvote list",
                     color=discord.Color.blue(),
                 )
+
             else:
                 await member.edit(voice_channel=None)
-                data["downvote"].append(member.id)
+                self.blacklist.put(user, b"1")
                 embed = discord.Embed(
                     title="User Downvoted",
                     description=f"**{member}** has been added to the downvote list",
                     color=discord.Color.blue(),
                 )
-            with open("json/real.json", "w") as file:
-                data = ujson.dump(data, file, indent=2)
+
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -178,33 +209,34 @@ class admin(commands.Cog):
         member: discord.Member
             The blacklisted member.
         """
-        with open("json/real.json") as file:
-            data = ujson.load(file)
         if member is None:
-            if data["blacklist"] == []:
+            if self.blacklist is None:
                 return await ctx.send("```No blacklisted members```")
+
             embed = discord.Embed(
                 title="Blacklisted users", colour=discord.Color.blue()
             )
-            for member_id in data["blacklist"]:
-                embed.add_field(name="User:", value=member_id, inline=True)
+            for member_id in self.blacklist.iterator(include_value=False):
+                embed.add_field(name="Member:", value=member_id.decode(), inline=True)
+
         else:
-            if member.id in data["blacklist"]:
-                data["blacklist"].remove(member.id)
+            user = str(member.id).encode()
+            if user in self.blacklist:
+                self.blacklist.delete(user)
                 embed = discord.Embed(
                     title="User Unblacklisted",
                     description=f"***{member}*** has been unblacklisted",
                     color=discord.Color.blue(),
                 )
+
             else:
-                data["blacklist"].append(member.id)
+                self.blacklist.put(user, b"")
                 embed = discord.Embed(
                     title="User Blacklisted",
                     description=f"**{member}** has been added to the blacklist",
                     color=discord.Color.blue(),
                 )
-            with open("json/real.json", "w") as file:
-                data = ujson.dump(data, file, indent=2)
+
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["clear, clean"])

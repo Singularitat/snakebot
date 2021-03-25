@@ -5,7 +5,6 @@ import platform
 import os
 import time
 import datetime
-import textwrap
 import psutil
 import logging
 
@@ -13,26 +12,31 @@ import logging
 class events(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.karma = self.bot.db.prefixed_db(b"karma-")
+        self.blacklist = self.bot.db.prefixed_db(b"blacklist-")
+        self.rrole = self.bot.db.prefixed_db(b"rrole-")
 
     async def reaction_role_check(self, payload):
-        with open("json/reaction_roles.json") as file:
-            data = ujson.load(file)
+        message_id = str(payload.message_id).encode()
+        reaction = self.rrole.get(message_id)
 
-        message_id = str(payload.message_id)
+        if not reaction:
+            return None
 
-        if message_id in data:
-            if str(payload.emoji) in data[message_id]:
-                role_id = int(data[message_id][str(payload.emoji)])
-            elif payload.emoji.name in data[message_id]:
-                role_id = int(data[message_id][payload.emoji.name])
-            else:
-                return None
+        reaction = ujson.loads(reaction.decode())
 
-            guild = self.bot.get_guild(payload.guild_id)
-            role = discord.utils.get(guild.roles, id=role_id)
-            if payload.event_type == "REACTION_REMOVE":
-                return (role, guild)
-            return role
+        if str(payload.emoji) in reaction:
+            role_id = int(reaction[str(payload.emoji)])
+        elif payload.emoji.name in reaction:
+            role_id = int(reaction[payload.emoji.name])
+        else:
+            return None
+
+        guild = self.bot.get_guild(payload.guild_id)
+        role = discord.utils.get(guild.roles, id=role_id)
+        if payload.event_type == "REACTION_REMOVE":
+            return (role, guild)
+        return role
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -74,17 +78,11 @@ class events(commands.Cog):
         after: discord.VoiceState
             The new voice state.
         """
-        try:
-            with open("json/real.json") as file:
-                data = ujson.load(file)
+        if after.channel is None:
+            return
 
-            if member.id in data["downvote"] and after.channel is not None:
-                await member.edit(voice_channel=None)
-        except FileNotFoundError:
-            with open("json/real.json", "w") as file:
-                data = ujson.dump(
-                    {"blacklist": {}, "downvote": {}, "karma": {}}, file, indent=2
-                )
+        if self.blacklist.get(str(member.id).encode()) == b"1":
+            await member.edit(voice_channel=None)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
@@ -136,23 +134,12 @@ class events(commands.Cog):
             timesince = (
                 datetime.datetime.utcfromtimestamp(time.time()) - message.created_at
             )
+
             if timesince.total_seconds() < 360:
-                general = discord.utils.get(message.guild.channels, name="logs")
-                embed = discord.Embed(colour=discord.Colour.blurple())
-                embed.description = textwrap.dedent(
-                    f"""
-                        **{message.author} has ghosted pinged**
-                        For their crimes they have been downvoted
-                    """
-                )
-                await general.send(embed=embed)
-                with open("json/real.json") as file:
-                    data = ujson.load(file)
-                if message.author.id not in data["downvote"]:
-                    data["downvote"].append(message.author.id)
-                with open("json/real.json", "w") as file:
-                    data = ujson.dump(data, file, indent=2)
+                self.blacklist.put(str(message.author.id).encode())
+
         channel = discord.utils.get(message.guild.channels, name="logs")
+
         if channel is not None:
             await channel.send(
                 f"```{message.author} deleted:\n{message.content.replace('`', '')}```"
@@ -164,17 +151,8 @@ class events(commands.Cog):
 
         message: discord.Message
         """
-        try:
-            with open("json/real.json") as file:
-                data = ujson.load(file)
-
-            if message.author.id in data["downvote"]:
-                await message.add_reaction("<:downvote:766414744730206228>")
-        except FileNotFoundError:
-            with open("json/real.json", "w") as file:
-                data = ujson.dump(
-                    {"blacklist": {}, "downvote": {}, "karma": {}}, file, indent=2
-                )
+        if self.blacklist.get(str(message.author.id).encode()) == b"1":
+            await message.add_reaction("<:downvote:766414744730206228>")
 
     @commands.Cog.listener()
     async def on_reaction_clear(self, message, reactions):
@@ -183,17 +161,8 @@ class events(commands.Cog):
         message: discord.Message
         reactions: List[discord.Reaction]
         """
-        try:
-            with open("json/real.json") as file:
-                data = ujson.load(file)
-
-            if message.author.id in data["downvote"]:
-                await message.add_reaction("<:downvote:766414744730206228>")
-        except FileNotFoundError:
-            with open("json/real.json", "w") as file:
-                data = ujson.dump(
-                    {"blacklist": {}, "downvote": {}, "karma": {}}, file, indent=2
-                )
+        if self.blacklist.get(str(message.author.id).encode()) == b"1":
+            await message.add_reaction("<:downvote:766414744730206228>")
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -213,22 +182,23 @@ class events(commands.Cog):
             return
 
         if reaction.custom_emoji:
-            with open("json/real.json") as file:
-                data = ujson.load(file)
-            member = str(reaction.message.author.id)
+            member = str(reaction.message.author.id).encode()
 
-            if reaction.emoji.name == "downvote":
-                if member not in data["karma"]:
-                    data["karma"][member] = 0
-                data["karma"][member] -= 1
+            if reaction.emoji.name.lower() == "downvote":
+                karma = self.karma.get(member)
+                if not karma:
+                    karma = -1
+                else:
+                    karma = int(karma.decode()) - 1
+                self.karma.put(member, str(karma).encode())
 
-            elif reaction.emoji.name == "upvote":
-                if member not in data["karma"]:
-                    data["karma"][member] = 0
-                data["karma"][member] += 1
-
-            with open("json/real.json", "w") as file:
-                data = ujson.dump(data, file, indent=2)
+            elif reaction.emoji.name.lower() == "upvote":
+                karma = self.karma.get(member)
+                if not karma:
+                    karma = 1
+                else:
+                    karma = int(karma.decode()) + 1
+                self.karma.put(member, str(karma).encode())
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -308,12 +278,8 @@ Boot time: {round(time.time()-psutil.Process(os.getpid()).create_time(), 3)}s
         """
         if ctx.author.id in self.bot.owner_ids:
             return True
-        with open("json/real.json") as file:
-            data = ujson.load(file)
-        return (
-            ctx.author.id not in data["blacklist"]
-            and ctx.author.id not in data["downvote"]
-        )
+
+        return not self.blacklist.get(str(ctx.author.id).encode())
 
     @commands.Cog.listener()
     async def on_command(self, ctx):

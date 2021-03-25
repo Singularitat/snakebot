@@ -126,9 +126,7 @@ class useful(commands.Cog):
             try:
                 obj = await objects[obj].convert(ctx, arg)
             except commands.BadArgument:
-                await ctx.send(
-                    "```Conversion failed```"
-                )
+                await ctx.send("```Conversion failed```")
             else:
                 if subarg:
                     attr = getattr(obj, subarg)

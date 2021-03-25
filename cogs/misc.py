@@ -3,7 +3,6 @@ from discord.ext import commands
 import random
 import aiohttp
 import lxml.html
-import ujson
 import unicodedata
 
 
@@ -12,6 +11,7 @@ class misc(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.karma = self.bot.db.prefixed_db(b"karma-")
 
     @commands.command(name="hex")
     async def _hex(self, ctx, number, convert: bool = False):
@@ -79,49 +79,43 @@ class misc(commands.Cog):
         member: discord.Member
             A member whos karma will be returned.
         """
-        with open("json/real.json") as file:
-            data = ujson.load(file)
         if not member:
             member = ctx.author
-        if str(member.id) not in data["karma"]:
-            data["karma"][str(member.id)] = 0
-        embed = discord.Embed(
-            color=discord.Color.blue(),
-        )
-        embed.add_field(
-            name=f"{member.display_name}'s karma: ",
-            value=f"{data['karma'][str(member.id)]}",
-        )
+
+        member_id = str(member.id).encode()
+        karma = self.karma.get(member_id)
+
+        if not karma:
+            karma = 0
+        else:
+            karma = karma.decode()
+
+        embed = discord.Embed(color=discord.Color.blue())
+        embed.add_field(name=f"{member.display_name}'s karma: ", value=f"{karma}")
         await ctx.send(embed=embed)
-        with open("json/real.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
 
     @commands.command(aliases=["kboard"])
     async def karmaboard(self, ctx):
         """Displays the top 5 and bottom 5 members karma."""
-        with open("json/real.json") as file:
-            data = ujson.load(file)
-        sorted_karma = sorted(data["karma"], key=data["karma"].get, reverse=True)
+        sorted_karma = sorted([(int(k), int(m)) for m, k in self.karma], reverse=True)
         embed = discord.Embed(title="Karma Board", color=discord.Color.blue())
         embed.add_field(
             name="Top Five",
             value="\n".join(
                 [
-                    f"{self.bot.get_user(int(m)).display_name}: {data['karma'][m]}"
-                    for m in sorted_karma[:5]
+                    f"{self.bot.get_user(member).display_name}: {karma}"
+                    for karma, member in sorted_karma[:5]
                 ]
             ),
-            inline=False,
         )
         embed.add_field(
             name="Bottom Five",
             value="\n".join(
                 [
-                    f"{self.bot.get_user(int(m)).display_name}: {data['karma'][m]}"
-                    for m in sorted_karma[-5:]
+                    f"{self.bot.get_user(member).display_name}: {karma}"
+                    for karma, member in sorted_karma[-5:]
                 ]
             ),
-            inline=False,
         )
         await ctx.send(embed=embed)
 
