@@ -8,33 +8,22 @@ class stocks(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.stocks = self.bot.db.prefixed_db(b"stocks-")
+        self.bal = self.bot.db.prefixed_db(b"bal-")
+        self.stockbal = self.bot.db.prefixed_db(b"stockbal-")
 
     @commands.command()
-    async def stocks(self, ctx, order="low"):
-        """Shows the price of stocks from yahoo finance.
-
-        order: str
-            The order you want the stocks to be in [high/low].
-        """
-        with open("json/economy.json") as file:
-            data = ujson.load(file)
-
-        if order.lower() == "low":
-            stock_data = sorted(data["stocks"], key=data["stocks"].get)
-        elif order.lower() == "high":
-            stock_data = sorted(data["stocks"], key=data["stocks"].get, reverse=True)
-        else:
-            stock_data = sorted(data["stocks"])
-
+    async def stocks(self, ctx):
+        """Shows the price of stocks from yahoo finance."""
         msg = "```\n"
         i = 1
 
-        for stock in stock_data:
-            if len(msg + f"{stock}: ${data['stocks'][stock]:<9}") < 2000:
+        for stock, value in self.stocks:
+            if len(msg + f"{stock.decode():<5}: ${value.decode():<9}") < 1997:
                 if i % 6 == 0:
-                    msg += f"{stock}: ${data['stocks'][stock]}\n"
+                    msg += f"{stock.decode():<5}: ${value.decode()}\n"
                 else:
-                    msg += f"{stock}: ${data['stocks'][stock]:<9}"
+                    msg += f"{stock.decode():<5}: ${value.decode():<9}"
                 i += 1
 
         await ctx.send(f"{msg}```")
@@ -46,42 +35,48 @@ class stocks(commands.Cog):
         symbol: str
             The symbol of the stock to find.
         """
-        with open("json/economy.json") as file:
-            data = ujson.load(file)
-
         symbol = symbol.upper()
-        member = str(ctx.author.id)
+        member_id = str(ctx.author.id).encode()
 
-        if symbol in data["stockbal"][member]:
-            await ctx.send(
-                f"```You have {data['stockbal'][member][symbol]:.2f} stocks in {symbol}```"
-            )
+        stockbal = self.stockbal.get(member_id)
+
+        if not stockbal:
+            return await ctx.send("```You have never invested```")
         else:
-            await ctx.send(f"```You have never invested in {symbol}```")
+            stockbal = ujson.loads(stockbal.decode())
+
+        if symbol not in stockbal:
+            return await ctx.send(f"```You have never invested in {symbol}```")
+
+        await ctx.send(f"```You have {stockbal[symbol]:.2f} stocks in {symbol}```")
 
     @commands.command(aliases=["stockprof", "stockp"])
     async def stockprofile(self, ctx, member: discord.Member = None):
-        """Gets someone's stock profile."""
-        with open("json/economy.json") as file:
-            data = ujson.load(file)
+        """Gets someone's stock profile.
 
+        member: discord.Member
+            The member whos stockprofile will be shown
+        """
         if member is None:
             member = ctx.author
 
-        if str(member.id) in data["stockbal"]:
+        member_id = str(member.id).encode()
+        stockbal = self.stockbal.get(member_id)
 
-            net_value = 0
-            msg = f"{member.display_name}'s stock profile:\n"
-
-            for stock in data["stockbal"][str(member.id)]:
-                msg += f"\n{stock}: {data['stockbal'][str(member.id)][stock]:<15.2f} Price: ${data['stocks'][stock]}"
-                net_value += (
-                    data["stockbal"][str(member.id)][stock] * data["stocks"][stock]
-                )
-
-            await ctx.send(f"```{msg}\n\nNet Value: ${net_value:.2f}```")
+        if not stockbal:
+            return await ctx.send("```You have never invested```")
         else:
-            await ctx.send("```You have never invested```")
+            stockbal = ujson.loads(stockbal.decode())
+
+        net_value = 0
+        msg = f"{member.display_name}'s stock profile:\n"
+
+        for stock in stockbal:
+            price = self.stocks.get(stock.encode())
+            msg += f"\n{stock:>4}: {stockbal[stock]:<15.2f} Price: ${price.decode()}"
+            net_value += stockbal[stock] * float(price)
+
+        await ctx.send(f"```{msg}\n\nNet Value: ${net_value:.2f}```")
 
     @commands.command()
     async def stockprice(self, ctx, symbol):
@@ -91,11 +86,11 @@ class stocks(commands.Cog):
             The symbol of the stock to find.
         """
         symbol = symbol.upper()
-        with open("json/economy.json") as file:
-            data = ujson.load(file)
 
-        if symbol in data["stocks"]:
-            await ctx.send(f"```1 {symbol} is worth ${data['stocks'][symbol]}```")
+        stock = self.stocks.get(symbol.encode())
+
+        if stock:
+            await ctx.send(f"```1 {symbol} is worth ${stock.decode()}```")
         else:
             await ctx.send(f"```No stock found for {symbol}```")
 
@@ -108,45 +103,48 @@ class stocks(commands.Cog):
         amount: float
             The amount of stock to sell.
         """
-        user = str(ctx.author.id)
-
-        with open("json/economy.json") as file:
-            data = ujson.load(file)
-
         symbol = symbol.upper()
 
-        if symbol in data["stocks"]:
-            if user not in data["money"]:
-                data["money"][user] = 1000
+        stock = self.stocks.get(symbol.encode())
 
-            if user not in data["stockbal"]:
-                data["stockbal"][user] = {}
-                return await ctx.send("```You have never invested```")
+        if not stock:
+            return await ctx.send(f"```Couldn't find stock {symbol}```")
 
-            if symbol not in data["stockbal"][user]:
-                data["stockbal"][user][symbol] = 0
-                return await ctx.send(f"```You have never invested in {symbol}```")
+        member_id = str(ctx.author.id).encode()
+        stockbal = self.stockbal.get(member_id)
 
-            if data["stockbal"][user][symbol] < amount:
-                return await ctx.send(f"```Not enough stock you have: {data['stockbal'][user][symbol]}```")
-
-            cash = amount * float(data["stocks"][symbol])
-
-            data["stockbal"][user][symbol] -= amount
-            data["money"][user] += cash
-
-            embed = discord.Embed(
-                title=f"Sold {amount:.2f} stocks for ${cash:.2f}",
-                color=discord.Color.blurple(),
-                inline=True,
-            )
-            embed.set_footer(text=f"Balance: ${data['money'][user]}")
-
-            await ctx.send(embed=embed)
+        if not stockbal:
+            return await ctx.send(f"```You have never invested in {symbol}```")
         else:
-            await ctx.send(f"```Couldn't find stock {symbol}```")
-        with open("json/economy.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
+            stockbal = ujson.loads(stockbal.decode())
+
+        if stockbal[symbol] < amount:
+            return await ctx.send(
+                f"```Not enough stock you have: {stockbal[symbol]}```"
+            )
+
+        bal = self.bal.get(member_id)
+
+        if bal is None:
+            bal = 1000
+        else:
+            bal = float(bal)
+
+        cash = amount * float(stock)
+
+        stockbal[symbol] -= amount
+        bal += cash
+
+        embed = discord.Embed(
+            title=f"Sold {amount:.2f} stocks for ${cash:.2f}",
+            color=discord.Color.blurple(),
+        )
+        embed.set_footer(text=f"Balance: ${bal}")
+
+        await ctx.send(embed=embed)
+
+        self.bal.put(member_id, str(bal).encode())
+        self.stockbal.put(member_id, ujson.dumps(stockbal).encode())
 
     @commands.command()
     async def invest(self, ctx, symbol=None, cash: float = None):
@@ -161,43 +159,98 @@ class stocks(commands.Cog):
                 f"```Usage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}```"
             )
 
-        user = str(ctx.author.id)
-
-        with open("json/economy.json") as file:
-            data = ujson.load(file)
-
-        if user not in data["money"]:
-            data["money"][user] = 1000
-
         symbol = symbol.upper()
 
-        if symbol in data["stocks"]:
-            if data["money"][user] >= cash:
-                amount = cash / float(data["stocks"][symbol])
+        stock = self.stocks.get(symbol.encode())
 
-                if user not in data["stockbal"]:
-                    data["stockbal"][user] = {}
+        if not stock:
+            return await ctx.send(f"```Couldn't find stock {symbol}```")
 
-                if symbol not in data["stockbal"][user]:
-                    data["stockbal"][user][symbol] = 0
+        member_id = str(ctx.author.id).encode()
+        bal = self.bal.get(member_id)
 
-                data["stockbal"][user][symbol] += amount
-                data["money"][user] -= cash
-
-                embed = discord.Embed(
-                    title=f"You bought {amount:.2f} stocks in {symbol}",
-                    color=discord.Color.blurple(),
-                    inline=True,
-                )
-                embed.set_footer(text=f"Balance: ${data['money'][user]}")
-
-                await ctx.send(embed=embed)
-            else:
-                await ctx.send("```You don't have enough cash```")
+        if bal is None:
+            bal = 1000
         else:
-            await ctx.send(f"```No stock found for {symbol}```")
-        with open("json/economy.json", "w") as file:
-            data = ujson.dump(data, file, indent=2)
+            bal = float(bal)
+
+        if bal < cash:
+            return await ctx.send("```You don't have enough cash```")
+
+        amount = cash / float(stock)
+
+        stockbal = self.stockbal.get(member_id)
+
+        if not stockbal:
+            stockbal = {}
+        else:
+            stockbal = ujson.loads(stockbal.decode())
+
+        if symbol not in stockbal:
+            stockbal[symbol] = 0
+
+        stockbal[symbol] += amount
+        bal -= cash
+
+        embed = discord.Embed(
+            title=f"You bought {amount:.2f} stocks in {symbol}",
+            color=discord.Color.blurple(),
+        )
+        embed.set_footer(text=f"Balance: ${bal}")
+
+        await ctx.send(embed=embed)
+
+        self.bal.put(member_id, str(bal).encode())
+        self.stockbal.put(member_id, ujson.dumps(stockbal).encode())
+
+    @commands.command(aliases=["networth"])
+    async def net(self, ctx, member: discord.Member = None):
+        """Gets a members net worth.
+
+        members: discord.Member
+            The member whos net worth will be returned.
+        """
+        if not member:
+            member = ctx.author
+
+        member_id = str(member.id).encode()
+        bal = self.bal.get(member_id)
+
+        if not bal:
+            self.bal.put(member_id, b"1000")
+            bal = 1000
+        else:
+            bal = float(bal)
+
+        stockbal = self.stockbal.get(member_id)
+
+        embed = discord.Embed(color=discord.Color.blue())
+
+        if not stockbal:
+            embed.add_field(
+                name=f"{member.display_name}'s net worth",
+                value=f"${bal}",
+                inline=False,
+            )
+            embed.set_footer(text=f"Stocks: $0\nBalance: ${bal:,.2f}")
+            return await ctx.send(embed=embed)
+
+        stock_value = sum(
+            [
+                stock[1] * float(self.stocks.get(stock[0].encode()))
+                for stock in ujson.loads(stockbal.decode()).items()
+            ]
+        )
+
+        embed.add_field(
+            name=f"{member.display_name}'s net worth",
+            value=f"${bal + stock_value:,.2f}",
+            inline=False,
+        )
+
+        embed.set_footer(text=f"Stocks: ${stock_value:,.2f}\nBalance: ${bal:,.2f}")
+
+        await ctx.send(embed=embed)
 
 
 def setup(bot: commands.Bot) -> None:
