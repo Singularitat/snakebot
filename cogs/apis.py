@@ -4,7 +4,6 @@ import random
 import discord
 import re
 import datetime
-import config
 import ujson
 
 
@@ -277,7 +276,7 @@ class apis(commands.Cog):
         parameters = {"start": "1", "limit": "150", "convert": currency}
         headers = {
             "Accepts": "application/json",
-            "X-CMC_PRO_API_KEY": config.coinmarketcap,
+            "X-CMC_PRO_API_KEY": self.bot.coinmarketcap,
         }
         async with aiohttp.ClientSession() as session:
             response = await session.get(url, params=parameters, headers=headers)
@@ -446,7 +445,7 @@ class apis(commands.Cog):
         search: str
             The gif search term.
         """
-        url = f"https://g.tenor.com/v1/search?q={search}&key={config.tenor}&limit=50"
+        url = f"https://g.tenor.com/v1/search?q={search}&key={self.bot.tenor}&limit=50"
         async with aiohttp.ClientSession() as session:
             raw_response = await session.get(url)
             response = await raw_response.text()
