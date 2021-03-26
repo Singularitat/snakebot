@@ -53,7 +53,8 @@ class background_tasks(commands.Cog):
         """Updates stock prices every half hour."""
         time = datetime.datetime.now()
         # Check if the stock market is open
-        if time.hour >= 9 and time.hour <= 17 or (self.stocks.get(b"GME") is None):
+        # 2:00 PM to 4 AM
+        if time.hour >= 4 and time.hour <= 14 or (self.stocks.get(b"GME") is None):
             await self.stockupdate(
                 "https://nz.finance.yahoo.com/most-active?offset=0&count=200"
             )
