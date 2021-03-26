@@ -119,9 +119,8 @@ class HelpMenu(paginator.RoboPages):
     @menus.button("\N{WHITE QUESTION MARK ORNAMENT}", position=menus.Last(5))
     async def show_bot_help(self, payload):
         """Shows how to use the bot."""
-        embed = discord.Embed(title="Using the bot", colour=discord.Colour.blurple())
-        embed.title = "Using the bot"
-        embed.description = "Hello! Welcome to the help page."
+        embed = discord.Embed(colour=discord.Colour.blurple())
+        embed.title = "How Interpret The Help Pages"
 
         entries = (
             ("<argument>", "This means the argument is __**required**__."),
@@ -135,11 +134,6 @@ class HelpMenu(paginator.RoboPages):
             ),
         )
 
-        embed.add_field(
-            name="How do I use this bot?",
-            value="Reading the bot signature is pretty simple.",
-        )
-
         for name, value in entries:
             embed.add_field(name=name, value=value, inline=False)
 
@@ -150,7 +144,10 @@ class HelpMenu(paginator.RoboPages):
 
         async def go_back_to_current_page():
             await asyncio.sleep(30.0)
-            await self.show_page(self.current_page)
+            try:
+                await self.show_page(self.current_page)
+            except discord.errors.NotFound:
+                return
 
         self.bot.loop.create_task(go_back_to_current_page())
 
@@ -203,11 +200,11 @@ class PaginatedHelpCommand(commands.HelpCommand):
         await menu.start(self.context)
 
     def common_command_formatting(self, embed_like, command):
-        embed_like.title = self.get_command_signature(command)
+        embed_like.title = f"{self.context.prefix}{self.get_command_signature(command)}"
         if command.description:
-            embed_like.description = f"{command.description}\n\n{command.help}"
+            embed_like.description = f"```{command.description}\n\n{command.help}```"
         else:
-            embed_like.description = command.help or "No help found..."
+            embed_like.description = f"```{command.help}```" or "```No help found...```"
 
     async def send_command_help(self, command):
         # No pagination necessary for a single command.
