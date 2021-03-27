@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-import ujson
 
 
 class admin(commands.Cog):
@@ -9,33 +8,6 @@ class admin(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.blacklist = self.bot.db.prefixed_db(b"blacklist-")
-        self.bal = self.bot.db.prefixed_db(b"bal-")
-        self.wins = self.bot.db.prefixed_db(b"wins-")
-        self.karma = self.bot.db.prefixed_db(b"karma-")
-        self.stocks = self.bot.db.prefixed_db(b"stocks-")
-        self.stockbal = self.bot.db.prefixed_db(b"stockbal-")
-        self.rrole = self.bot.db.prefixed_db(b"rrole-")
-
-    @commands.command()
-    async def migrate(self, ctx):
-        with open("json/economy.json") as file:
-            data = ujson.load(file)
-        for member in data["money"]:
-            self.bal.put(member.encode(), str(data["money"][member]).encode())
-        for member in data["stockbal"]:
-            self.stockbal.put(
-                member.encode(), ujson.dumps(data["stockbal"][member]).encode()
-            )
-        for member in data["wins"]:
-            self.wins.put(member.encode(), ujson.dumps(data["wins"][member]).encode())
-        with open("json/real.json") as file:
-            data = ujson.load(file)
-        for member in data["karma"]:
-            self.karma.put(member.encode(), str(data["karma"][member]).encode())
-        with open("json/reaction_roles.json") as file:
-            data = ujson.load(file)
-        for message_id in data:
-            self.rrole.put(message_id.encode(), ujson.dumps(data[message_id]).encode())
 
     @commands.has_permissions(administrator=True)
     @commands.command(hidden=True)
