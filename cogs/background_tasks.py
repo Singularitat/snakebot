@@ -52,7 +52,7 @@ class background_tasks(commands.Cog):
     @tasks.loop(minutes=30)
     async def update_stocks(self):
         """Updates stock prices every half hour."""
-        time = datetime.datetime.now()
+        time = datetime.datetime.utcnow()
         # Check if the stock market is open
         # 2:00 PM to 4 AM
         if time.hour >= 4 and time.hour <= 14 or (self.stocks.get(b"GME") is None):
