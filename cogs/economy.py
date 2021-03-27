@@ -94,14 +94,12 @@ class economy(commands.Cog):
             data = ujson.loads(data.decode())
 
         if result == "won":
-            if data["highestlose"] < data["currentlose"]:
-                data["highestlose"] = data["currentlose"]
+            data["highestlose"] = max(data["highestlose"], data["currentlose"])
             data["totalwin"] += 1
             data["currentwin"] += 1
             data["currentlose"] = 0
         else:
-            if data["highestwin"] < data["currentwin"]:
-                data["highestwin"] = data["currentwin"]
+            data["highestwin"] = max(data["highestwin"], data["currentwin"])
             data["totallose"] += 1
             data["currentlose"] += 1
             data["currentwin"] = 0
