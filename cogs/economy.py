@@ -404,8 +404,16 @@ class economy(commands.Cog):
                     )
                 )
             else:
+                payee = str(member.id).encode()
+                payee_bal = self.bal.get(payee)
+
+                if not payee_bal:
+                    payee_bal = 1000
+                else:
+                    payee_bal = float(payee_bal)
+
                 bal -= amount
-                bal += amount
+                payee_bal += amount
 
                 embed = discord.Embed(
                     title=f"Sent ${amount} to {member.display_name}",
@@ -413,6 +421,7 @@ class economy(commands.Cog):
                 )
                 embed.set_footer(text=f"New Balance: ${bal}")
 
+                self.bal.put(payee, str(bal).encode())
                 self.bal.put(member_id, str(bal).encode())
 
                 await ctx.send(embed=embed)
