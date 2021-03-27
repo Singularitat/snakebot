@@ -421,7 +421,7 @@ class economy(commands.Cog):
                 )
                 embed.set_footer(text=f"New Balance: ${bal}")
 
-                self.bal.put(payee, str(bal).encode())
+                self.bal.put(payee, str(payee_bal).encode())
                 self.bal.put(member_id, str(bal).encode())
 
                 await ctx.send(embed=embed)
