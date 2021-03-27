@@ -101,7 +101,7 @@ class background_tasks(commands.Cog):
                 ):
                     self.bot.load_extension(f"cogs.{extension}")
 
-    @tasks.loop(hours=1)
+    @tasks.loop(hours=2)
     async def backup_bot(self):
         os.makedirs("backup/", exist_ok=True)
         time = datetime.datetime.now()
