@@ -82,7 +82,14 @@ class economy(commands.Cog):
         data = self.wins.get(member)
 
         if not data:
-            data = {"currentwin": 0, "currentlose": 0, "highestwin": 0, "highestlose": 0, "totallose": 0, "totalwin": 0}
+            data = {
+                "currentwin": 0,
+                "currentlose": 0,
+                "highestwin": 0,
+                "highestlose": 0,
+                "totallose": 0,
+                "totalwin": 0,
+            }
         else:
             data = ujson.loads(data.decode())
 
@@ -183,7 +190,7 @@ class economy(commands.Cog):
         embed = discord.Embed(
             title=f"[ {a} {b} {c} {d} ]",
             description=f"You {result} ${bet*(abs(winnings)):,.2f}",
-            color=color
+            color=color,
         )
         embed.set_footer(text=f"Balance: ${bal:,}")
 
@@ -367,9 +374,7 @@ class economy(commands.Cog):
         embed = discord.Embed(color=discord.Color.blue())
 
         embed.add_field(
-            name=f"{member.display_name}'s balance",
-            value=f"${bal:,.2f}",
-            inline=False
+            name=f"{member.display_name}'s balance", value=f"${bal:,.2f}", inline=False
         )
 
         await ctx.send(embed=embed)
