@@ -13,6 +13,7 @@ class background_tasks(commands.Cog):
         self.stocks = self.bot.db.prefixed_db(b"stocks-")
         self.update_stocks.start()
         self.update_bot.start()
+        self.backup_bot.start()
 
     async def stockgrab(self, url):
         """Grabs some information abouts stocks from yahoo finance.
@@ -99,6 +100,21 @@ class background_tasks(commands.Cog):
                     == f"ExtensionNotLoaded: Extension 'cogs.{extension}' has not been loaded."
                 ):
                     self.bot.load_extension(f"cogs.{extension}")
+
+    @tasks.loop(hours=1)
+    async def backup_bot(self):
+        os.makedirs("backup/", exist_ok=True)
+        time = datetime.datetime.now()
+        with open(f"backup/{time.hour // 2}backup.json", "w") as file:
+            json = "".join(
+                [
+                    f'"{key.decode()}": "{value.decode()}", '
+                    if '"' not in value.decode()
+                    else f'"{key.decode()}": {value.decode()}, '
+                    for key, value in self.bot.db
+                ]
+            )
+            file.write(f"{{{json[:-2]}}}")
 
 
 def setup(bot):
