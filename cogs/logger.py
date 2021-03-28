@@ -31,16 +31,8 @@ class logger(commands.Cog):
         level: str
             The new logging level.
         """
-        if level.upper == "DEBUG":
-            logging.getLogger("discord").setLevel(logging.DEBUG)
-        if level.upper == "INFO":
-            logging.getLogger("discord").setLevel(logging.INFO)
-        if level.upper == "WARNING":
-            logging.getLogger("discord").setLevel(logging.WARNING)
-        if level.upper == "ERROR":
-            logging.getLogger("discord").setLevel(logging.ERROR)
-        if level.upper == "CRITICAL":
-            logging.getLogger("discord").setLevel(logging.CRITICAL)
+        if level.upper() in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
+            logging.getLogger("discord").setLevel(getattr(logging, level.upper()))
 
 
 def setup(bot: commands.Bot) -> None:
