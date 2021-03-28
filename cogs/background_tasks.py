@@ -79,7 +79,6 @@ class background_tasks(commands.Cog):
     @tasks.loop(minutes=3)
     async def update_bot(self):
         """Checks for updates every 3 minutes and then updates if needed."""
-
         status = await self.run_process("git status -u no")
 
         if status[6:9] == ["up", "to", "date"] or status[6:8] == ["ahead", "of"]:
