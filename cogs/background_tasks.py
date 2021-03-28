@@ -28,15 +28,18 @@ class background_tasks(commands.Cog):
             url
         ) as page:
             soup = lxml.html.fromstring(await page.text())
-        stockdata = []
+
         for table in soup.xpath('.//table[@class="W(100%)"]'):
             table_body = table.find("tbody")
             rows = table_body.findall("tr")
             for row in rows:
                 cols = row.findall("td")
-                cols = [ele.text_content().strip() for ele in cols]
-                stockdata.append([ele for ele in cols if ele])
-        return stockdata
+
+                price = cols[2].text_content()
+                name = cols[0].text_content()
+
+                if price != "N/A" and len(name) <= 6 and float(price) != 0:
+                    yield (name, price)
 
     async def stockupdate(self, url):
         """Fetches stocks then updates the json files.
@@ -45,17 +48,16 @@ class background_tasks(commands.Cog):
             The yahoo finance url to fetch stocks from.
         """
         with self.stocks.write_batch() as wb:
-            for stock in await self.stockgrab(url):
-                if len(stock[0]) <= 6 and stock[2] != "N/A" and float(stock[2]) != 0:
-                    wb.put(stock[0].replace(".NZ", "").encode(), stock[2].encode())
+            async for stock in self.stockgrab(url):
+                wb.put(stock[0].replace(".NZ", "").encode(), stock[1].encode())
 
     @tasks.loop(minutes=30)
     async def update_stocks(self):
         """Updates stock prices every half hour."""
-        time = datetime.datetime.utcnow()
+        time = datetime.datetime.utcnow().hour
         # Check if the stock market is open
         # 2:00 PM to 4 AM
-        if time.hour >= 4 and time.hour <= 14 or (self.stocks.get(b"GME") is None):
+        if time <= 14 and time >= 4 or self.stocks.get(b"GME") is None:
             await self.stockupdate(
                 "https://nz.finance.yahoo.com/most-active?offset=0&count=200"
             )
@@ -72,11 +74,16 @@ class background_tasks(commands.Cog):
         )
         result = await process.communicate()
 
-        return " ".join([output.decode() for output in result]).split()
+        return "".join([output.decode() for output in result]).split()
 
-    @tasks.loop(minutes=10)
+    @tasks.loop(minutes=3)
     async def update_bot(self):
-        """Checks for updates every 10 minutes and then updates if needed."""
+        """Checks for updates every 3 minutes and then updates if needed."""
+        status = await self.run_process("git status -u no")
+
+        if status[6:9] == ["up", "to", "date"] or status[6:8] == ["ahead", "of"]:
+            return
+
         pull = await self.run_process("git pull")
 
         if pull == ["Already", "up", "to", "date."]:

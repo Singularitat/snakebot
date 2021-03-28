@@ -78,7 +78,7 @@ class stocks(commands.Cog):
 
         await ctx.send(f"```{msg}\n\nNet Value: ${net_value:.2f}```")
 
-    @commands.command()
+    @commands.command(aliases=["price"])
     async def stockprice(self, ctx, symbol):
         """Gets the current price of a stock.
 
@@ -94,7 +94,7 @@ class stocks(commands.Cog):
 
         await ctx.send(f"```No stock found for {symbol}```")
 
-    @commands.command()
+    @commands.command(aliases=["sell"])
     async def sellstock(self, ctx, symbol, amount: float):
         """Sells stock.
 
@@ -146,7 +146,7 @@ class stocks(commands.Cog):
         self.bal.put(member_id, str(bal).encode())
         self.stockbal.put(member_id, ujson.dumps(stockbal).encode())
 
-    @commands.command()
+    @commands.command(aliases=["buy"])
     async def invest(self, ctx, symbol=None, cash: float = None):
         """Buys stock or if nothing is passed in it shows the price of some stocks.
         symbol: str
