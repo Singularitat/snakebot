@@ -93,28 +93,32 @@ class events(commands.Cog):
         after: discord.Message
             The new message.
         """
-        if not after.content or before.content == after.content:
+        if (
+            not after.content
+            or before.content == after.content
+            or after.author != self.bot.user
+        ):
             return
 
-        if after.author != self.bot.user:
-            self.bot.editsnipe_message = (
-                before.content,
-                after.content,
-                after.author.display_name,
+        self.bot.editsnipe_message = (
+            before.content,
+            after.content,
+            after.author.display_name,
+        )
+
+        if after.content.startswith("https"):
+            return
+
+        try:
+            channel = discord.utils.get(after.guild.channels, name="logs")
+            if "`" in before.content or "`" in after.content:
+                before.content = before.content.replace("`", "")
+                after.content = after.content.replace("`", "")
+            await channel.send(
+                f"```{before.author} edited:\n{before.content} >>> {after.content}```"
             )
-            if after.content.startswith("https"):
-                pass
-            else:
-                try:
-                    channel = discord.utils.get(after.guild.channels, name="logs")
-                    if "`" in before.content or "`" in after.content:
-                        before.content = before.content.replace("`", "")
-                        after.content = after.content.replace("`", "")
-                    await channel.send(
-                        f"```{before.author} edited:\n{before.content} >>> {after.content}```"
-                    )
-                except AttributeError:
-                    pass
+        except AttributeError:
+            pass
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -171,7 +175,7 @@ class events(commands.Cog):
         reaction: discord.Reaction
         user: Union[discord.User, discord.Member]
         """
-        if reaction.message.author == user:
+        if reaction.message.author == user or not reaction.custom_emoji:
             return
 
         time_since = (
@@ -181,24 +185,58 @@ class events(commands.Cog):
         if time_since > 1800:
             return
 
-        if reaction.custom_emoji:
-            member = str(reaction.message.author.id).encode()
+        member = str(reaction.message.author.id).encode()
 
-            if reaction.emoji.name.lower() == "downvote":
-                karma = self.karma.get(member)
-                if not karma:
-                    karma = -1
-                else:
-                    karma = int(karma.decode()) - 1
-                self.karma.put(member, str(karma).encode())
+        if reaction.emoji.name.lower() == "downvote":
+            karma = self.karma.get(member)
+            if not karma:
+                karma = -1
+            else:
+                karma = int(karma.decode()) - 1
+            self.karma.put(member, str(karma).encode())
 
-            elif reaction.emoji.name.lower() == "upvote":
-                karma = self.karma.get(member)
-                if not karma:
-                    karma = 1
-                else:
-                    karma = int(karma.decode()) + 1
-                self.karma.put(member, str(karma).encode())
+        elif reaction.emoji.name.lower() == "upvote":
+            karma = self.karma.get(member)
+            if not karma:
+                karma = 1
+            else:
+                karma = int(karma.decode()) + 1
+            self.karma.put(member, str(karma).encode())
+
+    @commands.Cog.listener()
+    async def on_reaction_remove(self, reaction, user):
+        """The event called when a reaction is removed from a message in the bots cache.
+
+        reaction: discord.Reaction
+        user: Union[discord.User, discord.Member]
+        """
+        if reaction.message.author == user or not reaction.custom_emoji:
+            return
+
+        time_since = (
+            datetime.datetime.now() - reaction.message.created_at
+        ).total_seconds() - 46800
+
+        if time_since > 1800:
+            return
+
+        member = str(reaction.message.author.id).encode()
+
+        if reaction.emoji.name.lower() == "downvote":
+            karma = self.karma.get(member)
+            if not karma:
+                karma = 1
+            else:
+                karma = int(karma.decode()) + 1
+            self.karma.put(member, str(karma).encode())
+
+        elif reaction.emoji.name.lower() == "upvote":
+            karma = self.karma.get(member)
+            if not karma:
+                karma = -1
+            else:
+                karma = int(karma.decode()) - 1
+            self.karma.put(member, str(karma).encode())
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -218,7 +256,7 @@ class events(commands.Cog):
 
         error = getattr(error, "original", error)
 
-        if isinstance(error, (commands.errors.CommandNotFound, KeyError)):
+        if isinstance(error, commands.errors.CommandNotFound):
             return
 
         if isinstance(error, discord.Forbidden):
