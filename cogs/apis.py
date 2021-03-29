@@ -30,13 +30,13 @@ class apis(commands.Cog):
         return data
 
     @commands.command()
-    async def avatar(self, ctx, *, seed):
+    async def avatar(self, ctx, *, seed=""):
         """Creates a avatar based off a seed.
 
         seed: str
             The seed it can be any alphanumeric characters.
         """
-        await ctx.send(f"https://avatars.dicebear.com/api/avataaars/{seed}.svg")
+        await ctx.send(f"https://avatars.dicebear.com/api/avataaars/{seed}.png")
 
     @commands.command()
     async def fox(self, ctx):
