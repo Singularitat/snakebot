@@ -6,7 +6,6 @@ import copy
 import asyncio
 import traceback
 import time
-import string
 import subprocess
 
 
@@ -55,30 +54,6 @@ class owner(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.rrole = self.bot.db.prefixed_db(b"rrole-")
-
-    @commands.command()
-    @commands.is_owner()
-    async def issue(self, ctx, *, issue):
-        """Appends an issue to the snakebot-todo.
-
-        issue: str
-            The issue to append.
-        """
-        await ctx.channel.purge(limit=1)
-        channel = self.bot.get_channel(776616587322327061)
-        message = await channel.fetch_message(787153490996494336)
-        issues = str(message.content).replace("`", "")
-        issuelist = issues.split("\n")
-        issue = string.capwords(issue)
-        if issue[0:6] == "Delete":
-            issuelist.remove(f"{issue[7:]}")
-            issues = "\n".join(issuelist)
-            await message.edit(content=f"""```{issues}```""")
-        else:
-            await message.edit(
-                content=f"""```{issues}
-{issue}```"""
-            )
 
     @commands.command(hidden=True)
     @commands.is_owner()
