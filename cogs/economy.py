@@ -160,12 +160,7 @@ class economy(commands.Cog):
             ":mango:",
         )
 
-        a, b, c, d = (
-            random.choice(emojis),
-            random.choice(emojis),
-            random.choice(emojis),
-            random.choice(emojis),
-        )
+        a, b, c, d = (*random.choices(emojis, k=4),)
 
         result = "won"
         color = discord.Color.blue()
@@ -252,8 +247,7 @@ class economy(commands.Cog):
             ":mango:",
         )
 
-        (quad, triple, dd, double, none, win, lose, hl, hw, run, iswin,) = (
-            0,
+        (quad, triple, dd, double, none, win, lose, hl, hw, iswin,) = (
             0,
             0,
             0,
@@ -265,90 +259,77 @@ class economy(commands.Cog):
             0,
             True,
         )
-        if amount > 100000:
-            await ctx.send("```Choose a lower number```")
-        else:
-            while run < amount:
-                run += 1
-                a, b, c, d = (
-                    random.choice(emojis),
-                    random.choice(emojis),
-                    random.choice(emojis),
-                    random.choice(emojis),
-                )
-                iswin = True
-                if a == b == c == d:
-                    quad += 1
-                elif (a == b == c) or (a == c == d) or (a == b == d) or (b == d == c):
-                    triple += 1
-                elif (
-                    (a == b)
-                    and (d == c)
-                    or (b == c)
-                    and (d == a)
-                    or (d == b)
-                    and (a == c)
-                ):
-                    dd += 1
-                elif (
-                    (a == b) or (a == c) or (b == c) or (d == c) or (d == b) or (d == a)
-                ):
-                    double += 1
-                else:
-                    none += 1
-                    iswin = False
-                    lose += 1
-                    win = 0
-                    hl = max(hl, lose)
-                if iswin is True:
-                    win += 1
-                    lose = 0
-                    hw = max(hw, win)
-            total = (
-                ((quad * 100) + (triple * 10) + (dd * 15) + (double * 1) - (none))
-                * (1 / amount)
-            ) * 100
+        if amount > 1000000:
+            return await ctx.send("```Choose a lower number```")
 
-            embed = discord.Embed(
-                title=f"Chances from {run} attempts", color=discord.Color.blue()
-            )
-            embed.add_field(
-                name="Quad: ",
-                value=f"{quad}, {quad/amount*100:.2f}%",
-                inline=True,
-            )
-            embed.add_field(
-                name="Triple: ",
-                value=f"{triple}, {triple/amount*100:.2f}%",
-                inline=True,
-            )
-            embed.add_field(
-                name="Double double: ",
-                value=f"{dd}, {dd/amount*100:.2f}%",
-                inline=True,
-            )
-            embed.add_field(
-                name="Double: ",
-                value=f"{double}, {double/amount*100:.2f}%",
-                inline=True,
-            )
-            embed.add_field(
-                name="None: ",
-                value=f"{none}, {none/amount*100:.2f}%",
-                inline=True,
-            )
-            embed.add_field(
-                name="Percentage gain/loss: ", value=f"{total:.2f}%", inline=True
-            )
-            embed.add_field(name="Highest win streak: ", value=hw, inline=True)
-            embed.add_field(name="Highest lose streak: ", value=hl, inline=True)
-            embed.add_field(
-                name="Time taken: ",
-                value=f"{time.time() - start:.3f}s",
-                inline=True,
-            )
+        for run in range(amount + 1):
+            a, b, c, d = (*random.choices(emojis, k=4),)
+            iswin = True
+            if a == b == c == d:
+                quad += 1
+            elif (a == b == c) or (a == c == d) or (a == b == d) or (b == d == c):
+                triple += 1
+            elif (
+                (a == b) and (d == c) or (b == c) and (d == a) or (d == b) and (a == c)
+            ):
+                dd += 1
+            elif (a == b) or (a == c) or (b == c) or (d == c) or (d == b) or (d == a):
+                double += 1
+            else:
+                none += 1
+                iswin = False
+                lose += 1
+                win = 0
+                hl = max(hl, lose)
+            if iswin is True:
+                win += 1
+                lose = 0
+                hw = max(hw, win)
+        total = (
+            ((quad * 100) + (triple * 10) + (dd * 15) + (double * 1) - (none))
+            * (1 / amount)
+        ) * 100
 
-            await ctx.send(embed=embed)
+        embed = discord.Embed(
+            title=f"Chances from {run} attempts", color=discord.Color.blue()
+        )
+        embed.add_field(
+            name="Quad: ",
+            value=f"{quad}, {quad/amount*100:.2f}%",
+            inline=True,
+        )
+        embed.add_field(
+            name="Triple: ",
+            value=f"{triple}, {triple/amount*100:.2f}%",
+            inline=True,
+        )
+        embed.add_field(
+            name="Double double: ",
+            value=f"{dd}, {dd/amount*100:.2f}%",
+            inline=True,
+        )
+        embed.add_field(
+            name="Double: ",
+            value=f"{double}, {double/amount*100:.2f}%",
+            inline=True,
+        )
+        embed.add_field(
+            name="None: ",
+            value=f"{none}, {none/amount*100:.2f}%",
+            inline=True,
+        )
+        embed.add_field(
+            name="Percentage gain/loss: ", value=f"{total:.2f}%", inline=True
+        )
+        embed.add_field(name="Highest win streak: ", value=hw, inline=True)
+        embed.add_field(name="Highest lose streak: ", value=hl, inline=True)
+        embed.add_field(
+            name="Time taken: ",
+            value=f"{time.time() - start:.3f}s",
+            inline=True,
+        )
+
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["bal"])
     async def balance(self, ctx, member: discord.Member = None):
