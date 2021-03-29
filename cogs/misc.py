@@ -136,10 +136,10 @@ class misc(commands.Cog):
             ) as session, session.get(url) as page:
                 text = lxml.html.fromstring(await page.text())
         except aiohttp.client_exceptions.ClientResponseError:
-            await ctx.send(
+            return await ctx.send(
                 f"Could not find and element with the symbol {element.upper()}"
             )
-            return
+
         image = f"http://www.chemicalelements.com{text.xpath('.//img')[1].attrib['src'][2:]}"
         text = text.xpath("//text()")[108:]
 
@@ -243,6 +243,12 @@ class misc(commands.Cog):
         """Sends a bar graph based of inputted numbers.
 
         e.g: bar 1 2 3
+
+                     ____
+               ____ |    |
+         ____ |    ||    |
+        |    ||    ||    |
+        ------------------
 
         graph_data: commands.Greedy[int]
             A list of graph_data
