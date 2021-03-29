@@ -36,11 +36,11 @@ class useful(commands.Cog):
             "message" in r
             and r["message"] == "Supplied language is not supported by Piston"
         ):
-            await ctx.send(f"No support for language {lang}")
-        elif not r["output"]:
-            await ctx.send("No output")
-        else:
-            await ctx.send(f"```{r['output']}```")
+            return await ctx.send(f"No support for language {lang}")
+        if not r["output"]:
+            return await ctx.send("No output")
+
+        await ctx.send(f"```{r['output']}```")
 
     @run.error
     async def run_handler(self, ctx, error):
