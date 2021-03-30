@@ -70,7 +70,7 @@ class BotHelpPageSource(menus.ListPageSource):
             commands = self.commands.get(cog)
             if commands:
                 value = self.format_commands(cog, commands)
-                embed.add_field(name=cog.qualified_name, value=value, inline=True)
+                embed.add_field(name=cog.qualified_name, value=value)
 
         maximum = self.get_max_pages()
         embed.set_footer(text=f"Page {menu.current_page + 1}/{maximum}")

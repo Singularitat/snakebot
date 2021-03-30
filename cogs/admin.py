@@ -149,7 +149,7 @@ class admin(commands.Cog):
 
             embed = discord.Embed(title="Downvoted users", colour=discord.Color.blue())
             for member_id in self.blacklist.iterator(include_value=False):
-                embed.add_field(name="Member:", value=member_id.decode(), inline=True)
+                embed.add_field(name="Member:", value=member_id.decode())
 
         else:
             user = str(member.id).encode()
@@ -189,7 +189,7 @@ class admin(commands.Cog):
                 title="Blacklisted users", colour=discord.Color.blue()
             )
             for member_id in self.blacklist.iterator(include_value=False):
-                embed.add_field(name="Member:", value=member_id.decode(), inline=True)
+                embed.add_field(name="Member:", value=member_id.decode())
 
         else:
             user = str(member.id).encode()
