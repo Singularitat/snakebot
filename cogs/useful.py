@@ -134,10 +134,10 @@ class useful(commands.Cog):
         if attr:
             attributes = attr.split(".")
             try:
-                for attr in attributes:
-                    obj = getattr(obj, attr)
+                for attribute in attributes:
+                    obj = getattr(obj, attribute)
             except AttributeError:
-                return await ctx.send(f"{obj} has no attribute {attr}")
+                return await ctx.send(f"{obj} has no attribute {attribute}")
             return await ctx.send(f"```{obj}\n\n{dir(obj)}```")
 
         await ctx.send(f"```{obj}\n\n{dir(obj)}```")
