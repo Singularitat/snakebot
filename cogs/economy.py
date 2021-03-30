@@ -151,10 +151,8 @@ class economy(commands.Cog):
             ":grapes:",
             ":strawberry:",
             ":cherries:",
-            ":melon:",
             ":kiwi:",
             ":pineapple:",
-            ":green_apple:",
             ":coconut:",
             ":peach:",
             ":mango:",
@@ -169,7 +167,7 @@ class economy(commands.Cog):
         elif (a == b == c) or (a == c == d) or (a == b == d) or (b == c == d):
             winnings = 10
         elif (a == b) and (d == c) or (b == c) and (d == a) or (d == b) and (a == c):
-            winnings = 15
+            winnings = 10
         elif (a == b) or (a == c) or (b == c) or (d == c) or (d == b) or (d == a):
             winnings = 1
         else:
@@ -221,113 +219,21 @@ class economy(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    @commands.cooldown(1, 60, commands.BucketType.user)
-    async def chances(self, ctx, amount: int):
-        """Sends simulated chances of the slot machine.
-
-        amount: int
-            The amount of times to simulate the slot machine maxing at 100000.
-        """
-        start = time.time()
-        emojis = (
-            ":apple:",
-            ":tangerine:",
-            ":pear:",
-            ":lemon:",
-            ":watermelon:",
-            ":grapes:",
-            ":strawberry:",
-            ":cherries:",
-            ":melon:",
-            ":kiwi:",
-            ":pineapple:",
-            ":green_apple:",
-            ":coconut:",
-            ":peach:",
-            ":mango:",
-        )
-
-        (quad, triple, dd, double, none, win, lose, hl, hw, iswin,) = (
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            True,
-        )
-        if amount > 1000000:
-            return await ctx.send("```Choose a lower number```")
-
-        for run in range(amount + 1):
-            a, b, c, d = (*random.choices(emojis, k=4),)
-            iswin = True
-            if a == b == c == d:
-                quad += 1
-            elif (a == b == c) or (a == c == d) or (a == b == d) or (b == d == c):
-                triple += 1
-            elif (
-                (a == b) and (d == c) or (b == c) and (d == a) or (d == b) and (a == c)
-            ):
-                dd += 1
-            elif (a == b) or (a == c) or (b == c) or (d == c) or (d == b) or (d == a):
-                double += 1
-            else:
-                none += 1
-                iswin = False
-                lose += 1
-                win = 0
-                hl = max(hl, lose)
-            if iswin is True:
-                win += 1
-                lose = 0
-                hw = max(hw, win)
-        total = (
-            ((quad * 100) + (triple * 10) + (dd * 15) + (double * 1) - (none))
-            * (1 / amount)
-        ) * 100
+    async def chances(self, ctx):
+        """Sends simulated chances of the slot machine from 1000000000 runs."""
 
         embed = discord.Embed(
-            title=f"Chances from {run} attempts", color=discord.Color.blue()
+            title="Chances from 1000000000 runs", color=discord.Color.blue()
         )
-        embed.add_field(
-            name="Quad: ",
-            value=f"{quad}, {quad/amount*100:.2f}%",
-            inline=True,
-        )
-        embed.add_field(
-            name="Triple: ",
-            value=f"{triple}, {triple/amount*100:.2f}%",
-            inline=True,
-        )
-        embed.add_field(
-            name="Double double: ",
-            value=f"{dd}, {dd/amount*100:.2f}%",
-            inline=True,
-        )
-        embed.add_field(
-            name="Double: ",
-            value=f"{double}, {double/amount*100:.2f}%",
-            inline=True,
-        )
-        embed.add_field(
-            name="None: ",
-            value=f"{none}, {none/amount*100:.2f}%",
-            inline=True,
-        )
-        embed.add_field(
-            name="Percentage gain/loss: ", value=f"{total:.2f}%", inline=True
-        )
-        embed.add_field(name="Highest win streak: ", value=hw, inline=True)
-        embed.add_field(name="Highest lose streak: ", value=hl, inline=True)
-        embed.add_field(
-            name="Time taken: ",
-            value=f"{time.time() - start:.3f}s",
-            inline=True,
-        )
+        embed.add_field(name="Quad:", value="455431, 0.04554%")
+        embed.add_field(name="Triple:", value="21855314, 2.18553%")
+        embed.add_field(name="Double double:", value="16378846, 1.63788%")
+        embed.add_field(name="Double:", value="360525049, 36.05250%")
+        embed.add_field(name="None:", value="600785361, 60.07854%")
+        embed.add_field(name="Percentage gain/loss:", value="18.7624388%")
+        embed.add_field(name="Highest win streak:", value=22)
+        embed.add_field(name="Highest lose streak:", value=38)
+        embed.add_field(name="Time taken:", value="2104.39373s")
 
         await ctx.send(embed=embed)
 
