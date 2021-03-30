@@ -334,22 +334,12 @@ class apis(commands.Cog):
                 name=f"Cornavirus {data['country']}:",
                 icon_url=data["countryInfo"]["flag"],
             )
-            embed.add_field(name="Total Cases", value=f"{data['cases']:,}", inline=True)
-            embed.add_field(
-                name="Total Deaths", value=f"{data['deaths']:,}", inline=True
-            )
-            embed.add_field(
-                name="Active Cases", value=f"{data['active']:,}", inline=True
-            )
-            embed.add_field(
-                name="Cases Today", value=f"{data['todayCases']:,}", inline=True
-            )
-            embed.add_field(
-                name="Deaths Today", value=f"{data['todayDeaths']:,}", inline=True
-            )
-            embed.add_field(
-                name="Recovered Total", value=f"{data['recovered']:,}", inline=True
-            )
+            embed.add_field(name="Total Cases", value=f"{data['cases']:,}")
+            embed.add_field(name="Total Deaths", value=f"{data['deaths']:,}")
+            embed.add_field(name="Active Cases", value=f"{data['active']:,}")
+            embed.add_field(name="Cases Today", value=f"{data['todayCases']:,}")
+            embed.add_field(name="Deaths Today", value=f"{data['todayDeaths']:,}")
+            embed.add_field(name="Recovered Total", value=f"{data['recovered']:,}")
             await ctx.send(embed=embed)
         except KeyError:
             await ctx.send(
