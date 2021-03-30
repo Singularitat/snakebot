@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 import ujson
 import random
-import time
 
 
 class economy(commands.Cog):
@@ -221,7 +220,6 @@ class economy(commands.Cog):
     @commands.command()
     async def chances(self, ctx):
         """Sends simulated chances of the slot machine from 1000000000 runs."""
-
         embed = discord.Embed(
             title="Chances from 1000000000 runs", color=discord.Color.blue()
         )
