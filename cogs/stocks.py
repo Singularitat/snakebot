@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import ujson
+import textwrap
 
 
 class stocks(commands.Cog):
@@ -15,18 +16,21 @@ class stocks(commands.Cog):
     @commands.command()
     async def stocks(self, ctx):
         """Shows the price of stocks from yahoo finance."""
-        msg = "```\n"
+        msg = ""
         i = 1
 
-        for stock, value in self.stocks:
-            if len(msg + f"{stock.decode():<5}: ${value.decode():<9}") < 1997:
+        for stock, price in self.stocks:
+            price = ujson.loads(price)["price"]
+            if len(msg + f"{stock.decode():<5}: ${price:<9}") < 1997:
                 if i % 6 == 0:
-                    msg += f"{stock.decode():<5}: ${value.decode()}\n"
+                    msg += f"{stock.decode():<5}: ${price}\n"
                 else:
-                    msg += f"{stock.decode():<5}: ${value.decode():<9}"
+                    msg += f"{stock.decode():<5}: ${price:<9}"
                 i += 1
+            else:
+                break
 
-        await ctx.send(f"{msg}```")
+        await ctx.send(f"```\n{msg}```")
 
     @commands.command()
     async def stockbal(self, ctx, symbol):
@@ -48,7 +52,30 @@ class stocks(commands.Cog):
         if symbol not in stockbal:
             return await ctx.send(f"```You have never invested in {symbol}```")
 
-        await ctx.send(f"```You have {stockbal[symbol]:.2f} stocks in {symbol}```")
+        stock = ujson.loads(self.stocks.get(symbol.encode()))
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        embed.description = textwrap.dedent(
+            f"""
+                ```diff
+                You have {stockbal[symbol]:.2f} stocks in {symbol}
+
+                Price: {stock['price']}
+
+                Change from last trading day:
+                {stock['change']}
+                {stock['%change']}
+
+                Volume: {stock['volume']}
+                3 Month Average: {stock['3Mvolume']}
+
+                Market Cap: {stock['cap']}
+                ```
+            """
+        )
+
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["stockprof", "stockp"])
     async def stockprofile(self, ctx, member: discord.Member = None):
@@ -66,17 +93,24 @@ class stocks(commands.Cog):
         if not stockbal:
             return await ctx.send("```You have never invested```")
 
-        stockbal = ujson.loads(stockbal.decode())
+        stockbal = ujson.loads(stockbal)
 
         net_value = 0
         msg = f"{member.display_name}'s stock profile:\n"
 
         for stock in stockbal:
-            price = self.stocks.get(stock.encode())
-            msg += f"\n{stock:>4}: {stockbal[stock]:<15.2f} Price: ${price.decode()}"
-            net_value += stockbal[stock] * float(price)
+            data = ujson.loads(self.stocks.get(stock.encode()))
 
-        await ctx.send(f"```{msg}\n\nNet Value: ${net_value:.2f}```")
+            msg += f"\n{data['%change'][0]} {stock:>4}: {stockbal[stock]:<14.2f}"
+            msg += f" Price: ${data['price']:<7} {data['%change']}"
+
+            net_value += stockbal[stock] * float(data["price"])
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        embed.description = f"```diff\n{msg}\n\nNet Value: ${net_value:.2f}```"
+
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["price"])
     async def stockprice(self, ctx, symbol):
@@ -89,10 +123,33 @@ class stocks(commands.Cog):
 
         stock = self.stocks.get(symbol.encode())
 
-        if stock:
-            return await ctx.send(f"```1 {symbol} is worth ${stock.decode()}```")
+        if not stock:
+            return await ctx.send(f"```No stock found for {symbol}```")
 
-        await ctx.send(f"```No stock found for {symbol}```")
+        stock = ujson.loads(stock)
+
+        embed = discord.Embed(
+            color=discord.Color.blurple(), title=f"{symbol} [{stock['name']}]"
+        )
+
+        embed.description = textwrap.dedent(
+            f"""
+                ```diff
+                Price: {stock['price']}
+
+                Change from last trading day:
+                {stock['change']}
+                {stock['%change']}
+
+                Volume: {stock['volume']}
+                3 Month Average: {stock['3Mvolume']}
+
+                Market Cap: {stock['cap']}
+                ```
+            """
+        )
+
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["sell"])
     async def sellstock(self, ctx, symbol, amount: float):
@@ -105,11 +162,12 @@ class stocks(commands.Cog):
         """
         symbol = symbol.upper()
 
-        stock = self.stocks.get(symbol.encode())
+        price = self.stocks.get(symbol.encode())
 
-        if not stock:
+        if not price:
             return await ctx.send(f"```Couldn't find stock {symbol}```")
 
+        price = ujson.loads(price)["price"]
         member_id = str(ctx.author.id).encode()
         stockbal = self.stockbal.get(member_id)
 
@@ -130,9 +188,13 @@ class stocks(commands.Cog):
         else:
             bal = float(bal)
 
-        cash = amount * float(stock)
+        cash = amount * float(price)
 
         stockbal[symbol] -= amount
+
+        if stockbal[symbol] == 0:
+            stockbal.pop(symbol, None)
+
         bal += cash
 
         embed = discord.Embed(
@@ -166,6 +228,7 @@ class stocks(commands.Cog):
         if not stock:
             return await ctx.send(f"```Couldn't find stock {symbol}```")
 
+        stock = ujson.loads(stock)["price"]
         member_id = str(ctx.author.id).encode()
         bal = self.bal.get(member_id)
 
@@ -237,7 +300,8 @@ class stocks(commands.Cog):
 
         stock_value = sum(
             [
-                stock[1] * float(self.stocks.get(stock[0].encode()))
+                stock[1]
+                * float(ujson.loads(self.stocks.get(stock[0].encode()))["price"])
                 for stock in ujson.loads(stockbal.decode()).items()
             ]
         )
