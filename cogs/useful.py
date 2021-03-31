@@ -23,6 +23,9 @@ class useful(commands.Cog):
         code: str
             The code to run.
         """
+        if lang not in ujson.loads(self.bot.db.get(b"languages")):
+            return await ctx.send(f"No support for language {lang}")
+
         code = re.sub(r"```\w+\n|```", "", code)
 
         data = {"language": lang, "source": code, "args": "", "stdin": "", "log": 0}
@@ -32,11 +35,6 @@ class useful(commands.Cog):
         ) as response:
             r = await response.json()
 
-        if (
-            "message" in r
-            and r["message"] == "Supplied language is not supported by Piston"
-        ):
-            return await ctx.send(f"No support for language {lang}")
         if not r["output"]:
             return await ctx.send("No output")
 
