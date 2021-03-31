@@ -123,7 +123,7 @@ class background_tasks(commands.Cog):
 
     @tasks.loop(hours=2)
     async def backup_bot(self):
-        """Makes a backup of the db every two hours"""
+        """Makes a backup of the db every two hours."""
         os.makedirs("backup/", exist_ok=True)
         time = datetime.datetime.now()
         with open(f"backup/{time.hour // 2}backup.json", "w") as file:
@@ -139,7 +139,7 @@ class background_tasks(commands.Cog):
 
     @tasks.loop(count=1)
     async def update_languages(self):
-        """Updates pistons supported languages for the run command"""
+        """Updates pistons supported languages for the run command."""
         url = 'https://emkc.org/api/v1/piston/versions'
         async with aiohttp.ClientSession() as session, session.get(
             url
