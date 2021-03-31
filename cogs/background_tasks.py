@@ -4,6 +4,7 @@ import datetime
 import os
 import asyncio
 import subprocess
+import ujson
 from discord.ext import commands, tasks
 
 
@@ -14,6 +15,7 @@ class background_tasks(commands.Cog):
         self.update_stocks.start()
         self.update_bot.start()
         self.backup_bot.start()
+        self.update_languages.start()
 
     async def stockgrab(self, url):
         """Grabs some information abouts stocks from yahoo finance.
@@ -33,13 +35,22 @@ class background_tasks(commands.Cog):
             table_body = table.find("tbody")
             rows = table_body.findall("tr")
             for row in rows:
-                cols = row.findall("td")
+                cols = [col.text_content() for col in row.findall("td")]
 
-                price = cols[2].text_content()
-                name = cols[0].text_content()
+                price = cols[2]
+                name = cols[0]
 
                 if price != "N/A" and len(name) <= 6 and float(price) != 0:
-                    yield (name, price)
+                    stock_data = {}
+                    stock_data["name"] = cols[1]
+                    stock_data["price"] = price
+                    stock_data["change"] = cols[3]
+                    stock_data["%change"] = cols[4]
+                    stock_data["volume"] = cols[5]
+                    stock_data["3Mvolume"] = cols[6]
+                    stock_data["cap"] = cols[7]
+
+                    yield name, stock_data
 
     async def stockupdate(self, url):
         """Fetches stocks then updates the json files.
@@ -49,7 +60,9 @@ class background_tasks(commands.Cog):
         """
         with self.stocks.write_batch() as wb:
             async for stock in self.stockgrab(url):
-                wb.put(stock[0].replace(".NZ", "").encode(), stock[1].encode())
+                wb.put(
+                    stock[0].replace(".NZ", "").encode(), ujson.dumps(stock[1]).encode()
+                )
 
     @tasks.loop(minutes=30)
     async def update_stocks(self):
@@ -57,7 +70,7 @@ class background_tasks(commands.Cog):
         time = datetime.datetime.utcnow().hour
         # Check if the stock market is open
         # 2:00 PM to 4 AM
-        if time <= 14 and time >= 4 or self.stocks.get(b"GME") is None:
+        if time <= 14 and time >= 4 or self.stocks.get(b"GME") is None or True:
             await self.stockupdate(
                 "https://nz.finance.yahoo.com/most-active?offset=0&count=200"
             )
@@ -110,6 +123,7 @@ class background_tasks(commands.Cog):
 
     @tasks.loop(hours=2)
     async def backup_bot(self):
+        """Makes a backup of the db every two hours."""
         os.makedirs("backup/", exist_ok=True)
         time = datetime.datetime.now()
         with open(f"backup/{time.hour // 2}backup.json", "w") as file:
@@ -122,6 +136,26 @@ class background_tasks(commands.Cog):
                 ]
             )
             file.write(f"{{{json[:-2]}}}")
+
+    @tasks.loop(count=1)
+    async def update_languages(self):
+        """Updates pistons supported languages for the run command."""
+        url = 'https://emkc.org/api/v1/piston/versions'
+        async with aiohttp.ClientSession() as session, session.get(
+            url
+        ) as page:
+            data = await page.json()
+
+        languages = []
+
+        for language in data:
+            for alias in language.values():
+                if isinstance(alias, list):
+                    languages += alias
+                elif not alias[0].isnumeric():
+                    languages.append(alias)
+
+        self.bot.db.put(b"languages", ujson.dumps(languages).encode())
 
 
 def setup(bot):
