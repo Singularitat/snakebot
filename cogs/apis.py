@@ -5,6 +5,7 @@ import discord
 import re
 import datetime
 import ujson
+import textwrap
 
 
 class apis(commands.Cog):
@@ -152,31 +153,36 @@ class apis(commands.Cog):
 
         urban = await self.get_json(url)
 
-        if urban["list"]:
-            defin = random.choice(urban["list"])
-
-            embed = discord.Embed(colour=discord.Color.red())
-
-            embed.add_field(
-                name=f"Definition of {search}",
-                value=re.sub(r"\[(.*?)\]", r"\1", defin["definition"]),
-                inline=False,
+        if "list" not in urban:
+            return await ctx.send(
+                embed=discord.Embed(title="No results found", color=discord.Color.red())
             )
 
-            embed.add_field(
-                name="Example",
-                value=re.sub(r"\[(.*?)\]", r"\1", defin["example"]),
-                inline=False,
-            )
+        defin = random.choice(urban["list"])
 
-            embed.add_field(name="Upvotes", value=defin["thumbs_up"], inline=False)
-            await ctx.send(embed=embed)
+        embed = discord.Embed(colour=discord.Color.blurple())
 
-        else:
-            embed = discord.Embed(
-                title="No results found", color=discord.Color.blue(), inline=False
+        embed.description = textwrap.dedent(
+            """
+                ```
+                Definition of {}:
+                {}
+
+                Example:
+                {}
+
+                Votes:
+                {}
+                ```
+            """.format(
+                search,
+                re.sub(r"\[(.*?)\]", r"\1", defin["definition"]),
+                re.sub(r"\[(.*?)\]", r"\1", defin["example"]),
+                defin["thumbs_up"],
             )
-            await ctx.send(embed=embed)
+        )
+
+        await ctx.send(embed=embed)
 
     @staticmethod
     def formatted_wiki_url(index: int, title: str) -> str:
@@ -235,11 +241,12 @@ class apis(commands.Cog):
                 title=f"Wikipedia results for `{search}`",
                 description=s_desc,
             )
+
             embed.timestamp = datetime.datetime.utcnow()
+            embed.set_footer(text="Enter a number to choose")
+
             await ctx.send(embed=embed)
-        embed = discord.Embed(
-            colour=discord.Color.green(), description="Enter number to choose"
-        )
+
         titles_len = len(titles)
         try:
             message = await ctx.bot.wait_for("message", timeout=60.0, check=check)
@@ -248,20 +255,26 @@ class apis(commands.Cog):
             if response_from_user.command:
                 return
 
-            response = int(message.content)
-            if response <= 0:
-                await ctx.send(f"Give an integer between `1` and `{titles_len}`")
-            else:
-                await ctx.send(
-                    "https://en.wikipedia.org/wiki/{title}".format(
-                        title=titles[response - 1].replace(" ", "_")
-                    )
+            try:
+                response = int(message.content)
+            except ValueError:
+                return await ctx.send(
+                    f"Please give an integer between `1` and `{titles_len}`"
                 )
 
-        except IndexError:
+            if response <= 0:
+                return await ctx.send(
+                    f"Please give an integer between `1` and `{titles_len}`"
+                )
+
             await ctx.send(
-                f"Sorry, please give an integer between `1` and `{titles_len}`"
+                "https://en.wikipedia.org/wiki/{title}".format(
+                    title=titles[response - 1].replace(" ", "_")
+                )
             )
+
+        except IndexError:
+            await ctx.send(f"Please give an integer between `1` and `{titles_len}`")
 
     @commands.command(aliases=["coin", "bitcoin", "btc"])
     async def crypto(self, ctx, crypto: str = "BTC", currency="NZD"):
@@ -291,29 +304,27 @@ class apis(commands.Cog):
                 crypto = cry[index]
                 break
         embed = discord.Embed(colour=discord.Colour.blurple())
-        embed.set_author(
-            name=f"{crypto['name']} [{crypto['symbol']}]",
+
+        embed.description = textwrap.dedent(
+            f"""
+                ```diff
+                {crypto['name']} [{crypto['symbol']}]
+
+                Price:
+                ${crypto['quote']['NZD']['price']:,.2f}
+
+                Circulating/Max Supply:
+                {crypto['circulating_supply']:,}/{crypto['max_supply']:,}
+
+                Market Cap:
+                ${crypto['quote']['NZD']['market_cap']:,.2f}
+
+                24h Change:
+                {crypto['quote']['NZD']['percent_change_24h']}%
+                ```
+            """
         )
-        embed.add_field(
-            name="Price",
-            value=f"${crypto['quote']['NZD']['price']:,.2f}",
-            inline=False,
-        )
-        embed.add_field(
-            name="Circulating/Max Supply",
-            value=f"{crypto['circulating_supply']:,}/{crypto['max_supply']:,}",
-            inline=False,
-        )
-        embed.add_field(
-            name="Market Cap",
-            value=f"${crypto['quote']['NZD']['market_cap']:,.2f}",
-            inline=False,
-        )
-        embed.add_field(
-            name="24h Change",
-            value=f"{crypto['quote']['NZD']['percent_change_24h']}%",
-            inline=False,
-        )
+
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -334,13 +345,24 @@ class apis(commands.Cog):
                 name=f"Cornavirus {data['country']}:",
                 icon_url=data["countryInfo"]["flag"],
             )
-            embed.add_field(name="Total Cases", value=f"{data['cases']:,}")
-            embed.add_field(name="Total Deaths", value=f"{data['deaths']:,}")
-            embed.add_field(name="Active Cases", value=f"{data['active']:,}")
-            embed.add_field(name="Cases Today", value=f"{data['todayCases']:,}")
-            embed.add_field(name="Deaths Today", value=f"{data['todayDeaths']:,}")
-            embed.add_field(name="Recovered Total", value=f"{data['recovered']:,}")
+
+            embed.description = textwrap.dedent(
+                f"""
+                    ```
+                    Total Cases:   Total Deaths:
+                    {data['cases']:<15,}{data['deaths']:,}
+
+                    Active Cases:  Cases Today:
+                    {data['active']:<15,}{data['todayCases']:,}
+
+                    Deaths Today:  Recovered Total:
+                    {data['todayDeaths']:<15,}{data['recovered']:,}
+                    ```
+                """
+            )
+
             await ctx.send(embed=embed)
+
         except KeyError:
             await ctx.send(
                 "Not a valid country e.g NZ, New Zealand, US, USA, Canada, all"

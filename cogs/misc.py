@@ -90,8 +90,12 @@ class misc(commands.Cog):
         else:
             karma = karma.decode()
 
+        tenary = "+" if int(karma) > 0 else ""
+
         embed = discord.Embed(color=discord.Color.blue())
-        embed.add_field(name=f"{member.display_name}'s karma: ", value=f"{karma}")
+        embed.description = (
+            f"```diff\n{member.display_name}'s karma:\n{tenary}{karma}```"
+        )
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["kboard"])
@@ -101,20 +105,24 @@ class misc(commands.Cog):
         embed = discord.Embed(title="Karma Board", color=discord.Color.blue())
         embed.add_field(
             name="Top Five",
-            value="\n".join(
-                [
-                    f"{self.bot.get_user(member).display_name}: {karma}"
-                    for karma, member in sorted_karma[:5]
-                ]
+            value="```diff\n{}```".format(
+                "\n".join(
+                    [
+                        f"+ {self.bot.get_user(member).display_name}: {karma}"
+                        for karma, member in sorted_karma[:5]
+                    ]
+                )
             ),
         )
         embed.add_field(
             name="Bottom Five",
-            value="\n".join(
-                [
-                    f"{self.bot.get_user(member).display_name}: {karma}"
-                    for karma, member in sorted_karma[-5:]
-                ]
+            value="```diff\n{}```".format(
+                "\n".join(
+                    [
+                        f"- {self.bot.get_user(member).display_name}: {karma}"
+                        for karma, member in sorted_karma[-5:]
+                    ]
+                )
             ),
         )
         await ctx.send(embed=embed)
