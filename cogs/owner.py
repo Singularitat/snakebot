@@ -112,16 +112,16 @@ class owner(commands.Cog):
             new_ctx.command.reset_cooldown(new_ctx)
         except commands.CommandError:
             end = time.perf_counter()
-            success = "Failure"
+            result = "Failed"
             try:
                 await ctx.send(f"```py\n{traceback.format_exc()}\n```")
             except discord.HTTPException:
                 pass
         else:
             end = time.perf_counter()
-            success = "Success"
+            result = "Success"
 
-        await ctx.send(f"```{success}; {(end - start) * 1000:.2f}ms```")
+        await ctx.send(f"```css\n{result}: {(end - start) * 1000:.2f}ms```")
 
     @commands.command(hiiden=True)
     @commands.is_owner()
