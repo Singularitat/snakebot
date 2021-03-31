@@ -146,10 +146,8 @@ class background_tasks(commands.Cog):
     @tasks.loop(count=1)
     async def update_languages(self):
         """Updates pistons supported languages for the run command."""
-        url = 'https://emkc.org/api/v1/piston/versions'
-        async with aiohttp.ClientSession() as session, session.get(
-            url
-        ) as page:
+        url = "https://emkc.org/api/v1/piston/versions"
+        async with aiohttp.ClientSession() as session, session.get(url) as page:
             data = await page.json()
 
         languages = []
