@@ -17,6 +17,12 @@ class background_tasks(commands.Cog):
         self.backup_bot.start()
         self.update_languages.start()
 
+    def cog_unload(self):
+        self.update_stocks.stop()
+        self.update_bot.stop()
+        self.backup_bot.stop()
+        self.update_languages.stop()
+
     async def stockgrab(self, url):
         """Grabs some information abouts stocks from yahoo finance.
 
