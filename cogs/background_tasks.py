@@ -161,6 +161,17 @@ class background_tasks(commands.Cog):
 
         self.bot.db.put(b"languages", ujson.dumps(languages).encode())
 
+    @tasks.loop(minutes=1)
+    async def unban_members(self):
+        members = ujson.loads(self.bot.db.get(b"banned_members"))
+        if members == {}:
+            return
+        for member in members:
+            if members[member]["date"] > datetime.datetime.now():
+                guild = self.bot.get_guild(members[member]["guild"])
+                user = self.bot.get_user(member)
+                await guild.unban(user)
+
 
 def setup(bot):
     bot.add_cog(background_tasks(bot))
