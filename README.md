@@ -9,11 +9,17 @@ You should be able to run it on earlier versions but I haven't tried
 
 2. **Install dependencies**
 
+On windows
+
 `pip install -U -r requirements.txt`
 or
 `poetry install`
 
-If you are running linux plyvel-win32 won't install so you will have to run `pip install plyvel`
+On linux
+
+If you are running linux plyvel-win32 won't install so you will have to replace it with plyvel
+
+`pip install -U -r requirements.txt`/`pip3 install -U -r requirements.txt`
 
 If it fails to install on Debian or Ubuntu try `apt-get install libleveldb1v5 libleveldb-dev`
 
