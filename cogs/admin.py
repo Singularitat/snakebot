@@ -1,5 +1,7 @@
 import discord
 from discord.ext import commands
+import ujson
+import datetime
 
 
 class admin(commands.Cog):
@@ -89,7 +91,7 @@ class admin(commands.Cog):
         """Bans a member.
 
         member: discord.Member
-            The user to ban.
+            The member to ban.
         """
         await member.ban()
         await ctx.send(
@@ -98,13 +100,44 @@ class admin(commands.Cog):
             )
         )
 
+    @commands.command(aliases=["tban"])
+    @commands.has_permissions(ban_members=True)
+    async def temp_ban(self, ctx, member: discord.Member, *duration):
+        """Temporarily bans a member.
+
+        member: discord.Member
+            The member to temp ban.
+        """
+        await member.ban()
+        members = self.bot.db.get(b"banned_members")
+        if not members:
+            data = {}
+        else:
+            data = ujson.loads(members)
+
+        end_date = datetime.datetime.now()
+
+        for time in duration:
+            if time[-1] == "s":
+                end_date += datetime.timedelta(seconds=int(time[:-1]))
+            elif time[-1] == "m":
+                end_date += datetime.timedelta(minutes=int(time[:-1]))
+            elif time[-1] == "h":
+                end_date += datetime.timedelta(hours=int(time[:-1]))
+            elif time[-1] == "d":
+                end_date += datetime.timedelta(days=int(time[:-1]))
+
+        data[member.id] = {"date": end_date, "guild": ctx.guild.id}
+
+        self.bot.db.put(b"banned_members", ujson.dumps(data).encode())
+
     @commands.command(name="kick")
     @commands.has_permissions(kick_members=True)
-    async def kick_member(self, ctx, *, member: discord.Member):
+    async def kick_member(self, ctx, member: discord.Member):
         """Kicks a member.
 
         member: discord.Member
-            The user to kick.
+            The member to kick.
         """
         await member.kick()
         await ctx.send(
@@ -147,26 +180,28 @@ class admin(commands.Cog):
             if self.blacklist is None:
                 return await ctx.send("```No downvoted members```")
 
-            embed = discord.Embed(title="Downvoted users", colour=discord.Color.blue())
+            embed = discord.Embed(
+                title="Downvoted members", colour=discord.Color.blue()
+            )
             for member_id in self.blacklist.iterator(include_value=False):
                 embed.add_field(name="Member:", value=member_id.decode())
 
         else:
-            user = str(member.id).encode()
+            member_id = str(member.id).encode()
 
-            if self.blacklist.get(user):
-                self.blacklist.delete(user)
+            if self.blacklist.get(member_id):
+                self.blacklist.delete(member_id)
                 embed = discord.Embed(
-                    title="User Undownvoted",
+                    title="Member Undownvoted",
                     description=f"***{member}*** has been removed from the downvote list",
                     color=discord.Color.blue(),
                 )
 
             else:
                 await member.edit(voice_channel=None)
-                self.blacklist.put(user, b"1")
+                self.blacklist.put(member_id, b"1")
                 embed = discord.Embed(
-                    title="User Downvoted",
+                    title="Member Downvoted",
                     description=f"**{member}** has been added to the downvote list",
                     color=discord.Color.blue(),
                 )
@@ -186,25 +221,25 @@ class admin(commands.Cog):
                 return await ctx.send("```No blacklisted members```")
 
             embed = discord.Embed(
-                title="Blacklisted users", colour=discord.Color.blue()
+                title="Blacklisted members", colour=discord.Color.blue()
             )
             for member_id in self.blacklist.iterator(include_value=False):
                 embed.add_field(name="Member:", value=member_id.decode())
 
         else:
-            user = str(member.id).encode()
-            if user in self.blacklist:
-                self.blacklist.delete(user)
+            member_id = str(member.id).encode()
+            if member_id in self.blacklist:
+                self.blacklist.delete(member_id)
                 embed = discord.Embed(
-                    title="User Unblacklisted",
+                    title="Member Unblacklisted",
                     description=f"***{member}*** has been unblacklisted",
                     color=discord.Color.blue(),
                 )
 
             else:
-                self.blacklist.put(user, b"")
+                self.blacklist.put(member_id, b"")
                 embed = discord.Embed(
-                    title="User Blacklisted",
+                    title="Member Blacklisted",
                     description=f"**{member}** has been added to the blacklist",
                     color=discord.Color.blue(),
                 )
@@ -238,11 +273,11 @@ class admin(commands.Cog):
     @commands.command(hidden=True, aliases=["purgeu"])
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
-    async def purge_user(self, ctx, user: discord.User, num_messages: int = 100):
+    async def purge_user(self, ctx, member: discord.Member, num_messages: int = 100):
         """Clear all messagges of <User> withing the last [n=100] messages."""
 
         def check(msg):
-            return msg.author.id == user.id
+            return msg.author.id == member.id
 
         await ctx.channel.purge(limit=num_messages, check=check, before=None)
 
