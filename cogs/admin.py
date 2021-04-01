@@ -285,16 +285,24 @@ class admin(commands.Cog):
     @commands.command(hidden=True, aliases=["history"])
     @commands.has_permissions(manage_messages=True)
     async def msg_history(self, ctx, member: discord.Member, amount: int = 5):
+        """Shows a members deleted message history.
+
+        member: discord.Member
+            The member to get the history of.
+        amount: int
+            The amount of messages to get.
+        """
         member_id = str(member.id).encode()
         deleted = self.deleted.get(member_id)
 
         if deleted is None:
             return await ctx.send("```No deleted messages found```")
-        else:
-            deleted = ujson.loads(deleted)
+
+        deleted = ujson.loads(deleted)
 
         embed = discord.Embed(
-            color=discord.Color.blurple(), title=f"{member.display_name}'s Deleted Messages"
+            color=discord.Color.blurple(),
+            title=f"{member.display_name}'s Deleted Messages",
         )
 
         msg = ""
