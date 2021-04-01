@@ -95,8 +95,8 @@ class useful(commands.Cog):
         except AttributeError:
             await ctx.send("```No edited messages found```")
 
-    @commands.command(aliases=["arg"])
-    async def argument(self, ctx, arg, obj, subarg=None):
+    @commands.command(aliases=["dir"])
+    async def _dir(self, ctx, obj, arg, *, attr=None):
         """Converts arguments to a chosen discord object.
 
         arg: str
@@ -120,19 +120,25 @@ class useful(commands.Cog):
             "emoji": commands.EmojiConverter(),
             "partial": commands.PartialEmojiConverter(),
         }
-        if obj in objects:
+
+        if obj not in objects:
+            return await ctx.send("```Could not find object```")
+
+        try:
+            obj = await objects[obj].convert(ctx, arg)
+        except commands.BadArgument:
+            return await ctx.send("```Conversion failed```")
+
+        if attr:
+            attributes = attr.split(".")
             try:
-                obj = await objects[obj].convert(ctx, arg)
-            except commands.BadArgument:
-                await ctx.send("```Conversion failed```")
-            else:
-                if subarg:
-                    attr = getattr(obj, subarg)
-                    await ctx.send(f"```{attr}\n\n{dir(attr)}```")
-                else:
-                    await ctx.send(f"```{obj}\n\n{dir(obj)}```")
-        else:
-            await ctx.send("```Could not find object```")
+                for attribute in attributes:
+                    obj = getattr(obj, attribute)
+            except AttributeError:
+                return await ctx.send(f"{obj} has no attribute {attribute}")
+            return await ctx.send(f"```{obj}\n\n{dir(obj)}```")
+
+        await ctx.send(f"```{obj}\n\n{dir(obj)}```")
 
     @commands.command()
     async def google(self, ctx, *, search):

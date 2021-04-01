@@ -15,6 +15,7 @@ class events(commands.Cog):
         self.karma = self.bot.db.prefixed_db(b"karma-")
         self.blacklist = self.bot.db.prefixed_db(b"blacklist-")
         self.rrole = self.bot.db.prefixed_db(b"rrole-")
+        self.deleted = self.bot.db.prefixed_db(b"deleted-")
 
     async def reaction_role_check(self, payload):
         message_id = str(payload.message_id).encode()
@@ -128,10 +129,21 @@ class events(commands.Cog):
         """
         if (
             not message.content
-            or message.content.startswith(f"{self.bot.command_prefix}issue")
             or message.author == self.bot.user
         ):
             return
+
+        member_id = str(message.author.id).encode()
+        deleted = self.deleted.get(member_id)
+
+        if deleted is None:
+            deleted = {}
+        else:
+            deleted = ujson.loads(deleted)
+
+        time = datetime.datetime.now()
+        deleted[time] = message.content
+        self.deleted.put(member_id, ujson.dumps(deleted).encode())
 
         self.bot.snipe_message = (message.content, message.author.display_name)
         if "@everyone" in message.content or "@here" in message.content:
