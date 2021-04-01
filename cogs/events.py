@@ -127,10 +127,7 @@ class events(commands.Cog):
 
         message: discord.Message
         """
-        if (
-            not message.content
-            or message.author == self.bot.user
-        ):
+        if not message.content or message.author == self.bot.user:
             return
 
         member_id = str(message.author.id).encode()
@@ -141,8 +138,9 @@ class events(commands.Cog):
         else:
             deleted = ujson.loads(deleted)
 
-        time = datetime.datetime.now()
-        deleted[time] = message.content
+        date = datetime.datetime.now()
+        deleted[date] = message.content
+
         self.deleted.put(member_id, ujson.dumps(deleted).encode())
 
         self.bot.snipe_message = (message.content, message.author.display_name)
