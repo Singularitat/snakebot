@@ -19,6 +19,7 @@ class stocks(commands.Cog):
         msg = ""
         i = 1
 
+        # Pagination the name stocks is the game
         for stock, price in self.stocks:
             price = ujson.loads(price)["price"]
             if len(msg + f"{stock.decode():<5}: ${price:<9}") < 1997:
@@ -47,7 +48,7 @@ class stocks(commands.Cog):
         if not stockbal:
             return await ctx.send("```You have never invested```")
 
-        stockbal = ujson.loads(stockbal.decode())
+        stockbal = ujson.loads(stockbal)
 
         if symbol not in stockbal:
             return await ctx.send(f"```You have never invested in {symbol}```")
@@ -174,7 +175,7 @@ class stocks(commands.Cog):
         if not stockbal:
             return await ctx.send(f"```You have never invested in {symbol}```")
 
-        stockbal = ujson.loads(stockbal.decode())
+        stockbal = ujson.loads(stockbal)
 
         if stockbal[symbol] < amount:
             return await ctx.send(
@@ -247,7 +248,7 @@ class stocks(commands.Cog):
         if not stockbal:
             stockbal = {}
         else:
-            stockbal = ujson.loads(stockbal.decode())
+            stockbal = ujson.loads(stockbal)
 
         if symbol not in stockbal:
             stockbal[symbol] = 0
@@ -302,7 +303,7 @@ class stocks(commands.Cog):
             [
                 stock[1]
                 * float(ujson.loads(self.stocks.get(stock[0].encode()))["price"])
-                for stock in ujson.loads(stockbal.decode()).items()
+                for stock in ujson.loads(stockbal).items()
             ]
         )
 
