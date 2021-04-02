@@ -24,7 +24,7 @@ class background_tasks(commands.Cog):
         self.update_languages.stop()
 
     async def stockgrab(self, url):
-        """Grabs some information abouts stocks from yahoo finance.
+        """Yields some information abouts stocks from yahoo finance.
 
         url: str
             The yahoo finance url to fetch stocks from.
@@ -59,7 +59,7 @@ class background_tasks(commands.Cog):
                     yield name, stock_data
 
     async def stockupdate(self, url):
-        """Fetches stocks then updates the json files.
+        """Fetches stocks then updates the database.
 
         url: str
             The yahoo finance url to fetch stocks from.
@@ -76,7 +76,7 @@ class background_tasks(commands.Cog):
         time = datetime.datetime.utcnow().hour
         # Check if the stock market is open
         # 2:00 PM to 4 AM
-        if time <= 14 and time >= 4 or self.stocks.get(b"GME") is None or True:
+        if time <= 14 and time >= 4 or self.stocks.get(b"GME") is None:
             await self.stockupdate(
                 "https://nz.finance.yahoo.com/most-active?offset=0&count=200"
             )

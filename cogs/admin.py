@@ -284,14 +284,17 @@ class admin(commands.Cog):
 
     @commands.command(hidden=True, aliases=["history"])
     @commands.has_permissions(manage_messages=True)
-    async def msg_history(self, ctx, member: discord.Member, amount: int = 5):
-        """Shows a members deleted message history.
+    async def msg_history(self, ctx, member: discord.Member = None, amount: int = 5):
+        """Shows a members most recent deleted message history.
 
         member: discord.Member
             The member to get the history of.
         amount: int
             The amount of messages to get.
         """
+        if member is None:
+            member = ctx.author
+
         member_id = str(member.id).encode()
         deleted = self.deleted.get(member_id)
 
@@ -307,12 +310,14 @@ class admin(commands.Cog):
 
         msg = ""
 
-        for index, date in enumerate(deleted):
-            if index == amount or index + 1 == len(deleted):
-                embed.description = f"```{msg}```"
-                return await ctx.send(embed=embed)
+        for index, date in enumerate(reversed(deleted)):
+            if index == amount:
+                break
 
             msg += f"{': '.join([date, deleted[date]])}\n"
+
+        embed.description = f"```{msg}```"
+        return await ctx.send(embed=embed)
 
 
 def setup(bot: commands.Bot) -> None:
