@@ -138,7 +138,7 @@ class events(commands.Cog):
         else:
             deleted = ujson.loads(deleted)
 
-        date = datetime.datetime.now()
+        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         deleted[date] = message.content
 
         self.deleted.put(member_id, ujson.dumps(deleted).encode())
