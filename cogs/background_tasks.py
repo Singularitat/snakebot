@@ -95,23 +95,20 @@ class background_tasks(commands.Cog):
 
         return "".join([output.decode() for output in result]).split()
 
-    @tasks.loop(minutes=3)
+    @tasks.loop(minutes=5)
     async def update_bot(self):
         """Checks for updates every 3 minutes and then updates if needed."""
-        status = await self.run_process("git status -u no")
-
-        if status[6:9] == ["up", "to", "date"] or status[6:8] == ["ahead", "of"]:
-            return
-
         pull = await self.run_process("git pull")
 
         if pull == ["Already", "up", "to", "date."]:
             return
 
         diff = await self.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
-        diff = [ext.replace("/cogs", "") for ext in diff if ext[:5] == "/cogs"]
 
-        await self.run_process("poetry install")
+        if "poetry.lock" in diff:
+            await self.run_process("poetry install")
+
+        diff = [ext.replace("/cogs", "") for ext in diff if ext[:5] == "/cogs"]
 
         for extension in [
             f.replace(".py", "")
