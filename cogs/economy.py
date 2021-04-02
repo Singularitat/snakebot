@@ -332,6 +332,26 @@ class economy(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    @commands.command()
+    async def streaktop(self, ctx):
+        """Shows the top slot streaks."""
+        streak_top = []
+
+        for member, data in self.wins:
+            user = self.bot.get_user(int(member))
+            if user is not None:
+                data = (ujson.loads(data)["highestwin"], user.display_name)
+                streak_top.append(data)
+
+        streak_top.sort(reverse=True)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = "```Highest Win Streak:\n\n{}```".format(
+            "\n".join([f"{member}: {hw}" for hw, member in streak_top[:10]])
+        )
+
+        await ctx.send(embed=embed)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts economy cog."""
