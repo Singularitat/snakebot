@@ -88,26 +88,13 @@ class admin(commands.Cog):
 
     @commands.command(name="ban")
     @commands.has_permissions(ban_members=True)
-    async def ban_member(self, ctx, member: discord.Member):
+    async def ban_member(self, ctx, member: discord.Member, *, duration=None):
         """Bans a member.
 
         member: discord.Member
             The member to ban.
-        """
-        await member.ban()
-        await ctx.send(
-            embed=discord.Embed(
-                title=f"Banned {member}", color=discord.Color.dark_red()
-            )
-        )
-
-    @commands.command(aliases=["tban"])
-    @commands.has_permissions(ban_members=True)
-    async def temp_ban(self, ctx, member: discord.Member, *duration):
-        """Temporarily bans a member.
-
-        member: discord.Member
-            The member to temp ban.
+        duration: str
+            How long to ban the member for e.g 1d 15m
         """
         await member.ban()
         members = self.bot.db.get(b"banned_members")
@@ -118,7 +105,7 @@ class admin(commands.Cog):
 
         end_date = datetime.datetime.now()
 
-        for time in duration:
+        for time in duration.split():
             if time[-1] == "s":
                 end_date += datetime.timedelta(seconds=int(time[:-1]))
             elif time[-1] == "m":
@@ -131,6 +118,12 @@ class admin(commands.Cog):
         data[member.id] = {"date": end_date, "guild": ctx.guild.id}
 
         self.bot.db.put(b"banned_members", ujson.dumps(data).encode())
+
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"Banned {member} untill {end_date}", color=discord.Color.dark_red()
+            )
+        )
 
     @commands.command(name="kick")
     @commands.has_permissions(kick_members=True)
