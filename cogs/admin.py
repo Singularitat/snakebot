@@ -10,6 +10,7 @@ class admin(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.blacklist = self.bot.db.prefixed_db(b"blacklist-")
+        self.deleted = self.bot.db.prefixed_db(b"deleted-")
 
     @commands.has_permissions(administrator=True)
     @commands.command(hidden=True)
@@ -280,6 +281,30 @@ class admin(commands.Cog):
             return msg.author.id == member.id
 
         await ctx.channel.purge(limit=num_messages, check=check, before=None)
+
+    @commands.command(hidden=True, aliases=["history"])
+    @commands.has_permissions(manage_messages=True)
+    async def msg_history(self, ctx, member: discord.Member, amount: int = 5):
+        member_id = str(member.id).encode()
+        deleted = self.deleted.get(member_id)
+
+        if deleted is None:
+            return await ctx.send("```No deleted messages found```")
+        else:
+            deleted = ujson.loads(deleted)
+
+        embed = discord.Embed(
+            color=discord.Color.blurple(), title=f"{member.display_name}'s Deleted Messages"
+        )
+
+        msg = ""
+
+        for index, date in enumerate(deleted):
+            if index == amount or index + 1 == len(deleted):
+                embed.description = f"```{msg}```"
+                return await ctx.send(embed=embed)
+
+            msg += f"{': '.join([date, deleted[date]])}\n"
 
 
 def setup(bot: commands.Bot) -> None:
