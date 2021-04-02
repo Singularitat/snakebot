@@ -1,6 +1,6 @@
 import lxml
 import aiohttp
-import datetime
+from datetime import datetime
 import os
 import asyncio
 import subprocess
@@ -16,12 +16,14 @@ class background_tasks(commands.Cog):
         self.update_bot.start()
         self.backup_bot.start()
         self.update_languages.start()
+        self.check_end_dates.start()
 
     def cog_unload(self):
         self.update_stocks.stop()
         self.update_bot.stop()
         self.backup_bot.stop()
         self.update_languages.stop()
+        self.check_end_dates.stop()
 
     async def stockgrab(self, url):
         """Yields some information abouts stocks from yahoo finance.
@@ -73,7 +75,7 @@ class background_tasks(commands.Cog):
     @tasks.loop(minutes=30)
     async def update_stocks(self):
         """Updates stock prices every half hour."""
-        time = datetime.datetime.utcnow().hour
+        time = datetime.utcnow().hour
         # Check if the stock market is open
         # 2:00 PM to 4 AM
         if time <= 14 and time >= 4 or self.stocks.get(b"GME") is None:
@@ -128,7 +130,7 @@ class background_tasks(commands.Cog):
     async def backup_bot(self):
         """Makes a backup of the db every two hours."""
         os.makedirs("backup/", exist_ok=True)
-        time = datetime.datetime.now()
+        time = datetime.now()
         with open(f"backup/{time.hour // 2}backup.json", "w") as file:
             json = "".join(
                 [
@@ -159,15 +161,36 @@ class background_tasks(commands.Cog):
         self.bot.db.put(b"languages", ujson.dumps(languages).encode())
 
     @tasks.loop(minutes=1)
-    async def unban_members(self):
-        members = ujson.loads(self.bot.db.get(b"banned_members"))
-        if members == {}:
-            return
-        for member in members:
-            if members[member]["date"] > datetime.datetime.now():
-                guild = self.bot.get_guild(members[member]["guild"])
-                user = self.bot.get_user(member)
-                await guild.unban(user)
+    async def check_end_dates(self):
+        banned_members = self.bot.db.get(b"banned_members")
+        downvoted_members = self.bot.db.get(b"downvoted_members")
+
+        if banned_members is not None:
+            banned_members = ujson.loads(banned_members)
+
+            for member in banned_members:
+                if (
+                    datetime.strptime(
+                        banned_members[member]["date"], "%Y-%m-%d %H:%M:%S.%f"
+                    )
+                    < datetime.now()
+                ):
+                    guild = self.bot.get_guild(banned_members[member]["guild"])
+                    user = self.bot.get_user(member)
+                    if user:
+                        await guild.unban(user)
+
+        if downvoted_members is not None:
+            downvoted_members = ujson.loads(downvoted_members)
+
+            for member in downvoted_members:
+                if (
+                    datetime.strptime(
+                        downvoted_members[member]["date"], "%Y-%m-%d %H:%M:%S.%f"
+                    )
+                    < datetime.now()
+                ):
+                    self.bot.db.delete(b"blacklist-" + member.encode())
 
 
 def setup(bot):
