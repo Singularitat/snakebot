@@ -86,6 +86,115 @@ class admin(commands.Cog):
 
         await self.say_permissions(ctx, member, channel)
 
+    async def end_date(self, duration):
+        end_date = datetime.datetime.now()
+
+        for time in duration.split():
+            if time[-1] == "s":
+                end_date += datetime.timedelta(seconds=int(time[:-1]))
+            elif time[-1] == "m":
+                end_date += datetime.timedelta(minutes=int(time[:-1]))
+            elif time[-1] == "h":
+                end_date += datetime.timedelta(hours=int(time[:-1]))
+            elif time[-1] == "d":
+                end_date += datetime.timedelta(days=int(time[:-1]))
+
+        return str(end_date)
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def downvote(self, ctx, member: discord.Member = None, *, duration=None):
+        """Automatically downvotes someone.
+
+        member: discord.Member
+            The downvoted member.
+        duration: str
+            How long to downvote the member for e.g 5d 10h 25m 5s
+        """
+        if member is None:
+            if self.blacklist is None:
+                return await ctx.send("```No downvoted members```")
+
+            embed = discord.Embed(
+                title="Downvoted members", colour=discord.Color.blue()
+            )
+            for member_id in self.blacklist.iterator(include_value=False):
+                embed.add_field(name="Member:", value=member_id.decode())
+
+            return await ctx.send(embed=embed)
+
+        member_id = str(member.id).encode()
+
+        if self.blacklist.get(member_id):
+            self.blacklist.delete(member_id)
+            embed = discord.Embed(
+                title="Member Undownvoted",
+                description=f"***{member}*** has been removed from the downvote list",
+                color=discord.Color.blue(),
+            )
+
+        else:
+            await member.edit(voice_channel=None)
+
+            self.blacklist.put(member_id, b"1")
+
+            members = self.bot.db.get(b"downvoted_members")
+
+            if not members:
+                data = {}
+            else:
+                data = ujson.loads(members)
+
+            end_date = await self.end_date(duration)
+            data[member.id] = {"date": end_date, "guild": ctx.guild.id}
+            self.bot.db.put(b"downvoted_members", ujson.dumps(data).encode())
+
+            embed = discord.Embed(
+                title="Member Downvoted",
+                description=f"**{member}** has been added to the downvote list",
+                color=discord.Color.blue(),
+            )
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def blacklist(self, ctx, member: discord.Member = None):
+        """Blacklists someone from using the bot.
+
+        member: discord.Member
+            The blacklisted member.
+        """
+        if member is None:
+            if self.blacklist is None:
+                return await ctx.send("```No blacklisted members```")
+
+            embed = discord.Embed(
+                title="Blacklisted members", colour=discord.Color.blue()
+            )
+            for member_id in self.blacklist.iterator(include_value=False):
+                embed.add_field(name="Member:", value=member_id.decode())
+
+        else:
+            member_id = str(member.id).encode()
+            if self.blacklist.get(member_id):
+                self.blacklist.delete(member_id)
+                embed = discord.Embed(
+                    title="Member Unblacklisted",
+                    description=f"***{member}*** has been unblacklisted",
+                    color=discord.Color.blue(),
+                )
+
+            else:
+                self.blacklist.put(member_id, b"2")
+                embed = discord.Embed(
+                    title="Member Blacklisted",
+                    description=f"**{member}** has been added to the blacklist",
+                    color=discord.Color.blue(),
+                )
+
+        await ctx.send(embed=embed)
+
     @commands.command(name="ban")
     @commands.has_permissions(ban_members=True)
     async def ban_member(self, ctx, member: discord.Member, *, duration=None):
@@ -103,17 +212,7 @@ class admin(commands.Cog):
         else:
             data = ujson.loads(members)
 
-        end_date = datetime.datetime.now()
-
-        for time in duration.split():
-            if time[-1] == "s":
-                end_date += datetime.timedelta(seconds=int(time[:-1]))
-            elif time[-1] == "m":
-                end_date += datetime.timedelta(minutes=int(time[:-1]))
-            elif time[-1] == "h":
-                end_date += datetime.timedelta(hours=int(time[:-1]))
-            elif time[-1] == "d":
-                end_date += datetime.timedelta(days=int(time[:-1]))
+        end_date = await self.end_date(duration)
 
         data[member.id] = {"date": end_date, "guild": ctx.guild.id}
 
@@ -121,7 +220,8 @@ class admin(commands.Cog):
 
         await ctx.send(
             embed=discord.Embed(
-                title=f"Banned {member} untill {end_date}", color=discord.Color.dark_red()
+                title=f"Banned {member} untill {end_date}",
+                color=discord.Color.dark_red(),
             )
         )
 
@@ -161,84 +261,6 @@ class admin(commands.Cog):
         else:
             await member.add_roles(role)
             await ctx.send(f"Removed the role {role} from {member}")
-
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def downvote(self, ctx, member: discord.Member = None):
-        """Automatically downvotes someone.
-
-        member: discord.Member
-            The downvoted member.
-        """
-        if member is None:
-            if self.blacklist is None:
-                return await ctx.send("```No downvoted members```")
-
-            embed = discord.Embed(
-                title="Downvoted members", colour=discord.Color.blue()
-            )
-            for member_id in self.blacklist.iterator(include_value=False):
-                embed.add_field(name="Member:", value=member_id.decode())
-
-        else:
-            member_id = str(member.id).encode()
-
-            if self.blacklist.get(member_id):
-                self.blacklist.delete(member_id)
-                embed = discord.Embed(
-                    title="Member Undownvoted",
-                    description=f"***{member}*** has been removed from the downvote list",
-                    color=discord.Color.blue(),
-                )
-
-            else:
-                await member.edit(voice_channel=None)
-                self.blacklist.put(member_id, b"1")
-                embed = discord.Embed(
-                    title="Member Downvoted",
-                    description=f"**{member}** has been added to the downvote list",
-                    color=discord.Color.blue(),
-                )
-
-        await ctx.send(embed=embed)
-
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def blacklist(self, ctx, member: discord.Member = None):
-        """Blacklists someone from using the bot.
-
-        member: discord.Member
-            The blacklisted member.
-        """
-        if member is None:
-            if self.blacklist is None:
-                return await ctx.send("```No blacklisted members```")
-
-            embed = discord.Embed(
-                title="Blacklisted members", colour=discord.Color.blue()
-            )
-            for member_id in self.blacklist.iterator(include_value=False):
-                embed.add_field(name="Member:", value=member_id.decode())
-
-        else:
-            member_id = str(member.id).encode()
-            if member_id in self.blacklist:
-                self.blacklist.delete(member_id)
-                embed = discord.Embed(
-                    title="Member Unblacklisted",
-                    description=f"***{member}*** has been unblacklisted",
-                    color=discord.Color.blue(),
-                )
-
-            else:
-                self.blacklist.put(member_id, b"")
-                embed = discord.Embed(
-                    title="Member Blacklisted",
-                    description=f"**{member}** has been added to the blacklist",
-                    color=discord.Color.blue(),
-                )
-
-        await ctx.send(embed=embed)
 
     @commands.command(aliases=["clear, clean"])
     @commands.has_permissions(manage_messages=True)
