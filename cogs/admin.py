@@ -140,14 +140,15 @@ class admin(commands.Cog):
 
             members = self.bot.db.get(b"downvoted_members")
 
-            if not members:
-                data = {}
-            else:
-                data = ujson.loads(members)
+            if duration is not None:
+                if not members:
+                    data = {}
+                else:
+                    data = ujson.loads(members)
 
-            end_date = await self.end_date(duration)
-            data[member.id] = {"date": end_date, "guild": ctx.guild.id}
-            self.bot.db.put(b"downvoted_members", ujson.dumps(data).encode())
+                end_date = await self.end_date(duration)
+                data[member.id] = {"date": end_date, "guild": ctx.guild.id}
+                self.bot.db.put(b"downvoted_members", ujson.dumps(data).encode())
 
             embed = discord.Embed(
                 title="Member Downvoted",
