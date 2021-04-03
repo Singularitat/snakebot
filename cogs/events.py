@@ -180,7 +180,7 @@ class events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        """The event called when a reaction is added to a message in the bots cache.
+        """The event called when a reaction is added to a message in the cache.
 
         reaction: discord.Reaction
         user: Union[discord.User, discord.Member]
@@ -189,8 +189,8 @@ class events(commands.Cog):
             return
 
         time_since = (
-            datetime.datetime.now() - reaction.message.created_at
-        ).total_seconds() - 46800
+            datetime.datetime.utcnow() - reaction.message.created_at
+        ).total_seconds()
 
         if time_since > 1800:
             return
@@ -215,7 +215,7 @@ class events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_remove(self, reaction, user):
-        """The event called when a reaction is removed from a message in the bots cache.
+        """The event called when a reaction is removed from a message in the cache.
 
         reaction: discord.Reaction
         user: Union[discord.User, discord.Member]
@@ -224,8 +224,8 @@ class events(commands.Cog):
             return
 
         time_since = (
-            datetime.datetime.now() - reaction.message.created_at
-        ).total_seconds() - 46800
+            datetime.datetime.utcnow() - reaction.message.created_at
+        ).total_seconds()
 
         if time_since > 1800:
             return

@@ -340,14 +340,15 @@ class economy(commands.Cog):
         for member, data in self.wins:
             user = self.bot.get_user(int(member))
             if user is not None:
-                data = (ujson.loads(data)["highestwin"], user.display_name)
+                json = ujson.loads(data)
+                data = ((json["highestwin"], json["highestlose"]), user.display_name)
                 streak_top.append(data)
 
         streak_top.sort(reverse=True)
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = "```Highest Win Streak:\n\n{}```".format(
-            "\n".join([f"{member}: {hw}" for hw, member in streak_top[:10]])
+        embed.description = "```Highest Streaks [win/lose]:\n\n{}```".format(
+            "\n".join([f"{member}: {hw[0]}/{hw[1]}" for hw, member in streak_top[:10]])
         )
 
         await ctx.send(embed=embed)
