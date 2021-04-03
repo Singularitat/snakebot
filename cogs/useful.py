@@ -80,20 +80,22 @@ class useful(commands.Cog):
     @commands.command()
     async def snipe(self, ctx):
         """Snipes the last deleted message."""
-        try:
-            message, member = self.bot.snipe_message
-            await ctx.send(f"```{member} deleted:\n{message}```")
-        except AttributeError:
-            await ctx.send("```No deleted messages found```")
+        message = self.bot.db.get(b"snipe_message")
+
+        if message is not None:
+            message = ujson.loads(message)
+
+            # Example, ["Yeah I deleted this", "Singulaity"]
+            await ctx.send(f"```{message[1]} deleted:\n{message[0]}```")
 
     @commands.command()
     async def editsnipe(self, ctx):
         """Snipes the last edited message."""
-        try:
-            before, after, member = self.bot.editsnipe_message
-            await ctx.send(f"```{member} edited:\n{before} >>> {after}```")
-        except AttributeError:
-            await ctx.send("```No edited messages found```")
+        message = self.bot.db.get(b"editsnipe_message")
+
+        if message is not None:
+            message = ujson.loads(message)
+            await ctx.send(f"```{message[2]} edited:\n{message[0]} >>> {message[1]}```")
 
     @commands.command(aliases=["dir"])
     async def _dir(self, ctx, obj, arg, *, attr=None):
