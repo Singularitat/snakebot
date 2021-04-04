@@ -101,25 +101,23 @@ class events(commands.Cog):
         ):
             return
 
-        self.bot.editsnipe_message = (
-            before.content,
-            after.content,
-            after.author.display_name,
-        )
+        self.bot.db.put(b"editsnipe_message", ujson.dumps([before.content, after.content, after.author.display_name]).encode())
 
         if after.content.startswith("https"):
             return
 
-        try:
-            channel = discord.utils.get(after.guild.channels, name="logs")
-            if "`" in before.content or "`" in after.content:
-                before.content = before.content.replace("`", "")
-                after.content = after.content.replace("`", "")
-            await channel.send(
-                f"```{before.author} edited:\n{before.content} >>> {after.content}```"
-            )
-        except AttributeError:
-            pass
+        channel = discord.utils.get(after.guild.channels, name="logs")
+
+        if channel is None:
+            return
+
+        if "`" in before.content or "`" in after.content:
+            before.content = before.content.replace("`", "")
+            after.content = after.content.replace("`", "")
+
+        await channel.send(
+            f"```{before.author} edited:\n{before.content} >>> {after.content}```"
+        )
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -142,15 +140,15 @@ class events(commands.Cog):
         deleted[date] = message.content
 
         self.deleted.put(member_id, ujson.dumps(deleted).encode())
+        self.bot.db.put(b"snipe_message", ujson.dumps([message.content, message.author.display_name]).encode())
 
-        self.bot.snipe_message = (message.content, message.author.display_name)
-        if "@everyone" in message.content or "@here" in message.content:
+        if discord.utils.escape_mentions(message.content) != message.content:
             timesince = (
                 datetime.datetime.utcfromtimestamp(time.time()) - message.created_at
             )
 
             if timesince.total_seconds() < 360:
-                self.blacklist.put(str(message.author.id).encode())
+                self.blacklist.put(str(message.author.id).encode(), b"1")
 
         channel = discord.utils.get(message.guild.channels, name="logs")
 
@@ -161,7 +159,7 @@ class events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        """Sends and error message if someone blacklisted sends a command.
+        """Downvotes blacklisted members.
 
         message: discord.Message
         """

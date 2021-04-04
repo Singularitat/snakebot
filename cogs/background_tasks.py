@@ -25,6 +25,24 @@ class background_tasks(commands.Cog):
         self.update_languages.stop()
         self.check_end_dates.stop()
 
+    @commands.group()
+    @commands.is_owner()
+    async def task(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("```No subcommand passed```")
+
+    @task.command()
+    async def restart(self, ctx, task):
+        getattr(self, task).restart()
+
+    @task.command()
+    async def start(self, ctx, task):
+        getattr(self, task).start()
+
+    @task.command()
+    async def stop(self, ctx, task):
+        getattr(self, task).stop()
+
     async def stockgrab(self, url):
         """Yields some information abouts stocks from yahoo finance.
 
