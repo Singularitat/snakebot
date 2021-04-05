@@ -7,6 +7,7 @@ import asyncio
 import traceback
 import time
 import subprocess
+import re
 
 
 class PerformanceMocker:
@@ -54,6 +55,14 @@ class owner(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.rrole = self.bot.db.prefixed_db(b"rrole-")
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def togglelog(self, ctx):
+        """Toggles logging to logs channel."""
+        self.bot.db.put(
+            b"logging", str(int(not bool(int(self.bot.db.get(b"logging"))))).encode()
+        )
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -319,44 +328,72 @@ class owner(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
+    async def lrrole(self, ctx):
+        """Sends a list of the message ids of current rroles"""
+        msg = ""
+        for message_id, roles in self.rrole:
+            msg += f"\n\n{message_id.decode()}: {ujson.loads(roles)}"
+        await ctx.send(f"```{msg}```")
+
+    @commands.command()
+    @commands.is_owner()
+    async def drrole(self, ctx, message: discord.Message):
+        """Deletes a reaction role message and removes it from the db.
+
+        message: discord.Message
+            The reaction role messgae to delete.
+        """
+        self.rrole.delete(str(message.id).encode())
+        await message.delete()
+
+    @commands.command()
+    @commands.is_owner()
     async def rrole(self, ctx, *emojis):
         """Starts a slightly interactive session to create a reaction role.
 
         emojis: tuple
             A tuple of emojis.
         """
-        await ctx.message.delete()
-
         if emojis == ():
             return await ctx.send(
                 "Put emojis as arguments in the command e.g rrole :fire:"
             )
 
+        await ctx.message.delete()
+
         channel = await self.await_for_message(
             ctx, "Send the channel you want the message to be in"
         )
         breifs = await self.await_for_message(
-            ctx, "Send an brief for every emote Seperated by ;"
+            ctx, "Send an brief for every emote Seperated by |"
         )
         roles = await self.await_for_message(
-            ctx, "Send an role id/name for every role Seperated by ;"
+            ctx, "Send an role id/name for every role Seperated by |"
         )
 
-        roles = roles.content.split(";")
+        roles = roles.content.split("|")
 
         for index, role in enumerate(roles):
+            role = role.strip()
             if not role.isnumeric():
-                try:
-                    role = discord.utils.get(ctx.guild.roles, name=role)
-                    roles[index] = role.id
-                except commands.errors.RoleNotFound:
-                    return await ctx.send(f"Could not find role {index}")
+                tmp_role = discord.utils.get(ctx.guild.roles, name=role)
+                if tmp_role is None:
+                    return await ctx.send(f"```Couldn't find role {role}```")
+                roles[index] = tmp_role.id
 
         msg = "**Role Menu:**\nReact for a role.\n"
 
-        for emoji, breif in zip(emojis, breifs.content.split(";")):
+        for emoji, breif in zip(emojis, breifs.content.split("|")):
             msg += f"\n{emoji}: `{breif}`\n"
-        message = await channel.channel.send(msg)
+
+        channel_id = re.sub(r"[^\d.]+", "", channel.content)
+
+        channel = ctx.guild.get_channel(int(channel_id))
+
+        if channel is None:
+            return await ctx.send(f"```Channel not found {channel_id}```")
+
+        message = await channel.send(msg)
 
         for emoji in emojis:
             await message.add_reaction(emoji)
@@ -383,13 +420,13 @@ class owner(commands.Cog):
         msg = message.content
 
         breifs = await self.await_for_message(
-            ctx, "Send an brief for every emote Seperated by ;"
+            ctx, "Send an brief for every emote Seperated by |"
         )
         roles = await self.await_for_message(
-            ctx, "Send an role id/name for every role Seperated by ;"
+            ctx, "Send an role id/name for every role Seperated by |"
         )
 
-        roles = roles.content.split(";")
+        roles = roles.content.split("|")
 
         for index, role in enumerate(roles):
             if not role.isnumeric():
@@ -401,7 +438,7 @@ class owner(commands.Cog):
 
         msg += "\n"
 
-        for emoji, breif in zip(emojis, breifs.content.split(";")):
+        for emoji, breif in zip(emojis, breifs.content.split("|")):
             msg += f"\n{emoji}: `{breif}`\n"
 
         await message.edit(content=msg)
@@ -409,7 +446,7 @@ class owner(commands.Cog):
         for emoji in emojis:
             await message.add_reaction(emoji)
 
-        reaction = ujson.loads(reaction.decode())
+        reaction = ujson.loads(reaction)
 
         for emoji, role in zip(emojis, roles):
             reaction[emoji] = role
