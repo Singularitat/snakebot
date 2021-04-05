@@ -1,4 +1,3 @@
-import re
 import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -77,31 +76,3 @@ def time_since(
     humanized = humanize_delta(delta, precision, max_units)
 
     return f"{humanized} ago"
-
-
-def find_nth_occurrence(string: str, substring: str, n: int):
-    """Return index of `n`th occurrence of `substring` in `string`, or None if not found."""
-    index = 0
-    for _ in range(n):
-        index = string.find(substring, index + 1)
-        if index == -1:
-            return None
-    return index
-
-
-def remove_html_tags(text):
-    """Removes html tags from a string."""
-    clean = re.compile("<.*?>")
-    return re.sub(clean, "", text)
-
-
-def clean_non_letters(text):
-    """Removes non-alphabet characters from a string."""
-    clean = re.compile("[^a-zA-Z]")
-    return re.sub(clean, "", text)
-
-
-def clean_non_numbers(text):
-    """Removes non-numeric characters from a string."""
-    clean = re.compile(r"[^\d.]+")
-    return re.sub(clean, "", text)
