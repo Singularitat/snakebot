@@ -240,6 +240,33 @@ class useful(commands.Cog):
             f"```{num_base.capitalize()}: {result} Decimal: {r['output']}```"
         )
 
+    @commands.command(aliases=["ch", "cht"])
+    async def cheatsheet(self, ctx, *search):
+        """https://cheat.sh/python/ gets a cheatsheet.
+
+        search: tuple
+            The search terms.
+        """
+        search = "+".join(search)
+
+        url = f"https://cheat.sh/python/{search}"
+        headers = {
+            'User-Agent': 'curl/7.68.0'
+        }
+
+        escape = str.maketrans({"`": "\\`"})
+        ansi = re.compile(r"\x1b\[.*?m")
+
+        async with aiohttp.ClientSession(headers=headers) as session, session.get(
+            url
+        ) as page:
+            result = ansi.sub("", await page.text()).translate(escape)
+
+        embed = discord.Embed(title=f"https://cheat.sh/python/{search}", color=discord.Color.blurple())
+        embed.description = f"```py\n{result}```"
+
+        await ctx.send(embed=embed)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts useful cog."""
