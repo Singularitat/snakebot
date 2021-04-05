@@ -128,7 +128,11 @@ class background_tasks(commands.Cog):
         if "poetry.lock" in diff:
             await self.run_process("poetry install")
 
-        diff = [ext.replace("/cogs", "") for ext in diff if ext[:5] == "/cogs"]
+        diff = [
+            ext.replace("/cogs", "")
+            for ext in diff
+            if "/utils/" not in ext and ext[:5] == "/cogs"
+        ]
 
         for extension in [
             f.replace(".py", "")
