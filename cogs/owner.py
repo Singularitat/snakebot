@@ -74,7 +74,7 @@ class owner(commands.Cog):
         """
         command = self.bot.get_command(command)
         if command is None:
-            await ctx.send("```No such command```")
+            await ctx.send("```Command not found```")
         else:
             command.enabled = not command.enabled
             ternary = "enabled" if command.enabled else "disabled"
@@ -100,6 +100,8 @@ class owner(commands.Cog):
     async def perf(self, ctx, *, command):
         """Checks the timing of a command, while attempting to suppress HTTP calls.
 
+        p.s just the command itself with nothing in it takes about 0.02ms
+
         command: str
             The command to run including arguments.
         """
@@ -116,12 +118,14 @@ class owner(commands.Cog):
             return await ctx.send("```No command found```")
 
         start = time.perf_counter()
+
         try:
             await new_ctx.command.invoke(new_ctx)
             new_ctx.command.reset_cooldown(new_ctx)
         except commands.CommandError:
             end = time.perf_counter()
             result = "Failed"
+
             try:
                 await ctx.send(f"```py\n{traceback.format_exc()}\n```")
             except discord.HTTPException:
@@ -329,7 +333,7 @@ class owner(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def lrrole(self, ctx):
-        """Sends a list of the message ids of current rroles"""
+        """Sends a list of the message ids of current reaction roles."""
         msg = ""
         for message_id, roles in self.rrole:
             msg += f"\n\n{message_id.decode()}: {ujson.loads(roles)}"

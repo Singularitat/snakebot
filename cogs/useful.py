@@ -250,9 +250,7 @@ class useful(commands.Cog):
         search = "+".join(search)
 
         url = f"https://cheat.sh/python/{search}"
-        headers = {
-            'User-Agent': 'curl/7.68.0'
-        }
+        headers = {"User-Agent": "curl/7.68.0"}
 
         escape = str.maketrans({"`": "\\`"})
         ansi = re.compile(r"\x1b\[.*?m")
@@ -262,7 +260,9 @@ class useful(commands.Cog):
         ) as page:
             result = ansi.sub("", await page.text()).translate(escape)
 
-        embed = discord.Embed(title=f"https://cheat.sh/python/{search}", color=discord.Color.blurple())
+        embed = discord.Embed(
+            title=f"https://cheat.sh/python/{search}", color=discord.Color.blurple()
+        )
         embed.description = f"```py\n{result}```"
 
         await ctx.send(embed=embed)
