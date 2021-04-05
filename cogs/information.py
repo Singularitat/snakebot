@@ -155,7 +155,7 @@ class information(commands.Cog):
         else:
             obj = self.bot.get_command(command)
             if obj is None:
-                return await ctx.send("Could not find command.")
+                return await ctx.send("```Could not find command.```")
 
             src = obj.callback.__code__
             filename = src.co_filename
@@ -163,10 +163,13 @@ class information(commands.Cog):
         lines, lineno = inspect.getsourcelines(src)
         cog = os.path.relpath(filename).replace("\\", "/")
 
-        final_url = f"<https://github.com/Singularitat/snakebot/blob/main/{cog}#L{lineno}-L{lineno + len(lines) - 1}>"
-        if len(f'```py\n{"".join(lines)}```') <= 2000:
-            await ctx.send(f'```py\n{("".join(lines)).replace("`", "")}```')
-        await ctx.send(final_url)
+        msg = f"<https://github.com/Singularitat/snakebot/blob/main/{cog}#L{lineno}-L{lineno + len(lines) - 1}>"
+        code = f'\n```py\n{textwrap.dedent("".join(lines)).replace("`", "")}```'
+
+        if len(code) <= 2000:
+            msg += code
+
+        await ctx.send(msg)
 
 
 def setup(bot: commands.Bot) -> None:
