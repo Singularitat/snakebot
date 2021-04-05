@@ -130,7 +130,11 @@ class events(commands.Cog):
 
         message: discord.Message
         """
-        if not message.content or message.author == self.bot.user:
+        if (
+            self.bot.db.get(b"logging") == b"0"
+            or not message.content
+            or message.author == self.bot.user
+        ):
             return
 
         member_id = str(message.author.id).encode()
