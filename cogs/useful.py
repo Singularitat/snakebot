@@ -38,7 +38,7 @@ class useful(commands.Cog):
         if not r["output"]:
             return await ctx.send("No output")
 
-        await ctx.send(f"```{r['output']}```")
+        await ctx.send(f"```\n{r['output']}```")
 
     @run.error
     async def run_handler(self, ctx, error):
