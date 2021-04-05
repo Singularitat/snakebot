@@ -14,16 +14,15 @@ class admin(commands.Cog):
 
     @commands.has_permissions(administrator=True)
     @commands.command(hidden=True)
-    async def edit(self, ctx, message_id, *, message_content):
+    async def edit(self, ctx, message: discord.Message, *, content):
         """Edits one of the bots messages.
 
-        message_id: str
-            The id of the message you want to edit.
-        message_content: str
-            What you want to change the message to.
+        message: discord.Message
+            The message you want to edit.
+        content: str
+            What the content of the message will be changed to.
         """
-        message = await ctx.fetch_message(message_id)
-        await message.edit(content=message_content)
+        await message.edit(content=content)
 
     @edit.error
     async def edit_handler(self, ctx, error):

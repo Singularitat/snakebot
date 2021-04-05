@@ -101,7 +101,12 @@ class events(commands.Cog):
         ):
             return
 
-        self.bot.db.put(b"editsnipe_message", ujson.dumps([before.content, after.content, after.author.display_name]).encode())
+        self.bot.db.put(
+            b"editsnipe_message",
+            ujson.dumps(
+                [before.content, after.content, after.author.display_name]
+            ).encode(),
+        )
 
         if after.content.startswith("https"):
             return
@@ -125,7 +130,11 @@ class events(commands.Cog):
 
         message: discord.Message
         """
-        if not message.content or message.author == self.bot.user:
+        if (
+            self.bot.db.get(b"logging") == b"0"
+            or not message.content
+            or message.author == self.bot.user
+        ):
             return
 
         member_id = str(message.author.id).encode()
@@ -140,7 +149,10 @@ class events(commands.Cog):
         deleted[date] = message.content
 
         self.deleted.put(member_id, ujson.dumps(deleted).encode())
-        self.bot.db.put(b"snipe_message", ujson.dumps([message.content, message.author.display_name]).encode())
+        self.bot.db.put(
+            b"snipe_message",
+            ujson.dumps([message.content, message.author.display_name]).encode(),
+        )
 
         if discord.utils.escape_mentions(message.content) != message.content:
             timesince = (
@@ -289,9 +301,12 @@ class events(commands.Cog):
         elif isinstance(error, commands.errors.BotMissingPermissions):
             message = f"{self.bot.user.name} is missing required permissions: {error.missing_perms}"
 
+        elif isinstance(error, discord.ext.commands.errors.CheckFailure):
+            message = "You have been blacklisted from using the bot."
+
         else:
             logging.getLogger("discord").info(
-                f"Unhandled Error: {ctx.command.qualified_name}, Error: {error}"
+                f"Unhandled Error: {ctx.command.qualified_name}, Error: {error}, Type: {type(error)}"
             )
             message = error
 
