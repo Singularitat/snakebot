@@ -313,9 +313,6 @@ class events(commands.Cog):
         elif isinstance(error, commands.errors.BotMissingPermissions):
             message = f"{self.bot.user.name} is missing required permissions: {error.missing_perms}"
 
-        elif isinstance(error, discord.ext.commands.errors.CheckFailure):
-            message = "You have been blacklisted from using the bot."
-
         else:
             logging.getLogger("discord").info(
                 f"Unhandled Error: {ctx.command.qualified_name}, Error: {error}, Type: {type(error)}"
