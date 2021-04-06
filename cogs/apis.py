@@ -4,7 +4,6 @@ import random
 import discord
 import re
 import datetime
-import ujson
 import textwrap
 
 
@@ -23,10 +22,10 @@ class apis(commands.Cog):
         async with aiohttp.ClientSession() as session:
             response = await session.get(url)
 
-        try:
-            data = await response.json()
-        except aiohttp.client_exceptions.ContentTypeError:
-            return None
+            try:
+                data = await response.json()
+            except aiohttp.client_exceptions.ContentTypeError:
+                return None
 
         return data
 
@@ -164,7 +163,7 @@ class apis(commands.Cog):
 
         embed.description = textwrap.dedent(
             """
-                ```
+                ```diff
                 Definition of {}:
                 {}
 
@@ -199,18 +198,16 @@ class apis(commands.Cog):
         search_term: str
         """
         pages = []
-        async with aiohttp.ClientSession() as session:
-            response = await session.get(
+        try:
+            data = await self.get_json(
                 f"https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={search_term}&format=json"
             )
-            try:
-                data = await response.json()
-                search_results = data["query"]["search"]
-                for search_result in search_results:
-                    if "may refer to" not in search_result["snippet"]:
-                        pages.append(search_result["title"])
-            except KeyError:
-                pages = None
+            search_results = data["query"]["search"]
+            for search_result in search_results:
+                if "may refer to" not in search_result["snippet"]:
+                    pages.append(search_result["title"])
+        except KeyError:
+            pages = None
         return pages
 
     @commands.command(name="wikipedia", aliases=["wiki"])
@@ -293,15 +290,15 @@ class apis(commands.Cog):
         }
         async with aiohttp.ClientSession() as session:
             response = await session.get(url, params=parameters, headers=headers)
-            cry = await response.json()
+            data = await response.json()
 
-        cry = cry["data"]
-        for index, coin in enumerate(cry):
+        data = data["data"]
+        for index, coin in enumerate(data):
             if (
                 coin["name"].lower() == crypto.lower()
                 or coin["symbol"] == crypto.upper()
             ):
-                crypto = cry[index]
+                crypto = data[index]
                 break
         embed = discord.Embed(colour=discord.Colour.blurple())
 
@@ -373,10 +370,7 @@ class apis(commands.Cog):
     async def get_github_info(self, ctx: commands.Context, username: str) -> None:
         """Fetches a members's GitHub information."""
         async with ctx.typing():
-
-            url = f"https://api.github.com/users/{username}"
-
-            user_data = await self.get_json(url)
+            user_data = await self.get_json(f"https://api.github.com/users/{username}")
 
             if user_data.get("message") is not None:
                 await ctx.send(
@@ -458,10 +452,7 @@ class apis(commands.Cog):
             The gif search term.
         """
         url = f"https://g.tenor.com/v1/search?q={search}&key={self.bot.tenor}&limit=50"
-        async with aiohttp.ClientSession() as session:
-            raw_response = await session.get(url)
-            response = await raw_response.text()
-        tenor = ujson.loads(response)
+        tenor = await self.get_json(url)
         await ctx.send(random.choice(tenor["results"])["media"][0]["gif"]["url"])
 
 
