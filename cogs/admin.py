@@ -303,9 +303,14 @@ class admin(commands.Cog):
 
         await ctx.channel.purge(limit=num_messages, check=check, before=None)
 
-    @commands.command(hidden=True, aliases=["history"])
+    @commands.group()
+    async def history(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send(f"Usage: `{ctx.prefix}history deleted`")
+
+    @history.command(hidden=True)
     @commands.has_permissions(manage_messages=True)
-    async def msg_history(self, ctx, member: discord.Member = None, amount: int = 5):
+    async def deleted(self, ctx, member: discord.Member = None, amount: int = 5):
         """Shows a members most recent deleted message history.
 
         member: discord.Member
@@ -340,9 +345,9 @@ class admin(commands.Cog):
         embed.description = f"```{msg}```"
         return await ctx.send(embed=embed)
 
-    @commands.command(hidden=True, aliases=["edited"])
+    @commands.command(hidden=True)
     @commands.has_permissions(manage_messages=True)
-    async def edit_history(self, ctx, member: discord.Member = None, amount: int = 5):
+    async def edited(self, ctx, member: discord.Member = None, amount: int = 5):
         """Shows a members most recent edit message history.
 
         member: discord.Member
