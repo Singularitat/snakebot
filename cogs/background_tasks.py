@@ -43,30 +43,28 @@ class background_tasks(commands.Cog):
     async def stop(self, ctx, task):
         getattr(self, task).stop()
 
-    async def stockgrab(self, url):
-        """Yields some information abouts stocks from yahoo finance.
+    async def stockupdate(self, url):
+        """Fetches stocks then updates the database.
 
         url: str
             The yahoo finance url to fetch stocks from.
         """
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
-        }
-        async with aiohttp.ClientSession(headers=headers) as session, session.get(
-            url
-        ) as page:
+        async with aiohttp.ClientSession() as session, session.get(url) as page:
             soup = lxml.html.fromstring(await page.text())
 
-        for table in soup.xpath('.//table[@class="W(100%)"]'):
-            table_body = table.find("tbody")
-            rows = table_body.findall("tr")
-            for row in rows:
-                cols = [col.text_content() for col in row.findall("td")]
+        with self.stocks.write_batch() as wb:
+            for table in soup.xpath('.//table[@class="W(100%)"]'):
+                table_body = table.find("tbody")
+                rows = table_body.findall("tr")
+                for row in rows:
+                    cols = [col.text_content() for col in row.findall("td")]
 
-                price = cols[2]
-                name = cols[0]
+                    price = cols[2]
+                    name = cols[0]
 
-                if price != "N/A" and len(name) <= 6 and float(price) != 0:
+                    if price == "N/A" or len(name) > 6 or float(price) == 0:
+                        continue
+
                     stock_data = {}
                     stock_data["name"] = cols[1]
                     stock_data["price"] = price
@@ -76,19 +74,10 @@ class background_tasks(commands.Cog):
                     stock_data["3Mvolume"] = cols[6]
                     stock_data["cap"] = cols[7]
 
-                    yield name, stock_data
-
-    async def stockupdate(self, url):
-        """Fetches stocks then updates the database.
-
-        url: str
-            The yahoo finance url to fetch stocks from.
-        """
-        with self.stocks.write_batch() as wb:
-            async for stock in self.stockgrab(url):
-                wb.put(
-                    stock[0].replace(".NZ", "").encode(), ujson.dumps(stock[1]).encode()
-                )
+                    wb.put(
+                        name.replace(".NZ", "").encode(),
+                        ujson.dumps(stock_data).encode(),
+                    )
 
     @tasks.loop(minutes=30)
     async def update_stocks(self):
@@ -182,37 +171,33 @@ class background_tasks(commands.Cog):
 
         self.bot.db.put(b"languages", ujson.dumps(languages).encode())
 
+    async def members_check(self, members):
+        """Checks if any end dates have been past then yields the member."""
+        members = ujson.loads(members)
+
+        for member in members:
+            if (
+                datetime.strptime(members[member]["date"], "%Y-%m-%d %H:%M:%S.%f")
+                < datetime.now()
+            ):
+                yield member
+
     @tasks.loop(minutes=1)
     async def check_end_dates(self):
-        banned_members = self.bot.db.get(b"banned_members")
-        downvoted_members = self.bot.db.get(b"downvoted_members")
+        """Checks end dates on bans and downvotes."""
+        banned = self.bot.db.get(b"banned_members")
+        downvoted = self.bot.db.get(b"downvoted_members")
 
-        if banned_members is not None:
-            banned_members = ujson.loads(banned_members)
+        if banned is not None:
+            async for member in self.members_check(banned):
+                guild = self.bot.get_guild(banned[member]["guild"])
+                user = self.bot.get_user(member)
+                if user:
+                    await guild.unban(user)
 
-            for member in banned_members:
-                if (
-                    datetime.strptime(
-                        banned_members[member]["date"], "%Y-%m-%d %H:%M:%S.%f"
-                    )
-                    < datetime.now()
-                ):
-                    guild = self.bot.get_guild(banned_members[member]["guild"])
-                    user = self.bot.get_user(member)
-                    if user:
-                        await guild.unban(user)
-
-        if downvoted_members is not None:
-            downvoted_members = ujson.loads(downvoted_members)
-
-            for member in downvoted_members:
-                if (
-                    datetime.strptime(
-                        downvoted_members[member]["date"], "%Y-%m-%d %H:%M:%S.%f"
-                    )
-                    < datetime.now()
-                ):
-                    self.bot.db.delete(b"blacklist-" + member.encode())
+        if downvoted is not None:
+            async for member in self.members_check(downvoted):
+                self.bot.db.delete(b"blacklist-" + member.encode())
 
 
 def setup(bot):
