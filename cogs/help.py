@@ -241,7 +241,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
         await menu.start(self.context)
 
 
-class help(commands.Cog):
+class _help(commands.Cog, name="help"):
     """For the help command."""
 
     def __init__(self, bot):
@@ -255,5 +255,5 @@ class help(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    """Starts meta cog."""
-    bot.add_cog(help(bot))
+    """Starts help cog."""
+    bot.add_cog(_help(bot))
