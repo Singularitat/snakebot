@@ -1,9 +1,23 @@
 import discord
 from discord.ext import commands, menus
-from .utils import paginator
 import asyncio
 
+
 # Taken From https://github.com/Rapptz/RoboDanny
+
+
+class RoboPages(menus.MenuPages):
+    def __init__(self, source):
+        super().__init__(source=source, check_embeds=True)
+
+    async def finalize(self, timed_out):
+        try:
+            if timed_out:
+                await self.message.clear_reactions()
+            else:
+                await self.message.delete()
+        except discord.HTTPException:
+            pass
 
 
 class BotHelpPageSource(menus.ListPageSource):
@@ -112,7 +126,7 @@ class GroupHelpPageSource(menus.ListPageSource):
         return embed
 
 
-class HelpMenu(paginator.RoboPages):
+class HelpMenu(RoboPages):
     def __init__(self, source):
         super().__init__(source)
 
@@ -227,7 +241,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
         await menu.start(self.context)
 
 
-class meta(commands.Cog):
+class _help(commands.Cog, name="help"):
     """For the help command."""
 
     def __init__(self, bot):
@@ -241,5 +255,5 @@ class meta(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    """Starts meta cog."""
-    bot.add_cog(meta(bot))
+    """Starts help cog."""
+    bot.add_cog(_help(bot))

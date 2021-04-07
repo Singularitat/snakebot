@@ -243,7 +243,7 @@ class misc(commands.Cog):
             The reason for the slap.
         """
         await ctx.send(
-            f"{ctx.message.author.mention} slapped {member.display_name} because {reason}"
+            f"{ctx.author.mention} slapped {member.display_name} because {reason}"
         )
 
     @commands.command()

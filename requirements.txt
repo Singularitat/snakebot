@@ -1,9 +1,7 @@
 discord-ext-menus @ git+https://github.com/Rapptz/discord-ext-menus@master ; python_full_version >= "3.5.3"
 discord.py
 lxml
-parsedatetime
 psutil
 ujson
 youtube_dl
-python-dateutil
 plyvel-win32
