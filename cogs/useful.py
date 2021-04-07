@@ -38,6 +38,9 @@ class useful(commands.Cog):
         if not r["output"]:
             return await ctx.send("No output")
 
+        if len("```\n{r['output']}```") > 2000:
+            return await ctx.send(f"```\n{r['output'][:1975]}\nTruncated Output```")
+
         await ctx.send(f"```\n{r['output']}```")
 
     @run.error
