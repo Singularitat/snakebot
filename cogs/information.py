@@ -20,11 +20,11 @@ class information(commands.Cog):
         """Check how the bot is doing."""
         start = time.monotonic()
         pinger = await ctx.send("Pinging...")
-        diff = f"{1000 * (time.monotonic() - start)}:.2f"
+        diff = f"{1000 * (time.monotonic() - start):.2f}"
 
         embed = discord.Embed()
         embed.add_field(name="Ping", value=f"`{diff} ms`")
-        embed.add_field(name="Latency", value=f"`{round(self.bot.latency*1000, 2)} ms`")
+        embed.add_field(name="Latency", value=f"`{self.bot.latency*1000:.2f} ms`")
 
         await pinger.edit(content=None, embed=embed)
 
@@ -171,7 +171,8 @@ class information(commands.Cog):
         embed.colour = member.top_role.colour if roles else discord.Colour.blurple()
         return embed
 
-    def time_since(self, time=False):
+    @staticmethod
+    def time_since(past_time=False):
         """Get a datetime object or a int() Epoch timestamp and return a pretty time string."""
         now = datetime.utcnow()
 
@@ -180,7 +181,7 @@ class information(commands.Cog):
         elif isinstance(time, datetime):
             diff = now - time
         elif not time:
-            diff = 0
+            diff = now - now
 
         sec = diff.seconds
         day = diff.days
