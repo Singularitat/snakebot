@@ -188,7 +188,9 @@ class admin(commands.Cog):
 
     @commands.command(name="ban")
     @commands.has_permissions(ban_members=True)
-    async def ban_member(self, ctx, member: discord.Member, duration=None, *, reason=None):
+    async def ban_member(
+        self, ctx, member: discord.Member, duration=None, *, reason=None
+    ):
         """Bans a member.
 
         Usage:

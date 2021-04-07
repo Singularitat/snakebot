@@ -203,7 +203,9 @@ class information(commands.Cog):
         if day < 365:
             return f"{day // 30} months and {day % 30} days"
 
-        return f"{day // 365} years {(day % 365) // 30} months and {(day % 365) % 30} days"
+        return (
+            f"{day // 365} years {(day % 365) // 30} months and {(day % 365) % 30} days"
+        )
 
 
 def setup(bot: commands.Bot) -> None:
