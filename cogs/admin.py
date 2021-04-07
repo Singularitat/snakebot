@@ -11,6 +11,7 @@ class admin(commands.Cog):
         self.bot = bot
         self.blacklist = self.bot.db.prefixed_db(b"blacklist-")
         self.deleted = self.bot.db.prefixed_db(b"deleted-")
+        self.edited = self.bot.db.prefixed_db(b"edited-")
 
     @commands.has_permissions(administrator=True)
     @commands.command(hidden=True)
@@ -297,9 +298,14 @@ class admin(commands.Cog):
 
         await ctx.channel.purge(limit=num_messages, check=check, before=None)
 
-    @commands.command(hidden=True, aliases=["history"])
+    @commands.group()
+    async def history(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send(f"Usage: `{ctx.prefix}history deleted`")
+
+    @history.command(hidden=True)
     @commands.has_permissions(manage_messages=True)
-    async def msg_history(self, ctx, member: discord.Member = None, amount: int = 5):
+    async def deleted(self, ctx, member: discord.Member = None, amount: int = 5):
         """Shows a members most recent deleted message history.
 
         member: discord.Member
@@ -329,7 +335,44 @@ class admin(commands.Cog):
             if index == amount:
                 break
 
-            msg += f"{': '.join([date, deleted[date]])}\n"
+            msg += f"{date}: {deleted[date]}\n"
+
+        embed.description = f"```{msg}```"
+        return await ctx.send(embed=embed)
+
+    @commands.command(hidden=True)
+    @commands.has_permissions(manage_messages=True)
+    async def edited(self, ctx, member: discord.Member = None, amount: int = 5):
+        """Shows a members most recent edit message history.
+
+        member: discord.Member
+            The member to get the edit history of.
+        amount: int
+            The amount of messages to get.
+        """
+        if member is None:
+            member = ctx.author
+
+        member_id = str(member.id).encode()
+        edited = self.edited.get(member_id)
+
+        if edited is None:
+            return await ctx.send("```No edited messages found```")
+
+        edited = ujson.loads(edited)
+
+        embed = discord.Embed(
+            color=discord.Color.blurple(),
+            title=f"{member.display_name}'s Edited Messages",
+        )
+
+        msg = ""
+
+        for index, date in enumerate(reversed(edited)):
+            if index == amount:
+                break
+
+            msg += f"{date}: {edited[date][0]} >>> {edited[date][1]}\n"
 
         embed.description = f"```{msg}```"
         return await ctx.send(embed=embed)

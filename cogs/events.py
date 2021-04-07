@@ -16,6 +16,7 @@ class events(commands.Cog):
         self.blacklist = self.bot.db.prefixed_db(b"blacklist-")
         self.rrole = self.bot.db.prefixed_db(b"rrole-")
         self.deleted = self.bot.db.prefixed_db(b"deleted-")
+        self.edited = self.bot.db.prefixed_db(b"edited-")
 
     async def reaction_role_check(self, payload):
         message_id = str(payload.message_id).encode()
@@ -97,10 +98,21 @@ class events(commands.Cog):
         if (
             not after.content
             or before.content == after.content
-            or after.author != self.bot.user
+            or after.author == self.bot.user
         ):
             return
 
+        member_id = str(after.author.id).encode()
+        edited = self.edited.get(member_id)
+
+        if edited is None:
+            edited = {}
+        else:
+            edited = ujson.loads(edited)
+
+        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        edited[date] = [before.content, after.content]
+        self.edited.put(member_id, ujson.dumps(edited).encode())
         self.bot.db.put(
             b"editsnipe_message",
             ujson.dumps(
@@ -300,9 +312,6 @@ class events(commands.Cog):
 
         elif isinstance(error, commands.errors.BotMissingPermissions):
             message = f"{self.bot.user.name} is missing required permissions: {error.missing_perms}"
-
-        elif isinstance(error, discord.ext.commands.errors.CheckFailure):
-            message = "You have been blacklisted from using the bot."
 
         else:
             logging.getLogger("discord").info(
