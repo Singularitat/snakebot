@@ -42,9 +42,7 @@ client_id = '' # The client id of your bot for the invite command
 - discord-ext-menus @ git+https://github.com/Rapptz/discord-ext-menus@master
 - discord.py
 - lxml
-- parsedatetime
 - psutil
 - ujson
 - youtube_dl
-- python-dateutil
-- plyvel-win32 or plyvel
+- plyvel
