@@ -188,18 +188,27 @@ class admin(commands.Cog):
 
     @commands.command(name="ban")
     @commands.has_permissions(ban_members=True)
-    async def ban_member(self, ctx, member: discord.Member, *, duration=None):
+    async def ban_member(
+        self, ctx, member: discord.Member, duration=None, *, reason=None
+    ):
         """Bans a member.
+
+        Usage:
+        .ban @Singularity#8953 "3d 5h 10m" He was rude
+
+        You need the quotes for the duration or it will only get the first argument
 
         member: discord.Member
             The member to ban.
         duration: str
-            How long to ban the member for e.g 1d 15m
+            How long to ban the member for.
+        reason: str
+            The reason for banning the member.
         """
         if ctx.author.top_role <= member.top_role and ctx.guild.owner != ctx.author:
             return await ctx.send("```You can't ban someone higher or equal to you```")
 
-        await member.ban()
+        await member.ban(reason=reason)
         members = self.bot.db.get(b"banned_members")
         if not members:
             data = {}
@@ -340,7 +349,7 @@ class admin(commands.Cog):
         embed.description = f"```{msg}```"
         return await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
+    @history.command(hidden=True)
     @commands.has_permissions(manage_messages=True)
     async def edited(self, ctx, member: discord.Member = None, amount: int = 5):
         """Shows a members most recent edit message history.

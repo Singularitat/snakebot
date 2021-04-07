@@ -9,6 +9,8 @@ from discord.ext import commands, tasks
 
 
 class background_tasks(commands.Cog):
+    """Commands related to the background tasks of the bot."""
+
     def __init__(self, bot):
         self.bot = bot
         self.stocks = self.bot.db.prefixed_db(b"stocks-")
@@ -25,7 +27,7 @@ class background_tasks(commands.Cog):
         self.update_languages.stop()
         self.check_end_dates.stop()
 
-    @commands.group()
+    @commands.group(hidden=True)
     @commands.is_owner()
     async def task(self, ctx):
         if ctx.invoked_subcommand is None:
