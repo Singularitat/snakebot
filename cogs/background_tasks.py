@@ -9,7 +9,7 @@ from discord.ext import commands, tasks
 
 
 class background_tasks(commands.Cog):
-    """Commands related to the background tasks of the bot"""
+    """Commands related to the background tasks of the bot."""
 
     def __init__(self, bot):
         self.bot = bot
