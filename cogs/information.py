@@ -1,11 +1,11 @@
 import discord
 from discord.ext import commands
 import textwrap
-from .utils import util
 import psutil
 import time
 import inspect
 import os
+from datetime import datetime
 
 
 class information(commands.Cog):
@@ -20,7 +20,7 @@ class information(commands.Cog):
         """Check how the bot is doing."""
         start = time.monotonic()
         pinger = await ctx.send("Pinging...")
-        diff = "%.2f" % (1000 * (time.monotonic() - start))
+        diff = f"{1000 * (time.monotonic() - start)}:.2f"
 
         embed = discord.Embed()
         embed.add_field(name="Ping", value=f"`{diff} ms`")
@@ -40,9 +40,41 @@ class information(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
+    async def source(self, ctx, *, command: str = None):
+        """Gets the source code of a command from github.
+
+        command: str
+            The command to find the source code of.
+        """
+        if command is None:
+            return await ctx.send("https://github.com/Singularitat/snakebot")
+
+        if command == "help":
+            src = type(self.bot.help_command)
+            filename = inspect.getsourcefile(src)
+        else:
+            obj = self.bot.get_command(command)
+            if obj is None:
+                return await ctx.send("```Could not find command.```")
+
+            src = obj.callback.__code__
+            filename = src.co_filename
+
+        lines, lineno = inspect.getsourcelines(src)
+        cog = os.path.relpath(filename).replace("\\", "/")
+
+        msg = f"<https://github.com/Singularitat/snakebot/blob/main/{cog}#L{lineno}-L{lineno + len(lines) - 1}>"
+        code = f'\n```py\n{textwrap.dedent("".join(lines)).replace("`", "")}```'
+
+        if len(code) <= 2000:
+            msg += code
+
+        await ctx.send(msg)
+
+    @commands.command()
     async def uptime(self, ctx):
         """Shows the bots uptime."""
-        await ctx.send(f"**{util.time_since(self.bot.uptime)[:-4]}**")
+        await ctx.send(f"**{self.time_since(self.bot.uptime)}**")
 
     @commands.command(
         name="server",
@@ -50,7 +82,7 @@ class information(commands.Cog):
     )
     async def server_info(self, ctx):
         """Sends an embed of server information."""
-        created = util.time_since(ctx.guild.created_at, precision="days")
+        created = f"{self.time_since(ctx.guild.created_at)} ago"
         region = ctx.guild.region
         roles = len(ctx.guild.roles)
         member_count = ctx.guild.member_count
@@ -103,11 +135,11 @@ class information(commands.Cog):
 
     async def create_user_embed(self, ctx, member: discord.Member) -> discord.Embed:
         """Creates an embed containing information on the `user`."""
-        created = util.time_since(member.created_at, max_units=3)
+        created = f"{self.time_since(member.created_at)} ago"
         name = str(member)
         if member.nick:
             name = f"{member.nick} ({name})"
-        joined = util.time_since(member.joined_at, max_units=3)
+        joined = f"{self.time_since(member.joined_at)} ago"
         roles = ", ".join(role.mention for role in member.roles[1:])
         fields = [
             (
@@ -139,37 +171,39 @@ class information(commands.Cog):
         embed.colour = member.top_role.colour if roles else discord.Colour.blurple()
         return embed
 
-    @commands.command()
-    async def source(self, ctx, *, command: str = None):
-        """Gets the source code of a command from github.
+    def time_since(self, time=False):
+        """Get a datetime object or a int() Epoch timestamp and return a pretty time string."""
+        now = datetime.utcnow()
 
-        command: str
-            The command to find the source code of.
-        """
-        if command is None:
-            return await ctx.send("https://github.com/Singularitat/snakebot")
+        if isinstance(time, int):
+            diff = now - datetime.fromtimestamp(time)
+        elif isinstance(time, datetime):
+            diff = now - time
+        elif not time:
+            diff = 0
 
-        if command == "help":
-            src = type(self.bot.help_command)
-            filename = inspect.getsourcefile(src)
-        else:
-            obj = self.bot.get_command(command)
-            if obj is None:
-                return await ctx.send("```Could not find command.```")
+        sec = diff.seconds
+        day = diff.days
 
-            src = obj.callback.__code__
-            filename = src.co_filename
+        if day < 0:
+            return ""
 
-        lines, lineno = inspect.getsourcelines(src)
-        cog = os.path.relpath(filename).replace("\\", "/")
+        if day == 0:
+            if sec < 60:
+                return f"{sec} seconds"
+            if sec < 3600:
+                return f"{sec // 60} minutes and {sec % 60} seconds"
+            if sec < 86400:
+                return f"{sec // 3600} hours {(sec % 3600) // 60} minutes and {(sec % 3600) % 60} seconds"
 
-        msg = f"<https://github.com/Singularitat/snakebot/blob/main/{cog}#L{lineno}-L{lineno + len(lines) - 1}>"
-        code = f'\n```py\n{textwrap.dedent("".join(lines)).replace("`", "")}```'
+        if day < 7:
+            return f"{day} days"
+        if day < 31:
+            return f"{day // 7} weeks and {day % 7} days"
+        if day < 365:
+            return f"{day // 30} months and {day % 30} days"
 
-        if len(code) <= 2000:
-            msg += code
-
-        await ctx.send(msg)
+        return f"{day // 365} years {(day % 365) // 30} months and {(day % 365) % 30} days"
 
 
 def setup(bot: commands.Bot) -> None:
