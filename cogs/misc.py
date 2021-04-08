@@ -265,7 +265,9 @@ class misc(commands.Cog):
 
         char_length = len(graph_data) * 6 * (max_val + 2) + max_val + 7
         if char_length > 2000:
-            return await ctx.send(f"```Bar graph is greater than 2000 characters [{char_length}]```")
+            return await ctx.send(
+                f"```Bar graph is greater than 2000 characters [{char_length}]```"
+            )
 
         bar_graph = ""
 
