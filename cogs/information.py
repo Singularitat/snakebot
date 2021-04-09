@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import textwrap
 import psutil
-import time
+from time import perf_counter
 import inspect
 import os
 from datetime import datetime
@@ -18,9 +18,9 @@ class information(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         """Check how the bot is doing."""
-        start = time.monotonic()
+        start = perf_counter()
         pinger = await ctx.send("Pinging...")
-        diff = f"{1000 * (time.monotonic() - start):.2f}"
+        diff = f"{1000 * (perf_counter() - start):.2f}"
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(name="Ping", value=f"`{diff} ms`")
@@ -180,7 +180,7 @@ class information(commands.Cog):
             diff = now - datetime.fromtimestamp(past_time)
         elif isinstance(past_time, datetime):
             diff = now - past_time
-        elif not time:
+        elif not past_time:
             diff = now - now
 
         sec = diff.seconds

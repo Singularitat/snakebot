@@ -119,16 +119,10 @@ class background_tasks(commands.Cog):
         if "poetry.lock" in diff:
             await self.run_process("poetry install")
 
-        diff = [
-            ext.replace("/cogs", "")
-            for ext in diff
-            if "/utils/" not in ext and ext[:5] == "/cogs"
-        ]
+        diff = [ext[5:] for ext in diff if ext.startswith("/cogs")]
 
         for extension in [
-            f.replace(".py", "")
-            for f in os.listdir("cogs")
-            if os.path.isfile(os.path.join("cogs", f)) and f in diff
+            f[:-3] for f in os.listdir("cogs") if f.endswith(".py") and f in diff
         ]:
             try:
                 self.bot.reload_extension(f"cogs.{extension}")
