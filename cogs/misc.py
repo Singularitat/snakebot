@@ -262,6 +262,13 @@ class misc(commands.Cog):
             A list of graph_data
         """
         max_val = max(graph_data)
+
+        char_length = len(graph_data) * 6 * (max_val + 2) + max_val + 7
+        if char_length > 2000:
+            return await ctx.send(
+                f"```Bar graph is greater than 2000 characters [{char_length}]```"
+            )
+
         bar_graph = ""
 
         for val in range(max_val + 1, 0, -1):
@@ -274,6 +281,7 @@ class misc(commands.Cog):
                     bar_graph += "      "
             bar_graph += "\n"
         bar_graph += "------" * len(graph_data)
+
         await ctx.send(f"```{bar_graph}```")
 
 

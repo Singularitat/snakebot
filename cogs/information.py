@@ -22,7 +22,7 @@ class information(commands.Cog):
         pinger = await ctx.send("Pinging...")
         diff = f"{1000 * (time.monotonic() - start):.2f}"
 
-        embed = discord.Embed()
+        embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(name="Ping", value=f"`{diff} ms`")
         embed.add_field(name="Latency", value=f"`{self.bot.latency*1000:.2f} ms`")
 
@@ -34,7 +34,7 @@ class information(commands.Cog):
         memory_usage = self.process.memory_full_info().uss / 1024 ** 2
         cpu_usage = self.process.cpu_percent()
 
-        embed = discord.Embed(color=discord.Color.teal())
+        embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(name="Memory Usage: ", value=f"**{memory_usage:.2f} MiB**")
         embed.add_field(name="CPU Usage:", value=f"**{cpu_usage}%**")
         await ctx.send(embed=embed)
@@ -176,10 +176,10 @@ class information(commands.Cog):
         """Get a datetime object or a int() Epoch timestamp and return a pretty time string."""
         now = datetime.utcnow()
 
-        if isinstance(time, int):
-            diff = now - datetime.fromtimestamp(time)
-        elif isinstance(time, datetime):
-            diff = now - time
+        if isinstance(past_time, int):
+            diff = now - datetime.fromtimestamp(past_time)
+        elif isinstance(past_time, datetime):
+            diff = now - past_time
         elif not time:
             diff = now - now
 
