@@ -180,7 +180,7 @@ class information(commands.Cog):
             diff = now - datetime.fromtimestamp(past_time)
         elif isinstance(past_time, datetime):
             diff = now - past_time
-        elif not time:
+        elif not past_time:
             diff = now - now
 
         sec = diff.seconds
