@@ -221,10 +221,6 @@ class owner(commands.Cog):
     @commands.is_owner()
     async def kill(self, ctx):
         """Kills the bot."""
-        await self.bot.change_presence(
-            status=discord.Status.online, activity=discord.Game(name="Dying...")
-        )
-        await ctx.send(embed=discord.Embed(title="Killing bot"))
         await self.bot.logout()
 
     @commands.command(hidden=True)
@@ -235,9 +231,8 @@ class owner(commands.Cog):
         extension: str
             The extension to load.
         """
-        extension = f"cogs.{extension}"
         try:
-            self.bot.load_extension(extension)
+            self.bot.load_extension(f"cogs.{extension}")
         except (AttributeError, ImportError) as e:
             await ctx.send(
                 embed=discord.Embed(
@@ -260,8 +255,7 @@ class owner(commands.Cog):
         extension: str
             The extension to unload.
         """
-        extension = f"cogs.{extension}"
-        self.bot.unload_extension(extension)
+        self.bot.unload_extension(f"cogs.{extension}")
         await ctx.send(
             embed=discord.Embed(
                 title=f"{extension} unloaded.", color=discord.Color.blurple()
@@ -276,8 +270,7 @@ class owner(commands.Cog):
         extension: str
             The extension to reload.
         """
-        extension = f"cogs.{extension}"
-        self.bot.reload_extension(extension)
+        self.bot.reload_extension(f"cogs.{extension}")
         await ctx.send(
             embed=discord.Embed(
                 title=f"{extension} reloaded.", color=discord.Color.blurple()
@@ -288,11 +281,7 @@ class owner(commands.Cog):
     @commands.is_owner()
     async def restart(self, ctx):
         """Restarts all extensions."""
-        for extension in [
-            f.replace(".py", "")
-            for f in os.listdir("cogs")
-            if os.path.isfile(os.path.join("cogs", f))
-        ]:
+        for extension in [f[:-3] for f in os.listdir("cogs") if f.endswith(".py")]:
             try:
                 self.bot.reload_extension(f"cogs.{extension}")
             except Exception as e:
