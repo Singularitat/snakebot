@@ -214,7 +214,7 @@ class owner(commands.Cog):
             try:
                 self.bot.reload_extension(f"cogs.{ext}")
             except Exception as e:
-                if type(e) == commands.errors.ExtensionNotLoaded:
+                if isinstance(e, commands.errors.ExtensionNotLoaded):
                     self.bot.load_extension(f"cogs.{ext}")
 
     @commands.command(hidden=True, aliases=["deletecmd", "removecmd"])
@@ -289,7 +289,7 @@ class owner(commands.Cog):
             try:
                 self.bot.reload_extension(f"cogs.{ext}")
             except Exception as e:
-                if type(e) == commands.errors.ExtensionNotLoaded:
+                if isinstance(e, commands.errors.ExtensionNotLoaded):
                     self.bot.load_extension(f"cogs.{ext}")
                 embed.description = f"```{type(e).__name__}: {e}```"
                 return await ctx.send(embed=embed)
