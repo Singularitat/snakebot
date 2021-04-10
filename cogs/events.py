@@ -3,8 +3,7 @@ from discord.ext import commands
 import ujson
 import platform
 import os
-import time
-import datetime
+from datetime import datetime
 import psutil
 import logging
 
@@ -110,7 +109,7 @@ class events(commands.Cog):
         else:
             edited = ujson.loads(edited)
 
-        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        date = str(datetime.now())[:-7]
         edited[date] = [before.content, after.content]
         self.edited.put(member_id, ujson.dumps(edited).encode())
         self.bot.db.put(
@@ -157,7 +156,7 @@ class events(commands.Cog):
         else:
             deleted = ujson.loads(deleted)
 
-        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        date = str(datetime.now())[:-7]
         deleted[date] = message.content
 
         self.deleted.put(member_id, ujson.dumps(deleted).encode())
@@ -167,9 +166,7 @@ class events(commands.Cog):
         )
 
         if discord.utils.escape_mentions(message.content) != message.content:
-            timesince = (
-                datetime.datetime.utcfromtimestamp(time.time()) - message.created_at
-            )
+            timesince = datetime.utcnow() - message.created_at
 
             if timesince.total_seconds() < 360:
                 self.blacklist.put(str(message.author.id).encode(), b"1")
@@ -210,9 +207,7 @@ class events(commands.Cog):
         if reaction.message.author == user or not reaction.custom_emoji:
             return
 
-        time_since = (
-            datetime.datetime.utcnow() - reaction.message.created_at
-        ).total_seconds()
+        time_since = (datetime.utcnow() - reaction.message.created_at).total_seconds()
 
         if time_since > 1800:
             return
@@ -245,9 +240,7 @@ class events(commands.Cog):
         if reaction.message.author == user or not reaction.custom_emoji:
             return
 
-        time_since = (
-            datetime.datetime.utcnow() - reaction.message.created_at
-        ).total_seconds()
+        time_since = (datetime.utcnow() - reaction.message.created_at).total_seconds()
 
         if time_since > 1800:
             return
@@ -331,13 +324,13 @@ class events(commands.Cog):
     async def on_ready(self):
         """Called when the bot is done preparing the data received from Discord."""
         if not hasattr(self.bot, "uptime"):
-            self.bot.uptime = datetime.datetime.utcnow()
+            self.bot.uptime = datetime.utcnow()
         print(
             f"""Logged in as {self.bot.user.name}
 Discord.py version: {discord.__version__}
 Python version: {platform.python_version()}
 Running on: {platform.system()} {platform.release()}({os.name})
-Boot time: {round(time.time()-psutil.Process(os.getpid()).create_time(), 3)}s
+Boot time: {datetime.now().timestamp()-psutil.Process(os.getpid()).create_time():.3f}s
 -------------------"""
         )
 
