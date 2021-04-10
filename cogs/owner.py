@@ -397,12 +397,16 @@ class owner(commands.Cog):
         channel = ctx.guild.get_channel(int(channel_id))
 
         if channel is None:
-            return await ctx.send(f"```Channel not found {channel_id}```")
+            channel = ctx.channel
 
         message = await channel.send(msg)
 
-        for emoji in emojis:
-            await message.add_reaction(emoji)
+        try:
+            for emoji in emojis:
+                await message.add_reaction(emoji)
+        except discord.errors.HTTPException:
+            await message.delete()
+            return await ctx.send("Invalid emoji")
 
         self.rrole.put(
             str(message.id).encode(), ujson.dumps(dict(zip(emojis, roles))).encode()
@@ -440,7 +444,7 @@ class owner(commands.Cog):
                     role = discord.utils.get(ctx.guild.roles, name=role)
                     roles[index] = role.id
                 except commands.errors.RoleNotFound:
-                    return await ctx.send(f"Could not find role {index}")
+                    return await ctx.send(f"```Could not find role {role}```")
 
         msg += "\n"
 
@@ -469,7 +473,7 @@ class owner(commands.Cog):
         try:
             message = await ctx.bot.wait_for("message", timeout=300.0, check=check)
         except asyncio.TimeoutError:
-            await ctx.send("Timed out")
+            return await ctx.send("```Timed out```")
 
         await tmp_msg.delete()
         await message.delete()
