@@ -3,7 +3,6 @@ from discord.ext import commands
 import random
 import aiohttp
 import lxml.html
-import unicodedata
 
 
 class misc(commands.Cog):
@@ -51,26 +50,6 @@ class misc(commands.Cog):
         if convert:
             return await ctx.send(f"```{int(number, 2)}```")
         await ctx.send(f"```{bin(int(number))}```")
-
-    @commands.command()
-    async def char(self, ctx, *, characters: str):
-        """Shows you information about a number of characters.
-
-        Only up to 25 characters at a time.
-
-        characters: str
-            The characters to find information about.
-        """
-
-        def to_string(c):
-            digit = f"{ord(c):x}"
-            name = unicodedata.name(c, "Name not found.")
-            return f"`\\U{digit:>08}`: {name} - {c} \N{EM DASH} <http://www.fileformat.info/info/unicode/char/{digit}>"
-
-        msg = "\n".join(map(to_string, characters))
-        if len(msg) > 2000:
-            return await ctx.send("```Output too long to display.```")
-        await ctx.send(msg)
 
     @commands.command()
     async def karma(self, ctx, member: discord.Member = None):
@@ -127,7 +106,7 @@ class misc(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["element"])
+    @commands.command()
     async def atom(self, ctx, element):
         """Displays information for a given atom.
 
@@ -135,12 +114,10 @@ class misc(commands.Cog):
             The symbol of the element to search for.
         """
         url = f"http://www.chemicalelements.com/elements/{element.lower()}.html"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
-        }
+
         try:
             async with aiohttp.ClientSession(
-                headers=headers, raise_for_status=True
+                raise_for_status=True
             ) as session, session.get(url) as page:
                 text = lxml.html.fromstring(await page.text())
         except aiohttp.client_exceptions.ClientResponseError:
