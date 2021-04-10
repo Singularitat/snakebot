@@ -208,17 +208,14 @@ class owner(commands.Cog):
 
         diff = [ext[5:] for ext in diff if ext.startswith("/cogs")]
 
-        for extension in [
+        for ext in [
             f[:-3] for f in os.listdir("cogs") if f.endswith(".py") and f in diff
         ]:
             try:
-                self.bot.reload_extension(f"cogs.{extension}")
+                self.bot.reload_extension(f"cogs.{ext}")
             except Exception as e:
-                if (
-                    e
-                    == f"ExtensionNotLoaded: Extension 'cogs.{extension}' has not been loaded."
-                ):
-                    self.bot.load_extension(f"cogs.{extension}")
+                if type(e) == commands.errors.ExtensionNotLoaded:
+                    self.bot.load_extension(f"cogs.{ext}")
 
     @commands.command(hidden=True, aliases=["deletecmd", "removecmd"])
     @commands.is_owner()
@@ -245,76 +242,60 @@ class owner(commands.Cog):
         extension: str
             The extension to load.
         """
+        embed = discord.Embed(color=discord.Color.blurple())
+
         try:
             self.bot.load_extension(f"cogs.{extension}")
         except (AttributeError, ImportError) as e:
-            return await ctx.send(
-                embed=discord.Embed(
-                    title="```py\n{}: {}\n```".format(type(e).__name__, str(e)),
-                    color=discord.Color.blurple(),
-                )
-            )
-        await ctx.send(
-            embed=discord.Embed(
-                title=f"{extension} loaded.", color=discord.Color.blurple()
-            )
-        )
+            embed.description = f"```{type(e).__name__}: {e}```"
+            return await ctx.send(embed=embed)
+
+        embed.title = f"{extension} loaded."
+        await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def unload(self, ctx, extension: str):
+    async def unload(self, ctx, ext: str):
         """Unloads an extension.
 
         extension: str
             The extension to unload.
         """
-        self.bot.unload_extension(f"cogs.{extension}")
+        self.bot.unload_extension(f"cogs.{ext}")
         await ctx.send(
-            embed=discord.Embed(
-                title=f"{extension} unloaded.", color=discord.Color.blurple()
-            )
+            embed=discord.Embed(title=f"{ext} unloaded.", color=discord.Color.blurple())
         )
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def reload(self, ctx, extension: str):
+    async def reload(self, ctx, ext: str):
         """Reloads an extension.
 
         extension: str
             The extension to reload.
         """
-        self.bot.reload_extension(f"cogs.{extension}")
+        self.bot.reload_extension(f"cogs.{ext}")
         await ctx.send(
-            embed=discord.Embed(
-                title=f"{extension} reloaded.", color=discord.Color.blurple()
-            )
+            embed=discord.Embed(title=f"{ext} reloaded.", color=discord.Color.blurple())
         )
 
     @commands.command(hidden=True)
     @commands.is_owner()
     async def restart(self, ctx):
         """Restarts all extensions."""
-        for extension in [f[:-3] for f in os.listdir("cogs") if f.endswith(".py")]:
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        for ext in [f[:-3] for f in os.listdir("cogs") if f.endswith(".py")]:
             try:
-                self.bot.reload_extension(f"cogs.{extension}")
+                self.bot.reload_extension(f"cogs.{ext}")
             except Exception as e:
-                if (
-                    e
-                    == f"ExtensionNotLoaded: Extension 'cogs.{extension}' has not been loaded."
-                ):
-                    self.bot.load_extension(f"cogs.{extension}")
-                else:
-                    await ctx.send(
-                        embed=discord.Embed(
-                            title="```{}: {}\n```".format(type(e).__name__, str(e)),
-                            color=discord.Color.blurple(),
-                        )
-                    )
-        await ctx.send(
-            embed=discord.Embed(
-                title="Extensions restarted.", color=discord.Color.blurple()
-            )
-        )
+                if type(e) == commands.errors.ExtensionNotLoaded:
+                    self.bot.load_extension(f"cogs.{ext}")
+                embed.description = f"```{type(e).__name__}: {e}```"
+                return await ctx.send(embed=embed)
+
+        embed.title = "Extensions restarted."
+        await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
     @commands.is_owner()
