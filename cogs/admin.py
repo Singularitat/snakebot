@@ -307,8 +307,24 @@ class admin(commands.Cog):
 
         await ctx.channel.purge(limit=num_messages, check=check, before=None)
 
+    @purge.command()
+    @commands.has_permissions(manage_channels=True)
+    @commands.guild_only()
+    async def channel(self, ctx, channel: discord.TextChannel = None):
+        """Purges a channel by cloning and deleting it.
+
+        channel: discord.TextChannel
+            The channel to clone and delete.
+        """
+        if channel is None:
+            channel = ctx.channel
+
+        await channel.clone()
+        await channel.delete()
+
     @commands.group()
     async def history(self, ctx):
+        """Shows the edited message or deleted message history of a member."""
         if ctx.invoked_subcommand is None:
             await ctx.send(f"Usage: `{ctx.prefix}history deleted`")
 

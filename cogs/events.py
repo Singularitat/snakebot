@@ -3,8 +3,7 @@ from discord.ext import commands
 import ujson
 import platform
 import os
-import time
-import datetime
+from datetime import datetime
 import psutil
 import logging
 
@@ -25,7 +24,7 @@ class events(commands.Cog):
         if not reaction:
             return None
 
-        reaction = ujson.loads(reaction.decode())
+        reaction = ujson.loads(reaction)
 
         if str(payload.emoji) in reaction:
             role_id = int(reaction[str(payload.emoji)])
@@ -35,7 +34,7 @@ class events(commands.Cog):
             return None
 
         guild = self.bot.get_guild(payload.guild_id)
-        role = discord.utils.get(guild.roles, id=role_id)
+        role = guild.get_role(role_id)
         if payload.event_type == "REACTION_REMOVE":
             return (role, guild)
         return role
@@ -66,15 +65,91 @@ class events(commands.Cog):
         except TypeError:
             return
         if role is not None:
-            member = discord.utils.get(guild.members, id=payload.user_id)
+            member = guild.get_member(payload.user_id)
             await member.remove_roles(role)
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        """The event called when a reaction is added to a message in the cache.
+
+        reaction: discord.Reaction
+        user: Union[discord.User, discord.Member]
+        """
+        if reaction.message.author == user or not reaction.custom_emoji:
+            return
+
+        time_since = (datetime.utcnow() - reaction.message.created_at).total_seconds()
+
+        if time_since > 1800:
+            return
+
+        member = str(reaction.message.author.id).encode()
+
+        if reaction.emoji.name.lower() == "downvote":
+            karma = self.karma.get(member)
+            if not karma:
+                karma = -1
+            else:
+                karma = int(karma.decode()) - 1
+            self.karma.put(member, str(karma).encode())
+
+        elif reaction.emoji.name.lower() == "upvote":
+            karma = self.karma.get(member)
+            if not karma:
+                karma = 1
+            else:
+                karma = int(karma.decode()) + 1
+            self.karma.put(member, str(karma).encode())
+
+    @commands.Cog.listener()
+    async def on_reaction_remove(self, reaction, user):
+        """The event called when a reaction is removed from a message in the cache.
+
+        reaction: discord.Reaction
+        user: Union[discord.User, discord.Member]
+        """
+        if reaction.message.author == user or not reaction.custom_emoji:
+            return
+
+        time_since = (datetime.utcnow() - reaction.message.created_at).total_seconds()
+
+        if time_since > 1800:
+            return
+
+        member = str(reaction.message.author.id).encode()
+
+        if reaction.emoji.name.lower() == "downvote":
+            karma = self.karma.get(member)
+            if not karma:
+                karma = 1
+            else:
+                karma = int(karma.decode()) + 1
+            self.karma.put(member, str(karma).encode())
+
+        elif reaction.emoji.name.lower() == "upvote":
+            karma = self.karma.get(member)
+            if not karma:
+                karma = -1
+            else:
+                karma = int(karma.decode()) - 1
+            self.karma.put(member, str(karma).encode())
+
+    @commands.Cog.listener()
+    async def on_reaction_clear(self, message, reactions):
+        """The event called when the reactions on a message are cleared.
+
+        message: discord.Message
+        reactions: List[discord.Reaction]
+        """
+        if self.blacklist.get(str(message.author.id).encode()) == b"1":
+            await message.add_reaction("<:downvote:766414744730206228>")
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         """Disconnects a member from voice if they are downvoted.
 
         member: discord.Member
-            The downvoted member.
+            The member.
         before: discord.VoiceState
             The old voice state.
         after: discord.VoiceState
@@ -110,7 +185,7 @@ class events(commands.Cog):
         else:
             edited = ujson.loads(edited)
 
-        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        date = str(datetime.now())[:-7]
         edited[date] = [before.content, after.content]
         self.edited.put(member_id, ujson.dumps(edited).encode())
         self.bot.db.put(
@@ -157,7 +232,7 @@ class events(commands.Cog):
         else:
             deleted = ujson.loads(deleted)
 
-        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        date = str(datetime.now())[:-7]
         deleted[date] = message.content
 
         self.deleted.put(member_id, ujson.dumps(deleted).encode())
@@ -167,9 +242,7 @@ class events(commands.Cog):
         )
 
         if discord.utils.escape_mentions(message.content) != message.content:
-            timesince = (
-                datetime.datetime.utcfromtimestamp(time.time()) - message.created_at
-            )
+            timesince = datetime.utcnow() - message.created_at
 
             if timesince.total_seconds() < 360:
                 self.blacklist.put(str(message.author.id).encode(), b"1")
@@ -189,86 +262,6 @@ class events(commands.Cog):
         """
         if self.blacklist.get(str(message.author.id).encode()) == b"1":
             await message.add_reaction("<:downvote:766414744730206228>")
-
-    @commands.Cog.listener()
-    async def on_reaction_clear(self, message, reactions):
-        """The event called when the reactions on a message are cleared.
-
-        message: discord.Message
-        reactions: List[discord.Reaction]
-        """
-        if self.blacklist.get(str(message.author.id).encode()) == b"1":
-            await message.add_reaction("<:downvote:766414744730206228>")
-
-    @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
-        """The event called when a reaction is added to a message in the cache.
-
-        reaction: discord.Reaction
-        user: Union[discord.User, discord.Member]
-        """
-        if reaction.message.author == user or not reaction.custom_emoji:
-            return
-
-        time_since = (
-            datetime.datetime.utcnow() - reaction.message.created_at
-        ).total_seconds()
-
-        if time_since > 1800:
-            return
-
-        member = str(reaction.message.author.id).encode()
-
-        if reaction.emoji.name.lower() == "downvote":
-            karma = self.karma.get(member)
-            if not karma:
-                karma = -1
-            else:
-                karma = int(karma.decode()) - 1
-            self.karma.put(member, str(karma).encode())
-
-        elif reaction.emoji.name.lower() == "upvote":
-            karma = self.karma.get(member)
-            if not karma:
-                karma = 1
-            else:
-                karma = int(karma.decode()) + 1
-            self.karma.put(member, str(karma).encode())
-
-    @commands.Cog.listener()
-    async def on_reaction_remove(self, reaction, user):
-        """The event called when a reaction is removed from a message in the cache.
-
-        reaction: discord.Reaction
-        user: Union[discord.User, discord.Member]
-        """
-        if reaction.message.author == user or not reaction.custom_emoji:
-            return
-
-        time_since = (
-            datetime.datetime.utcnow() - reaction.message.created_at
-        ).total_seconds()
-
-        if time_since > 1800:
-            return
-
-        member = str(reaction.message.author.id).encode()
-
-        if reaction.emoji.name.lower() == "downvote":
-            karma = self.karma.get(member)
-            if not karma:
-                karma = 1
-            else:
-                karma = int(karma.decode()) + 1
-            self.karma.put(member, str(karma).encode())
-
-        elif reaction.emoji.name.lower() == "upvote":
-            karma = self.karma.get(member)
-            if not karma:
-                karma = -1
-            else:
-                karma = int(karma.decode()) - 1
-            self.karma.put(member, str(karma).encode())
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -331,13 +324,13 @@ class events(commands.Cog):
     async def on_ready(self):
         """Called when the bot is done preparing the data received from Discord."""
         if not hasattr(self.bot, "uptime"):
-            self.bot.uptime = datetime.datetime.utcnow()
+            self.bot.uptime = datetime.utcnow()
         print(
             f"""Logged in as {self.bot.user.name}
 Discord.py version: {discord.__version__}
 Python version: {platform.python_version()}
 Running on: {platform.system()} {platform.release()}({os.name})
-Boot time: {round(time.time()-psutil.Process(os.getpid()).create_time(), 3)}s
+Boot time: {datetime.now().timestamp()-psutil.Process(os.getpid()).create_time():.3f}s
 -------------------"""
         )
 

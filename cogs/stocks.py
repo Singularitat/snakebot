@@ -288,7 +288,7 @@ class stocks(commands.Cog):
 
         stockbal = self.stockbal.get(member_id)
 
-        embed = discord.Embed(color=discord.Color.blue())
+        embed = discord.Embed(color=discord.Color.blurple())
 
         if not stockbal:
             embed.add_field(

@@ -23,7 +23,7 @@ class economy(commands.Cog):
             :amount
         ]
 
-        embed = discord.Embed(color=discord.Color.blue())
+        embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(
             name=f"Top {len(topbal)} Balances",
             value="\n".join(
@@ -56,18 +56,18 @@ class economy(commands.Cog):
 
             if bal < bet:
                 embed = discord.Embed(
-                    title="You don't have enough cash", color=discord.Color.blue()
+                    title="You don't have enough cash", color=discord.Color.red()
                 )
             else:
                 if lottery == number:
                     self.bal.put(member, str(bal + bet * 99).encode())
                     embed = discord.Embed(
-                        title=f"You won ${bet * 99}", color=discord.Color.blue()
+                        title=f"You won ${bet * 99}", color=discord.Color.blurple()
                     )
                 else:
                     self.bal.put(member, str(bal - bet).encode())
                     embed = discord.Embed(
-                        title=f"You lost ${bet}", color=discord.Color.blue()
+                        title=f"You lost ${bet}", color=discord.Color.red()
                     )
             await ctx.send(embed=embed)
         else:
@@ -160,7 +160,7 @@ class economy(commands.Cog):
         a, b, c, d = (*random.choices(emojis, k=4),)
 
         result = "won"
-        color = discord.Color.blue()
+        color = discord.Color.blurple()
         if a == b == c == d:
             winnings = 100
         elif (a == b == c) or (a == c == d) or (a == b == d) or (b == c == d):
@@ -203,7 +203,7 @@ class economy(commands.Cog):
 
         wins = ujson.loads(wins.decode())
 
-        embed = discord.Embed(color=discord.Color.blue())
+        embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(
             name="**Wins/Loses**",
             value=f"""
@@ -221,7 +221,7 @@ class economy(commands.Cog):
     async def chances(self, ctx):
         """Sends simulated chances of the slot machine from 1000000000 runs."""
         embed = discord.Embed(
-            title="Chances from 1000000000 runs", color=discord.Color.blue()
+            title="Chances from 1000000000 runs", color=discord.Color.blurple()
         )
         embed.add_field(name="Quad:", value="455431, 0.04554%")
         embed.add_field(name="Triple:", value="21855314, 2.18553%")
@@ -254,7 +254,7 @@ class economy(commands.Cog):
         else:
             bal = float(bal)
 
-        embed = discord.Embed(color=discord.Color.blue())
+        embed = discord.Embed(color=discord.Color.blurple())
 
         embed.add_field(
             name=f"{member.display_name}'s balance", value=f"${bal:,.2f}", inline=False
@@ -300,7 +300,7 @@ class economy(commands.Cog):
 
                 embed = discord.Embed(
                     title=f"Sent ${amount} to {member.display_name}",
-                    color=discord.Color.blue(),
+                    color=discord.Color.blurple(),
                 )
                 embed.set_footer(text=f"New Balance: ${bal}")
 
@@ -324,7 +324,7 @@ class economy(commands.Cog):
         bal += 1000
 
         embed = discord.Embed(
-            title=f"Paid {ctx.author.display_name} $1000", color=discord.Color.blue()
+            title=f"Paid {ctx.author.display_name} $1000", color=discord.Color.blurple()
         )
         embed.set_footer(text=f"Balance: ${bal:,}")
 
