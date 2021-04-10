@@ -234,7 +234,7 @@ class apis(commands.Cog):
                 for index, title in enumerate(titles, start=1)
             )
             embed = discord.Embed(
-                colour=discord.Color.blue(),
+                colour=discord.Color.blurple(),
                 title=f"Wikipedia results for `{search}`",
                 description=s_desc,
             )

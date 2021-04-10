@@ -71,7 +71,7 @@ class misc(commands.Cog):
 
         tenary = "+" if int(karma) > 0 else ""
 
-        embed = discord.Embed(color=discord.Color.blue())
+        embed = discord.Embed(color=discord.Color.blurple())
         embed.description = (
             f"```diff\n{member.display_name}'s karma:\n{tenary}{karma}```"
         )
@@ -81,7 +81,7 @@ class misc(commands.Cog):
     async def karmaboard(self, ctx):
         """Displays the top 5 and bottom 5 members karma."""
         sorted_karma = sorted([(int(k), int(m)) for m, k in self.karma], reverse=True)
-        embed = discord.Embed(title="Karma Board", color=discord.Color.blue())
+        embed = discord.Embed(title="Karma Board", color=discord.Color.blurple())
         embed.add_field(
             name="Top Five",
             value="```diff\n{}```".format(
