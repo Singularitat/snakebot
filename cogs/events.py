@@ -24,7 +24,7 @@ class events(commands.Cog):
         if not reaction:
             return None
 
-        reaction = ujson.loads(reaction.decode())
+        reaction = ujson.loads(reaction)
 
         if str(payload.emoji) in reaction:
             role_id = int(reaction[str(payload.emoji)])
@@ -34,7 +34,7 @@ class events(commands.Cog):
             return None
 
         guild = self.bot.get_guild(payload.guild_id)
-        role = discord.utils.get(guild.roles, id=role_id)
+        role = guild.get_role(role_id)
         if payload.event_type == "REACTION_REMOVE":
             return (role, guild)
         return role
@@ -65,7 +65,7 @@ class events(commands.Cog):
         except TypeError:
             return
         if role is not None:
-            member = discord.utils.get(guild.members, id=payload.user_id)
+            member = guild.get_member(payload.user_id)
             await member.remove_roles(role)
 
     @commands.Cog.listener()
@@ -73,7 +73,7 @@ class events(commands.Cog):
         """Disconnects a member from voice if they are downvoted.
 
         member: discord.Member
-            The downvoted member.
+            The member.
         before: discord.VoiceState
             The old voice state.
         after: discord.VoiceState
