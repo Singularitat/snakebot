@@ -3,10 +3,15 @@ from discord.ext import commands
 import asyncio
 import functools
 import itertools
-import math
 import random
 import youtube_dl
 import async_timeout
+try:
+    import uvloop
+except ImportError:
+    pass
+else:
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 
 class VoiceError(Exception):
@@ -21,8 +26,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
     YTDL_OPTIONS = {
         "format": "bestaudio/best",
         "extractaudio": True,
-        "audioformat": "best",
-        "audioquality": "0",
         "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
         "restrictfilenames": True,
         "noplaylist": True,
@@ -31,8 +34,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         "logtostderr": False,
         "quiet": True,
         "no_warnings": True,
-        "default_search": "ytsearch",
-        "source_address": "0.0.0.0",
+        "default_search": "ytsearch"
     }
 
     FFMPEG_OPTIONS = {
@@ -153,7 +155,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         for e in info["entries"]:
             # lst.append(f'`{info["entries"].index(e) + 1}.` {e.get("title")} **[{YTDLSource.parse_duration(int(e.get("duration")))}]**\n')
             VId = e.get("id")
-            VUrl = "https://www.youtube.com/watch?v=%s" % (VId)
+            VUrl = f"https://www.youtube.com/watch?v={VId}"
             lst.append(
                 f'`{info["entries"].index(e) + 1}.` [{e.get("title")}]({VUrl})\n'
             )
@@ -462,7 +464,7 @@ class music(commands.Cog):
         ctx.voice_state.current.source.volume = volume / 100
         await ctx.send(f"Volume of the player set to {volume}%")
 
-    @commands.command(name="now", aliases=["current", "playing"])
+    @commands.command(name="now", aliases=["current", "playing", "n"])
     async def _now(self, ctx: commands.Context):
         """Displays the currently playing song."""
         embed = ctx.voice_state.current.create_embed()
@@ -491,7 +493,7 @@ class music(commands.Cog):
             ctx.voice_state.voice.stop()
             await ctx.message.add_reaction("⏹")
 
-    @commands.command(name="skip", aliases=["s"])
+    @commands.command(name="skip", aliases=["s", "sk"])
     async def _skip(self, ctx: commands.Context):
         """Vote to skip a song."""
         if not ctx.voice_state.is_playing:
@@ -517,7 +519,7 @@ class music(commands.Cog):
         else:
             await ctx.send("You have already voted to skip this song.")
 
-    @commands.command(name="queue")
+    @commands.command(name="queue", aliases=["q"])
     async def _queue(self, ctx: commands.Context, *, page: int = 1):
         """Shows the player's queue.
 
@@ -528,7 +530,8 @@ class music(commands.Cog):
             return await ctx.send("Empty queue.")
 
         items_per_page = 10
-        pages = math.ceil(len(ctx.voice_state.songs) / items_per_page)
+        # -(-3//2) == 2, just gets the ceil
+        pages = -(-len(ctx.voice_state.songs) // items_per_page)
 
         start = (page - 1) * items_per_page
         end = start + items_per_page
@@ -570,7 +573,6 @@ class music(commands.Cog):
         if not ctx.voice_state.is_playing:
             return await ctx.send("Nothing being played at the moment.")
 
-        # Inverse boolean value to loop and unloop.
         ctx.voice_state.loop = not ctx.voice_state.loop
         await ctx.message.add_reaction("✅")
 
