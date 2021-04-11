@@ -278,9 +278,7 @@ class admin(commands.Cog):
         """
         if ctx.invoked_subcommand is None:
             try:
-                await ctx.channel.purge(
-                    limit=int(ctx.message.content.split(" ")[1]) + 1
-                )
+                await ctx.channel.purge(limit=int(ctx.subcommand_passed) + 1)
             except ValueError:
                 await ctx.send("No subcommand passed")
 

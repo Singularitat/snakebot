@@ -3,10 +3,16 @@ from discord.ext import commands
 import asyncio
 import functools
 import itertools
-import math
 import random
 import youtube_dl
 import async_timeout
+
+try:
+    import uvloop
+except ImportError:
+    pass
+else:
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 
 class VoiceError(Exception):
@@ -21,8 +27,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
     YTDL_OPTIONS = {
         "format": "bestaudio/best",
         "extractaudio": True,
-        "audioformat": "best",
-        "audioquality": "0",
         "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
         "restrictfilenames": True,
         "noplaylist": True,
@@ -131,7 +135,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         channel = ctx.channel
         loop = loop or asyncio.get_event_loop()
 
-        cls.search_query = "%s%s:%s" % ("ytsearch", 10, "".join(search))
+        cls.search_query = f"ytsearch10:{''.join(search)}"
 
         partial = functools.partial(
             cls.ytdl.extract_info, cls.search_query, download=False, process=False
@@ -149,14 +153,14 @@ class YTDLSource(discord.PCMVolumeTransformer):
         }
 
         lst = []
+        VIds = []
 
-        for e in info["entries"]:
+        for index, e in enumerate(info["entries"]):
             # lst.append(f'`{info["entries"].index(e) + 1}.` {e.get("title")} **[{YTDLSource.parse_duration(int(e.get("duration")))}]**\n')
             VId = e.get("id")
-            VUrl = "https://www.youtube.com/watch?v=%s" % (VId)
-            lst.append(
-                f'`{info["entries"].index(e) + 1}.` [{e.get("title")}]({VUrl})\n'
-            )
+            VUrl = f"https://www.youtube.com/watch?v={VId}"
+            VIds.append(VId)
+            lst.append(f'`{index + 1}.` [{e.get("title")}]({VUrl})\n')
 
         lst.append("\n**Type a number to make a choice, Type `cancel` to exit**")
         cls.search["description"] = "\n".join(lst)
@@ -168,8 +172,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
             return (
                 msg.content.isdigit() is True
                 and msg.channel == channel
-                or msg.content == "cancel"
-                or msg.content == "Cancel"
+                or msg.content.lower() == "cancel"
             )
 
         try:
@@ -182,14 +185,13 @@ class YTDLSource(discord.PCMVolumeTransformer):
             if m.content.isdigit() is True:
                 sel = int(m.content)
                 if 0 < sel <= 10:
-                    for key, value in info.items():
-                        if key == "entries":
-                            VId = value[sel - 1]["id"]
-                            VUrl = "https://www.youtube.com/watch?v=%s" % (VId)
-                            partial = functools.partial(
-                                cls.ytdl.extract_info, VUrl, download=False
-                            )
-                            data = await loop.run_in_executor(None, partial)
+                    if info.get("entries"):
+                        VId = VIds[sel - 1]
+                        VUrl = f"https://www.youtube.com/watch?v={VId}"
+                        partial = functools.partial(
+                            cls.ytdl.extract_info, VUrl, download=False
+                        )
+                        data = await loop.run_in_executor(None, partial)
                     rtrn = cls(
                         ctx,
                         discord.FFmpegPCMAudio(data["url"], **cls.FFMPEG_OPTIONS),
@@ -197,7 +199,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
                     )
                 else:
                     rtrn = "sel_invalid"
-            elif m.content == "cancel":
+            elif m.content.lower() == "cancel":
                 rtrn = "cancel"
             else:
                 rtrn = "sel_invalid"
@@ -207,9 +209,9 @@ class YTDLSource(discord.PCMVolumeTransformer):
     @staticmethod
     def parse_duration(duration: int):
         if duration > 0:
-            minutes, seconds = divmod(duration, 60)
-            hours, minutes = divmod(minutes, 60)
-            days, hours = divmod(hours, 24)
+            minutes, seconds = (duration // 60, duration % 60)
+            hours, minutes = (minutes // 60, minutes % 60)
+            days, hours = (hours // 24, hours % 24)
 
             duration = []
             if days > 0:
@@ -218,11 +220,8 @@ class YTDLSource(discord.PCMVolumeTransformer):
                 duration.append(f"{hours}")
             if minutes > 0:
                 duration.append(f"{minutes}")
-            if seconds > 0:
-                if seconds < 10:
-                    duration.append(f"0{seconds}")
-                else:
-                    duration.append(f"{seconds}")
+            if seconds >= 0:
+                duration.append(f"{seconds:0>2}")
 
             value = ":".join(duration)
 
@@ -406,7 +405,7 @@ class music(commands.Cog):
     async def cog_before_invoke(self, ctx: commands.Context):
         ctx.voice_state = self.get_voice_state(ctx)
 
-    @commands.command(name="join", invoke_without_subcommand=True)
+    @commands.command(name="join")
     async def _join(self, ctx: commands.Context):
         """Joins your current voice channel."""
         destination = ctx.author.voice.channel
@@ -462,7 +461,7 @@ class music(commands.Cog):
         ctx.voice_state.current.source.volume = volume / 100
         await ctx.send(f"Volume of the player set to {volume}%")
 
-    @commands.command(name="now", aliases=["current", "playing"])
+    @commands.command(name="now", aliases=["current", "playing", "n"])
     async def _now(self, ctx: commands.Context):
         """Displays the currently playing song."""
         embed = ctx.voice_state.current.create_embed()
@@ -471,14 +470,14 @@ class music(commands.Cog):
     @commands.command(name="pause", aliases=["pa"])
     async def _pause(self, ctx: commands.Context):
         """Pauses the currently playing song."""
-        if ctx.voice_state.is_playing and ctx.voice_state.voice.is_playing():
+        if ctx.voice_state.voice.is_playing():
             ctx.voice_state.voice.pause()
             await ctx.message.add_reaction("⏯")
 
     @commands.command(name="resume", aliases=["re", "res"])
     async def _resume(self, ctx: commands.Context):
         """Resumes a currently paused song."""
-        if ctx.voice_state.is_playing and ctx.voice_state.voice.is_paused():
+        if ctx.voice_state.voice.is_paused():
             ctx.voice_state.voice.resume()
             await ctx.message.add_reaction("⏯")
 
@@ -491,7 +490,7 @@ class music(commands.Cog):
             ctx.voice_state.voice.stop()
             await ctx.message.add_reaction("⏹")
 
-    @commands.command(name="skip", aliases=["s"])
+    @commands.command(name="skip", aliases=["s", "sk"])
     async def _skip(self, ctx: commands.Context):
         """Vote to skip a song."""
         if not ctx.voice_state.is_playing:
@@ -517,7 +516,7 @@ class music(commands.Cog):
         else:
             await ctx.send("You have already voted to skip this song.")
 
-    @commands.command(name="queue")
+    @commands.command(name="queue", aliases=["q"])
     async def _queue(self, ctx: commands.Context, *, page: int = 1):
         """Shows the player's queue.
 
@@ -528,7 +527,8 @@ class music(commands.Cog):
             return await ctx.send("Empty queue.")
 
         items_per_page = 10
-        pages = math.ceil(len(ctx.voice_state.songs) / items_per_page)
+        # -(-3//2) == 2, just gets the ceil
+        pages = -(-len(ctx.voice_state.songs) // items_per_page)
 
         start = (page - 1) * items_per_page
         end = start + items_per_page
@@ -570,7 +570,6 @@ class music(commands.Cog):
         if not ctx.voice_state.is_playing:
             return await ctx.send("Nothing being played at the moment.")
 
-        # Inverse boolean value to loop and unloop.
         ctx.voice_state.loop = not ctx.voice_state.loop
         await ctx.message.add_reaction("✅")
 
