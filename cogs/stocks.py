@@ -19,19 +19,21 @@ class stocks(commands.Cog):
         msg = ""
         i = 1
 
-        # Pagination the name stocks is the game
         for stock, price in self.stocks:
             price = ujson.loads(price)["price"]
-            if len(msg + f"{stock.decode():<5}: ${price:<9}") < 1997:
-                if i % 6 == 0:
-                    msg += f"{stock.decode():<5}: ${price}\n"
-                else:
-                    msg += f"{stock.decode():<5}: ${price:<9}"
-                i += 1
-            else:
+            if len(msg) >= 2000:
                 break
 
-        await ctx.send(f"```\n{msg}```")
+            if i % 3 == 0:
+                msg += f"{stock.decode():<5}: ${price}\n"
+            else:
+                msg += f"{stock.decode():<5}: ${price:<9}"
+            i += 1
+
+        embed = discord.Embed(
+            color=discord.Color.blurple(), description=f"```\n{msg}```"
+        )
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def stockbal(self, ctx, symbol):
