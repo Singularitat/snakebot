@@ -4,7 +4,7 @@ import logging
 
 if str(logging.getLogger("discord").handlers) == "[<NullHandler (NOTSET)>]":
     log = logging.getLogger("discord")
-    log.setLevel(logging.INFO)
+    log.setLevel(logging.WARNING)
 
     handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="a")
 
