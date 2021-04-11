@@ -324,13 +324,14 @@ class owner(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def drrole(self, ctx, message: discord.Message):
+    async def drrole(self, ctx, message_id: int):
         """Deletes a reaction role message and removes it from the db.
 
-        message: discord.Message
-            The reaction role messgae to delete.
+        message: int
+            Id of the reaction role messgae to delete.
         """
-        self.rrole.delete(str(message.id).encode())
+        self.rrole.delete(str(message_id).encode())
+        message = await ctx.fetch_message(message_id)
         await message.delete()
 
     @commands.command()
@@ -375,10 +376,13 @@ class owner(commands.Cog):
 
         channel_id = re.sub(r"[^\d.]+", "", channel.content)
 
-        channel = ctx.guild.get_channel(int(channel_id))
-
-        if channel is None:
+        try:
+            channel = ctx.guild.get_channel(int(channel_id))
+        except ValueError:
             channel = ctx.channel
+        else:
+            if channel is None:
+                channel = ctx.channel
 
         message = await channel.send(msg)
 
