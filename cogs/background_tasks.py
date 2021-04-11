@@ -108,7 +108,7 @@ class background_tasks(commands.Cog):
 
     @tasks.loop(minutes=5)
     async def update_bot(self):
-        """Checks for updates every 3 minutes and then updates if needed."""
+        """Tries to update every 5 minutes and then reloads if needed."""
         pull = await self.run_process("git pull")
 
         if pull == ["Already", "up", "to", "date."]:
@@ -121,17 +121,12 @@ class background_tasks(commands.Cog):
 
         diff = [ext[5:] for ext in diff if ext.startswith("/cogs")]
 
-        for extension in [
-            f[:-3] for f in os.listdir("cogs") if f.endswith(".py") and f in diff
-        ]:
+        for ext in [f[:-3] for f in os.listdir("cogs") if f in diff]:
             try:
-                self.bot.reload_extension(f"cogs.{extension}")
+                self.bot.reload_extension(f"cogs.{ext}")
             except Exception as e:
-                if (
-                    e
-                    == f"ExtensionNotLoaded: Extension 'cogs.{extension}' has not been loaded."
-                ):
-                    self.bot.load_extension(f"cogs.{extension}")
+                if isinstance(e, commands.errors.ExtensionNotLoaded):
+                    self.bot.load_extension(f"cogs.{ext}")
 
     @tasks.loop(hours=2)
     async def backup_bot(self):
