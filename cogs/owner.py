@@ -425,11 +425,10 @@ class owner(commands.Cog):
 
         for index, role in enumerate(roles):
             if not role.isnumeric():
-                try:
-                    role = discord.utils.get(ctx.guild.roles, name=role)
-                    roles[index] = role.id
-                except commands.errors.RoleNotFound:
+                role = discord.utils.get(ctx.guild.roles, name=role)
+                if role is None:
                     return await ctx.send(f"```Could not find role {role}```")
+                roles[index] = role.id
 
         msg += "\n"
 
