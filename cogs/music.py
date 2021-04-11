@@ -6,6 +6,7 @@ import itertools
 import random
 import youtube_dl
 import async_timeout
+
 try:
     import uvloop
 except ImportError:
@@ -34,7 +35,8 @@ class YTDLSource(discord.PCMVolumeTransformer):
         "logtostderr": False,
         "quiet": True,
         "no_warnings": True,
-        "default_search": "ytsearch"
+        "default_search": "ytsearch",
+        "source_address": "0.0.0.0",
     }
 
     FFMPEG_OPTIONS = {
@@ -158,9 +160,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
             VId = e.get("id")
             VUrl = f"https://www.youtube.com/watch?v={VId}"
             VIds.append(VId)
-            lst.append(
-                f'`{index + 1}.` [{e.get("title")}]({VUrl})\n'
-            )
+            lst.append(f'`{index + 1}.` [{e.get("title")}]({VUrl})\n')
 
         lst.append("\n**Type a number to make a choice, Type `cancel` to exit**")
         cls.search["description"] = "\n".join(lst)
