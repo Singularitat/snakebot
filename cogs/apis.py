@@ -43,7 +43,8 @@ class apis(commands.Cog):
         """Gets a random fox image."""
         url = "https://randomfox.ca/floof"
 
-        image = await self.get_json(url)
+        async with ctx.typing():
+            image = await self.get_json(url)
 
         await ctx.send(image["image"])
 
@@ -52,7 +53,8 @@ class apis(commands.Cog):
         """Gets a random cat image."""
         url = "https://aws.random.cat/meow"
 
-        image = await self.get_json(url)
+        async with ctx.typing():
+            image = await self.get_json(url)
 
         await ctx.send(image["file"])
 
@@ -61,7 +63,8 @@ class apis(commands.Cog):
         """Gets a random cat image."""
         url = "https://api.thecatapi.com/v1/images/search"
 
-        image = await self.get_json(url)
+        async with ctx.typing():
+            image = await self.get_json(url)
 
         await ctx.send(image[0]["url"])
 
@@ -75,7 +78,8 @@ class apis(commands.Cog):
         """Gets a random dog image."""
         url = "https://random.dog/woof.json"
 
-        image = await self.get_json(url)
+        async with ctx.typing():
+            image = await self.get_json(url)
 
         await ctx.send(image["url"])
 
@@ -87,7 +91,8 @@ class apis(commands.Cog):
         else:
             url = "https://dog.ceo/api/breeds/image/random"
 
-        image = await self.get_json(url)
+        async with ctx.typing():
+            image = await self.get_json(url)
 
         await ctx.send(image["message"])
 
@@ -96,7 +101,8 @@ class apis(commands.Cog):
         """Gets a random dog image."""
         url = "http://shibe.online/api/shibes?count=1&urls=true&httpsUrls=true"
 
-        image = await self.get_json(url)
+        async with ctx.typing():
+            image = await self.get_json(url)
 
         await ctx.send(image[0])
 
@@ -120,7 +126,8 @@ class apis(commands.Cog):
         """
         url = f"http://api.qrserver.com/v1/read-qr-code/?fileurl={qrcode}"
 
-        data = await self.get_json(url)
+        async with ctx.typing():
+            data = await self.get_json(url)
 
         if data is None:
             return await ctx.send("```Invalid url```")
@@ -137,7 +144,8 @@ class apis(commands.Cog):
 
         url = f"https://xkcd.com/{num}/info.0.json"
 
-        data = await self.get_json(url)
+        async with ctx.typing():
+            data = await self.get_json(url)
 
         await ctx.send(data["img"])
 
@@ -150,7 +158,8 @@ class apis(commands.Cog):
         """
         url = f"https://api.urbandictionary.com/v0/define?term={search}"
 
-        urban = await self.get_json(url)
+        async with ctx.typing():
+            urban = await self.get_json(url)
 
         if "list" not in urban:
             return await ctx.send(
@@ -288,9 +297,10 @@ class apis(commands.Cog):
             "Accepts": "application/json",
             "X-CMC_PRO_API_KEY": self.bot.coinmarketcap,
         }
-        async with aiohttp.ClientSession() as session:
-            response = await session.get(url, params=parameters, headers=headers)
-            data = await response.json()
+        async with ctx.typing():
+            async with aiohttp.ClientSession() as session:
+                response = await session.get(url, params=parameters, headers=headers)
+                data = await response.json()
 
         data = data["data"]
         for index, coin in enumerate(data):
@@ -335,7 +345,8 @@ class apis(commands.Cog):
             if country.lower() == "all":
                 url = "https://corona.lmao.ninja/v3/covid-19/all"
 
-            data = await self.get_json(url)
+            async with ctx.typing():
+                data = await self.get_json(url)
 
             embed = discord.Embed(colour=discord.Color.red())
             embed.set_author(
@@ -452,7 +463,10 @@ class apis(commands.Cog):
             The gif search term.
         """
         url = f"https://g.tenor.com/v1/search?q={search}&key={self.bot.tenor}&limit=50"
-        tenor = await self.get_json(url)
+
+        async with ctx.typing():
+            tenor = await self.get_json(url)
+
         await ctx.send(random.choice(tenor["results"])["media"][0]["gif"]["url"])
 
 
