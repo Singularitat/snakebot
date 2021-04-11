@@ -297,10 +297,10 @@ class apis(commands.Cog):
             "Accepts": "application/json",
             "X-CMC_PRO_API_KEY": self.bot.coinmarketcap,
         }
-        async with ctx.typing():
-            async with aiohttp.ClientSession() as session:
-                response = await session.get(url, params=parameters, headers=headers)
-                data = await response.json()
+
+        async with ctx.typing(), aiohttp.ClientSession() as session:
+            response = await session.get(url, params=parameters, headers=headers)
+            data = await response.json()
 
         data = data["data"]
         for index, coin in enumerate(data):
