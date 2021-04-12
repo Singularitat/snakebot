@@ -279,11 +279,7 @@ class events(commands.Cog):
                 continue
 
             if invite.uses > int(uses):
-<<<<<<< HEAD
                 self.invites.put(str(member.id).encode(), invite.code.encode())
-=======
-                self.invites.put(str(member.id).encode, invite.code.encode())
->>>>>>> 8fb71a02625fa5b0d9d6e501be2772229cf1444b
 
     @commands.Cog.listener()
     async def on_invite_create(self, invite):
