@@ -30,20 +30,60 @@ class background_tasks(commands.Cog):
     @commands.group(hidden=True)
     @commands.is_owner()
     async def task(self, ctx):
+        """The task command group."""
         if ctx.invoked_subcommand is None:
             await ctx.send("```No subcommand passed```")
 
     @task.command()
     async def restart(self, ctx, task):
-        getattr(self, task).restart()
+        """Restarts a background task.
+
+        task: str
+            The name of the task to restart.
+        """
+        try:
+            getattr(self, task).restart()
+            await ctx.send(f"{task} restarted")
+        except AttributeError:
+            return await ctx.send("```Task not found```")
 
     @task.command()
     async def start(self, ctx, task):
-        getattr(self, task).start()
+        """Starts a background task.
+
+        task: str
+            The name of the task to start.
+        """
+        try:
+            getattr(self, task).start()
+            await ctx.send(f"{task} started")
+        except AttributeError:
+            return await ctx.send("```Task not found```")
 
     @task.command()
     async def stop(self, ctx, task):
-        getattr(self, task).stop()
+        """Stops a background task.
+
+        task: str
+            The name of the task to stop.
+        """
+        try:
+            getattr(self, task).stop()
+            await ctx.send(f"{task} stopped")
+        except AttributeError:
+            return await ctx.send("```Task not found```")
+
+    @task.command()
+    async def list(self, ctx):
+        """Lists background tasks."""
+        task_list = "\n".join(
+            [
+                task
+                for task in dir(background_tasks)
+                if isinstance(getattr(background_tasks, task), tasks.Loop)
+            ]
+        )
+        await ctx.send(f"```\n{task_list}```")
 
     async def stockupdate(self, url):
         """Fetches stocks then updates the database.
