@@ -245,7 +245,7 @@ class events(commands.Cog):
         if discord.utils.escape_mentions(message.content) != message.content:
             timesince = datetime.utcnow() - message.created_at
 
-            if timesince.total_seconds() < 360:
+            if timesince.total_seconds() < 30:
                 self.blacklist.put(str(message.author.id).encode(), b"1")
 
         channel = discord.utils.get(message.guild.channels, name="logs")
