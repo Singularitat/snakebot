@@ -1,25 +1,17 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, menus
 import ujson
 import textwrap
 
 
-class stocks(commands.Cog):
-    """Stock related commands."""
+class StockMenu(menus.ListPageSource):
+    def __init__(self, data):
+        super().__init__(data, per_page=100)
 
-    def __init__(self, bot: commands.Bot) -> None:
-        self.bot = bot
-        self.stocks = self.bot.db.prefixed_db(b"stocks-")
-        self.bal = self.bot.db.prefixed_db(b"bal-")
-        self.stockbal = self.bot.db.prefixed_db(b"stockbal-")
-
-    @commands.command()
-    async def stocks(self, ctx):
-        """Shows the price of stocks from yahoo finance."""
+    async def format_page(self, menu, entries):
         msg = ""
         i = 1
-
-        for stock, price in self.stocks:
+        for stock, price in entries:
             price = ujson.loads(price)["price"]
             if len(msg) >= 2000:
                 break
@@ -33,7 +25,25 @@ class stocks(commands.Cog):
         embed = discord.Embed(
             color=discord.Color.blurple(), description=f"```\n{msg}```"
         )
-        await ctx.send(embed=embed)
+        return embed
+
+
+class stocks(commands.Cog):
+    """Stock related commands."""
+
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
+        self.stocks = self.bot.db.prefixed_db(b"stocks-")
+        self.bal = self.bot.db.prefixed_db(b"bal-")
+        self.stockbal = self.bot.db.prefixed_db(b"stockbal-")
+
+    @commands.command(name="stocks")
+    async def _stocks(self, ctx):
+        """Shows the price of stocks from yahoo finance."""
+        pages = menus.MenuPages(
+            source=StockMenu(list(self.stocks)), clear_reactions_after=True
+        )
+        await pages.start(ctx)
 
     @commands.command()
     async def stockbal(self, ctx, symbol):
