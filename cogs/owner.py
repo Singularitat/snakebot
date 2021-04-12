@@ -19,7 +19,6 @@ class PerformanceMocker:
     def permissions_for(self, obj):
         perms = discord.Permissions.all()
         perms.embed_links = False
-        perms.add_reactions = False
         return perms
 
     def __getattr__(self, attr):
