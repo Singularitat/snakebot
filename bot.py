@@ -10,7 +10,6 @@ db = plyvel.DB(f"{pathlib.Path(__file__).parent.absolute()}/db", create_if_missi
 
 
 intents = discord.Intents.all()
-intents.invites = False
 intents.dm_typing = False
 intents.webhooks = False
 intents.integrations = False
