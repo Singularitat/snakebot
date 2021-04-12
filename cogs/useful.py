@@ -1,11 +1,31 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, menus
 import ujson
 import random
 import aiohttp
 import time
 import lxml.html
 import re
+
+
+class InviteMenu(menus.ListPageSource):
+    def __init__(self, data):
+        super().__init__(data, per_page=20)
+
+    async def format_page(self, menu, entries):
+        msg = ""
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if entries == []:
+            embed.description = "```No stored information found```"
+            return embed
+
+        for member, invite in entries:
+            if len(member) <= 18:
+                name = self.bot.get_user(int(member)).display_name
+                msg += f"{name}: {invite.decode()}\n"
+        embed.description = f"```{msg}```"
+        return embed
 
 
 class useful(commands.Cog):
@@ -18,14 +38,10 @@ class useful(commands.Cog):
     @commands.command()
     async def invites(self, ctx):
         """Shows the invites that users joined from."""
-        msg = ""
-        embed = discord.Embed(color=discord.Color.blurple())
-        for member, invite in self.invites:
-            if len(member) <= 18:
-                name = self.bot.get_user(int(member)).display_name
-                msg += f"{name}: {invite.decode()}"
-        embed.description = f"```{msg}```"
-        await ctx.send(embed=embed)
+        pages = menus.MenuPages(
+            source=InviteMenu(list(self.invites)), clear_reactions_after=True
+        )
+        await pages.start(ctx)
 
     @commands.command()
     async def run(self, ctx, lang, *, code):
