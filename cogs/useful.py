@@ -13,6 +13,19 @@ class useful(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.invites = self.bot.db.prefixed_db(b"invites-")
+
+    @commands.command()
+    async def invites(self, ctx):
+        """Shows the invites that users joined from."""
+        msg = ""
+        embed = discord.Embed(color=discord.Color.blurple())
+        for member, invite in self.invites:
+            if len(member) <= 18:
+                name = self.bot.get_user(int(member)).display_name
+                msg += f"{name}: {invite.decode()}"
+        embed.description = f"```{msg}```"
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def run(self, ctx, lang, *, code):
