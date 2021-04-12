@@ -40,7 +40,9 @@ class stocks(commands.Cog):
     @commands.command(name="stocks")
     async def _stocks(self, ctx):
         """Shows the price of stocks from yahoo finance."""
-        pages = menus.MenuPages(source=StockMenu(list(self.stocks)), clear_reactions_after=True)
+        pages = menus.MenuPages(
+            source=StockMenu(list(self.stocks)), clear_reactions_after=True
+        )
         await pages.start(ctx)
 
     @commands.command()
