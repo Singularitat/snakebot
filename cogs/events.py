@@ -16,6 +16,7 @@ class events(commands.Cog):
         self.rrole = self.bot.db.prefixed_db(b"rrole-")
         self.deleted = self.bot.db.prefixed_db(b"deleted-")
         self.edited = self.bot.db.prefixed_db(b"edited-")
+        self.invites = self.bot.db.prefixed_db(b"invites-")
 
     async def reaction_role_check(self, payload):
         message_id = str(payload.message_id).encode()
@@ -262,6 +263,40 @@ class events(commands.Cog):
         """
         if self.blacklist.get(str(message.author.id).encode()) == b"1":
             await message.add_reaction("<:downvote:766414744730206228>")
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        """Checks which invite someone has joined from.
+
+        member: discord.Member
+        """
+        for invite in await member.guild.invites():
+            key = f"{invite.code}-{invite.guild.id}"
+            uses = self.invites.get(key.encode())
+
+            if uses is None:
+                self.invites.put(key.encode(), str(invite.uses).encode())
+                continue
+
+            if invite.uses > int(uses):
+                self.invites.put(str(member.id).encode, invite.code.encode())
+
+    @commands.Cog.listener()
+    async def on_invite_create(self, invite):
+        """Puts invites into the db to get who used the invite.
+
+        invite: discord.Invite
+        """
+        key = f"{invite.code}-{invite.guild.id}"
+        self.invites.put(key.encode(), str(invite.uses).encode())
+
+    @commands.Cog.listener()
+    async def on_invite_delete(self, invite):
+        """Removes invites from the db when they have been deleted.
+
+        invite: discord.Invite
+        """
+        self.invites.delete(f"{invite.code}-{invite.guild.id}".encode())
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
