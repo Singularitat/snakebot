@@ -5,3 +5,4 @@ psutil
 ujson
 youtube_dl
 plyvel-win32
+pillow

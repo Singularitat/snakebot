@@ -1,9 +1,10 @@
 from discord.ext import commands
 import aiohttp
+import asyncio
 import random
 import discord
 import re
-import datetime
+from datetime import datetime
 import textwrap
 
 
@@ -19,15 +20,19 @@ class apis(commands.Cog):
         url: str
             The url to fetch the json from.
         """
-        async with aiohttp.ClientSession() as session:
-            response = await session.get(url)
+        timeout = aiohttp.ClientTimeout(total=6)
+        try:
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                response = await session.get(url)
 
-            try:
-                data = await response.json()
-            except aiohttp.client_exceptions.ContentTypeError:
-                return None
+                try:
+                    data = await response.json()
+                except aiohttp.client_exceptions.ContentTypeError:
+                    return None
 
-        return data
+            return data
+        except asyncio.exceptions.TimeoutError:
+            return None
 
     @commands.command()
     async def avatar(self, ctx, *, seed=""):
@@ -74,16 +79,6 @@ class apis(commands.Cog):
         await ctx.send(f"https://http.cat/{status}")
 
     @commands.command()
-    async def dog2(self, ctx):
-        """Gets a random dog image."""
-        url = "https://random.dog/woof.json"
-
-        async with ctx.typing():
-            image = await self.get_json(url)
-
-        await ctx.send(image["url"])
-
-    @commands.command()
     async def dog(self, ctx, breed=None):
         """Gets a random dog image."""
         if breed:
@@ -95,6 +90,16 @@ class apis(commands.Cog):
             image = await self.get_json(url)
 
         await ctx.send(image["message"])
+
+    @commands.command()
+    async def dog2(self, ctx):
+        """Gets a random dog image."""
+        url = "https://random.dog/woof.json"
+
+        async with ctx.typing():
+            image = await self.get_json(url)
+
+        await ctx.send(image["url"])
 
     @commands.command()
     async def shibe(self, ctx):
@@ -122,7 +127,7 @@ class apis(commands.Cog):
         """Decodes a qr code from a url.
 
         qrcode: str
-            The url to the qrcode.
+            The url to the qrcode has to be image format e.g jpg/jpeg/png.
         """
         url = f"http://api.qrserver.com/v1/read-qr-code/?fileurl={qrcode}"
 
@@ -138,14 +143,21 @@ class apis(commands.Cog):
         await ctx.send(data[0]["symbol"][0]["data"])
 
     @commands.command()
-    async def xkcd(self, ctx):
-        """Gets a random xkcd comic."""
-        num = random.randint(0, 2438)
+    async def xkcd(self, ctx, num: int = None):
+        """Gets a random xkcd comic.
+
+        num: int
+            The xkcd to get has to be between 0 and 2438"""
+        if not num or num > 2438 or num < 0:
+            num = random.randint(0, 2438)
 
         url = f"https://xkcd.com/{num}/info.0.json"
 
         async with ctx.typing():
             data = await self.get_json(url)
+
+        if data is None:
+            return await ctx.send("```xkcd timed out.```")
 
         await ctx.send(data["img"])
 
@@ -248,7 +260,7 @@ class apis(commands.Cog):
                 description=s_desc,
             )
 
-            embed.timestamp = datetime.datetime.utcnow()
+            embed.timestamp = datetime.utcnow()
             embed.set_footer(text="Enter a number to choose")
 
             await ctx.send(embed=embed)
@@ -416,7 +428,7 @@ class apis(commands.Cog):
                 else "",
                 colour=0x7289DA,
                 url=user_data["html_url"],
-                timestamp=datetime.datetime.strptime(
+                timestamp=datetime.strptime(
                     user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"
                 ),
             )

@@ -87,6 +87,10 @@ class admin(commands.Cog):
         await self.say_permissions(ctx, member, channel)
 
     async def end_date(self, duration):
+        """Converts a duration to an end date.
+
+        duration: str
+            How much to add onto the current date e.g 5d 10h 25m 5s"""
         end_date = datetime.datetime.now()
 
         for time in duration.split():
@@ -103,86 +107,84 @@ class admin(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator=True)
-    async def downvote(self, ctx, member: discord.Member = None, *, duration=None):
+    async def downvote(self, ctx, user: discord.User = None, *, duration=None):
         """Automatically downvotes someone.
 
-        member: discord.Member
-            The downvoted member.
+        user: discord.User
+            The downvoted user.
         duration: str
-            How long to downvote the member for e.g 5d 10h 25m 5s
+            How long to downvote the user for e.g 5d 10h 25m 5s
         """
         embed = discord.Embed(color=discord.Color.blurple())
-        if member is None:
+        if user is None:
             if list(self.blacklist) == []:
-                embed.title = "No downvoted members"
+                embed.title = "No downvoted users"
                 return await ctx.send(embed=embed)
 
-            embed.title = "Downvoted members"
-            for member_id in self.blacklist.iterator(include_value=False):
-                embed.add_field(name="Member:", value=member_id.decode())
+            embed.title = "Downvoted users"
+            for user_id in self.blacklist.iterator(include_value=False):
+                embed.add_field(name="User:", value=user_id.decode())
 
             return await ctx.send(embed=embed)
 
-        member_id = str(member.id).encode()
+        user_id = str(user.id).encode()
 
-        if self.blacklist.get(member_id):
-            self.blacklist.delete(member_id)
+        if self.blacklist.get(user_id):
+            self.blacklist.delete(user_id)
 
-            embed.title = "Member Undownvoted"
-            embed.description = (
-                f"***{member}*** has been removed from the downvote list"
-            )
+            embed.title = "User Undownvoted"
+            embed.description = f"***{user}*** has been removed from the downvote list"
             return await ctx.send(embed=embed)
 
-        await member.edit(voice_channel=None)
+        await user.edit(voice_channel=None)
 
-        self.blacklist.put(member_id, b"1")
-        members = self.bot.db.get(b"downvoted_members")
+        self.blacklist.put(user_id, b"1")
 
         if duration is not None:
-            if not members:
+            users = self.bot.db.get(b"downvoted_users")
+            if not users:
                 data = {}
             else:
-                data = ujson.loads(members)
+                data = ujson.loads(users)
 
             end_date = await self.end_date(duration)
-            data[member.id] = {"date": end_date, "guild": ctx.guild.id}
-            self.bot.db.put(b"downvoted_members", ujson.dumps(data).encode())
+            data[user.id] = {"date": end_date, "guild": ctx.guild.id}
+            self.bot.db.put(b"downvoted_users", ujson.dumps(data).encode())
 
-        embed.title = "Member Downvoted"
-        embed.description = f"**{member}** has been added to the downvote list"
+        embed.title = "User Downvoted"
+        embed.description = f"**{user}** has been added to the downvote list"
         await ctx.send(embed=embed)
 
     @commands.command()
     @commands.has_permissions(administrator=True)
-    async def blacklist(self, ctx, member: discord.Member = None):
+    async def blacklist(self, ctx, user: discord.User = None):
         """Blacklists someone from using the bot.
 
-        member: discord.Member
-            The blacklisted member.
+        user: discord.User
+            The blacklisted user.
         """
         embed = discord.Embed(color=discord.Color.blurple())
-        if member is None:
+        if user is None:
             if list(self.blacklist) == []:
-                embed.title = "No blacklisted members"
+                embed.title = "No blacklisted users"
                 return await ctx.send(embed=embed)
 
-            embed.title = "Blacklisted members"
-            for member_id in self.blacklist.iterator(include_value=False):
-                embed.add_field(name="Member:", value=member_id.decode())
+            embed.title = "Blacklisted users"
+            for user_id in self.blacklist.iterator(include_value=False):
+                embed.add_field(name="Member:", value=user_id.decode())
             return await ctx.send(embed=embed)
 
-        member_id = str(member.id).encode()
-        if self.blacklist.get(member_id):
-            self.blacklist.delete(member_id)
+        user_id = str(user.id).encode()
+        if self.blacklist.get(user_id):
+            self.blacklist.delete(user_id)
 
-            embed.title = "Member Unblacklisted"
-            embed.description = f"***{member}*** has been unblacklisted"
+            embed.title = "User Unblacklisted"
+            embed.description = f"***{user}*** has been unblacklisted"
             return await ctx.send(embed=embed)
 
-        self.blacklist.put(member_id, b"2")
-        embed.title = "Member Blacklisted"
-        embed.description = f"**{member}** has been added to the blacklist"
+        self.blacklist.put(user_id, b"2")
+        embed.title = "User Blacklisted"
+        embed.description = f"**{user}** has been added to the blacklist"
 
         await ctx.send(embed=embed)
 
@@ -274,7 +276,7 @@ class admin(commands.Cog):
         """Purges messages.
 
         num: int
-            The number of messages to delete defaults to 20.
+            The number of messages to delete.
         """
         if ctx.invoked_subcommand is None:
             try:
@@ -297,11 +299,17 @@ class admin(commands.Cog):
     @purge.command()
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
-    async def user(self, ctx, member: discord.Member, num_messages: int = 100):
-        """Clear all messagges of <User> withing the last [n=100] messages."""
+    async def user(self, ctx, user: discord.User, num_messages: int = 100):
+        """Clear all messagges of <User> withing the last [n=100] messages.
+
+        user: discord.User
+            The user to purge the messages of.
+        num_messages: int
+            The number of messages to check.
+        """
 
         def check(msg):
-            return msg.author.id == member.id
+            return msg.author.id == user.id
 
         await ctx.channel.purge(limit=num_messages, check=check, before=None)
 
@@ -320,27 +328,29 @@ class admin(commands.Cog):
         await channel.clone()
         await channel.delete()
 
-    @commands.group()
+    @commands.group(hidden=True)
     async def history(self, ctx):
         """Shows the edited message or deleted message history of a member."""
         if ctx.invoked_subcommand is None:
-            await ctx.send(f"Usage: `{ctx.prefix}history deleted`")
+            embed = discord.Embed(color=discord.Color.blurple())
+            embed.description = f"```Usage: {ctx.prefix}history [deleted/edited]```"
+            await ctx.send(embed=embed)
 
-    @history.command(hidden=True)
+    @history.command(aliases=["d"])
     @commands.has_permissions(manage_messages=True)
-    async def deleted(self, ctx, member: discord.Member = None, amount: int = 5):
+    async def deleted(self, ctx, user: discord.User = None, amount: int = 10):
         """Shows a members most recent deleted message history.
 
-        member: discord.Member
-            The member to get the history of.
+        user: discord.User
+            The user to get the history of.
         amount: int
             The amount of messages to get.
         """
-        if member is None:
-            member = ctx.author
+        if user is None:
+            user = ctx.author
 
-        member_id = str(member.id).encode()
-        deleted = self.deleted.get(member_id)
+        user_id = str(user.id).encode()
+        deleted = self.deleted.get(user_id)
 
         if deleted is None:
             return await ctx.send("```No deleted messages found```")
@@ -349,7 +359,7 @@ class admin(commands.Cog):
 
         embed = discord.Embed(
             color=discord.Color.blurple(),
-            title=f"{member.display_name}'s Deleted Messages",
+            title=f"{user.display_name}'s Deleted Messages",
         )
 
         msg = ""
@@ -358,26 +368,26 @@ class admin(commands.Cog):
             if index == amount:
                 break
 
-            msg += f"{date}: {deleted[date]}\n"
+            msg += f"{date}: {deleted[date].replace('`', '')}\n"
 
         embed.description = f"```{msg}```"
         return await ctx.send(embed=embed)
 
-    @history.command(hidden=True)
+    @history.command(aliases=["e"])
     @commands.has_permissions(manage_messages=True)
-    async def edited(self, ctx, member: discord.Member = None, amount: int = 5):
-        """Shows a members most recent edit message history.
+    async def edited(self, ctx, user: discord.User = None, amount: int = 10):
+        """Shows a users most recent edit message history.
 
-        member: discord.Member
-            The member to get the edit history of.
+        member: discord.User
+            The user to get the edit history of.
         amount: int
             The amount of messages to get.
         """
-        if member is None:
-            member = ctx.author
+        if user is None:
+            user = ctx.author
 
-        member_id = str(member.id).encode()
-        edited = self.edited.get(member_id)
+        user_id = str(user.id).encode()
+        edited = self.edited.get(user_id)
 
         if edited is None:
             return await ctx.send("```No edited messages found```")
@@ -386,7 +396,7 @@ class admin(commands.Cog):
 
         embed = discord.Embed(
             color=discord.Color.blurple(),
-            title=f"{member.display_name}'s Edited Messages",
+            title=f"{user.display_name}'s Edited Messages",
         )
 
         msg = ""
@@ -395,7 +405,10 @@ class admin(commands.Cog):
             if index == amount:
                 break
 
-            msg += f"{date}: {edited[date][0]} >>> {edited[date][1]}\n"
+            before = edited[date][0].replace("`", "")
+            after = edited[date][1].replace("`", "")
+
+            msg += f"{date}: {before} >>> {after}\n"
 
         embed.description = f"```{msg}```"
         return await ctx.send(embed=embed)

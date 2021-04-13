@@ -1,11 +1,31 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, menus
 import ujson
 import random
 import aiohttp
 import time
 import lxml.html
 import re
+
+
+class InviteMenu(menus.ListPageSource):
+    def __init__(self, data):
+        super().__init__(data, per_page=20)
+
+    async def format_page(self, menu, entries):
+        msg = ""
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if entries == []:
+            embed.description = "```No stored information found```"
+            return embed
+
+        for member, invite in entries:
+            if len(member) <= 18:
+                name = self.bot.get_user(int(member)).display_name
+                msg += f"{name}: {invite.decode()}\n"
+        embed.description = f"```{msg}```"
+        return embed
 
 
 class useful(commands.Cog):
@@ -16,16 +36,45 @@ class useful(commands.Cog):
         self.invites = self.bot.db.prefixed_db(b"invites-")
 
     @commands.command()
+    async def emoji(self, ctx, *, name):
+        """Does an emoji submission automatically.
+
+        To use this command attach an image and put
+        ".emoji [name]" as the comment
+
+        name: str
+            The emoji name. Must be at least 2 characters."""
+        if len(name) < 2:
+            return await ctx.send("```Name has to be at least 2 characters```")
+
+        if discord.utils.get(ctx.guild.emojis, name=name):
+            return await ctx.send("```An emoji already exists with that name```")
+
+        if len(ctx.message.attachments) == 0:
+            return await ctx.send(
+                "```You need to attach the emoji image to the message```"
+            )
+        emojis = self.bot.db.get(b"emoji_submissions")
+
+        if not emojis:
+            emojis = {}
+        else:
+            emojis = ujson.loads(emojis)
+
+        emojis[ctx.message.id] = {}
+        emojis[ctx.message.id]["name"] = name
+        emojis[ctx.message.id]["users"] = []
+
+        self.bot.db.delete(b"emoji_submissions")
+        self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
+
+    @commands.command()
     async def invites(self, ctx):
         """Shows the invites that users joined from."""
-        msg = ""
-        embed = discord.Embed(color=discord.Color.blurple())
-        for member, invite in self.invites:
-            if len(member) <= 18:
-                name = self.bot.get_user(int(member)).display_name
-                msg += f"{name}: {invite.decode()}"
-        embed.description = f"```{msg}```"
-        await ctx.send(embed=embed)
+        pages = menus.MenuPages(
+            source=InviteMenu(list(self.invites)), clear_reactions_after=True
+        )
+        await pages.start(ctx)
 
     @commands.command()
     async def run(self, ctx, lang, *, code):
@@ -180,6 +229,10 @@ class useful(commands.Cog):
                 images.append(a.attrib["data-src"])
             except KeyError:
                 pass
+
+        if images == []:
+            return await ctx.send("```No images found```")
+
         await ctx.send(random.choice(images))
 
     @commands.command(aliases=["img"])

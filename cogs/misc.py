@@ -52,17 +52,17 @@ class misc(commands.Cog):
         await ctx.send(f"```{bin(int(number))}```")
 
     @commands.command()
-    async def karma(self, ctx, member: discord.Member = None):
-        """Gets a members karma.
+    async def karma(self, ctx, user: discord.User = None):
+        """Gets a users karma.
 
-        member: discord.Member
-            A member whos karma will be returned.
+        user: discord.User
+            The user to get the karma of.
         """
-        if not member:
-            member = ctx.author
+        if not user:
+            user = ctx.author
 
-        member_id = str(member.id).encode()
-        karma = self.karma.get(member_id)
+        user_id = str(user.id).encode()
+        karma = self.karma.get(user_id)
 
         if not karma:
             karma = 0
@@ -72,9 +72,7 @@ class misc(commands.Cog):
         tenary = "+" if int(karma) > 0 else ""
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = (
-            f"```diff\n{member.display_name}'s karma:\n{tenary}{karma}```"
-        )
+        embed.description = f"```diff\n{user.display_name}'s karma:\n{tenary}{karma}```"
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["kboard"])
@@ -155,29 +153,29 @@ class misc(commands.Cog):
         await ctx.send(f"<{discord.utils.oauth_url(self.bot.client_id, perms)}>")
 
     @commands.command()
-    async def icon(self, ctx, member: discord.Member):
+    async def icon(self, ctx, user: discord.User):
         """Sends a members avatar url.
 
-        member: discord.Member
+        user: discord.User
             The member to show the avatar of.
         """
-        await ctx.send(member.avatar_url)
+        await ctx.send(user.avatar_url)
 
     @commands.command()
-    async def send(self, ctx, member: discord.Member, *, message):
+    async def send(self, ctx, user: discord.User, *, message):
         """Gets Snakebot to send a DM to member.
 
-        member: discord.Member
-            The member to DM.
+        user: discord.User
+            The user to DM.
         message: str
             The message to be sent.
         """
         try:
-            await member.send(message)
-            await ctx.send(f"```Sent message to {member.display_name}```")
+            await user.send(message)
+            await ctx.send(f"```Sent message to {user.display_name}```")
         except discord.errors.Forbidden:
             await ctx.send(
-                f"```{member.display_name} has DMs disabled for non-friends```"
+                f"```{user.display_name} has DMs disabled for non-friends```"
             )
 
     @commands.command()

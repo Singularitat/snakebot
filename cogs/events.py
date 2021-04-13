@@ -6,6 +6,8 @@ import os
 from datetime import datetime
 import psutil
 import logging
+from PIL import Image
+from io import BytesIO
 
 
 class events(commands.Cog):
@@ -17,13 +19,56 @@ class events(commands.Cog):
         self.deleted = self.bot.db.prefixed_db(b"deleted-")
         self.edited = self.bot.db.prefixed_db(b"edited-")
         self.invites = self.bot.db.prefixed_db(b"invites-")
+        self.nicks = self.bot.db.prefixed_db(b"nicks-")
+
+    async def emoji_submission_check(self, reaction, user, remove=False):
+        """Checks if an emoji submission has passed 8 votes.
+
+        reaction: discord.Reaction
+        user: Union[discord.User, discord.Member]
+        remove: bool
+            If the reaction was removed or added"""
+        emojis = self.bot.db.get(b"emoji_submissions")
+
+        if not emojis or reaction.emoji.name.lower() != "upvote":
+            return
+
+        emojis = ujson.loads(emojis)
+
+        if str(reaction.message.id) not in emojis:
+            return
+
+        if remove and user.id in emojis[str(reaction.message.id)]["users"]:
+            emojis[str(reaction.message.id)]["users"].remove(user.id)
+
+        elif user.id not in emojis[str(reaction.message.id)]["users"]:
+            emojis[str(reaction.message.id)]["users"].append(user.id)
+
+            if len(emojis[str(reaction.message.id)]["users"]) < 8:
+                return
+
+            file = reaction.message.attachments[0]
+            file = BytesIO(await file.read())
+            file = Image.open(file).resize((256, 256))
+
+            imgByteArr = BytesIO()
+            file.save(imgByteArr, format="PNG")
+            file = imgByteArr.getvalue()
+
+            name = emojis[str(reaction.message.id)]["name"]
+
+            if not discord.utils.get(reaction.message.guild.emojis, name=name):
+                await reaction.message.guild.create_custom_emoji(name=name, image=file)
+
+            emojis.pop(str(reaction.message.id))
+            self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
 
     async def reaction_role_check(self, payload):
         message_id = str(payload.message_id).encode()
         reaction = self.rrole.get(message_id)
 
         if not reaction:
-            return None
+            return
 
         reaction = ujson.loads(reaction)
 
@@ -32,7 +77,7 @@ class events(commands.Cog):
         elif payload.emoji.name in reaction:
             role_id = int(reaction[payload.emoji.name])
         else:
-            return None
+            return
 
         guild = self.bot.get_guild(payload.guild_id)
         role = guild.get_role(role_id)
@@ -76,6 +121,7 @@ class events(commands.Cog):
         reaction: discord.Reaction
         user: Union[discord.User, discord.Member]
         """
+        await self.emoji_submission_check(reaction, user)
         if reaction.message.author == user or not reaction.custom_emoji:
             return
 
@@ -109,6 +155,7 @@ class events(commands.Cog):
         reaction: discord.Reaction
         user: Union[discord.User, discord.Member]
         """
+        await self.emoji_submission_check(reaction, user, True)
         if reaction.message.author == user or not reaction.custom_emoji:
             return
 
@@ -251,9 +298,17 @@ class events(commands.Cog):
         channel = discord.utils.get(message.guild.channels, name="logs")
 
         if channel is not None:
-            await channel.send(
-                f"```{message.author} deleted:\n{message.content.replace('`', '')}```"
-            )
+            msg = message.content.replace("`", "")
+
+            async for entry in message.guild.audit_logs(
+                limit=1, action=discord.AuditLogAction.message_delete
+            ):
+                if entry.user.id != message.author.id:
+                    return await channel.send(
+                        f"```{entry.user} deleted {message.author}'s message:\n{msg}```"
+                    )
+
+            await channel.send(f"```{message.author} deleted:\n{msg}```")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -263,6 +318,72 @@ class events(commands.Cog):
         """
         if self.blacklist.get(str(message.author.id).encode()) == b"1":
             await message.add_reaction("<:downvote:766414744730206228>")
+
+    @commands.Cog.listener()
+    async def on_member_update(self, before, after):
+        """Puts members nickname history into the db.
+
+        before: discord.Member
+            The member object before the update.
+        after: discord.Member
+            The member object after the update.
+        """
+        if before.nick == after.nick:
+            return
+
+        member_id = str(after.id).encode()
+
+        nicks = self.nicks.get(member_id)
+
+        if nicks is None:
+            nicks = {"nicks": {}, "names": {}}
+        else:
+            nicks = ujson.loads(nicks)
+
+        now = str(datetime.now())[:-7]
+
+        if "current" in nicks["nicks"]:
+            date = nicks["nicks"]["current"][1]
+        else:
+            date = now
+
+        nicks["nicks"][date] = before.nick
+        nicks["nicks"]["current"] = [after.nick, now]
+
+        self.nicks.put(member_id, ujson.dumps(nicks).encode())
+
+    @commands.Cog.listener()
+    async def on_user_update(self, before, after):
+        """Puts users name history into the db.
+
+        before: discord.User
+            The user object before the update.
+        after: discord.User
+            The user object after the update.
+        """
+        if before.name == after.name:
+            return
+
+        member_id = str(after.id).encode()
+
+        names = self.nicks.get(member_id)
+
+        if names is None:
+            names = {"nicks": {}, "names": {}}
+        else:
+            names = ujson.loads(names)
+
+        now = str(datetime.now())[:-7]
+
+        if "current" in names["names"]:
+            date = names["names"]["current"][1]
+        else:
+            date = now
+
+        names["names"][date] = before.name
+        names["names"]["current"] = [after.name, now]
+
+        self.nicks.put(member_id, ujson.dumps(names).encode())
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -342,7 +463,7 @@ class events(commands.Cog):
             message = f"{self.bot.user.name} is missing required permissions: {error.missing_perms}"
 
         else:
-            logging.getLogger("discord").info(
+            logging.getLogger("discord").warning(
                 f"Unhandled Error: {ctx.command.qualified_name}, Error: {error}, Type: {type(error)}"
             )
             message = error
