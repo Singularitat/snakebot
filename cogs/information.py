@@ -121,7 +121,7 @@ class information(commands.Cog):
         embed.set_thumbnail(url=ctx.guild.icon_url)
         await ctx.send(embed=embed)
 
-    @commands.command(name="user", aliases=["user_info", "member", "member_info"])
+    @commands.command(name="user", aliases=["member"])
     async def user_info(self, ctx, member: discord.Member = None) -> None:
         """Sends info about a member.
 
