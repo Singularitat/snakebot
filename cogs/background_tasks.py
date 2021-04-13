@@ -215,7 +215,7 @@ class background_tasks(commands.Cog):
     async def check_end_dates(self):
         """Checks end dates on bans and downvotes."""
         banned = self.bot.db.get(b"banned_members")
-        downvoted = self.bot.db.get(b"downvoted_members")
+        downvoted = self.bot.db.get(b"downvoted_users")
 
         if banned is not None:
             async for member in self.members_check(banned):
