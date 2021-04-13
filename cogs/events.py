@@ -303,7 +303,10 @@ class events(commands.Cog):
             async for entry in message.guild.audit_logs(
                 limit=1, action=discord.AuditLogAction.message_delete
             ):
-                if entry.user.id != message.author.id:
+                if (
+                    entry.user.id != message.author.id
+                    and entry.target.id == message.author.id
+                ):
                     return await channel.send(
                         f"```{entry.user} deleted {message.author}'s message:\n{msg}```"
                     )
