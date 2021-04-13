@@ -188,15 +188,17 @@ class economy(commands.Cog):
         await self.streak_update(member, result)
 
     @commands.command(aliases=["streaks"])
-    async def streak(self, ctx, member: discord.Member = None):
-        """Gets your streaks on the slot machine."""
-        if member:
-            member = str(member.id).encode()
+    async def streak(self, ctx, user: discord.User = None):
+        """Gets a users streaks on the slot machine.
 
+        user: discord.User
+            The user to get streaks of defaults to the command author."""
+        if user:
+            user = str(user.id).encode()
         else:
-            member = str(ctx.author.id).encode()
+            user = str(ctx.author.id).encode()
 
-        wins = self.wins.get(member)
+        wins = self.wins.get(user)
 
         if not wins:
             return
@@ -236,18 +238,18 @@ class economy(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["bal"])
-    async def balance(self, ctx, member: discord.Member = None):
+    async def balance(self, ctx, user: discord.User = None):
         """Gets a members balance.
 
-        members: discord.Member
-            The member whos balance will be returned.
+        user: discord.User
+            The user whos balance will be returned.
         """
-        if not member:
-            member = ctx.author
+        if not user:
+            user = ctx.author
 
-        member_id = str(member.id).encode()
+        user_id = str(user.id).encode()
 
-        bal = self.bal.get(member_id)
+        bal = self.bal.get(user_id)
 
         if not bal:
             bal = 1000
@@ -257,23 +259,23 @@ class economy(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         embed.add_field(
-            name=f"{member.display_name}'s balance", value=f"${bal:,.2f}", inline=False
+            name=f"{user.display_name}'s balance", value=f"${bal:,.2f}", inline=False
         )
 
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["give", "donate"])
-    async def pay(self, ctx, member: discord.Member, amount: float):
-        """Pays a member from your balance.
+    async def pay(self, ctx, user: discord.User, amount: float):
+        """Pays a user from your balance.
 
-        member: discord.Member
+        user: discord.User
             The member you are paying.
         amount: float
             The amount you are paying.
         """
         if amount > 0:
-            member_id = str(ctx.author.id).encode()
-            bal = self.bal.get(member_id)
+            user_id = str(ctx.author.id).encode()
+            bal = self.bal.get(user_id)
 
             if not bal:
                 bal = 1000
@@ -281,33 +283,33 @@ class economy(commands.Cog):
                 bal = float(bal)
 
             if bal < amount:
-                await ctx.send(
+                return await ctx.send(
                     embed=discord.Embed(
                         title="You don't have enough cash", color=discord.Color.red()
                     )
                 )
+
+            payee = str(user.id).encode()
+            payee_bal = self.bal.get(payee)
+
+            if not payee_bal:
+                payee_bal = 1000
             else:
-                payee = str(member.id).encode()
-                payee_bal = self.bal.get(payee)
+                payee_bal = float(payee_bal)
 
-                if not payee_bal:
-                    payee_bal = 1000
-                else:
-                    payee_bal = float(payee_bal)
+            bal -= amount
+            payee_bal += amount
 
-                bal -= amount
-                payee_bal += amount
+            embed = discord.Embed(
+                title=f"Sent ${amount} to {user.display_name}",
+                color=discord.Color.blurple(),
+            )
+            embed.set_footer(text=f"New Balance: ${bal}")
 
-                embed = discord.Embed(
-                    title=f"Sent ${amount} to {member.display_name}",
-                    color=discord.Color.blurple(),
-                )
-                embed.set_footer(text=f"New Balance: ${bal}")
+            self.bal.put(payee, str(payee_bal).encode())
+            self.bal.put(user_id, str(bal).encode())
 
-                self.bal.put(payee, str(payee_bal).encode())
-                self.bal.put(member_id, str(bal).encode())
-
-                await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
 
     @commands.command()
     @commands.cooldown(1, 21600, commands.BucketType.user)
