@@ -151,7 +151,7 @@ class background_tasks(commands.Cog):
         """Tries to update every 5 minutes and then reloads if needed."""
         pull = await self.run_process("git pull")
 
-        if pull == ["Already", "up", "to", "date."]:
+        if pull[:4] == ["Already", "up", "to", "date."]:
             return
 
         diff = await self.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
@@ -201,7 +201,11 @@ class background_tasks(commands.Cog):
         self.bot.db.put(b"languages", ujson.dumps(languages).encode())
 
     async def members_check(self, members):
-        """Checks if any end dates have been past then yields the member."""
+        """Checks if any end dates have been past then yields the member.
+
+        members: dict
+            A dictionary of members with dates to check.
+        """
         members = ujson.loads(members)
 
         for member in members:
