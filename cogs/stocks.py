@@ -9,7 +9,7 @@ class StockMenu(menus.ListPageSource):
         super().__init__(data, per_page=100)
 
     async def format_page(self, menu, entries):
-        msg = ""
+        msg = "\n"
         i = 1
         for stock, price in entries:
             price = ujson.loads(price)["price"]
@@ -22,9 +22,7 @@ class StockMenu(menus.ListPageSource):
                 msg += f"{stock.decode():<5}: ${price:<9}"
             i += 1
 
-        embed = discord.Embed(
-            color=discord.Color.blurple(), description=f"```\n{msg}```"
-        )
+        embed = discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
         return embed
 
 

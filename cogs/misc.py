@@ -72,9 +72,7 @@ class misc(commands.Cog):
         tenary = "+" if int(karma) > 0 else ""
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = (
-            f"```diff\n{user.display_name}'s karma:\n{tenary}{karma}```"
-        )
+        embed.description = f"```diff\n{user.display_name}'s karma:\n{tenary}{karma}```"
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["kboard"])
