@@ -55,8 +55,14 @@ class owner(commands.Cog):
         self.bot = bot
         self.rrole = self.bot.db.prefixed_db(b"rrole-")
 
+    async def cog_check(self, ctx):
+        """Checks if the member is an owner.
+
+        ctx: commands.Context
+        """
+        return ctx.author.id in self.bot.owner_ids
+
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def togglelog(self, ctx):
         """Toggles logging to logs channel."""
         self.bot.db.put(
@@ -64,7 +70,6 @@ class owner(commands.Cog):
         )
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def toggle(self, ctx, command):
         """Toggles a command from being disabled or enabled.
 
@@ -82,7 +87,6 @@ class owner(commands.Cog):
             )
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def presence(self, ctx, *, presence):
         """Changes the bots activity.
 
@@ -95,7 +99,6 @@ class owner(commands.Cog):
         )
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def perf(self, ctx, *, command):
         """Checks the timing of a command, while attempting to suppress HTTP calls.
 
@@ -136,7 +139,6 @@ class owner(commands.Cog):
         await ctx.send(f"```css\n{result}: {(end - start) * 1000:.2f}ms```")
 
     @commands.command(hiiden=True)
-    @commands.is_owner()
     async def prefix(self, ctx, prefix: str):
         """Changes the bots command prefix.
 
@@ -147,7 +149,6 @@ class owner(commands.Cog):
         await ctx.send(f"```Prefix changed to {prefix}```")
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def sudo(
         self, ctx, channel: discord.TextChannel, member: discord.Member, *, command: str
     ):
@@ -168,16 +169,24 @@ class owner(commands.Cog):
         new_ctx = await self.bot.get_context(msg, cls=type(ctx))
         await self.bot.invoke(new_ctx)
 
-    async def run_process(self, command):
+    async def run_process(self, command, raw=False):
+        """Runs a shell command and returns the output.
+
+        command: str
+            The command to run.
+        raw: bool
+            If True returns the result just decoded."""
         process = await asyncio.create_subprocess_shell(
             command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
         result = await process.communicate()
 
+        if raw:
+            return [output.decode() for output in result]
+
         return " ".join([output.decode() for output in result]).split()
 
     @commands.command(hidden=True, aliases=["pull"])
-    @commands.is_owner()
     async def update(self, ctx):
         """Gets latest commits and applies them through git."""
         pull = await self.run_process("git pull")
@@ -216,8 +225,17 @@ class owner(commands.Cog):
                 if isinstance(e, commands.errors.ExtensionNotLoaded):
                     self.bot.load_extension(f"cogs.{ext}")
 
+    @commands.command(hidden=True)
+    async def status(self, ctx):
+        await self.run_process("git fetch")
+        status = await self.run_process("git status", True)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = f"```ahk\n{' '.join(status)}```"
+
+        await ctx.send(embed=embed)
+
     @commands.command(hidden=True, aliases=["deletecmd", "removecmd"])
-    @commands.is_owner()
     async def deletecommand(self, ctx, command):
         """Removes command from the bot.
 
@@ -228,13 +246,11 @@ class owner(commands.Cog):
         await ctx.send(embed=discord.Embed(title=f"```Removed command {command}```"))
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def kill(self, ctx):
         """Kills the bot."""
         await self.bot.logout()
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def load(self, ctx, extension: str):
         """Loads an extension.
 
@@ -253,7 +269,6 @@ class owner(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def unload(self, ctx, ext: str):
         """Unloads an extension.
 
@@ -266,7 +281,6 @@ class owner(commands.Cog):
         )
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def reload(self, ctx, ext: str):
         """Reloads an extension.
 
@@ -279,7 +293,6 @@ class owner(commands.Cog):
         )
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def restart(self, ctx):
         """Restarts all extensions."""
         embed = discord.Embed(color=discord.Color.blurple())
@@ -297,7 +310,6 @@ class owner(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def revive(self, ctx):
         """Kills the bot then revives it."""
         await ctx.send(
@@ -313,7 +325,6 @@ class owner(commands.Cog):
             os.system("nohup python3 bot.py &")
 
     @commands.command()
-    @commands.is_owner()
     async def lrrole(self, ctx):
         """Sends a list of the message ids of current reaction roles."""
         msg = ""
@@ -322,7 +333,6 @@ class owner(commands.Cog):
         await ctx.send(f"```{msg}```")
 
     @commands.command()
-    @commands.is_owner()
     async def drrole(self, ctx, message_id: int):
         """Deletes a reaction role message and removes it from the db.
 
@@ -334,7 +344,6 @@ class owner(commands.Cog):
         await message.delete()
 
     @commands.command()
-    @commands.is_owner()
     async def rrole(self, ctx, *emojis):
         """Starts a slightly interactive session to create a reaction role.
 
@@ -397,7 +406,6 @@ class owner(commands.Cog):
         )
 
     @commands.command()
-    @commands.is_owner()
     async def redit(self, ctx, message: discord.Message, *emojis):
         """Edit a reaction role message.
 
