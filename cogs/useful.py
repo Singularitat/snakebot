@@ -196,6 +196,10 @@ class useful(commands.Cog):
                 images.append(a.attrib["data-src"])
             except KeyError:
                 pass
+
+        if images == []:
+            return await ctx.send("```No images found```")
+
         await ctx.send(random.choice(images))
 
     @commands.command(aliases=["img"])
