@@ -36,6 +36,39 @@ class useful(commands.Cog):
         self.invites = self.bot.db.prefixed_db(b"invites-")
 
     @commands.command()
+    async def emoji(self, ctx, *, name):
+        """Does an emoji submission automatically.
+
+        To use this command attach an image and put
+        ".emoji [name]" as the comment
+
+        name: str
+            The emoji name. Must be at least 2 characters."""
+        if len(name) < 2:
+            return await ctx.send("```Name has to be at least 2 characters```")
+
+        if discord.utils.get(ctx.guild.emojis, name=name):
+            return await ctx.send("```An emoji already exists with that name```")
+
+        if len(ctx.message.attachments) == 0:
+            return await ctx.send(
+                "```You need to attach the emoji image to the message```"
+            )
+        emojis = self.bot.db.get(b"emoji_submissions")
+
+        if not emojis:
+            emojis = {}
+        else:
+            emojis = ujson.loads(emojis)
+
+        emojis[ctx.message.id] = {}
+        emojis[ctx.message.id]["name"] = name
+        emojis[ctx.message.id]["users"] = []
+
+        self.bot.db.delete(b"emoji_submissions")
+        self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
+
+    @commands.command()
     async def invites(self, ctx):
         """Shows the invites that users joined from."""
         pages = menus.MenuPages(
