@@ -17,6 +17,7 @@ class events(commands.Cog):
         self.deleted = self.bot.db.prefixed_db(b"deleted-")
         self.edited = self.bot.db.prefixed_db(b"edited-")
         self.invites = self.bot.db.prefixed_db(b"invites-")
+        self.nicks = self.bot.db.prefixed_db(b"nicks-")
 
     async def reaction_role_check(self, payload):
         message_id = str(payload.message_id).encode()
@@ -265,6 +266,72 @@ class events(commands.Cog):
             await message.add_reaction("<:downvote:766414744730206228>")
 
     @commands.Cog.listener()
+    async def on_member_update(self, before, after):
+        """Puts members nickname history into the db.
+
+        before: discord.Member
+            The member object before the update.
+        after: discord.Member
+            The member object after the update.
+        """
+        if before.nick == after.nick:
+            return
+
+        member_id = str(after.id).encode()
+
+        nicks = self.nicks.get(member_id)
+
+        if nicks is None:
+            nicks = {"nicks": {}, "names": {}}
+        else:
+            nicks = ujson.loads(nicks)
+
+        now = str(datetime.now())[:-7]
+
+        if "current" in nicks["nicks"]:
+            date = nicks["nicks"]["current"][1]
+        else:
+            date = now
+
+        nicks["nicks"][date] = before.nick
+        nicks["nicks"]["current"] = [after.nick, now]
+
+        self.nicks.put(member_id, ujson.dumps(nicks).encode())
+
+    @commands.Cog.listener()
+    async def on_user_update(self, before, after):
+        """Puts users name history into the db.
+
+        before: discord.User
+            The user object before the update.
+        after: discord.User
+            The user object after the update.
+        """
+        if before.name == after.name:
+            return
+
+        member_id = str(after.id).encode()
+
+        names = self.nicks.get(member_id)
+
+        if names is None:
+            names = {"nicks": {}, "names": {}}
+        else:
+            names = ujson.loads(names)
+
+        now = str(datetime.now())[:-7]
+
+        if "current" in names["names"]:
+            date = names["names"]["current"][1]
+        else:
+            date = now
+
+        names["names"][date] = before.nick
+        names["names"]["current"] = [after.nick, now]
+
+        self.nicks.put(member_id, ujson.dumps(names).encode())
+
+    @commands.Cog.listener()
     async def on_member_join(self, member):
         """Checks which invite someone has joined from.
 
@@ -342,7 +409,7 @@ class events(commands.Cog):
             message = f"{self.bot.user.name} is missing required permissions: {error.missing_perms}"
 
         else:
-            logging.getLogger("discord").info(
+            logging.getLogger("discord").warning(
                 f"Unhandled Error: {ctx.command.qualified_name}, Error: {error}, Type: {type(error)}"
             )
             message = error
