@@ -143,19 +143,15 @@ class background_tasks(commands.Cog):
     @tasks.loop(minutes=30)
     async def update_stocks(self):
         """Updates stock prices every half hour."""
-        time = datetime.utcnow().hour
-        # Check if the stock market is open
-        # 2:00 PM to 4 AM
-        if time <= 14 and time >= 4 or self.stocks.get(b"GME") is None:
-            await self.stockupdate(
-                "https://nz.finance.yahoo.com/most-active?offset=0&count=200"
-            )
-            await self.stockupdate(
-                "https://nz.finance.yahoo.com/most-active?offset=200&count=200"
-            )
-            await self.stockupdate(
-                "https://finance.yahoo.com/most-active?offset=0&count=200"
-            )
+        await self.stockupdate(
+            "https://nz.finance.yahoo.com/most-active?offset=0&count=200"
+        )
+        await self.stockupdate(
+            "https://nz.finance.yahoo.com/most-active?offset=200&count=200"
+        )
+        await self.stockupdate(
+            "https://finance.yahoo.com/most-active?offset=0&count=200"
+        )
 
     async def run_process(self, command):
         process = await asyncio.create_subprocess_shell(
@@ -219,37 +215,47 @@ class background_tasks(commands.Cog):
 
         self.bot.db.put(b"languages", ujson.dumps(languages).encode())
 
-    async def members_check(self, members):
-        """Checks if any end dates have been past then yields the member.
+    async def date_check(self, db_key: bytes):
+        """Checks end dates in a dictionary then yields the value.
 
-        members: dict
-            A dictionary of members with dates to check.
+        db_key: bytes
+            A key to get a dictionary from the db.
         """
-        members = ujson.loads(members)
+        dictionary = self.bot.db.get(db_key)
 
-        for member in members:
+        if dictionary is None:
+            return
+
+        dictionary = ujson.loads(dictionary)
+
+        for value in list(dictionary):
             if (
-                datetime.strptime(members[member]["date"], "%Y-%m-%d %H:%M:%S.%f")
+                datetime.strptime(dictionary[value]["date"], "%Y-%m-%d %H:%M:%S.%f")
                 < datetime.now()
             ):
-                yield member
+                if "guild" in dictionary[value]:
+                    yield value, dictionary[value]["guild"]
+                else:
+                    yield value
+
+                dictionary.pop(value)
+
+        self.bot.db.put(db_key, ujson.dumps(dictionary).encode())
 
     @tasks.loop(seconds=10)
     async def check_end_dates(self):
-        """Checks end dates on bans and downvotes."""
-        banned = self.bot.db.get(b"banned_members")
-        downvoted = self.bot.db.get(b"downvoted_users")
+        """Checks end dates on bans, downvotes and cache."""
 
-        if banned is not None:
-            async for member in self.members_check(banned):
-                guild = self.bot.get_guild(banned[member]["guild"])
-                user = self.bot.get_user(member)
-                if user:
-                    await guild.unban(user)
+        async for member, guild in self.date_check(b"banned_members"):
+            user = self.bot.get_user(member)
+            if user:
+                await guild.unban(user)
 
-        if downvoted is not None:
-            async for member in self.members_check(downvoted):
-                self.bot.db.delete(b"blacklist-" + member.encode())
+        async for member in self.date_check(b"downvoted_users"):
+            self.bot.db.delete(b"blacklist-" + member.encode())
+
+        async for cache in self.date_check(b"cache"):
+            pass
 
 
 def setup(bot):
