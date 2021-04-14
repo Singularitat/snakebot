@@ -35,6 +35,66 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
+    async def racoon(self, ctx):
+        """Gets a random racoon image."""
+        url = "https://some-random-api.ml/img/racoon"
+
+        async with ctx.typing():
+            image = await self.get_json(url)
+
+        await ctx.send(image["link"])
+
+    @commands.command()
+    async def kangaroo(self, ctx):
+        """Gets a random kangaroo image."""
+        url = "https://some-random-api.ml/img/kangaroo"
+
+        async with ctx.typing():
+            image = await self.get_json(url)
+
+        await ctx.send(image["link"])
+
+    @commands.command()
+    async def koala(self, ctx):
+        """Gets a random koala image."""
+        url = "https://some-random-api.ml/img/koala"
+
+        async with ctx.typing():
+            image = await self.get_json(url)
+
+        await ctx.send(image["link"])
+
+    @commands.command()
+    async def bird(self, ctx):
+        """Gets a random bird image."""
+        url = "https://some-random-api.ml/img/birb"
+
+        async with ctx.typing():
+            image = await self.get_json(url)
+
+        await ctx.send(image["link"])
+
+    @commands.command()
+    async def redpanda(self, ctx):
+        """Gets a random red panda image."""
+        url = "https://some-random-api.ml/img/red_panda"
+
+        async with ctx.typing():
+            image = await self.get_json(url)
+
+        await ctx.send(image["link"])
+
+    @commands.command()
+    async def panda(self, ctx):
+        """Gets a random panda image."""
+        url = "https://some-random-api.ml/img/panda"
+
+        async with ctx.typing():
+            image = await self.get_json(url)
+
+        await ctx.send(image["link"])
+
+    @commands.command()
     async def avatar(self, ctx, *, seed=""):
         """Creates a avatar based off a seed.
 
@@ -211,7 +271,7 @@ class apis(commands.Cog):
         index: int
         title: str
         """
-        return f'`{index}` [{title}]({f"https://en.wikipedia.org/wiki/{title}".format(title=title.replace(" ", "_"))})'
+        return f'`{index}` [{title}](https://en.wikipedia.org/wiki/{title.replace(" ", "_")}))'
 
     async def search_wikipedia(self, search_term: str):
         """Search wikipedia and return the first 10 pages found.

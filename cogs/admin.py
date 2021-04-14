@@ -15,6 +15,70 @@ class admin(commands.Cog):
 
     @commands.has_permissions(administrator=True)
     @commands.command(hidden=True)
+    async def emojis(self, ctx):
+        """Shows a list of the current emojis being voted on."""
+        emojis = self.bot.db.get(b"emoji_submissions")
+
+        if not emojis:
+            emojis = {}
+        else:
+            emojis = ujson.loads(emojis)
+
+        if len(emojis) == 0:
+            return await ctx.send("```No emojis found```")
+
+        msg = ""
+
+        for name, users in emojis.items():
+            msg += f"{name}: {users}\n"
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = f"```{msg}```"
+        await ctx.send(embed=embed)
+
+    @commands.has_permissions(administrator=True)
+    @commands.command(hidden=True, aliases=["demoji"])
+    async def delete_emoji(self, ctx, message_id):
+        """Shows a list of the current emojis being voted on.
+
+        message_id: str
+            Id of the message to remove from the db.
+        """
+        emojis = self.bot.db.get(b"emoji_submissions")
+
+        if not emojis:
+            emojis = {}
+        else:
+            emojis = ujson.loads(emojis)
+
+        try:
+            emojis.pop(message_id)
+        except KeyError:
+            await ctx.send(f"Message {message_id} not found in emojis")
+
+        self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
+
+    @commands.has_permissions(administrator=True)
+    @commands.command(hidden=True, aliases=["aemoji"])
+    async def add_emoji(self, ctx, message_id, name):
+        """Adds a emoji to be voted on.
+
+        message_id: int
+            Id of the message you are adding the emoji of.
+        """
+        emojis = self.bot.db.get(b"emoji_submissions")
+
+        if not emojis:
+            emojis = {}
+        else:
+            emojis = ujson.loads(emojis)
+
+        emojis[message_id] = {"name": name, "users": []}
+
+        self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
+
+    @commands.has_permissions(administrator=True)
+    @commands.command(hidden=True)
     async def edit(self, ctx, message: discord.Message, *, content):
         """Edits one of the bots messages.
 

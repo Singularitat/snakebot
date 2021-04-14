@@ -6,6 +6,7 @@ import asyncio
 import subprocess
 import ujson
 from discord.ext import commands, tasks
+import discord
 
 
 class background_tasks(commands.Cog):
@@ -75,15 +76,33 @@ class background_tasks(commands.Cog):
 
     @task.command()
     async def list(self, ctx):
-        """Lists background tasks."""
-        task_list = "\n".join(
-            [
-                task
-                for task in dir(background_tasks)
-                if isinstance(getattr(background_tasks, task), tasks.Loop)
-            ]
-        )
-        await ctx.send(f"```\n{task_list}```")
+        """Lists background tasks.
+
+        Example
+
+        Name:               Interval:      Running/Failed/Count
+
+        backup_bot          2h 0m 0s       True/False/10
+        check_end_dates     0h 0m 10s      True/False/7200
+        update_bot          0h 5m 0s       True/False/240
+        update_languages    0h 0m 0s       False/False/1
+        update_stocks       0h 30m 0s      True/False/40
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+        msg = "Name:               Interval:      Running/Failed/Count:\n\n"
+        for task in dir(background_tasks):
+            task_obj = getattr(self, task)
+            if isinstance(task_obj, tasks.Loop):
+                msg += "{:<20}{:<15}{}/{}/{}\n".format(
+                    task,
+                    f"{task_obj.hours}h {task_obj.minutes}m {task_obj.seconds}s",
+                    task_obj.is_running(),
+                    task_obj.failed(),
+                    task_obj.current_loop,
+                )
+
+        embed.description = f"```\n{msg}```"
+        await ctx.send(embed=embed)
 
     async def stockupdate(self, url):
         """Fetches stocks then updates the database.
@@ -151,7 +170,7 @@ class background_tasks(commands.Cog):
         """Tries to update every 5 minutes and then reloads if needed."""
         pull = await self.run_process("git pull")
 
-        if pull == ["Already", "up", "to", "date."]:
+        if pull[:4] == ["Already", "up", "to", "date."]:
             return
 
         diff = await self.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
@@ -201,7 +220,11 @@ class background_tasks(commands.Cog):
         self.bot.db.put(b"languages", ujson.dumps(languages).encode())
 
     async def members_check(self, members):
-        """Checks if any end dates have been past then yields the member."""
+        """Checks if any end dates have been past then yields the member.
+
+        members: dict
+            A dictionary of members with dates to check.
+        """
         members = ujson.loads(members)
 
         for member in members:
@@ -211,7 +234,7 @@ class background_tasks(commands.Cog):
             ):
                 yield member
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(seconds=10)
     async def check_end_dates(self):
         """Checks end dates on bans and downvotes."""
         banned = self.bot.db.get(b"banned_members")

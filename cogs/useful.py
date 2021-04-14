@@ -61,11 +61,8 @@ class useful(commands.Cog):
         else:
             emojis = ujson.loads(emojis)
 
-        emojis[ctx.message.id] = {}
-        emojis[ctx.message.id]["name"] = name
-        emojis[ctx.message.id]["users"] = []
+        emojis[ctx.message.id] = {"name": name, "users": []}
 
-        self.bot.db.delete(b"emoji_submissions")
         self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
 
     @commands.command()
