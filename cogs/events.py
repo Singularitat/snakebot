@@ -44,24 +44,26 @@ class events(commands.Cog):
         elif user.id not in emojis[str(reaction.message.id)]["users"]:
             emojis[str(reaction.message.id)]["users"].append(user.id)
 
-            if len(emojis[str(reaction.message.id)]["users"]) < 8:
-                return
+            if len(emojis[str(reaction.message.id)]["users"]) >= 8:
+                file = reaction.message.attachments[0]
+                file = BytesIO(await file.read())
+                file = Image.open(file).resize((256, 256))
 
-            file = reaction.message.attachments[0]
-            file = BytesIO(await file.read())
-            file = Image.open(file).resize((256, 256))
+                imgByteArr = BytesIO()
+                file.save(imgByteArr, format="PNG")
+                file = imgByteArr.getvalue()
 
-            imgByteArr = BytesIO()
-            file.save(imgByteArr, format="PNG")
-            file = imgByteArr.getvalue()
+                name = emojis[str(reaction.message.id)]["name"]
 
-            name = emojis[str(reaction.message.id)]["name"]
+                if not discord.utils.get(reaction.message.guild.emojis, name=name):
+                    emoji = await reaction.message.guild.create_custom_emoji(
+                        name=name, image=file
+                    )
+                    await reaction.message.add_reaction(emoji)
 
-            if not discord.utils.get(reaction.message.guild.emojis, name=name):
-                await reaction.message.guild.create_custom_emoji(name=name, image=file)
+                emojis.pop(str(reaction.message.id))
 
-            emojis.pop(str(reaction.message.id))
-            self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
+        self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
 
     async def reaction_role_check(self, payload):
         message_id = str(payload.message_id).encode()
@@ -121,8 +123,12 @@ class events(commands.Cog):
         reaction: discord.Reaction
         user: Union[discord.User, discord.Member]
         """
+        if not reaction.custom_emoji:
+            return
+
         await self.emoji_submission_check(reaction, user)
-        if reaction.message.author == user or not reaction.custom_emoji:
+
+        if reaction.message.author == user:
             return
 
         time_since = (datetime.utcnow() - reaction.message.created_at).total_seconds()
@@ -155,8 +161,12 @@ class events(commands.Cog):
         reaction: discord.Reaction
         user: Union[discord.User, discord.Member]
         """
+        if not reaction.custom_emoji:
+            return
+
         await self.emoji_submission_check(reaction, user, True)
-        if reaction.message.author == user or not reaction.custom_emoji:
+
+        if reaction.message.author == user:
             return
 
         time_since = (datetime.utcnow() - reaction.message.created_at).total_seconds()
