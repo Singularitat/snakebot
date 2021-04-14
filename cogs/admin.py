@@ -41,6 +41,8 @@ class admin(commands.Cog):
     async def delete_emoji(self, ctx, message_id):
         """Shows a list of the current emojis being voted on.
 
+        message_id: str
+            Id of the message to remove from the db.
         """
         emojis = self.bot.db.get(b"emoji_submissions")
 
