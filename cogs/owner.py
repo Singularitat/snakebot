@@ -62,6 +62,35 @@ class owner(commands.Cog):
         """
         return ctx.author.id in self.bot.owner_ids
 
+    @commands.command(hidden=True, aliases=["wipec"])
+    async def wipe_cache(self, ctx):
+        """Wipes cache from the db."""
+        self.bot.db.put(b"cache", b"{}")
+
+    @commands.command(hidden=True, aliases=["cache"])
+    async def list_cache(self, ctx):
+        """Lists the cached items in the db."""
+        embed = discord.Embed(color=discord.Color.blurple())
+        cache = self.bot.db.get(b"cache")
+
+        if cache:
+            cache = ujson.loads(cache)
+        else:
+            embed.description = "```Nothing has been cached```"
+            return await ctx.send(embed=embed)
+
+        if cache == {}:
+            embed.description = "```Nothing has been cached```"
+            return await ctx.send(embed=embed)
+
+        msg = ""
+
+        for item in cache:
+            msg += f"{item}\n"
+
+        embed.description = f"```{msg}```"
+        await ctx.send(embed=embed)
+
     @commands.command(hidden=True)
     async def togglelog(self, ctx):
         """Toggles logging to logs channel."""
