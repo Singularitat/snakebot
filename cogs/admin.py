@@ -29,8 +29,8 @@ class admin(commands.Cog):
 
         msg = ""
 
-        for emoji in emojis:
-            msg += f"{emoji}: {emojis[emoji]}\n"
+        for name, users in emojis.items():
+            msg += f"{name}: {users}\n"
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.description = f"```{msg}```"
