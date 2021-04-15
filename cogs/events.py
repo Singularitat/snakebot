@@ -261,13 +261,16 @@ class events(commands.Cog):
         if channel is None:
             return
 
+        embed = discord.Embed(color=discord.Color.blurple())
+
         if "`" in before.content or "`" in after.content:
             before.content = before.content.replace("`", "")
             after.content = after.content.replace("`", "")
 
-        await channel.send(
-            f"```{before.author} edited:\n{before.content} >>> {after.content}```"
-        )
+        embed.description = (f"```{before.author.display_name} edited:\n{before.content}"
+                             f" >>> {after.content}\n\nMember ID: {after.author.id}```")
+
+        await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -307,9 +310,14 @@ class events(commands.Cog):
 
         channel = discord.utils.get(message.guild.channels, name="logs")
 
-        if channel is not None:
-            msg = message.content.replace("`", "")
-            await channel.send(f"```{message.author} deleted:\n{msg}```")
+        if channel is None:
+            return
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        msg = message.content.replace("`", "")
+        embed.description = (f"```{message.author.display_name}"
+                             f" deleted:\n{msg}\n\nMember ID: {message.author.id}```")
+        await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -414,7 +422,11 @@ class events(commands.Cog):
         if channel is None:
             return
 
-        await channel.send(f"```{member} left the server```")
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = (f"```{member.display_name} left the server"
+                             f"\n\nMember ID: {member.id}```")
+
+        await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_invite_create(self, invite):
