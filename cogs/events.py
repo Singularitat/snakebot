@@ -267,8 +267,10 @@ class events(commands.Cog):
             before.content = before.content.replace("`", "")
             after.content = after.content.replace("`", "")
 
-        embed.description = (f"```{before.author.display_name} edited:\n{before.content}"
-                             f" >>> {after.content}\n\nMember ID: {after.author.id}```")
+        embed.description = (
+            f"```{before.author.display_name} edited:\n{before.content}"
+            f" >>> {after.content}\n\nMember ID: {after.author.id}```"
+        )
 
         await channel.send(embed=embed)
 
@@ -315,8 +317,10 @@ class events(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
         msg = message.content.replace("`", "")
-        embed.description = (f"```{message.author.display_name}"
-                             f" deleted:\n{msg}\n\nMember ID: {message.author.id}```")
+        embed.description = (
+            f"```{message.author.display_name}"
+            f" deleted:\n{msg}\n\nMember ID: {message.author.id}```"
+        )
         await channel.send(embed=embed)
 
     @commands.Cog.listener()
@@ -423,8 +427,9 @@ class events(commands.Cog):
             return
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = (f"```{member.display_name} left the server"
-                             f"\n\nMember ID: {member.id}```")
+        embed.description = (
+            f"```{member.display_name} left the server" f"\n\nMember ID: {member.id}```"
+        )
 
         await channel.send(embed=embed)
 
