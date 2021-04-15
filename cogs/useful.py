@@ -224,6 +224,28 @@ class useful(commands.Cog):
 
         await ctx.send(f"```{obj}\n\n{dir(obj)}```")
 
+    async def cache_check(self, item):
+        cache = self.bot.db.get(b"cache")
+
+        if cache is not None:
+            cache = ujson.loads(cache)
+
+            if item in cache:
+                if len(cache[item]["results"]) == 0:
+                    return {}
+
+                date = datetime.datetime.now() + datetime.timedelta(minutes=2)
+                cache[item]["date"] = str(date)
+                url, title = random.choice(list(cache[item]["results"].items()))
+
+                cache[item]["results"].pop(url)
+
+                self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+
+                return url, title
+            return cache
+        return {}
+
     @commands.command()
     async def google(self, ctx, *, search):
         """Searchs and finds a random image from google.
@@ -233,54 +255,47 @@ class useful(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
 
-        cache = self.bot.db.get(b"cache")
+        cache = await self.cache_check(f"google-{search}")
 
-        if cache is not None:
-            cache = ujson.loads(cache)
-            if search in cache:
-                date = datetime.datetime.now() + datetime.timedelta(minutes=2)
-                cache[search]["date"] = str(date)
-                self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+        if isinstance(cache, tuple):
+            url, title = cache
+            embed.set_image(url=url)
+            embed.title = title
 
-                url, title = random.choice(list(cache[search]["results"].items()))
+            return await ctx.send(embed=embed)
 
-                embed.set_image(url=url)
-                embed.title = title
+        async with ctx.typing():
+            url = f"https://www.google.co.nz/search?q={search}&source=lnms&tbm=isch"
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
+            }
+            async with aiohttp.ClientSession(headers=headers) as session, session.get(
+                url
+            ) as page:
+                soup = lxml.html.fromstring(await page.text())
 
+            images = {}
+            for a in soup.xpath('.//img[@class="rg_i Q4LuWd"]'):
+                try:
+                    images[a.attrib["data-src"]] = a.attrib["alt"]
+                except KeyError:
+                    pass
+
+            if images == {}:
+                embed.description = "```No images found```"
                 return await ctx.send(embed=embed)
-        else:
-            cache = {}
 
-        url = f"https://www.google.co.nz/search?q={search}&source=lnms&tbm=isch"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
-        }
-        async with aiohttp.ClientSession(headers=headers) as session, session.get(
-            url
-        ) as page:
-            soup = lxml.html.fromstring(await page.text())
+            url, title = random.choice(list(images.items()))
 
-        images = {}
-        for a in soup.xpath('.//img[@class="rg_i Q4LuWd"]'):
-            try:
-                images[a.attrib["data-src"]] = a.attrib["alt"]
-            except KeyError:
-                pass
+            embed.set_image(url=url)
+            embed.title = title
 
-        if images == []:
-            return await ctx.send("```No images found```")
+            await ctx.send(embed=embed)
 
-        url, title = random.choice(list(images.items()))
+            date = datetime.datetime.now() + datetime.timedelta(minutes=2)
+            cache[f"google-{search}"] = {"date": str(date), "results": images}
 
-        embed.set_image(url=url)
-        embed.title = title
-
-        await ctx.send(embed=embed)
-
-        date = datetime.datetime.now() + datetime.timedelta(minutes=2)
-        cache[search] = {"date": str(date), "results": images}
-
-        self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+            self.bot.db.put(b"cache", ujson.dumps(cache).encode())
 
     @commands.command(aliases=["img"])
     async def image(self, ctx, *, search):
@@ -289,19 +304,47 @@ class useful(commands.Cog):
         search: str
             The term to search for.
         """
-        search.replace(" ", "%20")
-        url = f"https://www.bing.com/images/search?q={search}&first=1&scenario=ImageBasicHover"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
-        }
-        async with aiohttp.ClientSession(headers=headers) as session, session.get(
-            url
-        ) as page:
-            soup = lxml.html.fromstring(await page.text())
-        images = []
-        for a in soup.xpath('.//a[@class="iusc"]'):
-            images.append(ujson.loads(a.attrib["m"])["turl"])
-        await ctx.send(random.choice(images))
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        cache = await self.cache_check(f"image-{search}")
+
+        if isinstance(cache, tuple):
+            url, title = cache
+            embed.set_image(url=url)
+            embed.title = title
+
+            return await ctx.send(embed=embed)
+
+        async with ctx.typing():
+            url = f"https://www.bing.com/images/search?q={search}&first=1"
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
+            }
+            async with aiohttp.ClientSession(headers=headers) as session, session.get(
+                url
+            ) as page:
+                soup = lxml.html.fromstring(await page.text())
+
+            images = {}
+            for a in soup.xpath('.//a[@class="iusc"]'):
+                data = ujson.loads(a.attrib["m"])
+                images[data["turl"]] = data["desc"]
+
+            if images == {}:
+                embed.description = "```No images found```"
+                return await ctx.send(embed=embed)
+
+            url, title = random.choice(list(images.items()))
+
+            embed.set_image(url=url)
+            embed.title = title
+
+            await ctx.send(embed=embed)
+
+            date = datetime.datetime.now() + datetime.timedelta(minutes=2)
+            cache[f"image-{search}"] = {"date": str(date), "results": images}
+
+            self.bot.db.put(b"cache", ujson.dumps(cache).encode())
 
     @commands.command()
     async def calc(self, ctx, num_base, *, args):
