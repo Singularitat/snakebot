@@ -200,7 +200,9 @@ class admin(commands.Cog):
             embed.description = f"***{user}*** has been removed from the downvote list"
             return await ctx.send(embed=embed)
 
-        await user.edit(voice_channel=None)
+        if ctx.guild:
+            member = ctx.guild.get_member(user.id)
+            await member.edit(voice_channel=None)
 
         self.blacklist.put(user_id, b"1")
 
@@ -212,7 +214,7 @@ class admin(commands.Cog):
                 data = ujson.loads(users)
 
             end_date = await self.end_date(duration)
-            data[user.id] = {"date": end_date, "guild": ctx.guild.id}
+            data[user.id] = {"date": end_date}
             self.bot.db.put(b"downvoted_users", ujson.dumps(data).encode())
 
         embed.title = "User Downvoted"

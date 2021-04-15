@@ -11,7 +11,6 @@ lxml = "^4.6.2"
 psutil = "^5.8.0"
 ujson = "^4.0.2"
 discord-ext-menus = {git = "https://github.com/Rapptz/discord-ext-menus"}
-plyvel-win32 = "^1.3.0"
 Pillow = "^8.2.0"
 
 [tool.poetry.dev-dependencies]

@@ -4,6 +4,7 @@ import ujson
 import random
 import aiohttp
 import time
+import datetime
 import lxml.html
 import re
 
@@ -211,7 +212,26 @@ class useful(commands.Cog):
         search: str
             The term to search for.
         """
-        search.replace(" ", "+")
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        cache = self.bot.db.get(b"cache")
+
+        if cache is not None:
+            cache = ujson.loads(cache)
+            if search in cache:
+                date = datetime.datetime.now() + datetime.timedelta(minutes=2)
+                cache[search]["date"] = str(date)
+                self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+
+                url, title = random.choice(list(cache[search]["results"].items()))
+
+                embed.set_image(url=url)
+                embed.title = title
+
+                return await ctx.send(embed=embed)
+        else:
+            cache = {}
+
         url = f"https://www.google.co.nz/search?q={search}&source=lnms&tbm=isch"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
@@ -220,17 +240,28 @@ class useful(commands.Cog):
             url
         ) as page:
             soup = lxml.html.fromstring(await page.text())
-        images = []
+
+        images = {}
         for a in soup.xpath('.//img[@class="rg_i Q4LuWd"]'):
             try:
-                images.append(a.attrib["data-src"])
+                images[a.attrib["data-src"]] = a.attrib["alt"]
             except KeyError:
                 pass
 
         if images == []:
             return await ctx.send("```No images found```")
 
-        await ctx.send(random.choice(images))
+        url, title = random.choice(list(images.items()))
+
+        embed.set_image(url=url)
+        embed.title = title
+
+        await ctx.send(embed=embed)
+
+        date = datetime.datetime.now() + datetime.timedelta(minutes=2)
+        cache[search] = {"date": str(date), "results": images}
+
+        self.bot.db.put(b"cache", ujson.dumps(cache).encode())
 
     @commands.command(aliases=["img"])
     async def image(self, ctx, *, search):
