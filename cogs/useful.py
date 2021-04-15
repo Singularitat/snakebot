@@ -37,6 +37,25 @@ class useful(commands.Cog):
         self.invites = self.bot.db.prefixed_db(b"invites-")
 
     @commands.command()
+    async def languages(self, ctx):
+        languages = self.bot.db.get(b"languages")
+
+        if languages is None:
+            return await ctx.send("No languages found")
+
+        languages = ujson.loads(languages)
+        msg = ""
+
+        for count, language in enumerate(languages):
+            if (count + 1) % 5 == 0:
+                msg += f"{language}\n"
+            else:
+                msg += f"{language:<12}"
+
+        embed = discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def emoji(self, ctx, *, name):
         """Does an emoji submission automatically.
 
