@@ -416,6 +416,19 @@ class events(commands.Cog):
                 self.invites.put(str(member.id).encode(), invite.code.encode())
 
     @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        """Logs when a member leaves a guild.
+
+        member: discord.Member
+        """
+        channel = discord.utils.get(member.guild.channels, name="logs")
+
+        if channel is None:
+            return
+
+        await channel.send(f"```{member} left the server```")
+
+    @commands.Cog.listener()
     async def on_invite_create(self, invite):
         """Puts invites into the db to get who used the invite.
 
