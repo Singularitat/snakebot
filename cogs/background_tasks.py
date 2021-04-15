@@ -154,10 +154,21 @@ class background_tasks(commands.Cog):
         )
 
     async def run_process(self, command):
-        process = await asyncio.create_subprocess_shell(
-            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        result = await process.communicate()
+        """Runs a shell command and returns the output.
+
+        command: str
+            The command to run.
+        """
+        try:
+            process = await asyncio.create_subprocess_shell(
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            result = await process.communicate()
+        except NotImplementedError:
+            process = subprocess.Popen(
+                command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            result = await self.bot.loop.run_in_executor(None, process.communicate)
 
         return "".join([output.decode() for output in result]).split()
 
@@ -204,16 +215,13 @@ class background_tasks(commands.Cog):
         async with aiohttp.ClientSession() as session, session.get(url) as page:
             data = await page.json()
 
-        languages = []
+        languages = set()
 
         for language in data:
-            for alias in language.values():
-                if isinstance(alias, list):
-                    languages += alias
-                elif not alias[0].isnumeric():
-                    languages.append(alias)
+            languages.update(set(language["aliases"]))
+            languages.add(language["name"])
 
-        self.bot.db.put(b"languages", ujson.dumps(languages).encode())
+        self.bot.db.put(b"languages", ujson.dumps(list(languages)).encode())
 
     async def date_check(self, db_key: bytes):
         """Checks end dates in a dictionary then yields the value.
