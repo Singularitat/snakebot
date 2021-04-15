@@ -245,7 +245,6 @@ class background_tasks(commands.Cog):
     @tasks.loop(seconds=10)
     async def check_end_dates(self):
         """Checks end dates on bans, downvotes and cache."""
-
         async for member, guild in self.date_check(b"banned_members"):
             user = self.bot.get_user(member)
             if user:
