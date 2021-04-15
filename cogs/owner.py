@@ -204,16 +204,23 @@ class owner(commands.Cog):
         command: str
             The command to run.
         raw: bool
-            If True returns the result just decoded."""
-        process = await asyncio.create_subprocess_shell(
-            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        result = await process.communicate()
+            If True returns the result just decoded.
+        """
+        try:
+            process = await asyncio.create_subprocess_shell(
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            result = await process.communicate()
+        except NotImplementedError:
+            process = subprocess.Popen(
+                command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            result = await self.bot.loop.run_in_executor(None, process.communicate)
 
         if raw:
             return [output.decode() for output in result]
 
-        return " ".join([output.decode() for output in result]).split()
+        return "".join([output.decode() for output in result]).split()
 
     @commands.command(hidden=True, aliases=["pull"])
     async def update(self, ctx):
