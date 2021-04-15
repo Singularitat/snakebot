@@ -66,6 +66,11 @@ class events(commands.Cog):
         self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
 
     async def reaction_role_check(self, payload):
+        """Checks if a reaction was on a reaction role message.
+
+        payload: discord.RawReactionActionEvent
+            A payload of raw data about the reaction and member.
+        """
         message_id = str(payload.message_id).encode()
         reaction = self.rrole.get(message_id)
 
@@ -454,7 +459,6 @@ class events(commands.Cog):
     async def on_command_error(self, ctx, error):
         """The event triggered when an error is raised while invoking a command.
 
-        ctx: commands.Context
         error: Exception
         """
         if hasattr(ctx.command, "on_error"):
@@ -522,10 +526,7 @@ Boot time: {datetime.now().timestamp()-psutil.Process(os.getpid()).create_time()
         )
 
     async def bot_check_once(self, ctx):
-        """Checks that a user is not blacklisted or downvoted.
-
-        ctx: commands.Context
-        """
+        """Checks that a user is not blacklisted or downvoted."""
         if ctx.author.id in self.bot.owner_ids:
             return True
 
@@ -533,10 +534,7 @@ Boot time: {datetime.now().timestamp()-psutil.Process(os.getpid()).create_time()
 
     @commands.Cog.listener()
     async def on_command(self, ctx):
-        """Resets command cooldown for owners.
-
-        ctx: commands.Context
-        """
+        """Resets command cooldown for owners."""
         logging.getLogger("discord").info(
             f"{ctx.author.id} ran the command {ctx.command.qualified_name}"
         )
