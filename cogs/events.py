@@ -309,18 +309,6 @@ class events(commands.Cog):
 
         if channel is not None:
             msg = message.content.replace("`", "")
-
-            async for entry in message.guild.audit_logs(
-                limit=1, action=discord.AuditLogAction.message_delete
-            ):
-                if (
-                    entry.user.id != message.author.id
-                    and entry.target.id == message.author.id
-                ):
-                    return await channel.send(
-                        f"```{entry.user} deleted {message.author}'s message:\n{msg}```"
-                    )
-
             await channel.send(f"```{message.author} deleted:\n{msg}```")
 
     @commands.Cog.listener()
