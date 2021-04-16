@@ -515,15 +515,27 @@ class events(commands.Cog):
     async def on_ready(self):
         """Called when the bot is done preparing the data received from Discord."""
         if not hasattr(self.bot, "uptime"):
+            boot_time = datetime.now().timestamp()-psutil.Process(os.getpid()).create_time()
+
             self.bot.uptime = datetime.utcnow()
-        print(
-            f"""Logged in as {self.bot.user.name}
-Discord.py version: {discord.__version__}
-Python version: {platform.python_version()}
-Running on: {platform.system()} {platform.release()}({os.name})
-Boot time: {datetime.now().timestamp()-psutil.Process(os.getpid()).create_time():.3f}s
--------------------"""
-        )
+            boot_times = self.bot.db.get(b"boot_times")
+
+            if boot_times:
+                boot_times = ujson.loads(boot_times)
+            else:
+                boot_times = []
+
+            boot_times.append(boot_time)
+            self.bot.db.put(b"boot_times", ujson.dumps(boot_times).encode())
+
+            print(
+                f"Logged in as {self.bot.user.name}\n"
+                f"Discord.py version: {discord.__version__}\n"
+                f"Python version: {platform.python_version()}\n"
+                f"Running on: {platform.system()} {platform.release()}({os.name})\n"
+                f"Boot time: {boot_time:.3f}s\n"
+                "-------------------"
+            )
 
     async def bot_check_once(self, ctx):
         """Checks that a user is not blacklisted or downvoted."""
