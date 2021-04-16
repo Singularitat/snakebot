@@ -129,7 +129,7 @@ DRAW_TEST = True
 
 
 class Position(namedtuple("Position", "board score wc bc ep kp")):
-    """A state of a chess game
+    """A state of a chess game.
     board -- a 120 char representation of the board
     score -- the board evaluation
     wc -- the castling rights, [west/queen side, east/king side]
@@ -171,7 +171,7 @@ class Position(namedtuple("Position", "board score wc bc ep kp")):
                         yield (j + W, j + E)
 
     def rotate(self):
-        """ Rotates the board, preserving enpassant """
+        """Rotates the board, preserving enpassant."""
         return Position(
             self.board[::-1].swapcase(),
             -self.score,
@@ -182,7 +182,7 @@ class Position(namedtuple("Position", "board score wc bc ep kp")):
         )
 
     def nullmove(self):
-        """ Like rotate, but clears ep and kp """
+        """Like rotate, but clears ep and kp."""
         return Position(
             self.board[::-1].swapcase(), -self.score, self.bc, self.wc, 0, 0
         )
@@ -264,9 +264,10 @@ class Searcher:
         self.nodes = 0
 
     def bound(self, pos, gamma, depth, root=True):
-        """returns r where
+        """Returns r where.
         s(pos) <= r < gamma    if gamma > s(pos)
-        gamma <= r <= s(pos)   if gamma <= s(pos)"""
+        gamma <= r <= s(pos)   if gamma <= s(pos)
+        """
         self.nodes += 1
 
         depth = max(depth, 0)
@@ -274,9 +275,8 @@ class Searcher:
         if pos.score <= -MATE_LOWER:
             return -MATE_UPPER
 
-        if DRAW_TEST:
-            if not root and pos in self.history:
-                return 0
+        if DRAW_TEST and not root and pos in self.history:
+            return 0
 
         entry = self.tp_score.get((pos, depth, root), Entry(-MATE_UPPER, MATE_UPPER))
         if entry.lower >= gamma and (not root or self.tp_move.get(pos) is not None):
@@ -336,7 +336,7 @@ class Searcher:
         return best
 
     def search(self, pos, history=()):
-        """ Iterative deepening MTD-bi search """
+        """Iterative deepening MTD-bi search."""
         self.nodes = 0
         if DRAW_TEST:
             self.history = set(history)
@@ -395,17 +395,17 @@ async def print_pos(ctx, pos):
         msg += f"{''.join(uni_pieces.get(p, p) for p in row)}\n"
 
     background = Image.open("fonts/chess_1_1024x1088.png")
-    img = Image.new('RGBA', (1024, 1050), (255, 0, 0, 0))
+    img = Image.new("RGBA", (1024, 1050), (255, 0, 0, 0))
 
     d = ImageDraw.Draw(img)
-    font = ImageFont.truetype('fonts/DejaVuSans.ttf', 135)
+    font = ImageFont.truetype("fonts/DejaVuSans.ttf", 135)
     d.text((30, 0), msg, font=font, fill=(0, 0, 0))
     background.paste(img, (0, 0), img)
 
     with io.BytesIO() as image_binary:
-        background.save(image_binary, 'PNG')
+        background.save(image_binary, "PNG")
         image_binary.seek(0)
-        await ctx.send(file=discord.File(fp=image_binary, filename='image.png'))
+        await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
 
 
 class chess(commands.Cog):
@@ -418,8 +418,8 @@ class chess(commands.Cog):
     async def start_chess(self, ctx):
         if self.is_running is True:
             return await ctx.send("```A game is already running```")
-        else:
-            self.is_running = True
+
+        self.is_running = True
 
         hist = [Position(initial, 0, (True, True), (True, True), 0, 0)]
         searcher = Searcher()
@@ -461,10 +461,9 @@ class chess(commands.Cog):
             start = time.time()
             for _depth, move, score in searcher.search(hist[-1], hist):
                 if time.time() - start > 0.25:
+                    if score == MATE_UPPER:
+                        return await ctx.send("```Checkmate!```")
                     break
-
-            if score == MATE_UPPER:
-                await ctx.send("```Checkmate!```")
 
             # The black player moves from a rotated position, so we have to
             # 'back rotate' the move before printing it.
