@@ -62,6 +62,25 @@ class owner(commands.Cog):
         """
         return ctx.author.id in self.bot.owner_ids
 
+    @commands.command(hidden=True, aliases=["boot"])
+    async def boot_times(self, ctx, number=10):
+        boot_times = self.bot.db.get(b"boot_times")
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not boot_times:
+            embed.description = "No boot times found"
+            return await ctx.send(embed=embed)
+
+        boot_times = ujson.loads(boot_times)
+
+        msg = (f"\n\nAverage: {(sum(boot_times) / len(boot_times)):.5f}s"
+               f"\nSlowest: {max(boot_times):.5f}s"
+               f"\nFastest: {min(boot_times):.5f}s")
+
+        embed.description = f"```{msg}```"
+        await ctx.send(embed=embed)
+
     @commands.command(hidden=True, aliases=["wipec"])
     async def wipe_cache(self, ctx):
         """Wipes cache from the db."""
