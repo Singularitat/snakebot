@@ -66,6 +66,11 @@ class events(commands.Cog):
         self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
 
     async def reaction_role_check(self, payload):
+        """Checks if a reaction was on a reaction role message.
+
+        payload: discord.RawReactionActionEvent
+            A payload of raw data about the reaction and member.
+        """
         message_id = str(payload.message_id).encode()
         reaction = self.rrole.get(message_id)
 
@@ -261,13 +266,18 @@ class events(commands.Cog):
         if channel is None:
             return
 
+        embed = discord.Embed(color=discord.Color.blurple())
+
         if "`" in before.content or "`" in after.content:
             before.content = before.content.replace("`", "")
             after.content = after.content.replace("`", "")
 
-        await channel.send(
-            f"```{before.author} edited:\n{before.content} >>> {after.content}```"
+        embed.description = (
+            f"```{before.author.display_name} edited:\n{before.content}"
+            f" >>> {after.content}\n\nMember ID: {after.author.id}```"
         )
+
+        await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -307,21 +317,16 @@ class events(commands.Cog):
 
         channel = discord.utils.get(message.guild.channels, name="logs")
 
-        if channel is not None:
-            msg = message.content.replace("`", "")
+        if channel is None:
+            return
 
-            async for entry in message.guild.audit_logs(
-                limit=1, action=discord.AuditLogAction.message_delete
-            ):
-                if (
-                    entry.user.id != message.author.id
-                    and entry.target.id == message.author.id
-                ):
-                    return await channel.send(
-                        f"```{entry.user} deleted {message.author}'s message:\n{msg}```"
-                    )
-
-            await channel.send(f"```{message.author} deleted:\n{msg}```")
+        embed = discord.Embed(color=discord.Color.blurple())
+        msg = message.content.replace("`", "")
+        embed.description = (
+            f"```{message.author.display_name}"
+            f" deleted:\n{msg}\n\nMember ID: {message.author.id}```"
+        )
+        await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -416,6 +421,24 @@ class events(commands.Cog):
                 self.invites.put(str(member.id).encode(), invite.code.encode())
 
     @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        """Logs when a member leaves a guild.
+
+        member: discord.Member
+        """
+        channel = discord.utils.get(member.guild.channels, name="logs")
+
+        if channel is None:
+            return
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = (
+            f"```{member.display_name} left the server" f"\n\nMember ID: {member.id}```"
+        )
+
+        await channel.send(embed=embed)
+
+    @commands.Cog.listener()
     async def on_invite_create(self, invite):
         """Puts invites into the db to get who used the invite.
 
@@ -436,7 +459,6 @@ class events(commands.Cog):
     async def on_command_error(self, ctx, error):
         """The event triggered when an error is raised while invoking a command.
 
-        ctx: commands.Context
         error: Exception
         """
         if hasattr(ctx.command, "on_error"):
@@ -504,10 +526,7 @@ Boot time: {datetime.now().timestamp()-psutil.Process(os.getpid()).create_time()
         )
 
     async def bot_check_once(self, ctx):
-        """Checks that a user is not blacklisted or downvoted.
-
-        ctx: commands.Context
-        """
+        """Checks that a user is not blacklisted or downvoted."""
         if ctx.author.id in self.bot.owner_ids:
             return True
 
@@ -515,10 +534,7 @@ Boot time: {datetime.now().timestamp()-psutil.Process(os.getpid()).create_time()
 
     @commands.Cog.listener()
     async def on_command(self, ctx):
-        """Resets command cooldown for owners.
-
-        ctx: commands.Context
-        """
+        """Resets command cooldown for owners."""
         logging.getLogger("discord").info(
             f"{ctx.author.id} ran the command {ctx.command.qualified_name}"
         )

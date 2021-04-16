@@ -67,6 +67,10 @@ class owner(commands.Cog):
         """Wipes cache from the db."""
         self.bot.db.put(b"cache", b"{}")
 
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = "```Wiped Cache```"
+        await ctx.send(embed=embed)
+
     @commands.command(hidden=True, aliases=["cache"])
     async def list_cache(self, ctx):
         """Lists the cached items in the db."""
@@ -94,9 +98,13 @@ class owner(commands.Cog):
     @commands.command(hidden=True)
     async def togglelog(self, ctx):
         """Toggles logging to logs channel."""
-        self.bot.db.put(
-            b"logging", str(int(not bool(int(self.bot.db.get(b"logging"))))).encode()
-        )
+        state = b"0" if self.bot.db.get(b"logging") == b"1" else b"1"
+
+        self.bot.db.put(b"logging", state)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = f"```Set logging to {bool(int(state))}```"
+        await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
     async def toggle(self, ctx, command):
@@ -175,7 +183,10 @@ class owner(commands.Cog):
             The new prefix.
         """
         self.bot.command_prefix = prefix
-        await ctx.send(f"```Prefix changed to {prefix}```")
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = f"```Prefix changed to {prefix}```"
+        await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
     async def sudo(
