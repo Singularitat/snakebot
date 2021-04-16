@@ -359,11 +359,6 @@ class Searcher:
             ).lower
 
 
-###############################################################################
-# User interface
-###############################################################################
-
-
 def parse(c):
     fil, rank = ord(c[0]) - ord("a"), int(c[1]) - 1
     return A1 + fil - 10 * rank
@@ -430,7 +425,7 @@ class chess(commands.Cog):
                 await ctx.send("```You lost```")
                 break
 
-            # We query the user until she enters a (pseudo) legal move.
+            # We query the member until they enters a (pseudo) legal move.
             move = None
             while move not in hist[-1].gen_moves():
 
@@ -465,14 +460,13 @@ class chess(commands.Cog):
                         return await ctx.send("```Checkmate!```")
                     break
 
-            # The black player moves from a rotated position, so we have to
-            # 'back rotate' the move before printing it.
             hist.append(hist[-1].move(move))
 
-    @commands.group(name="chess")
+    @commands.command()
     async def chess(self, ctx):
         """Starts a game of chess against an AI."""
         await self.start_chess(ctx)
+        self.is_running = False
 
 
 def setup(bot: commands.Bot) -> None:
