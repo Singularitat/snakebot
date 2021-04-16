@@ -394,7 +394,7 @@ async def print_pos(ctx, pos):
     for i, row in enumerate(pos.board.split()):
         msg += f"{''.join(uni_pieces.get(p, p) for p in row)}\n"
 
-    background = Image.open("fonts/chess_1_1024x1088.png")
+    background = Image.open("fonts/chess.png")
     img = Image.new("RGBA", (1024, 1050), (255, 0, 0, 0))
 
     d = ImageDraw.Draw(img)
