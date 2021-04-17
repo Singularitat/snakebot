@@ -74,9 +74,11 @@ class owner(commands.Cog):
 
         boot_times = ujson.loads(boot_times)
 
-        msg = (f"\n\nAverage: {(sum(boot_times) / len(boot_times)):.5f}s"
-               f"\nSlowest: {max(boot_times):.5f}s"
-               f"\nFastest: {min(boot_times):.5f}s")
+        msg = (
+            f"\n\nAverage: {(sum(boot_times) / len(boot_times)):.5f}s"
+            f"\nSlowest: {max(boot_times):.5f}s"
+            f"\nFastest: {min(boot_times):.5f}s"
+        )
 
         embed.description = f"```{msg}```"
         await ctx.send(embed=embed)
@@ -362,6 +364,7 @@ class owner(commands.Cog):
     async def restart(self, ctx):
         """Restarts all extensions."""
         embed = discord.Embed(color=discord.Color.blurple())
+        self.bot.db.put(b"restart", b"1")
 
         for ext in [f[:-3] for f in os.listdir("cogs") if f.endswith(".py")]:
             try:
