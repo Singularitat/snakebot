@@ -31,6 +31,7 @@ class stocks(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.crypto = self.bot.db.prefixed_db(b"crypto-")
         self.stocks = self.bot.db.prefixed_db(b"stocks-")
         self.bal = self.bot.db.prefixed_db(b"bal-")
         self.stockbal = self.bot.db.prefixed_db(b"stockbal-")
@@ -324,6 +325,49 @@ class stocks(commands.Cog):
         )
 
         embed.set_footer(text=f"Stocks: ${stock_value:,.2f}\nBalance: ${bal:,.2f}")
+
+        await ctx.send(embed=embed)
+
+    @commands.command(name="crypto", aliases=["coin", "bitcoin", "btc"])
+    async def _crypto(self, ctx, symbol: str = "BTC", currency="NZD"):
+        """Gets some information about crypto currencies.
+
+        symbol: str
+            The symbol to search for.
+        """
+        symbol = symbol.upper().encode()
+        crypto = self.crypto.get(symbol)
+
+        if crypto is None:
+            return await ctx.send(f"Couldn't find symbol {symbol}")
+
+        crypto = ujson.loads(crypto)
+
+        embed = discord.Embed(colour=discord.Colour.blurple())
+        max_supply = crypto["max_supply"] if crypto["max_supply"] else 0
+
+        embed.description = textwrap.dedent(
+            f"""
+                ```diff
+                {crypto['name']} [{symbol}]
+
+                Price:
+                ${crypto['price']:,.2f}
+
+                Circulating/Max Supply:
+                {crypto['circulating_supply']:,}/{max_supply:,}
+
+                Market Cap:
+                ${crypto['market_cap']:,.2f}
+
+                24h Change:
+                {crypto['change_24h']}%
+
+                24h Volume:
+                {crypto['volume_24h']}
+                ```
+            """
+        )
 
         await ctx.send(embed=embed)
 
