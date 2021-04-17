@@ -8,6 +8,7 @@ import psutil
 import logging
 from PIL import Image
 from io import BytesIO
+import difflib
 
 
 class events(commands.Cog):
@@ -27,24 +28,25 @@ class events(commands.Cog):
         reaction: discord.Reaction
         user: Union[discord.User, discord.Member]
         remove: bool
-            If the reaction was removed or added"""
+            If the reaction was removed or added."""
         emojis = self.bot.db.get(b"emoji_submissions")
 
         if not emojis or reaction.emoji.name.lower() != "upvote":
             return
 
         emojis = ujson.loads(emojis)
+        message_id = str(reaction.message.id)
 
-        if str(reaction.message.id) not in emojis:
+        if message_id not in emojis:
             return
 
-        if remove and user.id in emojis[str(reaction.message.id)]["users"]:
-            emojis[str(reaction.message.id)]["users"].remove(user.id)
+        if remove and user.id in emojis[message_id]["users"]:
+            emojis[message_id]["users"].remove(user.id)
 
-        elif user.id not in emojis[str(reaction.message.id)]["users"]:
-            emojis[str(reaction.message.id)]["users"].append(user.id)
+        elif user.id not in emojis[message_id]["users"]:
+            emojis[message_id]["users"].append(user.id)
 
-            if len(emojis[str(reaction.message.id)]["users"]) >= 8:
+            if len(emojis[message_id]["users"]) >= 8:
                 file = reaction.message.attachments[0]
                 file = BytesIO(await file.read())
                 file = Image.open(file).resize((256, 256))
@@ -53,7 +55,7 @@ class events(commands.Cog):
                 file.save(imgByteArr, format="PNG")
                 file = imgByteArr.getvalue()
 
-                name = emojis[str(reaction.message.id)]["name"]
+                name = emojis[message_id]["name"]
 
                 if not discord.utils.get(reaction.message.guild.emojis, name=name):
                     emoji = await reaction.message.guild.create_custom_emoji(
@@ -61,7 +63,7 @@ class events(commands.Cog):
                     )
                     await reaction.message.add_reaction(emoji)
 
-                emojis.pop(str(reaction.message.id))
+                emojis.pop(message_id)
 
         self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
 
@@ -471,11 +473,22 @@ class events(commands.Cog):
                 return
 
         error = getattr(error, "original", error)
+        embed = discord.Embed(color=discord.Color.red())
 
         if isinstance(error, commands.errors.CommandNotFound):
-            return
+            ratios = []
+            invoked = ctx.message.content.split()[0].removeprefix(ctx.prefix)
 
-        if isinstance(error, discord.Forbidden):
+            for command in self.bot.walk_commands():
+                seq = difflib.SequenceMatcher(None, str(command), invoked)
+                ratios.append((seq.ratio(), str(command)))
+
+            message = "Did you mean:\n\n"
+            for ratio, command in sorted(ratios, reverse=True)[:3]:
+                message += f"{command}\n"
+            embed.title = f"Command {invoked} not found."
+
+        elif isinstance(error, discord.Forbidden):
             message = "I do not have the required permissions to run this command."
 
         elif isinstance(
@@ -509,21 +522,36 @@ class events(commands.Cog):
             )
             return
 
-        await ctx.send(f"```{message}```")
+        embed.description = f"```{message}```"
+        await ctx.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_ready(self):
         """Called when the bot is done preparing the data received from Discord."""
         if not hasattr(self.bot, "uptime"):
+            boot_time = (
+                datetime.now().timestamp() - psutil.Process(os.getpid()).create_time()
+            )
+
             self.bot.uptime = datetime.utcnow()
-        print(
-            f"""Logged in as {self.bot.user.name}
-Discord.py version: {discord.__version__}
-Python version: {platform.python_version()}
-Running on: {platform.system()} {platform.release()}({os.name})
-Boot time: {datetime.now().timestamp()-psutil.Process(os.getpid()).create_time():.3f}s
--------------------"""
-        )
+            boot_times = self.bot.db.get(b"boot_times")
+
+            if boot_times:
+                boot_times = ujson.loads(boot_times)
+            else:
+                boot_times = []
+
+            boot_times.append(boot_time)
+            self.bot.db.put(b"boot_times", ujson.dumps(boot_times).encode())
+
+            print(
+                f"Logged in as {self.bot.user.name}\n"
+                f"Discord.py version: {discord.__version__}\n"
+                f"Python version: {platform.python_version()}\n"
+                f"Running on: {platform.system()} {platform.release()}({os.name})\n"
+                f"Boot time: {boot_time:.3f}s\n"
+                "-------------------"
+            )
 
     async def bot_check_once(self, ctx):
         """Checks that a user is not blacklisted or downvoted."""

@@ -15,18 +15,24 @@ class background_tasks(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.stocks = self.bot.db.prefixed_db(b"stocks-")
-        self.update_stocks.start()
-        self.update_bot.start()
-        self.backup_bot.start()
-        self.update_languages.start()
-        self.check_end_dates.start()
+        self.crypto = self.bot.db.prefixed_db(b"crypto-")
+        self.start_tasks()
 
     def cog_unload(self):
-        self.update_stocks.stop()
-        self.update_bot.stop()
-        self.backup_bot.stop()
-        self.update_languages.stop()
-        self.check_end_dates.stop()
+        for task in self.tasks:
+            self.tasks[task].stop()
+
+    def start_tasks(self):
+        task_dict = {}
+
+        for task in dir(background_tasks):
+            task_obj = getattr(self, task)
+
+            if isinstance(task_obj, tasks.Loop):
+                task_obj.start()
+                task_dict[task] = task_obj
+
+        self.tasks = task_dict
 
     @commands.group(hidden=True)
     @commands.is_owner()
@@ -89,17 +95,17 @@ class background_tasks(commands.Cog):
         update_stocks       0h 30m 0s      True/False/40
         """
         embed = discord.Embed(color=discord.Color.blurple())
+
         msg = "Name:               Interval:      Running/Failed/Count:\n\n"
-        for task in dir(background_tasks):
-            task_obj = getattr(self, task)
-            if isinstance(task_obj, tasks.Loop):
-                msg += "{:<20}{:<15}{}/{}/{}\n".format(
-                    task,
-                    f"{task_obj.hours}h {task_obj.minutes}m {task_obj.seconds}s",
-                    task_obj.is_running(),
-                    task_obj.failed(),
-                    task_obj.current_loop,
-                )
+        for task in self.tasks:
+            task_obj = self.tasks[task]
+            msg += "{:<20}{:<15}{}/{}/{}\n".format(
+                task,
+                f"{task_obj.hours}h {task_obj.minutes}m {task_obj.seconds}s",
+                task_obj.is_running(),
+                task_obj.failed(),
+                task_obj.current_loop,
+            )
 
         embed.description = f"```\n{msg}```"
         await ctx.send(embed=embed)
@@ -263,6 +269,42 @@ class background_tasks(commands.Cog):
 
         async for cache in self.date_check(b"cache"):
             pass
+
+    @tasks.loop(minutes=20)
+    async def crypto_update(self):
+        """Updates crypto currency data every 20 minutes."""
+        # If we have just restarted we don't want to run this again
+        # As free coinmarketcap API keys can only be used 333 per day
+        if self.bot.db.get(b"restart") == b"1":
+            self.bot.db.put(b"restart", b"0")
+            return
+
+        url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
+        parameters = {"start": "1", "limit": "200", "convert": "NZD"}
+        headers = {
+            "Accepts": "application/json",
+            "X-CMC_PRO_API_KEY": self.bot.coinmarketcap,
+        }
+
+        async with aiohttp.ClientSession() as session:
+            response = await session.get(url, params=parameters, headers=headers)
+            data = await response.json()
+
+        for coin in data["data"]:
+            self.crypto.put(
+                coin["symbol"].encode(),
+                ujson.dumps(
+                    {
+                        "name": coin["name"],
+                        "price": coin["quote"]["NZD"]["price"],
+                        "circulating_supply": coin["circulating_supply"],
+                        "max_supply": coin["max_supply"] if coin["max_supply"] else 0,
+                        "market_cap": coin["quote"]["NZD"]["market_cap"],
+                        "change_24h": coin["quote"]["NZD"]["percent_change_24h"],
+                        "volume_24h": coin["quote"]["NZD"]["volume_24h"],
+                    }
+                ).encode(),
+            )
 
 
 def setup(bot):
