@@ -354,58 +354,6 @@ class apis(commands.Cog):
         except IndexError:
             await ctx.send(f"Please give an integer between `1` and `{titles_len}`")
 
-    @commands.command(aliases=["coin", "bitcoin", "btc"])
-    async def crypto(self, ctx, crypto: str = "BTC", currency="NZD"):
-        """Gets some information about crypto currencies.
-
-        crypto: str
-            The name or symbol to search for.
-        currency: str
-            The currency to return the price in.
-        """
-        url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
-        parameters = {"start": "1", "limit": "150", "convert": currency}
-        headers = {
-            "Accepts": "application/json",
-            "X-CMC_PRO_API_KEY": self.bot.coinmarketcap,
-        }
-
-        async with ctx.typing(), aiohttp.ClientSession() as session:
-            response = await session.get(url, params=parameters, headers=headers)
-            data = await response.json()
-
-        data = data["data"]
-        for index, coin in enumerate(data):
-            if (
-                coin["name"].lower() == crypto.lower()
-                or coin["symbol"] == crypto.upper()
-            ):
-                crypto = data[index]
-                break
-        embed = discord.Embed(colour=discord.Colour.blurple())
-
-        embed.description = textwrap.dedent(
-            f"""
-                ```diff
-                {crypto['name']} [{crypto['symbol']}]
-
-                Price:
-                ${crypto['quote']['NZD']['price']:,.2f}
-
-                Circulating/Max Supply:
-                {crypto['circulating_supply']:,}/{crypto['max_supply']:,}
-
-                Market Cap:
-                ${crypto['quote']['NZD']['market_cap']:,.2f}
-
-                24h Change:
-                {crypto['quote']['NZD']['percent_change_24h']}%
-                ```
-            """
-        )
-
-        await ctx.send(embed=embed)
-
     @commands.command()
     async def covid(self, ctx, *, country="nz"):
         """Shows current coronavirus cases, defaults to New Zealand.
