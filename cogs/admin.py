@@ -335,7 +335,7 @@ class admin(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)
-    async def role(self, ctx, member: discord.Member, *, role):
+    async def role(self, ctx, role_name: str, member: discord.Member = None):
         """Gives member a role.
 
         member: discord.Member
@@ -343,16 +343,38 @@ class admin(commands.Cog):
         role: str
             The name of the role.
         """
-        role = discord.utils.get(member.guild.roles, name=role)
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if member is None:
+            member = ctx.author
+
+        if (
+            ctx.author != member
+            and ctx.author.top_role <= member.top_role
+            and ctx.guild.owner != ctx.author
+        ):
+            embed.title = "```You can't change the roles of someone higher than you```"
+            return await ctx.send(embed=embed)
+
+        role = None
+
+        for r in ctx.guild.roles:
+            if r.name.lower() == role_name.lower():
+                role = r
+                break
+
         if role is None:
-            return await ctx.send("```Could not find role```")
+            embed.title = "```Couldn't find role``"
+            return await ctx.send(embed=embed)
 
         if role in member.roles:
             await member.remove_roles(role)
-            return await ctx.send(f"Removed the role {role} from {member}")
+            embed.title = f"Removed the role {role} from {member}"
+            return await ctx.send(embed=embed)
 
         await member.add_roles(role)
-        return await ctx.send(f"Gave {member} the role {role}")
+        embed.title = f"Gave {member} the role {role}"
+        return await ctx.send(embed=embed)
 
     @commands.group()
     @commands.has_permissions(manage_messages=True)

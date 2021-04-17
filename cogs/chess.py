@@ -7,10 +7,6 @@ from collections import namedtuple
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-###############################################################################
-# Piece-Square tables. Tune these to change sunfish's behaviour
-###############################################################################
-
 # Source
 # https://github.com/thomasahle/sunfish/blob/master/LICENSE.md
 # https://github.com/thomasahle/sunfish
@@ -189,7 +185,7 @@ class Position(namedtuple("Position", "board score wc bc ep kp")):
 
     def move(self, move):
         i, j = move
-        p = self.board[i], self.board[j]
+        p = self.board[i]
 
         def put(board, i, p):
             # fmt: off
@@ -371,19 +367,19 @@ def render(i):
 
 async def print_pos(ctx, pos):
     uni_pieces = {
-        "R": "♜",
-        "N": "♞",
-        "B": "♝",
-        "Q": "♛",
-        "K": "♚",
-        "P": "♟",
-        "r": "♖",
-        "n": "♘",
-        "b": "♗",
-        "q": "♕",
-        "k": "♔",
-        "p": "♙",
-        ".": "   ",
+        "r": "♜",
+        "n": "♞",
+        "b": "♝",
+        "q": "♛",
+        "k": "♚",
+        "p": "♟",
+        "R": "♖",
+        "N": "♘",
+        "B": "♗",
+        "Q": "♕",
+        "K": "♔",
+        "P": "♙",
+        ".": "\u2004\u2004\u2005",
     }
     msg = ""
     for i, row in enumerate(pos.board.split()):
@@ -394,13 +390,13 @@ async def print_pos(ctx, pos):
 
     d = ImageDraw.Draw(img)
     font = ImageFont.truetype("fonts/DejaVuSans.ttf", 135)
-    d.text((30, 0), msg, font=font, fill=(0, 0, 0))
+    d.text((40, 0), msg, font=font, fill=(0, 0, 0), spacing=4)
     background.paste(img, (0, 0), img)
 
     with io.BytesIO() as image_binary:
         background.save(image_binary, "PNG")
         image_binary.seek(0)
-        await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
+        return await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
 
 
 class chess(commands.Cog):
@@ -415,19 +411,25 @@ class chess(commands.Cog):
             return await ctx.send("```A game is already running```")
 
         self.is_running = True
+        embed = discord.Embed(color=discord.Color.blurple())
+        chess_message = None
 
         hist = [Position(initial, 0, (True, True), (True, True), 0, 0)]
         searcher = Searcher()
         while True:
-            await print_pos(ctx, hist[-1])
+            if chess_message:
+                await chess_message.delete()
+            chess_message = await print_pos(ctx, hist[-1])
 
             if hist[-1].score <= -MATE_LOWER:
-                await ctx.send("```You lost```")
-                break
+                embed.title = "You lost"
+                return await ctx.send(embed=embed)
 
-            # We query the member until they enters a (pseudo) legal move.
             move = None
             while move not in hist[-1].gen_moves():
+                if move is not None:
+                    embed.title = "Enter a move like e2e4 or surrender"
+                    await ctx.send(embed=embed)
 
                 def check(message: discord.Message) -> bool:
                     return (
@@ -438,26 +440,29 @@ class chess(commands.Cog):
                 message = await ctx.bot.wait_for("message", timeout=300.0, check=check)
 
                 if message.content.lower() == "surrender":
-                    return await ctx.send("```Surrendered```")
+                    await message.delete()
+                    return await chess_message.add_reaction("❌")
 
-                match = re.match("([a-h][1-8])" * 2, message.content)
+                match = re.match("([a-h][1-8])" * 2, message.content.lower())
                 if match:
                     move = parse(match.group(1)), parse(match.group(2))
                 else:
-                    # Inform the user when invalid input (e.g. "help") is entered
-                    await ctx.send("Please enter a move like e2e4 or surrender")
+                    embed.title = "Enter a move like e2e4 or surrender"
+                    await ctx.send(embed=embed)
+            await message.delete()
+
             hist.append(hist[-1].move(move))
 
             if hist[-1].score <= -MATE_LOWER:
-                await ctx.send("```You won```")
-                break
+                embed.title = "You won"
+                return await ctx.send(embed=embed)
 
-            # Fire up the engine to look for a move.
             start = time.time()
             for _depth, move, score in searcher.search(hist[-1], hist):
-                if time.time() - start > 0.25:
+                if time.time() - start > 0.1:
                     if score == MATE_UPPER:
-                        return await ctx.send("```Checkmate!```")
+                        embed.title = "Checkmate!"
+                        return await ctx.send(embed=embed)
                     break
 
             hist.append(hist[-1].move(move))
