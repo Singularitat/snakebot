@@ -49,7 +49,8 @@ class events(commands.Cog):
             if len(emojis[message_id]["users"]) >= 8:
                 file = reaction.message.attachments[0]
                 file = BytesIO(await file.read())
-                file = Image.open(file).resize((256, 256))
+                file = Image.open(file)
+                file.thumbnail((256, 256), Image.ANTIALIAS)
 
                 imgByteArr = BytesIO()
                 file.save(imgByteArr, format="PNG")

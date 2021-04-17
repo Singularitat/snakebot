@@ -157,15 +157,18 @@ class admin(commands.Cog):
             How much to add onto the current date e.g 5d 10h 25m 5s"""
         end_date = datetime.datetime.now()
 
-        for time in duration.split():
-            if time[-1] == "s":
-                end_date += datetime.timedelta(seconds=int(time[:-1]))
-            elif time[-1] == "m":
-                end_date += datetime.timedelta(minutes=int(time[:-1]))
-            elif time[-1] == "h":
-                end_date += datetime.timedelta(hours=int(time[:-1]))
-            elif time[-1] == "d":
-                end_date += datetime.timedelta(days=int(time[:-1]))
+        try:
+            for time in duration.split():
+                if time[-1] == "s":
+                    end_date += datetime.timedelta(seconds=int(time[:-1]))
+                elif time[-1] == "m":
+                    end_date += datetime.timedelta(minutes=int(time[:-1]))
+                elif time[-1] == "h":
+                    end_date += datetime.timedelta(hours=int(time[:-1]))
+                elif time[-1] == "d":
+                    end_date += datetime.timedelta(days=int(time[:-1]))
+        except ValueError:
+            return None
 
         return str(end_date)
 
@@ -204,22 +207,27 @@ class admin(commands.Cog):
             member = ctx.guild.get_member(user.id)
             await member.edit(voice_channel=None)
 
+        if duration is None:
+            self.blacklist.put(user_id, b"1")
+            embed.title = "User Downvoted"
+            embed.description = f"**{user}** has been added to the downvote list"
+            return await ctx.send(embed=embed)
+
+        end_date = await self.end_date(duration)
+
+        if not end_date:
+            embed.description = "```Invalid duration. Example: '3d 5h 10m'```"
+            return await ctx.send(embed=embed)
+
         self.blacklist.put(user_id, b"1")
+        users = self.bot.db.get(b"downvoted_users")
+        if not users:
+            data = {}
+        else:
+            data = ujson.loads(users)
 
-        if duration is not None:
-            users = self.bot.db.get(b"downvoted_users")
-            if not users:
-                data = {}
-            else:
-                data = ujson.loads(users)
-
-            end_date = await self.end_date(duration)
-            data[user.id] = {"date": end_date}
-            self.bot.db.put(b"downvoted_users", ujson.dumps(data).encode())
-
-        embed.title = "User Downvoted"
-        embed.description = f"**{user}** has been added to the downvote list"
-        await ctx.send(embed=embed)
+        data[user.id] = {"date": end_date}
+        self.bot.db.put(b"downvoted_users", ujson.dumps(data).encode())
 
     @commands.command()
     @commands.has_permissions(administrator=True)
@@ -273,17 +281,28 @@ class admin(commands.Cog):
         reason: str
             The reason for banning the member.
         """
+        embed = discord.Embed(color=discord.Color.blurple())
         if ctx.author.top_role <= member.top_role and ctx.guild.owner != ctx.author:
-            return await ctx.send("```You can't ban someone higher or equal to you```")
+            embed.description = "```You can't ban someone higher or equal to you```"
+            return await ctx.send(embed=embed)
+
+        if not duration:
+            await member.ban(reason=reason)
+            embed.title = f"Banned {member}"
+            return await ctx.send(embed=embed)
+
+        end_date = await self.end_date(duration)
+        if not end_date:
+            embed.description = "```Invalid duration. Example: '3d 5h 10m'```"
+            return await ctx.send(embed=embed)
 
         await member.ban(reason=reason)
+
         members = self.bot.db.get(b"banned_members")
         if not members:
             data = {}
         else:
             data = ujson.loads(members)
-
-        end_date = await self.end_date(duration)
 
         data[member.id] = {"date": end_date, "guild": ctx.guild.id}
 
@@ -291,7 +310,7 @@ class admin(commands.Cog):
 
         await ctx.send(
             embed=discord.Embed(
-                title=f"Banned {member} untill {end_date}",
+                title=f"Banned {member} till {end_date}",
                 color=discord.Color.dark_red(),
             )
         )
