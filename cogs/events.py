@@ -8,6 +8,7 @@ import psutil
 import logging
 from PIL import Image
 from io import BytesIO
+import difflib
 
 
 class events(commands.Cog):
@@ -472,11 +473,22 @@ class events(commands.Cog):
                 return
 
         error = getattr(error, "original", error)
+        embed = discord.Embed(color=discord.Color.red())
 
         if isinstance(error, commands.errors.CommandNotFound):
-            return
+            ratios = []
+            invoked = ctx.message.content.split()[0].removeprefix(ctx.prefix)
 
-        if isinstance(error, discord.Forbidden):
+            for command in self.bot.walk_commands():
+                seq = difflib.SequenceMatcher(None, str(command), invoked)
+                ratios.append((seq.ratio(), str(command)))
+
+            message = "Did you mean:\n\n"
+            for ratio, command in sorted(ratios, reverse=True)[:3]:
+                message += f"{command}\n"
+            embed.title = f"Command {invoked} not found."
+
+        elif isinstance(error, discord.Forbidden):
             message = "I do not have the required permissions to run this command."
 
         elif isinstance(
@@ -510,7 +522,8 @@ class events(commands.Cog):
             )
             return
 
-        await ctx.send(f"```{message}```")
+        embed.description = f"```{message}```"
+        await ctx.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_ready(self):
