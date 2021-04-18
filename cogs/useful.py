@@ -38,9 +38,10 @@ class useful(commands.Cog):
 
     @commands.command()
     async def languages(self, ctx):
+        """Shows the languages that the run command can use."""
         languages = self.bot.db.get(b"languages")
 
-        if languages is None:
+        if not languages:
             return await ctx.send("No languages found")
 
         languages = ujson.loads(languages)
@@ -152,7 +153,7 @@ class useful(commands.Cog):
 
         ctx = await self.bot.get_context(ctx, cls=type(ctx))
 
-        if ctx.command is None:
+        if not ctx.command:
             return await ctx.send("```No command found```")
 
         start = time.time()
@@ -179,7 +180,7 @@ class useful(commands.Cog):
             message = ujson.loads(message)
             await ctx.send(f"```{message[2]} edited:\n{message[0]} >>> {message[1]}```")
 
-    @commands.command(aliases=["dir"])
+    @commands.command(name="dir")
     async def _dir(self, ctx, obj, arg, *, attr=None):
         """Converts arguments to a chosen discord object.
 
