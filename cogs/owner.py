@@ -409,7 +409,7 @@ class owner(commands.Cog):
             Id of the reaction role messgae to delete.
         """
         self.rrole.delete(str(message_id).encode())
-        message = await ctx.fetch_message(message_id)
+        message = ctx.channel.get_partial_message(message_id)
         await message.delete()
 
     @commands.command()
