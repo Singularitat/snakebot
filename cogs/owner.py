@@ -135,7 +135,7 @@ class owner(commands.Cog):
             The command to be toggled
         """
         command = self.bot.get_command(command)
-        if command is None:
+        if not command:
             await ctx.send("```Command not found```")
         else:
             command.enabled = not command.enabled
@@ -174,7 +174,7 @@ class owner(commands.Cog):
         new_ctx._state = PerformanceMocker()
         new_ctx.channel = PerformanceMocker()
 
-        if new_ctx.command is None:
+        if not new_ctx.command:
             return await ctx.send("```No command found```")
 
         start = time.perf_counter()
@@ -442,7 +442,7 @@ class owner(commands.Cog):
             role = role.strip()
             if not role.isnumeric():
                 tmp_role = discord.utils.get(ctx.guild.roles, name=role)
-                if tmp_role is None:
+                if not tmp_role:
                     return await ctx.send(f"```Couldn't find role {role}```")
                 roles[index] = tmp_role.id
 
@@ -458,7 +458,7 @@ class owner(commands.Cog):
         except ValueError:
             channel = ctx.channel
         else:
-            if channel is None:
+            if not channel:
                 channel = ctx.channel
 
         message = await channel.send(msg)
@@ -502,7 +502,7 @@ class owner(commands.Cog):
         for index, role in enumerate(roles):
             if not role.isnumeric():
                 role = discord.utils.get(ctx.guild.roles, name=role)
-                if role is None:
+                if not role:
                     return await ctx.send(f"```Could not find role {role}```")
                 roles[index] = role.id
 

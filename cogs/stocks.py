@@ -17,9 +17,9 @@ class StockMenu(menus.ListPageSource):
                 break
 
             if i % 3 == 0:
-                msg += f"{stock.decode():<5}: ${price}\n"
+                msg += f"{stock.decode():<5}: ${float(price):.2f}\n"
             else:
-                msg += f"{stock.decode():<5}: ${price:<9}"
+                msg += f"{stock.decode():<5}: ${float(price):<9.2f}"
             i += 1
 
         embed = discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
@@ -31,6 +31,7 @@ class stocks(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.cryptobal = self.bot.db.prefixed_db(b"cryptobal-")
         self.crypto = self.bot.db.prefixed_db(b"crypto-")
         self.stocks = self.bot.db.prefixed_db(b"stocks-")
         self.bal = self.bot.db.prefixed_db(b"bal-")
@@ -96,7 +97,7 @@ class stocks(commands.Cog):
         member: discord.Member
             The member whos stockprofile will be shown
         """
-        if member is None:
+        if not member:
             member = ctx.author
 
         member_id = str(member.id).encode()
@@ -195,7 +196,7 @@ class stocks(commands.Cog):
 
         bal = self.bal.get(member_id)
 
-        if bal is None:
+        if not bal:
             bal = 1000
         else:
             bal = float(bal)
@@ -228,7 +229,7 @@ class stocks(commands.Cog):
         cash: int
             The amount of money to invest.
         """
-        if symbol is None or cash is None:
+        if not symbol or not cash:
             return await ctx.send(
                 f"```Usage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}```"
             )
@@ -244,7 +245,7 @@ class stocks(commands.Cog):
         member_id = str(ctx.author.id).encode()
         bal = self.bal.get(member_id)
 
-        if bal is None:
+        if not bal:
             bal = 1000
         else:
             bal = float(bal)
@@ -328,34 +329,37 @@ class stocks(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(name="crypto", aliases=["coin", "bitcoin", "btc"])
-    async def _crypto(self, ctx, symbol: str = "BTC", currency="NZD"):
+    @commands.group(name="crypto", aliases=["coin"])
+    async def _crypto(self, ctx):
         """Gets some information about crypto currencies.
 
         symbol: str
             The symbol to search for.
         """
-        symbol = symbol.upper().encode()
+        if ctx.invoked_subcommand is not None:
+            return
+        # symbol: str = "BTC"
+        symbol = ctx.subcommand_passed.upper().encode()
         crypto = self.crypto.get(symbol)
 
-        if crypto is None:
+        if not crypto:
             return await ctx.send(f"Couldn't find symbol {symbol}")
 
         crypto = ujson.loads(crypto)
 
         embed = discord.Embed(colour=discord.Colour.blurple())
-        max_supply = crypto["max_supply"] if crypto["max_supply"] else 0
+        max_supply = f"{crypto['max_supply']:,}" if crypto["max_supply"] else "N/A"
 
         embed.description = textwrap.dedent(
             f"""
                 ```diff
-                {crypto['name']} [{symbol}]
+                {crypto['name']} [{symbol.decode()}]
 
                 Price:
                 ${crypto['price']:,.2f}
 
                 Circulating/Max Supply:
-                {crypto['circulating_supply']:,}/{max_supply:,}
+                {crypto['circulating_supply']:,}/{max_supply}
 
                 Market Cap:
                 ${crypto['market_cap']:,.2f}
@@ -370,6 +374,212 @@ class stocks(commands.Cog):
         )
 
         await ctx.send(embed=embed)
+
+    @_crypto.command(aliases=["b"])
+    async def buy(self, ctx, coin: str, cash: int):
+        """Buys an amount of crypto.
+
+        coin: str
+            The symbol of the crypto.
+        cash: int
+            How much money you want to invest in the coin.
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+        coin = coin.upper()
+        price = self.crypto.get(coin.encode())
+
+        if not price:
+            embed.description = f"```Couldn't find crypto {coin}```"
+            return await ctx.send(embed=embed)
+
+        price = ujson.loads(price)["price"]
+        member_id = str(ctx.author.id).encode()
+        bal = self.bal.get(member_id)
+
+        if not bal:
+            bal = 1000
+        else:
+            bal = float(bal)
+
+        if bal < cash:
+            embed.description = "```You don't have enough cash```"
+            return await ctx.send(embed=embed)
+
+        amount = cash / float(price)
+
+        cryptobal = self.cryptobal.get(member_id)
+
+        if not cryptobal:
+            cryptobal = {}
+        else:
+            cryptobal = ujson.loads(cryptobal)
+
+        if coin not in cryptobal:
+            cryptobal[coin] = 0
+
+        cryptobal[coin] += amount
+        bal -= cash
+
+        embed = discord.Embed(
+            title=f"You bought {amount:.2f} crypto in {coin}",
+            color=discord.Color.blurple(),
+        )
+        embed.set_footer(text=f"Balance: ${bal}")
+
+        await ctx.send(embed=embed)
+
+        self.bal.put(member_id, str(bal).encode())
+        self.cryptobal.put(member_id, ujson.dumps(cryptobal).encode())
+
+    @_crypto.command(aliases=["s"])
+    async def sell(self, ctx, symbol, amount: float):
+        """Sells crypto.
+
+        symbol: str
+            The symbol of the crypto to sell.
+        amount: float
+            The amount of crypto to sell.
+        """
+        symbol = symbol.upper()
+        price = self.crypto.get(symbol.encode())
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not price:
+            embed.description = f"```Couldn't find crypto {symbol}```"
+            return await ctx.send(embed=embed)
+
+        price = ujson.loads(price)["price"]
+        member_id = str(ctx.author.id).encode()
+        cryptobal = self.cryptobal.get(member_id)
+
+        if not cryptobal:
+            embed.description = f"```You have never invested in {symbol}```"
+            return await ctx.send(embed=embed)
+
+        cryptobal = ujson.loads(cryptobal)
+
+        if cryptobal[symbol] < amount:
+            embed.description = f"```Not enough crypto you have: {cryptobal[symbol]}```"
+            return await ctx.send(embed=embed)
+
+        bal = self.bal.get(member_id)
+
+        if not bal:
+            bal = 1000
+        else:
+            bal = float(bal)
+
+        cash = amount * float(price)
+
+        cryptobal[symbol] -= amount
+
+        if cryptobal[symbol] == 0:
+            cryptobal.pop(symbol, None)
+
+        bal += cash
+
+        embed.title = f"Sold {amount:.2f} crypto for ${cash:.2f}"
+        embed.set_footer(text=f"Balance: ${bal}")
+
+        await ctx.send(embed=embed)
+
+        self.bal.put(member_id, str(bal).encode())
+        self.cryptobal.put(member_id, ujson.dumps(cryptobal).encode())
+
+    @_crypto.command(aliases=["p"])
+    async def profile(self, ctx, member: discord.Member = None):
+        """Gets someone's crypto profile.
+
+        member: discord.Member
+            The member whos crypto profile will be shown.
+        """
+        if not member:
+            member = ctx.author
+
+        member_id = str(member.id).encode()
+        cryptobal = self.cryptobal.get(member_id)
+
+        if not cryptobal:
+            return await ctx.send("```You have never invested```")
+
+        cryptobal = ujson.loads(cryptobal)
+
+        net_value = 0
+        msg = f"{member.display_name}'s crypto profile:\n"
+
+        for crypto in cryptobal:
+            data = ujson.loads(self.crypto.get(crypto.encode()))
+
+            msg += f"\n{str(data['change_24h'])[0]} {crypto:>4}: {cryptobal[crypto]:<14.2f}"
+            msg += f" Price: ${data['price']:<7.2f} {data['change_24h']}%"
+
+            net_value += cryptobal[crypto] * float(data["price"])
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        embed.description = f"```diff\n{msg}\n\nNet Value: ${net_value:.2f}```"
+
+        await ctx.send(embed=embed)
+
+    @_crypto.command()
+    async def bal(self, ctx, symbol: str):
+        """Shows how much of a crypto you have.
+
+        symbol: str
+            The symbol of the crypto to find.
+        """
+        symbol = symbol.upper()
+        member_id = str(ctx.author.id).encode()
+
+        cryptobal = self.cryptobal.get(member_id)
+
+        if not cryptobal:
+            return await ctx.send("```You have never invested in crypto.```")
+
+        cryptobal = ujson.loads(cryptobal)
+
+        if symbol not in cryptobal:
+            return await ctx.send(f"```You have never invested in {symbol}```")
+
+        crypto = ujson.loads(self.crypto.get(symbol.encode()))
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        max_supply = f"{crypto['max_supply']:,}" if crypto["max_supply"] else "N/A"
+
+        embed.description = textwrap.dedent(
+            f"""
+                ```diff
+                {crypto['name']} [{symbol.decode()}]
+
+                Bal: {cryptobal[symbol]}
+
+                Price:
+                ${crypto['price']:,.2f}
+
+                Circulating/Max Supply:
+                {crypto['circulating_supply']:,}/{max_supply}
+
+                Market Cap:
+                ${crypto['market_cap']:,.2f}
+
+                24h Change:
+                {crypto['change_24h']}%
+
+                24h Volume:
+                {crypto['volume_24h']}
+                ```
+            """
+        )
+
+        await ctx.send(embed=embed)
+
+    @_crypto.command()
+    async def list(self, ctx):
+        """Shows the prices of crypto with pagination."""
+        pages = menus.MenuPages(
+            source=StockMenu(list(self.crypto)), clear_reactions_after=True
+        )
+        await pages.start(ctx)
 
 
 def setup(bot: commands.Bot) -> None:
