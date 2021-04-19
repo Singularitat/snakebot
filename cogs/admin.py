@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import ujson
 import datetime
+from typing import Union
 
 
 class admin(commands.Cog):
@@ -174,7 +175,7 @@ class admin(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator=True)
-    async def downvote(self, ctx, user: discord.User = None, *, duration=None):
+    async def downvote(self, ctx, user: discord.Member = None, *, duration=None):
         """Automatically downvotes someone.
 
         user: discord.User
@@ -203,9 +204,7 @@ class admin(commands.Cog):
             embed.description = f"***{user}*** has been removed from the downvote list"
             return await ctx.send(embed=embed)
 
-        if ctx.guild:
-            member = ctx.guild.get_member(user.id)
-            await member.edit(voice_channel=None)
+        await user.edit(voice_channel=None)
 
         if duration is None:
             self.blacklist.put(user_id, b"1")
