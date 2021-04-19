@@ -62,6 +62,18 @@ class owner(commands.Cog):
         """
         return ctx.author.id in self.bot.owner_ids
 
+    @commands.command(hidden=True)
+    async def backup(self, ctx, number: int):
+        """Sends the bot database backup as a json file.
+
+        number: int
+            Which backup to get.
+        """
+        number = min(11, max(number, 0))
+
+        with open(f"backup/{number}backup.json", "rb") as file:
+            await ctx.send(file=discord.File(file, "backup.json"))
+
     @commands.command(hidden=True, aliases=["boot"])
     async def boot_times(self, ctx, number=10):
         boot_times = self.bot.db.get(b"boot_times")
