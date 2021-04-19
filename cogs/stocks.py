@@ -516,7 +516,9 @@ class stocks(commands.Cog):
 
         for crypto in cryptobal:
             data = ujson.loads(self.crypto.get(crypto.encode()))
-            sign = str(data['change_24h'])[0] if str(data['change_24h'])[0] == "-" else "+"
+            sign = (
+                str(data["change_24h"])[0] if str(data["change_24h"])[0] == "-" else "+"
+            )
 
             msg += f"\n{sign} {crypto:>4}: {cryptobal[crypto]:<14.2f}"
             msg += f" Price: ${data['price']:<10.2f} {data['change_24h']}%"
