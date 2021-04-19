@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 import ujson
 import datetime
-from typing import Union
 
 
 class admin(commands.Cog):

@@ -341,8 +341,8 @@ class stocks(commands.Cog):
             embed.description = "```No subcommand passed```"
             await ctx.send(embed=embed)
 
-        symbol = ctx.subcommand_passed.upper().encode()
-        crypto = self.crypto.get(symbol)
+        symbol = ctx.subcommand_passed.upper()
+        crypto = self.crypto.get(symbol.encode())
 
         if not crypto:
             embed.description = f"```Couldn't find {symbol}```"
@@ -354,7 +354,7 @@ class stocks(commands.Cog):
         embed.description = textwrap.dedent(
             f"""
                 ```diff
-                {crypto['name']} [{symbol.decode()}]
+                {crypto['name']} [{symbol}]
 
                 Price:
                 ${crypto['price']:,.2f}
@@ -516,9 +516,12 @@ class stocks(commands.Cog):
 
         for crypto in cryptobal:
             data = ujson.loads(self.crypto.get(crypto.encode()))
+            sign = (
+                str(data["change_24h"])[0] if str(data["change_24h"])[0] == "-" else "+"
+            )
 
-            msg += f"\n{str(data['change_24h'])[0]} {crypto:>4}: {cryptobal[crypto]:<14.2f}"
-            msg += f" Price: ${data['price']:<7.2f} {data['change_24h']}%"
+            msg += f"\n{sign} {crypto:>4}: {cryptobal[crypto]:<14.2f}"
+            msg += f" Price: ${data['price']:<10.2f} {data['change_24h']}%"
 
             net_value += cryptobal[crypto] * float(data["price"])
 
@@ -550,29 +553,18 @@ class stocks(commands.Cog):
 
         crypto = ujson.loads(self.crypto.get(symbol.encode()))
 
-        max_supply = f"{crypto['max_supply']:,}" if crypto["max_supply"] else "N/A"
-
         embed.description = textwrap.dedent(
             f"""
                 ```diff
-                {crypto['name']} [{symbol.decode()}]
+                {crypto['name']} [{symbol}]
 
                 Bal: {cryptobal[symbol]}
 
                 Price:
                 ${crypto['price']:,.2f}
 
-                Circulating/Max Supply:
-                {crypto['circulating_supply']:,}/{max_supply}
-
-                Market Cap:
-                ${crypto['market_cap']:,.2f}
-
                 24h Change:
                 {crypto['change_24h']}%
-
-                24h Volume:
-                {crypto['volume_24h']}
                 ```
             """
         )
