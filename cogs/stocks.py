@@ -387,13 +387,15 @@ class stocks(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
         symbol = symbol.upper()
-        price = self.crypto.get(symbol.encode())
+        data = self.crypto.get(symbol.encode())
 
-        if not price:
+        if not data:
             embed.description = f"```Couldn't find crypto {symbol}```"
             return await ctx.send(embed=embed)
 
-        price = ujson.loads(price)["price"]
+        data = ujson.loads(data)
+
+        price = data["price"]
         member_id = str(ctx.author.id).encode()
         bal = self.bal.get(member_id)
 
@@ -422,7 +424,7 @@ class stocks(commands.Cog):
         bal -= cash
 
         embed = discord.Embed(
-            title=f"You bought {amount:.2f} in {symbol}",
+            title=f"You bought {amount:.2f} {data['name']}",
             color=discord.Color.blurple(),
         )
         embed.set_footer(text=f"Balance: ${bal}")
@@ -460,7 +462,9 @@ class stocks(commands.Cog):
         cryptobal = ujson.loads(cryptobal)
 
         if cryptobal[symbol] < amount:
-            embed.description = f"```Not enough {symbol} you have: {cryptobal[symbol]}```"
+            embed.description = (
+                f"```Not enough {symbol} you have: {cryptobal[symbol]}```"
+            )
             return await ctx.send(embed=embed)
 
         bal = self.bal.get(member_id)

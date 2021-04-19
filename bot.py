@@ -18,7 +18,7 @@ bot = commands.Bot(
     intents=intents,
     command_prefix=commands.when_mentioned_or("."),
     case_insensitive=True,
-    owner_ids=(225708387558490112, 204807103704072194, 198892706087436288),
+    owner_ids=(225708387558490112, 198892706087436288),
     activity=discord.Game(name="Tax Evasion Simulator"),
 )
 
