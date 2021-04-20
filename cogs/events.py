@@ -272,8 +272,9 @@ class events(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         if "`" in before.content or "`" in after.content:
-            before.content = before.content.replace("`", "")
-            after.content = after.content.replace("`", "")
+            # The replace replaces the backticks with a backtick and a zero width space
+            before.content = before.content.replace("`", "`​")
+            after.content = after.content.replace("`", "`​")
 
         embed.description = (
             f"```{before.author.display_name} edited:\n{before.content}"
@@ -324,7 +325,8 @@ class events(commands.Cog):
             return
 
         embed = discord.Embed(color=discord.Color.blurple())
-        msg = message.content.replace("`", "")
+        # The replace replaces the backticks with a backtick and a zero width space
+        msg = message.content.replace("`", "`​")
         embed.description = (
             f"```{message.author.display_name}"
             f" deleted:\n{msg}\n\nMember ID: {message.author.id}```"

@@ -64,7 +64,8 @@ class information(commands.Cog):
         cog = os.path.relpath(filename).replace("\\", "/")
 
         msg = f"<https://github.com/Singularitat/snakebot/blob/main/{cog}#L{lineno}-L{lineno + len(lines) - 1}>"
-        code = f'\n```py\n{textwrap.dedent("".join(lines)).replace("`", "")}```'
+        # The replace replaces the backticks with a backtick and a zero width space
+        code = f'\n```py\n{textwrap.dedent("".join(lines)).replace("`", "`​")}```'
 
         if len(code) <= 2000:
             msg += code
