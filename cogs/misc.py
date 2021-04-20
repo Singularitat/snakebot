@@ -170,13 +170,16 @@ class misc(commands.Cog):
         message: str
             The message to be sent.
         """
+        embed = discord.Embed(color=discord.Color.blurple)
         try:
             await user.send(message)
-            await ctx.send(f"```Sent message to {user.display_name}```")
+            embed.description = f"```Sent message to {user.display_name}```"
+            await ctx.send(embed=embed)
         except discord.errors.Forbidden:
-            await ctx.send(
+            embed.description = (
                 f"```{user.display_name} has DMs disabled for non-friends```"
             )
+            await ctx.send(embed=embed)
 
     @commands.command()
     async def roll(self, ctx, dice: str):
@@ -185,14 +188,19 @@ class misc(commands.Cog):
         dice: str
             The dice to roll in AdX format.
         """
+        embed = discord.Embed(color=discord.Color.blurple())
+
         try:
             rolls, limit = map(int, dice.split("d"))
         except ValueError:
-            await ctx.send("Format has to be AdX")
-            return
-        result = ", ".join(str(random.randint(1, limit)) for r in range(rolls))
-        total = sum([int(item) for item in result.split(", ")])
-        await ctx.send(f"```Results: {result} Total: {total}```")
+            embed.description = "```Format has to be AdX```"
+            return await ctx.send(embed=embed)
+
+        nums = [str(random.randint(1, limit)) for r in range(rolls)]
+        result = ", ".join(nums)
+        total = sum([int(num) for num in nums])
+        embed.description = f"```Results: {result} Total: {total}```"
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def choose(self, ctx, *options: str):
@@ -234,7 +242,7 @@ class misc(commands.Cog):
         ------------------
 
         graph_data: commands.Greedy[int]
-            A list of graph_data
+            A list of graph data.
         """
         max_val = max(graph_data)
 

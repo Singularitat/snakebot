@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import ujson
-import datetime
+import asyncio
 
 
 class admin(commands.Cog):
@@ -9,6 +9,7 @@ class admin(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.loop = asyncio.get_event_loop()
         self.blacklist = self.bot.db.prefixed_db(b"blacklist-")
         self.deleted = self.bot.db.prefixed_db(b"deleted-")
         self.edited = self.bot.db.prefixed_db(b"edited-")
@@ -154,78 +155,80 @@ class admin(commands.Cog):
         """Converts a duration to an end date.
 
         duration: str
-            How much to add onto the current date e.g 5d 10h 25m 5s"""
-        end_date = datetime.datetime.now()
-
+            How much to add onto the current date e.g 5d 10h 25m 5s
+        """
+        seconds = 0
         try:
             for time in duration.split():
                 if time[-1] == "s":
-                    end_date += datetime.timedelta(seconds=int(time[:-1]))
+                    seconds += int(time[:-1])
                 elif time[-1] == "m":
-                    end_date += datetime.timedelta(minutes=int(time[:-1]))
+                    seconds += int(time[:-1]) * 60
                 elif time[-1] == "h":
-                    end_date += datetime.timedelta(hours=int(time[:-1]))
+                    seconds += int(time[:-1]) * 3600
                 elif time[-1] == "d":
-                    end_date += datetime.timedelta(days=int(time[:-1]))
+                    seconds += int(time[:-1]) * 86400
         except ValueError:
             return None
 
-        return str(end_date)
+        return seconds
+
+    def undownvote(self, member_id):
+        self.blacklist.delete(member_id)
 
     @commands.command()
     @commands.has_permissions(administrator=True)
-    async def downvote(self, ctx, user: discord.Member = None, *, duration=None):
+    async def downvote(self, ctx, member: discord.Member = None, *, duration=None):
         """Automatically downvotes someone.
 
-        user: discord.User
-            The downvoted user.
+        member: discord.Member
+            The downvoted member.
         duration: str
             How long to downvote the user for e.g 5d 10h 25m 5s
         """
         embed = discord.Embed(color=discord.Color.blurple())
-        if user is None:
+        if member is None:
             if list(self.blacklist) == []:
                 embed.title = "No downvoted users"
                 return await ctx.send(embed=embed)
 
             embed.title = "Downvoted users"
-            for user_id in self.blacklist.iterator(include_value=False):
-                embed.add_field(name="User:", value=user_id.decode())
+            for member_id in self.blacklist.iterator(include_value=False):
+                embed.add_field(name="User:", value=member_id.decode())
 
             return await ctx.send(embed=embed)
 
-        user_id = str(user.id).encode()
+        member_id = str(member.id).encode()
 
-        if self.blacklist.get(user_id):
-            self.blacklist.delete(user_id)
+        if self.blacklist.get(member_id):
+            self.blacklist.delete(member_id)
 
             embed.title = "User Undownvoted"
-            embed.description = f"***{user}*** has been removed from the downvote list"
+            embed.description = (
+                f"***{member}*** has been removed from the downvote list"
+            )
             return await ctx.send(embed=embed)
 
-        await user.edit(voice_channel=None)
+        await member.edit(voice_channel=None)
 
         if duration is None:
-            self.blacklist.put(user_id, b"1")
+            self.blacklist.put(member_id, b"1")
             embed.title = "User Downvoted"
-            embed.description = f"**{user}** has been added to the downvote list"
+            embed.description = f"**{member}** has been added to the downvote list"
             return await ctx.send(embed=embed)
 
-        end_date = await self.end_date(duration)
+        seconds = await self.end_date(duration)
 
-        if not end_date:
+        if not seconds:
             embed.description = "```Invalid duration. Example: '3d 5h 10m'```"
             return await ctx.send(embed=embed)
 
-        self.blacklist.put(user_id, b"1")
-        users = self.bot.db.get(b"downvoted_users")
-        if not users:
-            data = {}
-        else:
-            data = ujson.loads(users)
+        self.blacklist.put(member_id, b"1")
+        self.loop.call_later(seconds, self.undownvote, member_id)
 
-        data[user.id] = {"date": end_date}
-        self.bot.db.put(b"downvoted_users", ujson.dumps(data).encode())
+        embed.title = "User Undownvoted"
+        embed.description = f"***{member}*** has been added from the downvote list"
+        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.has_permissions(administrator=True)
@@ -260,6 +263,9 @@ class admin(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    async def unban(self, guild: discord.Guild, member: discord.Member):
+        await guild.unban(member)
+
     @commands.command(name="ban")
     @commands.has_permissions(ban_members=True)
     async def ban_member(
@@ -279,7 +285,7 @@ class admin(commands.Cog):
         reason: str
             The reason for banning the member.
         """
-        embed = discord.Embed(color=discord.Color.blurple())
+        embed = discord.Embed(color=discord.Color.dark_red())
         if ctx.author.top_role <= member.top_role and ctx.guild.owner != ctx.author:
             embed.description = "```You can't ban someone higher or equal to you```"
             return await ctx.send(embed=embed)
@@ -289,29 +295,17 @@ class admin(commands.Cog):
             embed.title = f"Banned {member}"
             return await ctx.send(embed=embed)
 
-        end_date = await self.end_date(duration)
-        if not end_date:
+        seconds = await self.end_date(duration)
+
+        if not seconds:
             embed.description = "```Invalid duration. Example: '3d 5h 10m'```"
             return await ctx.send(embed=embed)
 
         await member.ban(reason=reason)
+        self.loop.call_later(seconds, asyncio.create_task, ctx.guild.unban(member))
 
-        members = self.bot.db.get(b"banned_members")
-        if not members:
-            data = {}
-        else:
-            data = ujson.loads(members)
-
-        data[member.id] = {"date": end_date, "guild": ctx.guild.id}
-
-        self.bot.db.put(b"banned_members", ujson.dumps(data).encode())
-
-        await ctx.send(
-            embed=discord.Embed(
-                title=f"Banned {member} till {end_date}",
-                color=discord.Color.dark_red(),
-            )
-        )
+        embed.title = f"Banned {member} for {seconds}s"
+        await ctx.send(embed=embed)
 
     @commands.command(name="kick")
     @commands.has_permissions(kick_members=True)
@@ -473,7 +467,8 @@ class admin(commands.Cog):
             if index == amount:
                 break
 
-            msg += f"{date}: {deleted[date].replace('`', '')}\n"
+            # The replace replaces the backticks with a backtick and a zero width space
+            msg += f"{date}: {deleted[date].replace('`', '`​')}\n"
 
         embed.description = f"```{msg}```"
         return await ctx.send(embed=embed)
@@ -510,8 +505,9 @@ class admin(commands.Cog):
             if index == amount:
                 break
 
-            before = edited[date][0].replace("`", "")
-            after = edited[date][1].replace("`", "")
+            # The replace replaces the backticks with a backtick and a zero width space
+            before = edited[date][0].replace("`", "`​")
+            after = edited[date][1].replace("`", "`​")
 
             msg += f"{date}: {before} >>> {after}\n"
 

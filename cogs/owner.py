@@ -147,14 +147,19 @@ class owner(commands.Cog):
             The command to be toggled
         """
         command = self.bot.get_command(command)
+        embed = discord.Embed(color=discord.Color.blurple())
+
         if not command:
-            await ctx.send("```Command not found```")
-        else:
-            command.enabled = not command.enabled
-            ternary = "enabled" if command.enabled else "disabled"
-            await ctx.send(
-                f"```Sucessfully {ternary} the {command.qualified_name} command```"
-            )
+            embed.description = "```Command not found```"
+            return await ctx.send(embed=embed)
+
+        command.enabled = not command.enabled
+        ternary = "enabled" if command.enabled else "disabled"
+
+        embed.description = (
+            f"```Sucessfully {ternary} the {command.qualified_name} command```"
+        )
+        await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
     async def presence(self, ctx, *, presence):
