@@ -242,24 +242,16 @@ class apis(commands.Cog):
 
         embed = discord.Embed(colour=discord.Color.blurple())
 
-        embed.description = textwrap.dedent(
-            """
-                ```diff
-                Definition of {}:
-                {}
-
-                Example:
-                {}
-
-                Votes:
-                {}
-                ```
-            """.format(
-                search,
-                re.sub(r"\[(.*?)\]", r"\1", defin["definition"]),
-                re.sub(r"\[(.*?)\]", r"\1", defin["example"]),
-                defin["thumbs_up"],
-            )
+        embed.description = (
+            "```diff\nDefinition of {}:\n"
+            "{}\n\n"
+            "Example:\n{}\n\n"
+            "Votes:\n{}\n\n```"
+        ).format(
+            search,
+            re.sub(r"\[(.*?)\]", r"\1", defin["definition"]),
+            re.sub(r"\[(.*?)\]", r"\1", defin["example"]),
+            defin["thumbs_up"],
         )
 
         await ctx.send(embed=embed)
