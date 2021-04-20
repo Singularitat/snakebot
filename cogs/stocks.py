@@ -349,7 +349,6 @@ class stocks(commands.Cog):
             return await ctx.send(embed=embed)
 
         crypto = ujson.loads(crypto)
-        max_supply = f"{crypto['max_supply']:,}" if crypto["max_supply"] else "N/A"
 
         embed.description = textwrap.dedent(
             f"""
@@ -360,7 +359,7 @@ class stocks(commands.Cog):
                 ${crypto['price']:,.2f}
 
                 Circulating/Max Supply:
-                {crypto['circulating_supply']:,}/{max_supply}
+                {crypto['circulating_supply']:,}/{crypto['max_supply']:,}
 
                 Market Cap:
                 ${crypto['market_cap']:,.2f}
