@@ -4,9 +4,9 @@ import ujson
 import random
 import aiohttp
 import time
-import datetime
 import lxml.html
 import re
+import asyncio
 
 
 class InviteMenu(menus.ListPageSource):
@@ -34,6 +34,7 @@ class useful(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.loop = asyncio.get_event_loop()
         self.invites = self.bot.db.prefixed_db(b"invites-")
 
     @commands.command()
@@ -225,27 +226,33 @@ class useful(commands.Cog):
 
         await ctx.send(f"```{obj}\n\n{dir(obj)}```")
 
-    async def cache_check(self, item):
-        cache = self.bot.db.get(b"cache")
+    async def cache_check(self, search):
+        """Checks the cache for an search if found randomly return a result.
 
-        if cache is not None:
-            cache = ujson.loads(cache)
+        search: str
+        """
+        cache = ujson.loads(self.bot.db.get(b"cache"))
 
-            if item in cache:
-                if len(cache[item]["results"]) == 0:
-                    return {}
+        if search in cache:
+            if len(cache[search]) == 0:
+                return {}
 
-                date = datetime.datetime.now() + datetime.timedelta(minutes=2)
-                cache[item]["date"] = str(date)
-                url, title = random.choice(list(cache[item]["results"].items()))
+            url, title = random.choice(list(cache[search].items()))
 
-                cache[item]["results"].pop(url)
+            cache[search].pop(url)
 
-                self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+            self.bot.db.put(b"cache", ujson.dumps(cache).encode())
 
-                return url, title
-            return cache
-        return {}
+            return url, title
+        return cache
+
+    def delete_cache(self, command, search, cache):
+        """Deletes a search from the cache.
+
+        search: str
+        """
+        cache.pop(f"{command}-{search}")
+        self.bot.db.put(b"cache", ujson.dumps(cache).encode())
 
     @commands.command()
     async def google(self, ctx, *, search):
@@ -287,15 +294,17 @@ class useful(commands.Cog):
                 return await ctx.send(embed=embed)
 
             url, title = random.choice(list(images.items()))
+            images.pop(url)
 
             embed.set_image(url=url)
             embed.title = title
 
             await ctx.send(embed=embed)
 
-            date = datetime.datetime.now() + datetime.timedelta(minutes=2)
-            cache[f"google-{search}"] = {"date": str(date), "results": images}
+            search = f"google-{search}"
+            cache[search] = images
 
+            self.loop.call_later(300, self.delete_cache, search, cache)
             self.bot.db.put(b"cache", ujson.dumps(cache).encode())
 
     @commands.command(aliases=["img"])
@@ -336,15 +345,17 @@ class useful(commands.Cog):
                 return await ctx.send(embed=embed)
 
             url, title = random.choice(list(images.items()))
+            images.pop(url)
 
             embed.set_image(url=url)
             embed.title = title
 
             await ctx.send(embed=embed)
 
-            date = datetime.datetime.now() + datetime.timedelta(minutes=2)
-            cache[f"image-{search}"] = {"date": str(date), "results": images}
+            search = f"image-{search}"
+            cache[search] = images
 
+            self.loop.call_later(300, self.delete_cache, search, cache)
             self.bot.db.put(b"cache", ujson.dumps(cache).encode())
 
     @commands.command()
