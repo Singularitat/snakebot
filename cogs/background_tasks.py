@@ -229,46 +229,24 @@ class background_tasks(commands.Cog):
 
         self.bot.db.put(b"languages", ujson.dumps(list(languages)).encode())
 
-    async def date_check(self, db_key: bytes):
-        """Checks end dates in a dictionary then yields the value.
+    @tasks.loop(seconds=10)
+    async def expire_cache(self):
+        """Checks if cache has expired and removes it."""
+        cache = self.bot.db.get(b"cache")
 
-        db_key: bytes
-            A key to get a dictionary from the db.
-        """
-        dictionary = self.bot.db.get(db_key)
-
-        if dictionary is None:
+        if cache is None or cache == b"{}":
             return
 
-        dictionary = ujson.loads(dictionary)
+        cache = ujson.loads(cache)
 
-        for value in list(dictionary):
+        for value in list(cache):
             if (
-                datetime.strptime(dictionary[value]["date"], "%Y-%m-%d %H:%M:%S.%f")
+                datetime.strptime(cache[value]["date"], "%Y-%m-%d %H:%M:%S.%f")
                 < datetime.now()
             ):
-                if "guild" in dictionary[value]:
-                    yield value, dictionary[value]["guild"]
-                else:
-                    yield value
+                cache.pop(value)
 
-                dictionary.pop(value)
-
-        self.bot.db.put(db_key, ujson.dumps(dictionary).encode())
-
-    @tasks.loop(seconds=10)
-    async def check_end_dates(self):
-        """Checks end dates on bans, downvotes and cache."""
-        async for member, guild in self.date_check(b"banned_members"):
-            user = self.bot.get_user(member)
-            if user:
-                await guild.unban(user)
-
-        async for member in self.date_check(b"downvoted_users"):
-            self.bot.db.delete(b"blacklist-" + member.encode())
-
-        async for cache in self.date_check(b"cache"):
-            pass
+        self.bot.db.put(b"cache", ujson.dumps(cache).encode())
 
     @tasks.loop(minutes=20)
     async def crypto_update(self):
@@ -298,7 +276,7 @@ class background_tasks(commands.Cog):
                         "name": coin["name"],
                         "price": coin["quote"]["NZD"]["price"],
                         "circulating_supply": coin["circulating_supply"],
-                        "max_supply": coin["max_supply"] if coin["max_supply"] else 0,
+                        "max_supply": coin["max_supply"] or 0,
                         "market_cap": coin["quote"]["NZD"]["market_cap"],
                         "change_24h": coin["quote"]["NZD"]["percent_change_24h"],
                         "volume_24h": coin["quote"]["NZD"]["volume_24h"],
