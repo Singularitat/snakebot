@@ -42,40 +42,36 @@ class economy(commands.Cog):
         bet: float
             The amount of money you are betting.
         """
-        if bet > 0:
-            lottery = random.randint(1, 100)
-            number = random.randint(1, 100)
+        embed = discord.Embed(color=discord.Color.blurple())
 
-            member = str(ctx.author.id).encode()
-            bal = self.bal.get(member)
+        if bet <= 0:
+            embed.title = "Bet must be positive"
+            return await ctx.send(embed=embed)
 
-            if bal is None:
-                bal = 1000
-            else:
-                bal = float(bal)
+        member = str(ctx.author.id).encode()
+        bal = self.bal.get(member)
 
-            if bal < bet:
-                embed = discord.Embed(
-                    title="You don't have enough cash", color=discord.Color.red()
-                )
-            else:
-                if lottery == number:
-                    self.bal.put(member, str(bal + bet * 99).encode())
-                    embed = discord.Embed(
-                        title=f"You won ${bet * 99}", color=discord.Color.blurple()
-                    )
-                else:
-                    self.bal.put(member, str(bal - bet).encode())
-                    embed = discord.Embed(
-                        title=f"You lost ${bet}", color=discord.Color.red()
-                    )
-            await ctx.send(embed=embed)
+        if bal is None:
+            bal = 1000
         else:
-            await ctx.send(
-                embed=discord.Embed(
-                    title="Bet must be positive", color=discord.Color.red()
-                )
-            )
+            bal = float(bal)
+
+        if bal < bet:
+            embed.title = "You don't have enough cash"
+            return await ctx.send(embed=embed)
+
+        if random.randint(1, 100) == random.randint(1, 100):
+            bal += bet * 99
+            self.bal.put(member, str(bal).encode())
+            embed.title = f"You won ${bet * 99}"
+            embed.set_footer(text=f"Balance: ${bal:,}")
+            return await ctx.send(embed=embed)
+
+        self.bal.put(member, str(bal - bet).encode())
+        embed.title = f"You lost ${bet}"
+        embed.set_footer(text=f"Balance: ${bal - bet:,}")
+        embed.color = discord.Color.red()
+        await ctx.send(embed=embed)
 
     async def streak_update(self, member, result):
         data = self.wins.get(member)
