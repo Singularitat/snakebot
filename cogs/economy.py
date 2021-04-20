@@ -60,7 +60,7 @@ class economy(commands.Cog):
             embed.title = "You don't have enough cash"
             return await ctx.send(embed=embed)
 
-        if random.randint(1, 100) == random.randint(1, 100):
+        if random.randint(1, 100) == 50:
             bal += bet * 99
             self.bal.put(member, str(bal).encode())
             embed.title = f"You won ${bet * 99}"
