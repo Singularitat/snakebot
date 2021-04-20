@@ -173,8 +173,8 @@ class Position(namedtuple("Position", "board score wc bc ep kp")):
             -self.score,
             self.bc,
             self.wc,
-            119 - self.ep if self.ep else 0,
-            119 - self.kp if self.kp else 0,
+            119 - self.ep or 0,
+            119 - self.kp or 0,
         )
 
     def nullmove(self):
