@@ -173,9 +173,6 @@ class admin(commands.Cog):
 
         return seconds
 
-    def undownvote(self, member_id):
-        self.blacklist.delete(member_id)
-
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def downvote(self, ctx, member: discord.Member = None, *, duration=None):
@@ -224,7 +221,7 @@ class admin(commands.Cog):
             return await ctx.send(embed=embed)
 
         self.blacklist.put(member_id, b"1")
-        self.loop.call_later(seconds, self.undownvote, member_id)
+        self.loop.call_later(seconds, self.blacklist.delete, member_id)
 
         embed.title = "User Undownvoted"
         embed.description = f"***{member}*** has been added from the downvote list"
