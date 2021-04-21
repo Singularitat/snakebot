@@ -263,21 +263,22 @@ class background_tasks(commands.Cog):
             response = await session.get(url, params=parameters, headers=headers)
             data = await response.json()
 
-        for coin in data["data"]:
-            self.crypto.put(
-                coin["symbol"].encode(),
-                ujson.dumps(
-                    {
-                        "name": coin["name"],
-                        "price": coin["quote"]["NZD"]["price"],
-                        "circulating_supply": coin["circulating_supply"],
-                        "max_supply": coin["max_supply"] or 0,
-                        "market_cap": coin["quote"]["NZD"]["market_cap"],
-                        "change_24h": coin["quote"]["NZD"]["percent_change_24h"],
-                        "volume_24h": coin["quote"]["NZD"]["volume_24h"],
-                    }
-                ).encode(),
-            )
+        with self.crypto.write_batch() as wb:
+            for coin in data["data"]:
+                wb.put(
+                    coin["symbol"].encode(),
+                    ujson.dumps(
+                        {
+                            "name": coin["name"],
+                            "price": coin["quote"]["NZD"]["price"],
+                            "circulating_supply": coin["circulating_supply"],
+                            "max_supply": coin["max_supply"] or 0,
+                            "market_cap": coin["quote"]["NZD"]["market_cap"],
+                            "change_24h": coin["quote"]["NZD"]["percent_change_24h"],
+                            "volume_24h": coin["quote"]["NZD"]["volume_24h"],
+                        }
+                    ).encode(),
+                )
 
 
 def setup(bot):
