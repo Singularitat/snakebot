@@ -180,23 +180,37 @@ class background_tasks(commands.Cog):
 
     @tasks.loop(minutes=5)
     async def update_bot(self):
-        """Tries to update every 5 minutes and then reloads if needed."""
-        pull = await self.run_process("git pull")
+        """Checks if there has been any pushes then updates."""
+        url = "https://api.github.com/networks/singularitat/snakebot/events?per_page=10"
+        async with aiohttp.ClientSession() as session, session.get(url) as page:
+            data = await page.json()
 
-        if pull[:4] == ["Already", "up", "to", "date."]:
+        for event in data:
+            if event["type"] != "PushEvent":
+                continue
+
+            head = self.bot.db.get(b"head")
+
+            if not head or event["payload"]["head"] != head.decode():
+                self.bot.db.put(b"head", event["payload"]["head"].encode())
+                pull = await self.run_process("git pull")
+
+                if pull[:4] == ["Already", "up", "to", "date."]:
+                    return
+
+                diff = await self.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
+
+                if "poetry.lock" in diff:
+                    await self.run_process("poetry install")
+
+                for ext in [f[:-3] for f in os.listdir("cogs") if f.endswith(".py")]:
+                    try:
+                        self.bot.reload_extension(f"cogs.{ext}")
+                    except Exception as e:
+                        # Ignore all Exceptions but we want to try load the ext if it isn't loaded
+                        if isinstance(e, commands.errors.ExtensionNotLoaded):
+                            self.bot.load_extension(f"cogs.{ext}")
             return
-
-        diff = await self.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
-
-        if "poetry.lock" in diff:
-            await self.run_process("poetry install")
-
-        for ext in [f[:-3] for f in os.listdir("cogs") if f.endswith(".py")]:
-            try:
-                self.bot.reload_extension(f"cogs.{ext}")
-            except Exception as e:
-                if isinstance(e, commands.errors.ExtensionNotLoaded):
-                    self.bot.load_extension(f"cogs.{ext}")
 
     @tasks.loop(hours=2)
     async def backup_bot(self):
@@ -229,25 +243,6 @@ class background_tasks(commands.Cog):
 
         self.bot.db.put(b"languages", ujson.dumps(list(languages)).encode())
 
-    @tasks.loop(seconds=10)
-    async def expire_cache(self):
-        """Checks if cache has expired and removes it."""
-        cache = self.bot.db.get(b"cache")
-
-        if cache is None or cache == b"{}":
-            return
-
-        cache = ujson.loads(cache)
-
-        for value in list(cache):
-            if (
-                datetime.strptime(cache[value]["date"], "%Y-%m-%d %H:%M:%S.%f")
-                < datetime.now()
-            ):
-                cache.pop(value)
-
-        self.bot.db.put(b"cache", ujson.dumps(cache).encode())
-
     @tasks.loop(minutes=20)
     async def crypto_update(self):
         """Updates crypto currency data every 20 minutes."""
@@ -268,21 +263,22 @@ class background_tasks(commands.Cog):
             response = await session.get(url, params=parameters, headers=headers)
             data = await response.json()
 
-        for coin in data["data"]:
-            self.crypto.put(
-                coin["symbol"].encode(),
-                ujson.dumps(
-                    {
-                        "name": coin["name"],
-                        "price": coin["quote"]["NZD"]["price"],
-                        "circulating_supply": coin["circulating_supply"],
-                        "max_supply": coin["max_supply"] or 0,
-                        "market_cap": coin["quote"]["NZD"]["market_cap"],
-                        "change_24h": coin["quote"]["NZD"]["percent_change_24h"],
-                        "volume_24h": coin["quote"]["NZD"]["volume_24h"],
-                    }
-                ).encode(),
-            )
+        with self.crypto.write_batch() as wb:
+            for coin in data["data"]:
+                wb.put(
+                    coin["symbol"].encode(),
+                    ujson.dumps(
+                        {
+                            "name": coin["name"],
+                            "price": coin["quote"]["NZD"]["price"],
+                            "circulating_supply": coin["circulating_supply"],
+                            "max_supply": coin["max_supply"] or 0,
+                            "market_cap": coin["quote"]["NZD"]["market_cap"],
+                            "change_24h": coin["quote"]["NZD"]["percent_change_24h"],
+                            "volume_24h": coin["quote"]["NZD"]["volume_24h"],
+                        }
+                    ).encode(),
+                )
 
 
 def setup(bot):

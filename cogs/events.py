@@ -547,6 +547,9 @@ class events(commands.Cog):
             boot_times.append(boot_time)
             self.bot.db.put(b"boot_times", ujson.dumps(boot_times).encode())
 
+            # Wipe the cache as we have no way of knowing if it has expired
+            self.bot.db.put(b"cache", b"{}")
+
             print(
                 f"Logged in as {self.bot.user.name}\n"
                 f"Discord.py version: {discord.__version__}\n"
