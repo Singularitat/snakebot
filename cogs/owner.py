@@ -140,11 +140,11 @@ class owner(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
-    async def toggle(self, ctx, command):
-        """Toggles a command from being disabled or enabled.
+    async def disable(self, ctx, *, command):
+        """Disables the use of a command for every guild.
 
         command: str
-            The command to be toggled
+            The name of the command to disable.
         """
         command = self.bot.get_command(command)
         embed = discord.Embed(color=discord.Color.blurple())
