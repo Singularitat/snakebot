@@ -15,6 +15,28 @@ class admin(commands.Cog):
         self.edited = self.bot.db.prefixed_db(b"edited-")
 
     @commands.has_permissions(administrator=True)
+    @commands.command()
+    async def toggle(self, ctx, *, command):
+        """Toggles a command in the current guild."""
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not self.bot.get_command(command):
+            embed.description = "```Command not found.```"
+            return await ctx.send(embed=embed)
+
+        key = f"{ctx.guild.id}-{command}".encode()
+        state = self.bot.db.get(key)
+
+        if state is None or state == b"1":
+            self.bot.db.put(key, b"")
+            embed.description = f"```Enabled the {command} command```"
+            return await ctx.send(embed=embed)
+
+        self.bot.db.put(key, b"1")
+        embed.description = f"```Disabled the {command} command```"
+        return await ctx.send(embed=embed)
+
+    @commands.has_permissions(administrator=True)
     @commands.command(hidden=True)
     async def emojis(self, ctx):
         """Shows a list of the current emojis being voted on."""
@@ -195,7 +217,7 @@ class admin(commands.Cog):
 
             return await ctx.send(embed=embed)
 
-        member_id = str(member.id).encode()
+        member_id = f"{ctx.guild.id}-{str(member.id)}".encode()
 
         if self.blacklist.get(member_id):
             self.blacklist.delete(member_id)

@@ -107,17 +107,16 @@ class economy(commands.Cog):
         bet: str
             The amount of money you are betting.
         """
+        embed = discord.Embed(color=discord.Color.red())
         try:
             bet = float(bet.replace(",", ""))
         except ValueError:
-            return await ctx.send(f"```Invalid bet. e.g {ctx.prefix}slot 1000```")
+            embed.description = f"```Invalid bet. e.g {ctx.prefix}slot 1000```"
+            return await ctx.send(embed=embed)
 
         if bet < 0:
-            return await ctx.send(
-                embed=discord.Embed(
-                    title="Bet must be positive", color=discord.Color.red()
-                )
-            )
+            embed.title = "Bet must be positive"
+            return await ctx.send(embed=embed)
 
         member = str(ctx.author.id).encode()
         bal = self.bal.get(member)
@@ -131,11 +130,8 @@ class economy(commands.Cog):
             bal += 1
 
         if bal < bet:
-            return await ctx.send(
-                embed=discord.Embed(
-                    title="You don't have enough cash", color=discord.Color.red()
-                )
-            )
+            embed.title = "You don't have enough cash"
+            return await ctx.send(embed=embed)
 
         emojis = (
             ":apple:",
@@ -153,10 +149,10 @@ class economy(commands.Cog):
             ":mango:",
         )
 
-        a, b, c, d = (*random.choices(emojis, k=4),)
+        a, b, c, d = random.choices(emojis, k=4)
 
         result = "won"
-        color = discord.Color.blurple()
+        embed.color = discord.Color.blurple()
         if a == b == c == d:
             winnings = 100
         elif (a == b == c) or (a == c == d) or (a == b == d) or (b == c == d):
@@ -168,16 +164,13 @@ class economy(commands.Cog):
         else:
             winnings = -1
             result = "lost"
-            color = discord.Color.red()
+            embed.color = discord.Color.red()
 
         bal += bet * winnings
         self.bal.put(member, str(bal).encode())
 
-        embed = discord.Embed(
-            title=f"[ {a} {b} {c} {d} ]",
-            description=f"You {result} ${bet*(abs(winnings)):,.2f}",
-            color=color,
-        )
+        embed.title = f"[ {a} {b} {c} {d} ]"
+        embed.description = f"You {result} ${bet*(abs(winnings)):,.2f}"
         embed.set_footer(text=f"Balance: ${bal:,}")
 
         await ctx.send(embed=embed)

@@ -339,7 +339,10 @@ class events(commands.Cog):
 
         message: discord.Message
         """
-        if self.blacklist.get(str(message.author.id).encode()) == b"1":
+        if (
+            self.blacklist.get(f"{message.guild.id}-{str(message.author.id)}".encode())
+            == b"1"
+        ):
             await message.add_reaction("<:downvote:766414744730206228>")
 
     @commands.Cog.listener()
@@ -564,7 +567,10 @@ class events(commands.Cog):
         if ctx.author.id in self.bot.owner_ids:
             return True
 
-        return not self.blacklist.get(str(ctx.author.id).encode())
+        if not self.bot.db.get(f"{ctx.guild.id}-{ctx.command}".encode()):
+            return False
+
+        return not self.blacklist.get(f"{ctx.guild.id}-{str(ctx.author.id)}".encode())
 
     @commands.Cog.listener()
     async def on_command(self, ctx):

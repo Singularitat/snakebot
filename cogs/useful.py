@@ -263,7 +263,8 @@ class useful(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
 
-        cache = await self.cache_check(f"google-{search}")
+        cache_search = f"google-{search}"
+        cache = await self.cache_check(cache_search)
 
         if isinstance(cache, tuple):
             url, title = cache
@@ -301,10 +302,8 @@ class useful(commands.Cog):
 
             await ctx.send(embed=embed)
 
-            search = f"google-{search}"
-            cache[search] = images
-
-            self.loop.call_later(300, self.delete_cache, search, cache)
+            cache[cache_search] = images
+            self.loop.call_later(300, self.delete_cache, cache_search, cache)
             self.bot.db.put(b"cache", ujson.dumps(cache).encode())
 
     @commands.command(aliases=["img"])
@@ -316,7 +315,8 @@ class useful(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
 
-        cache = await self.cache_check(f"image-{search}")
+        cache_search = f"image-{search}"
+        cache = await self.cache_check(cache_search)
 
         if isinstance(cache, tuple):
             url, title = cache
@@ -352,10 +352,8 @@ class useful(commands.Cog):
 
             await ctx.send(embed=embed)
 
-            search = f"image-{search}"
-            cache[search] = images
-
-            self.loop.call_later(300, self.delete_cache, search, cache)
+            cache[cache_search] = images
+            self.loop.call_later(300, self.delete_cache, cache_search, cache)
             self.bot.db.put(b"cache", ujson.dumps(cache).encode())
 
     @commands.command()
