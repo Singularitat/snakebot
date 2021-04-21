@@ -481,6 +481,9 @@ class events(commands.Cog):
         error = getattr(error, "original", error)
         embed = discord.Embed(color=discord.Color.red())
 
+        if isinstance(error, commands.errors.CheckFailure):
+            return
+
         if isinstance(error, commands.errors.CommandNotFound):
             ratios = []
             invoked = ctx.message.content.split()[0].removeprefix(ctx.prefix)
@@ -567,10 +570,24 @@ class events(commands.Cog):
         if ctx.author.id in self.bot.owner_ids:
             return True
 
-        if not self.bot.db.get(f"{ctx.guild.id}-{ctx.command}".encode()):
+        if self.bot.db.get(f"{ctx.guild.id}-{ctx.command}".encode()):
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.red(), description="```Command disabled```"
+                )
+            )
             return False
 
-        return not self.blacklist.get(f"{ctx.guild.id}-{str(ctx.author.id)}".encode())
+        if self.blacklist.get(f"{ctx.guild.id}-{str(ctx.author.id)}".encode()):
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.red(),
+                    description="```You are blacklisted from using commands```",
+                )
+            )
+            return False
+
+        return True
 
     @commands.Cog.listener()
     async def on_command(self, ctx):

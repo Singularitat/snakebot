@@ -27,13 +27,13 @@ class admin(commands.Cog):
         key = f"{ctx.guild.id}-{command}".encode()
         state = self.bot.db.get(key)
 
-        if state is None or state == b"1":
-            self.bot.db.put(key, b"")
-            embed.description = f"```Enabled the {command} command```"
+        if state is None:
+            self.bot.db.put(key, b"1")
+            embed.description = f"```Disabled the {command} command```"
             return await ctx.send(embed=embed)
 
-        self.bot.db.put(key, b"1")
-        embed.description = f"```Disabled the {command} command```"
+        self.bot.db.delete(key)
+        embed.description = f"```Enabled the {command} command```"
         return await ctx.send(embed=embed)
 
     @commands.has_permissions(administrator=True)
@@ -213,7 +213,10 @@ class admin(commands.Cog):
 
             embed.title = "Downvoted users"
             for member_id in self.blacklist.iterator(include_value=False):
-                embed.add_field(name="User:", value=member_id.decode())
+                embed.add_field(
+                    name="User:",
+                    value=member_id.decode().removeprefix(f"{ctx.guild.id}-"),
+                )
 
             return await ctx.send(embed=embed)
 
