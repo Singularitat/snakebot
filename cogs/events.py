@@ -62,9 +62,7 @@ class events(commands.Cog):
             name = emojis[message_id]["name"]
 
             if not discord.utils.get(message.guild.emojis, name=name):
-                emoji = await message.guild.create_custom_emoji(
-                    name=name, image=file
-                )
+                emoji = await message.guild.create_custom_emoji(name=name, image=file)
                 await message.add_reaction(emoji)
 
             emojis.pop(message_id)
