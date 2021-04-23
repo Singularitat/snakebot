@@ -336,6 +336,8 @@ class events(commands.Cog):
 
         message: discord.Message
         """
+        if not message.guild:
+            return
         if (
             self.blacklist.get(f"{message.guild.id}-{str(message.author.id)}".encode())
             == b"1"
@@ -577,7 +579,9 @@ class events(commands.Cog):
             )
             return False
 
-        if self.blacklist.get(f"{ctx.guild.id}-{str(ctx.author.id)}".encode()):
+        if ctx.guild and self.blacklist.get(
+            f"{ctx.guild.id}-{str(ctx.author.id)}".encode()
+        ):
             await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.red(),
