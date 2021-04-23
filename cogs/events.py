@@ -22,26 +22,35 @@ class events(commands.Cog):
         self.invites = self.bot.db.prefixed_db(b"invites-")
         self.nicks = self.bot.db.prefixed_db(b"nicks-")
 
-    async def emoji_submission_check(self, reaction, user, remove=False):
+    async def emoji_submission_check(self, payload):
         """Checks if an emoji submission has passed 8 votes.
 
         reaction: discord.Reaction
         user: Union[discord.User, discord.Member]
         remove: bool
-            If the reaction was removed or added."""
+            If the reaction was removed or added.
+        """
         emojis = self.bot.db.get(b"emoji_submissions")
 
-        if not emojis or reaction.emoji.name.lower() != "upvote":
+        if not payload.emoji.is_custom_emoji():
+            return
+
+        if not emojis or payload.emoji.name.lower() != "upvote":
             return
 
         emojis = ujson.loads(emojis)
-        message_id = str(reaction.message.id)
+        message_id = str(payload.message_id)
 
         if message_id not in emojis:
             return
 
-        if reaction.count >= 8:
-            file = reaction.message.attachments[0]
+        if payload.user_id not in emojis[message_id]["users"]:
+            emojis[message_id]["users"].append(payload.user_id)
+
+        if len(emojis[message_id]["users"]) >= 1:
+            channel = self.bot.get_channel(payload.channel_id)
+            message = await channel.fetch_message(payload.message_id)
+            file = message.attachments[0]
             file = BytesIO(await file.read())
             file = Image.open(file)
             file.thumbnail((256, 256), Image.LANCZOS)
@@ -52,11 +61,11 @@ class events(commands.Cog):
 
             name = emojis[message_id]["name"]
 
-            if not discord.utils.get(reaction.message.guild.emojis, name=name):
-                emoji = await reaction.message.guild.create_custom_emoji(
+            if not discord.utils.get(message.guild.emojis, name=name):
+                emoji = await message.guild.create_custom_emoji(
                     name=name, image=file
                 )
-                await reaction.message.add_reaction(emoji)
+                await message.add_reaction(emoji)
 
             emojis.pop(message_id)
 
@@ -96,6 +105,8 @@ class events(commands.Cog):
         payload: discord.RawReactionActionEvent
             A payload of raw data about the reaction and member.
         """
+        await self.emoji_submission_check(payload)
+
         if payload.member == self.bot.user:
             return
 
@@ -127,8 +138,6 @@ class events(commands.Cog):
         """
         if not reaction.custom_emoji:
             return
-
-        await self.emoji_submission_check(reaction, user)
 
         if reaction.message.author == user:
             return
@@ -165,8 +174,6 @@ class events(commands.Cog):
         """
         if not reaction.custom_emoji:
             return
-
-        await self.emoji_submission_check(reaction, user, True)
 
         if reaction.message.author == user:
             return
@@ -290,6 +297,7 @@ class events(commands.Cog):
             self.bot.db.get(b"logging") == b"0"
             or not message.content
             or message.author == self.bot.user
+            or not message.guild
         ):
             return
 
