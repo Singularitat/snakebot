@@ -485,6 +485,8 @@ class events(commands.Cog):
             return
 
         if isinstance(error, commands.errors.CommandNotFound):
+            if ctx.message.content.startswith(ctx.prefix * 2):
+                return
             ratios = []
             invoked = ctx.message.content.split()[0].removeprefix(ctx.prefix)
 
