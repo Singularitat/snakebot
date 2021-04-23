@@ -368,7 +368,7 @@ class stocks(commands.Cog):
                 {crypto['change_24h']}%
 
                 24h Volume:
-                {crypto['volume_24h']}
+                {crypto['volume_24h']:,.2f}
                 ```
             """
         )

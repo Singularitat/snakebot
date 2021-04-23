@@ -566,7 +566,7 @@ class events(commands.Cog):
             )
 
     async def bot_check_once(self, ctx):
-        """Checks that a user is not blacklisted or downvoted."""
+        """Checks if a user blacklisted and the if the command is disabled."""
         if ctx.author.id in self.bot.owner_ids:
             return True
 
