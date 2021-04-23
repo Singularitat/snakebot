@@ -118,15 +118,15 @@ class information(commands.Cog):
         embed = discord.Embed(colour=discord.Colour.blurple())
         embed.description = textwrap.dedent(
             f"""
-                **Server information**
+                **Server Information**
                 Created: {created}
                 Region: {region}
                 Owner: {owner}
 
-                **Member counts**
+                **Member Counts**
                 Members: {member_count:,} Roles: {roles}
 
-                **Member statuses**
+                **Member Statuses**
                 {online} {online_users:,} {dnd} {dnd_users:,} {idle} {idle_users:,} {offline} {offline_users:,}
             """
         )
