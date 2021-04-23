@@ -94,7 +94,7 @@ class information(commands.Cog):
     async def server_info(self, ctx):
         """Sends an embed of server information."""
         created = f"{self.time_since(ctx.guild.created_at)} ago"
-        region = ctx.guild.region
+        region = ctx.guild.region.name.capitalize()
         roles = len(ctx.guild.roles)
         member_count = ctx.guild.member_count
         owner = ctx.guild.owner
@@ -117,15 +117,15 @@ class information(commands.Cog):
         embed = discord.Embed(colour=discord.Colour.blurple())
         embed.description = textwrap.dedent(
             f"""
-                **Server information**
+                **Server Information**
                 Created: {created}
                 Region: {region}
                 Owner: {owner}
 
-                **Member counts**
+                **Member Counts**
                 Members: {member_count:,} Roles: {roles}
 
-                **Member statuses**
+                **Member Statuses**
                 {online} {online_users:,} {dnd} {dnd_users:,} {idle} {idle_users:,} {offline} {offline_users:,}
             """
         )
