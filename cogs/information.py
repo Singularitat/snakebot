@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 import textwrap
 import psutil
-from time import perf_counter
 import inspect
 import os
 from datetime import datetime
@@ -18,12 +17,15 @@ class information(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         """Check how the bot is doing."""
-        start = perf_counter()
         pinger = await ctx.send("Pinging...")
-        diff = f"{1000 * (perf_counter() - start):.2f}"
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.add_field(name="Ping", value=f"`{diff} ms`")
+        embed.add_field(
+            name="Ping",
+            value="`{} ms`".format(
+                (pinger.created_at - ctx.message.created_at).total_seconds() * 1000
+            ),
+        )
         embed.add_field(name="Latency", value=f"`{self.bot.latency*1000:.2f} ms`")
 
         await pinger.edit(content=None, embed=embed)
