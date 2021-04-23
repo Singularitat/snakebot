@@ -207,7 +207,10 @@ class events(commands.Cog):
         message: discord.Message
         reactions: List[discord.Reaction]
         """
-        if self.blacklist.get(f"{message.guild.id}-{str(message.author.id)}".encode()) == b"1":
+        if (
+            self.blacklist.get(f"{message.guild.id}-{str(message.author.id)}".encode())
+            == b"1"
+        ):
             await message.add_reaction("<:downvote:766414744730206228>")
 
     @commands.Cog.listener()
