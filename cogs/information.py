@@ -94,7 +94,7 @@ class information(commands.Cog):
     async def server_info(self, ctx):
         """Sends an embed of server information."""
         created = f"{self.time_since(ctx.guild.created_at)} ago"
-        region = ctx.guild.region[0].capitalize()
+        region = ctx.guild.region.name.capitalize()
         roles = len(ctx.guild.roles)
         member_count = ctx.guild.member_count
         owner = ctx.guild.owner
