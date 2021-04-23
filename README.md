@@ -53,7 +53,7 @@ client_id = ''  # The client id of your bot for the invite command
 
 - Python 3.9+
 - discord-ext-menus @ git+https://github.com/Rapptz/discord-ext-menus@master
-- discord.py
+- discord.py[voice]
 - lxml
 - psutil
 - ujson
