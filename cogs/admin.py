@@ -254,6 +254,13 @@ class admin(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator=True)
+    async def wipe_downvote(self, ctx):
+        """Wipes everyone from the downvote list."""
+        for member, value in self.blacklist:
+            self.blacklist.delete(member)
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
     async def blacklist(self, ctx, user: discord.User = None):
         """Blacklists someone from using the bot.
 
