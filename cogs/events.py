@@ -207,7 +207,10 @@ class events(commands.Cog):
         message: discord.Message
         reactions: List[discord.Reaction]
         """
-        if self.blacklist.get(str(message.author.id).encode()) == b"1":
+        if (
+            self.blacklist.get(f"{message.guild.id}-{str(message.author.id)}".encode())
+            == b"1"
+        ):
             await message.add_reaction("<:downvote:766414744730206228>")
 
     @commands.Cog.listener()
@@ -224,7 +227,7 @@ class events(commands.Cog):
         if after.channel is None:
             return
 
-        if self.blacklist.get(str(member.id).encode()) == b"1":
+        if self.blacklist.get(f"{member.guild.id}-{str(member.id)}".encode()) == b"1":
             await member.edit(voice_channel=None)
 
     @commands.Cog.listener()
