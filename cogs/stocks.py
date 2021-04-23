@@ -54,20 +54,20 @@ class stocks(commands.Cog):
         """
         symbol = symbol.upper()
         member_id = str(ctx.author.id).encode()
-
         stockbal = self.stockbal.get(member_id)
+        embed = discord.Embed(color=discord.Color.blurple())
 
         if not stockbal:
-            return await ctx.send("```You have never invested```")
+            embed.description = "```You have never invested```"
+            return await ctx.send(embed=embed)
 
         stockbal = ujson.loads(stockbal)
 
         if symbol not in stockbal:
-            return await ctx.send(f"```You have never invested in {symbol}```")
+            embed.description = f"```You have never invested in {symbol}```"
+            return await ctx.send(embed=embed)
 
         stock = ujson.loads(self.stocks.get(symbol.encode()))
-
-        embed = discord.Embed(color=discord.Color.blurple())
 
         embed.description = textwrap.dedent(
             f"""
@@ -102,9 +102,11 @@ class stocks(commands.Cog):
 
         member_id = str(member.id).encode()
         stockbal = self.stockbal.get(member_id)
+        embed = discord.Embed(color=discord.Color.blurple())
 
         if not stockbal:
-            return await ctx.send("```You have never invested```")
+            embed.description = "```You have never invested```"
+            return await ctx.send(embed=embed)
 
         stockbal = ujson.loads(stockbal)
 
@@ -119,10 +121,7 @@ class stocks(commands.Cog):
 
             net_value += stockbal[stock] * float(data["price"])
 
-        embed = discord.Embed(color=discord.Color.blurple())
-
         embed.description = f"```diff\n{msg}\n\nNet Value: ${net_value:.2f}```"
-
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["price"])
@@ -133,18 +132,16 @@ class stocks(commands.Cog):
             The symbol of the stock to find.
         """
         symbol = symbol.upper()
-
         stock = self.stocks.get(symbol.encode())
+        embed = discord.Embed(color=discord.Color.blurple())
 
         if not stock:
-            return await ctx.send(f"```No stock found for {symbol}```")
+            embed.description = f"```No stock found for {symbol}```"
+            return await ctx.send(embed=embed)
 
         stock = ujson.loads(stock)
 
-        embed = discord.Embed(
-            color=discord.Color.blurple(), title=f"{symbol} [{stock['name']}]"
-        )
-
+        embed.title = f"{symbol} [{stock['name']}]"
         embed.description = textwrap.dedent(
             f"""
                 ```diff
@@ -174,25 +171,26 @@ class stocks(commands.Cog):
             The amount of stock to sell.
         """
         symbol = symbol.upper()
-
         price = self.stocks.get(symbol.encode())
+        embed = discord.Embed(color=discord.Color.blurple())
 
         if not price:
-            return await ctx.send(f"```Couldn't find stock {symbol}```")
+            embed.description = f"```Couldn't find stock {symbol}```"
+            return await ctx.send(embed=embed)
 
         price = ujson.loads(price)["price"]
         member_id = str(ctx.author.id).encode()
         stockbal = self.stockbal.get(member_id)
 
         if not stockbal:
-            return await ctx.send(f"```You have never invested in {symbol}```")
+            embed.description = f"```You have never invested in {symbol}```"
+            return await ctx.send(embed=embed)
 
         stockbal = ujson.loads(stockbal)
 
         if stockbal[symbol] < amount:
-            return await ctx.send(
-                f"```Not enough stock you have: {stockbal[symbol]}```"
-            )
+            embed.description = f"```Not enough stock you have: {stockbal[symbol]}```"
+            return await ctx.send(embed=embed)
 
         bal = self.bal.get(member_id)
 
@@ -229,17 +227,13 @@ class stocks(commands.Cog):
         cash: int
             The amount of money to invest.
         """
-        if not symbol or not cash:
-            return await ctx.send(
-                f"```Usage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}```"
-            )
-
         symbol = symbol.upper()
-
         stock = self.stocks.get(symbol.encode())
+        embed = discord.Embed(color=discord.Color.blurple())
 
         if not stock:
-            return await ctx.send(f"```Couldn't find stock {symbol}```")
+            embed.description = f"```Couldn't find stock {symbol}```"
+            return await ctx.send(embed=embed)
 
         stock = ujson.loads(stock)["price"]
         member_id = str(ctx.author.id).encode()
@@ -251,7 +245,8 @@ class stocks(commands.Cog):
             bal = float(bal)
 
         if bal < cash:
-            return await ctx.send("```You don't have enough cash```")
+            embed.description = "```You don't have enough cash```"
+            return await ctx.send(embed=embed)
 
         amount = cash / float(stock)
 

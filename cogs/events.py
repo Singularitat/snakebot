@@ -40,31 +40,25 @@ class events(commands.Cog):
         if message_id not in emojis:
             return
 
-        if remove and user.id in emojis[message_id]["users"]:
-            emojis[message_id]["users"].remove(user.id)
+        if reaction.count >= 8:
+            file = reaction.message.attachments[0]
+            file = BytesIO(await file.read())
+            file = Image.open(file)
+            file.thumbnail((256, 256), Image.LANCZOS)
 
-        elif user.id not in emojis[message_id]["users"]:
-            emojis[message_id]["users"].append(user.id)
+            imgByteArr = BytesIO()
+            file.save(imgByteArr, format="PNG")
+            file = imgByteArr.getvalue()
 
-            if len(emojis[message_id]["users"]) >= 8:
-                file = reaction.message.attachments[0]
-                file = BytesIO(await file.read())
-                file = Image.open(file)
-                file.thumbnail((256, 256), Image.LANCZOS)
+            name = emojis[message_id]["name"]
 
-                imgByteArr = BytesIO()
-                file.save(imgByteArr, format="PNG")
-                file = imgByteArr.getvalue()
+            if not discord.utils.get(reaction.message.guild.emojis, name=name):
+                emoji = await reaction.message.guild.create_custom_emoji(
+                    name=name, image=file
+                )
+                await reaction.message.add_reaction(emoji)
 
-                name = emojis[message_id]["name"]
-
-                if not discord.utils.get(reaction.message.guild.emojis, name=name):
-                    emoji = await reaction.message.guild.create_custom_emoji(
-                        name=name, image=file
-                    )
-                    await reaction.message.add_reaction(emoji)
-
-                emojis.pop(message_id)
+            emojis.pop(message_id)
 
         self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
 
