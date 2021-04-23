@@ -1,5 +1,5 @@
 discord-ext-menus @ git+https://github.com/Rapptz/discord-ext-menus@master ; python_full_version >= "3.5.3"
-discord.py
+discord.py[voice]
 lxml
 psutil
 ujson

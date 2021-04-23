@@ -485,6 +485,8 @@ class events(commands.Cog):
             return
 
         if isinstance(error, commands.errors.CommandNotFound):
+            if ctx.message.content.startswith(ctx.prefix * 2):
+                return
             ratios = []
             invoked = ctx.message.content.split()[0].removeprefix(ctx.prefix)
 
@@ -566,7 +568,7 @@ class events(commands.Cog):
             )
 
     async def bot_check_once(self, ctx):
-        """Checks that a user is not blacklisted or downvoted."""
+        """Checks if a user blacklisted and the if the command is disabled."""
         if ctx.author.id in self.bot.owner_ids:
             return True
 
