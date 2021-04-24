@@ -356,8 +356,8 @@ class stocks(commands.Cog):
                         for stock in ujson.loads(values).items()
                     ]
                 )
-            else:
-                return 0
+
+            return 0
 
         stock_value = get_value(self.stockbal.get(member_id), self.stocks)
         crypto_value = get_value(self.cryptobal.get(member_id), self.crypto)
@@ -673,10 +673,10 @@ class stocks(commands.Cog):
             msg += f"{crypto}:\n"
             for trade in cryptobal[crypto]["history"]:
                 if trade[0] < 0:
-                    type = "Sold"
+                    kind = "Sold"
                 else:
-                    type = "Bought"
-                msg += f"{type} {trade[0]:.2f} for ${trade[1]:.2f}\n"
+                    kind = "Bought"
+                msg += f"{kind} {trade[0]:.2f} for ${trade[1]:.2f}\n"
             msg += "\n"
 
         embed.description = f"```{msg}```"
