@@ -105,9 +105,7 @@ class stocks(commands.Cog):
         stock = ujson.loads(self.stocks.get(symbol.encode()))
 
         trades = [
-            trade[1] / trade[0]
-            for trade in stockbal[symbol]["history"]
-            if trade[0] > 0
+            trade[1] / trade[0] for trade in stockbal[symbol]["history"] if trade[0] > 0
         ]
         change = ((float(stock["price"]) / (sum(trades) / len(trades))) - 1) * 100
 
@@ -248,7 +246,9 @@ class stocks(commands.Cog):
         stockbal = ujson.loads(stockbal)
 
         if stockbal[symbol]["total"] < amount:
-            embed.description = f"```Not enough stock you have: {stockbal[symbol]['total']}```"
+            embed.description = (
+                f"```Not enough stock you have: {stockbal[symbol]['total']}```"
+            )
             return await ctx.send(embed=embed)
 
         bal = self.bal_check(member_id)
