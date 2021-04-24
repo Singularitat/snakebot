@@ -10,7 +10,7 @@ from datetime import datetime
 class information(commands.Cog):
     """Commands that give information about the bot or server."""
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.process = psutil.Process()
 

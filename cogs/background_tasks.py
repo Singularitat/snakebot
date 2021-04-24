@@ -12,7 +12,7 @@ import discord
 class background_tasks(commands.Cog):
     """Commands related to the background tasks of the bot."""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.stocks = self.bot.db.prefixed_db(b"stocks-")
         self.crypto = self.bot.db.prefixed_db(b"crypto-")
@@ -180,37 +180,23 @@ class background_tasks(commands.Cog):
 
     @tasks.loop(minutes=5)
     async def update_bot(self):
-        """Checks if there has been any pushes then updates."""
-        url = "https://api.github.com/networks/singularitat/snakebot/events?per_page=10"
-        async with aiohttp.ClientSession() as session, session.get(url) as page:
-            data = await page.json()
+        """Tries to update every 5 minutes and then reloads if needed."""
+        pull = await self.run_process("git pull")
 
-        for event in data:
-            if event["type"] != "PushEvent":
-                continue
-
-            head = self.bot.db.get(b"head")
-
-            if not head or event["payload"]["head"] != head.decode():
-                self.bot.db.put(b"head", event["payload"]["head"].encode())
-                pull = await self.run_process("git pull")
-
-                if pull[:4] == ["Already", "up", "to", "date."]:
-                    return
-
-                diff = await self.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
-
-                if "poetry.lock" in diff:
-                    await self.run_process("poetry install")
-
-                for ext in [f[:-3] for f in os.listdir("cogs") if f.endswith(".py")]:
-                    try:
-                        self.bot.reload_extension(f"cogs.{ext}")
-                    except Exception as e:
-                        # Ignore all Exceptions but we want to try load the ext if it isn't loaded
-                        if isinstance(e, commands.errors.ExtensionNotLoaded):
-                            self.bot.load_extension(f"cogs.{ext}")
+        if pull[:4] == ["Already", "up", "to", "date."]:
             return
+
+        diff = await self.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
+
+        if "poetry.lock" in diff:
+            await self.run_process("poetry install")
+
+        for ext in [f[:-3] for f in os.listdir("cogs") if f.endswith(".py")]:
+            try:
+                self.bot.reload_extension(f"cogs.{ext}")
+            except Exception as e:
+                if isinstance(e, commands.errors.ExtensionNotLoaded):
+                    self.bot.load_extension(f"cogs.{ext}")
 
     @tasks.loop(hours=2)
     async def backup_bot(self):

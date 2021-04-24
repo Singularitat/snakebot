@@ -37,6 +37,16 @@ class stocks(commands.Cog):
         self.bal = self.bot.db.prefixed_db(b"bal-")
         self.stockbal = self.bot.db.prefixed_db(b"stockbal-")
 
+    def bal_check(self, member_id):
+        bal = self.bal.get(member_id)
+
+        if not bal:
+            bal = 1000
+        else:
+            bal = float(bal)
+
+        return bal
+
     @commands.command(name="stocks")
     async def _stocks(self, ctx):
         """Shows the price of stocks from yahoo finance."""
@@ -44,6 +54,31 @@ class stocks(commands.Cog):
             source=StockMenu(list(self.stocks)), clear_reactions_after=True
         )
         await pages.start(ctx)
+
+    @commands.command()
+    async def update_db(self, ctx):
+        """Updates the db to work with new stock and crypto history."""
+        for member_id, stockbal in self.stockbal:
+            stockbal = ujson.loads(stockbal)
+            for symbol in stockbal:
+                price = self.stocks.get(symbol.encode())["price"]
+                amount = 100 / price
+                stockbal[symbol] = {
+                    "total": stockbal[symbol]["total"] or stockbal[symbol],
+                    "history": [(amount, 100)],
+                }
+            self.stockbal.put(member_id, ujson.dumps(stockbal).encode())
+
+        for member_id, cryptobal in self.cryptobal:
+            cryptobal = ujson.loads(cryptobal)
+            for symbol in cryptobal:
+                price = self.crypto.get(symbol.encode())["price"]
+                amount = 100 / price
+                cryptobal[symbol] = {
+                    "total": cryptobal[symbol]["total"] or cryptobal[symbol],
+                    "history": [(amount, 100)],
+                }
+            self.cryptobal.put(member_id, ujson.dumps(cryptobal).encode())
 
     @commands.command()
     async def stockbal(self, ctx, symbol):
@@ -69,16 +104,20 @@ class stocks(commands.Cog):
 
         stock = ujson.loads(self.stocks.get(symbol.encode()))
 
+        trades = [
+            trade[1] / trade[0] for trade in stockbal[symbol]["history"] if trade[0] > 0
+        ]
+        change = ((float(stock["price"]) / (sum(trades) / len(trades))) - 1) * 100
+
         embed.description = textwrap.dedent(
             f"""
                 ```diff
-                You have {stockbal[symbol]:.2f} stocks in {symbol}
+                You have {stockbal[symbol]['total']:.2f} stocks in {symbol}
 
                 Price: {stock['price']}
 
-                Change from last trading day:
-                {stock['change']}
-                {stock['%change']}
+                Percent Gain/Loss:
+                {"" if str(change)[0] == "-" else "+"}{change:.2f}%
 
                 Volume: {stock['volume']}
                 3 Month Average: {stock['3Mvolume']}
@@ -90,7 +129,7 @@ class stocks(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["stockprof", "stockp"])
+    @commands.command(aliases=["stockp"])
     async def stockprofile(self, ctx, member: discord.Member = None):
         """Gets someone's stock profile.
 
@@ -111,17 +150,27 @@ class stocks(commands.Cog):
         stockbal = ujson.loads(stockbal)
 
         net_value = 0
-        msg = f"{member.display_name}'s stock profile:\n"
+        msg = f"{member.display_name}'s stock profile:\n\n"
+        msg += " Name:                 Price:             Percent Gain:\n"
 
         for stock in stockbal:
             data = ujson.loads(self.stocks.get(stock.encode()))
+            price = float(data["price"])
 
-            msg += f"\n{data['%change'][0]} {stock:>4}: {stockbal[stock]:<14.2f}"
-            msg += f" Price: ${data['price']:<7} {data['%change']}"
+            trades = [
+                trade[1] / trade[0]
+                for trade in stockbal[stock]["history"]
+                if trade[0] > 0
+            ]
+            change = ((price / (sum(trades) / len(trades))) - 1) * 100
+            sign = "-" if str(change)[0] == "-" else "+"
 
-            net_value += stockbal[stock] * float(data["price"])
+            msg += f"{sign} {stock:>4}: {stockbal[stock]['total']:<14.2f}"
+            msg += f" Price: ${price:<10.2f} {change:.2f}%\n"
 
-        embed.description = f"```diff\n{msg}\n\nNet Value: ${net_value:.2f}```"
+            net_value += stockbal[stock]["total"] * price
+
+        embed.description = f"```diff\n{msg}\nNet Value: ${net_value:.2f}```"
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["price"])
@@ -147,12 +196,15 @@ class stocks(commands.Cog):
                 ```diff
                 Price: {stock['price']}
 
-                Change from last trading day:
+                24h Change:
                 {stock['change']}
+
+                Percent 24h Change:
                 {stock['%change']}
 
                 Volume: {stock['volume']}
-                3 Month Average: {stock['3Mvolume']}
+
+                3 Month Average Volume: {stock['3Mvolume']}
 
                 Market Cap: {stock['cap']}
                 ```
@@ -170,9 +222,14 @@ class stocks(commands.Cog):
         amount: float
             The amount of stock to sell.
         """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if amount < 0:
+            embed.description = "```You can't sell a negative amount of stocks```"
+            return await ctx.send(embed=embed)
+
         symbol = symbol.upper()
         price = self.stocks.get(symbol.encode())
-        embed = discord.Embed(color=discord.Color.blurple())
 
         if not price:
             embed.description = f"```Couldn't find stock {symbol}```"
@@ -188,23 +245,22 @@ class stocks(commands.Cog):
 
         stockbal = ujson.loads(stockbal)
 
-        if stockbal[symbol] < amount:
-            embed.description = f"```Not enough stock you have: {stockbal[symbol]}```"
+        if stockbal[symbol]["total"] < amount:
+            embed.description = (
+                f"```Not enough stock you have: {stockbal[symbol]['total']}```"
+            )
             return await ctx.send(embed=embed)
 
-        bal = self.bal.get(member_id)
-
-        if not bal:
-            bal = 1000
-        else:
-            bal = float(bal)
+        bal = self.bal_check(member_id)
 
         cash = amount * float(price)
 
-        stockbal[symbol] -= amount
+        stockbal[symbol]["total"] -= amount
 
-        if stockbal[symbol] == 0:
+        if stockbal[symbol]["total"] == 0:
             stockbal.pop(symbol, None)
+        else:
+            stockbal[symbol]["history"].append((-amount, cash))
 
         bal += cash
 
@@ -220,16 +276,21 @@ class stocks(commands.Cog):
         self.stockbal.put(member_id, ujson.dumps(stockbal).encode())
 
     @commands.command(aliases=["buy"])
-    async def invest(self, ctx, symbol=None, cash: float = None):
+    async def invest(self, ctx, symbol, cash: float):
         """Buys stock or if nothing is passed in it shows the price of some stocks.
         symbol: str
             The symbol of the stock to buy.
         cash: int
             The amount of money to invest.
         """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if cash < 0:
+            embed.description = "```You can't buy a negative amount of stocks```"
+            return await ctx.send(embed=embed)
+
         symbol = symbol.upper()
         stock = self.stocks.get(symbol.encode())
-        embed = discord.Embed(color=discord.Color.blurple())
 
         if not stock:
             embed.description = f"```Couldn't find stock {symbol}```"
@@ -237,12 +298,7 @@ class stocks(commands.Cog):
 
         stock = ujson.loads(stock)["price"]
         member_id = str(ctx.author.id).encode()
-        bal = self.bal.get(member_id)
-
-        if not bal:
-            bal = 1000
-        else:
-            bal = float(bal)
+        bal = self.bal_check(member_id)
 
         if bal < cash:
             embed.description = "```You don't have enough cash```"
@@ -258,9 +314,11 @@ class stocks(commands.Cog):
             stockbal = ujson.loads(stockbal)
 
         if symbol not in stockbal:
-            stockbal[symbol] = 0
+            stockbal[symbol] = {"total": 0, "history": [(amount, cash)]}
+        else:
+            stockbal[symbol]["history"].append((amount, cash))
 
-        stockbal[symbol] += amount
+        stockbal[symbol]["total"] += amount
         bal -= cash
 
         embed = discord.Embed(
@@ -285,42 +343,36 @@ class stocks(commands.Cog):
             member = ctx.author
 
         member_id = str(member.id).encode()
-        bal = self.bal.get(member_id)
-
-        if not bal:
-            self.bal.put(member_id, b"1000")
-            bal = 1000
-        else:
-            bal = float(bal)
-
-        stockbal = self.stockbal.get(member_id)
+        bal = self.bal_check(member_id)
 
         embed = discord.Embed(color=discord.Color.blurple())
 
-        if not stockbal:
-            embed.add_field(
-                name=f"{member.display_name}'s net worth",
-                value=f"${bal}",
-                inline=False,
-            )
-            embed.set_footer(text=f"Stocks: $0\nBalance: ${bal:,.2f}")
-            return await ctx.send(embed=embed)
+        def get_value(values, db):
+            if values:
+                return sum(
+                    [
+                        stock[1]["total"]
+                        * float(ujson.loads(db.get(stock[0].encode()))["price"])
+                        for stock in ujson.loads(values).items()
+                    ]
+                )
 
-        stock_value = sum(
-            [
-                stock[1]
-                * float(ujson.loads(self.stocks.get(stock[0].encode()))["price"])
-                for stock in ujson.loads(stockbal).items()
-            ]
-        )
+            return 0
+
+        stock_value = get_value(self.stockbal.get(member_id), self.stocks)
+        crypto_value = get_value(self.cryptobal.get(member_id), self.crypto)
 
         embed.add_field(
             name=f"{member.display_name}'s net worth",
-            value=f"${bal + stock_value:,.2f}",
+            value=f"${bal + stock_value + crypto_value:,.2f}",
             inline=False,
         )
 
-        embed.set_footer(text=f"Stocks: ${stock_value:,.2f}\nBalance: ${bal:,.2f}")
+        embed.set_footer(
+            text="Crypto: ${:,.2f}\nStocks: ${:,.2f}\nBalance: ${:,.2f}".format(
+                crypto_value, stock_value, bal
+            )
+        )
 
         await ctx.send(embed=embed)
 
@@ -334,7 +386,7 @@ class stocks(commands.Cog):
 
         if not ctx.subcommand_passed:
             embed.description = "```No subcommand passed```"
-            await ctx.send(embed=embed)
+            return await ctx.send(embed=embed)
 
         symbol = ctx.subcommand_passed.upper()
         crypto = self.crypto.get(symbol.encode())
@@ -371,7 +423,7 @@ class stocks(commands.Cog):
         await ctx.send(embed=embed)
 
     @_crypto.command(aliases=["b"])
-    async def buy(self, ctx, symbol: str, cash: int):
+    async def buy(self, ctx, symbol: str, cash: float):
         """Buys an amount of crypto.
 
         coin: str
@@ -380,6 +432,11 @@ class stocks(commands.Cog):
             How much money you want to invest in the coin.
         """
         embed = discord.Embed(color=discord.Color.blurple())
+
+        if cash < 0:
+            embed.description = "```You can't buy a negative amount of crypto```"
+            return await ctx.send(embed=embed)
+
         symbol = symbol.upper()
         data = self.crypto.get(symbol.encode())
 
@@ -389,20 +446,15 @@ class stocks(commands.Cog):
 
         data = ujson.loads(data)
 
-        price = data["price"]
+        price = float(data["price"])
         member_id = str(ctx.author.id).encode()
-        bal = self.bal.get(member_id)
-
-        if not bal:
-            bal = 1000
-        else:
-            bal = float(bal)
+        bal = self.bal_check(member_id)
 
         if bal < cash:
             embed.description = "```You don't have enough cash```"
             return await ctx.send(embed=embed)
 
-        amount = cash / float(price)
+        amount = cash / price
 
         cryptobal = self.cryptobal.get(member_id)
 
@@ -412,9 +464,11 @@ class stocks(commands.Cog):
             cryptobal = ujson.loads(cryptobal)
 
         if symbol not in cryptobal:
-            cryptobal[symbol] = 0
+            cryptobal[symbol] = {"total": 0, "history": [(amount, cash)]}
+        else:
+            cryptobal[symbol]["history"].append((amount, cash))
 
-        cryptobal[symbol] += amount
+        cryptobal[symbol]["total"] += amount
         bal -= cash
 
         embed = discord.Embed(
@@ -437,9 +491,14 @@ class stocks(commands.Cog):
         amount: float
             The amount to sell.
         """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if amount < 0:
+            embed.description = "```You can't sell a negative amount of crypto```"
+            return await ctx.send(embed=embed)
+
         symbol = symbol.upper()
         price = self.crypto.get(symbol.encode())
-        embed = discord.Embed(color=discord.Color.blurple())
 
         if not price:
             embed.description = f"```Couldn't find {symbol}```"
@@ -450,30 +509,30 @@ class stocks(commands.Cog):
         cryptobal = self.cryptobal.get(member_id)
 
         if not cryptobal:
-            embed.description = f"```You have never invested in {symbol}```"
+            embed.description = "```You have never invested.```"
             return await ctx.send(embed=embed)
 
         cryptobal = ujson.loads(cryptobal)
 
-        if cryptobal[symbol] < amount:
+        if symbol not in cryptobal:
+            embed.description = f"```You have never invested in {symbol}.```"
+            return await ctx.send(embed=embed)
+
+        if cryptobal[symbol]["total"] < amount:
             embed.description = (
-                f"```Not enough {symbol} you have: {cryptobal[symbol]}```"
+                f"```Not enough {symbol} you have: {cryptobal[symbol]['total']}```"
             )
             return await ctx.send(embed=embed)
 
-        bal = self.bal.get(member_id)
-
-        if not bal:
-            bal = 1000
-        else:
-            bal = float(bal)
-
+        bal = self.bal_check(member_id)
         cash = amount * float(price)
 
-        cryptobal[symbol] -= amount
+        cryptobal[symbol]["total"] -= amount
 
-        if cryptobal[symbol] == 0:
+        if cryptobal[symbol]["total"] == 0:
             cryptobal.pop(symbol, None)
+        else:
+            cryptobal[symbol]["history"].append((-amount, cash))
 
         bal += cash
 
@@ -506,20 +565,26 @@ class stocks(commands.Cog):
         cryptobal = ujson.loads(cryptobal)
 
         net_value = 0
-        msg = f"{member.display_name}'s crypto profile:\n"
+        msg = f"{member.display_name}'s crypto profile:\n\n"
+        msg += " Name:                 Price:             Percent Gain:\n"
 
         for crypto in cryptobal:
             data = ujson.loads(self.crypto.get(crypto.encode()))
-            sign = (
-                str(data["change_24h"])[0] if str(data["change_24h"])[0] == "-" else "+"
-            )
 
-            msg += f"\n{sign} {crypto:>4}: {cryptobal[crypto]:<14.2f}"
-            msg += f" Price: ${data['price']:<10.2f} {data['change_24h']}%"
+            trades = [
+                trade[1] / trade[0]
+                for trade in cryptobal[crypto]["history"]
+                if trade[0] > 0
+            ]
+            change = ((data["price"] / (sum(trades) / len(trades))) - 1) * 100
+            sign = "-" if str(change)[0] == "-" else "+"
 
-            net_value += cryptobal[crypto] * float(data["price"])
+            msg += f"{sign} {crypto:>4}: {cryptobal[crypto]['total']:<14.2f}"
+            msg += f" Price: ${data['price']:<10.2f} {change:.2f}%\n"
 
-        embed.description = f"```diff\n{msg}\n\nNet Value: ${net_value:.2f}```"
+            net_value += cryptobal[crypto]["total"] * float(data["price"])
+
+        embed.description = f"```diff\n{msg}\nNet Value: ${net_value:.2f}```"
         await ctx.send(embed=embed)
 
     @_crypto.command()
@@ -547,18 +612,29 @@ class stocks(commands.Cog):
 
         crypto = ujson.loads(self.crypto.get(symbol.encode()))
 
+        trades = [
+            trade[1] / trade[0]
+            for trade in cryptobal[symbol]["history"]
+            if trade[0] > 0
+        ]
+        change = ((crypto["price"] / (sum(trades) / len(trades))) - 1) * 100
+        sign = "" if str(crypto["change_24h"])[0] == "-" else "+"
+
         embed.description = textwrap.dedent(
             f"""
                 ```diff
                 {crypto['name']} [{symbol}]
 
-                Bal: {cryptobal[symbol]}
+                Bal: {cryptobal[symbol]['total']}
+
+                Percent Gain/Loss:
+                {"" if str(change)[0] == "-" else "+"}{change:.2f}%
 
                 Price:
                 ${crypto['price']:,.2f}
 
                 24h Change:
-                {crypto['change_24h']}%
+                {sign}{crypto['change_24h']}%
                 ```
             """
         )
@@ -572,6 +648,39 @@ class stocks(commands.Cog):
             source=StockMenu(list(self.crypto)), clear_reactions_after=True
         )
         await pages.start(ctx)
+
+    @_crypto.command()
+    async def history(self, ctx, member: discord.Member = None, amount=10):
+        if not member:
+            member = ctx.author
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        cryptobal = self.cryptobal.get(str(member.id).encode())
+
+        if not cryptobal:
+            embed.description = "```You have never invested.```"
+            return await ctx.send(embed=embed)
+
+        cryptobal = ujson.loads(cryptobal)
+
+        if len(cryptobal) == 0:
+            embed.description = "```You have sold all your crypto.```"
+            return await ctx.send(embed=embed)
+
+        msg = ""
+
+        for crypto in cryptobal:
+            msg += f"{crypto}:\n"
+            for trade in cryptobal[crypto]["history"]:
+                if trade[0] < 0:
+                    kind = "Sold"
+                else:
+                    kind = "Bought"
+                msg += f"{kind} {trade[0]:.2f} for ${trade[1]:.2f}\n"
+            msg += "\n"
+
+        embed.description = f"```{msg}```"
+        await ctx.send(embed=embed)
 
 
 def setup(bot: commands.Bot) -> None:

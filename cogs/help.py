@@ -244,7 +244,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
 class _help(commands.Cog, name="help"):
     """For the help command."""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.old_help_command = bot.help_command
         bot.help_command = PaginatedHelpCommand()
