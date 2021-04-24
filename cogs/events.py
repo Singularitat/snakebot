@@ -47,7 +47,7 @@ class events(commands.Cog):
         if payload.user_id not in emojis[message_id]["users"]:
             emojis[message_id]["users"].append(payload.user_id)
 
-        if len(emojis[message_id]["users"]) >= 1:
+        if len(emojis[message_id]["users"]) >= 8:
             channel = self.bot.get_channel(payload.channel_id)
             message = await channel.fetch_message(payload.message_id)
             file = message.attachments[0]
