@@ -25,7 +25,6 @@ bot = commands.Bot(
 bot.db = db
 bot.client_id = config.client_id
 bot.tenor = config.tenor
-bot.coinmarketcap = config.coinmarketcap
 
 if __name__ == "__main__":
     for extension in [

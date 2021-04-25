@@ -45,7 +45,6 @@ the bot is with the following template:
 ```py
 token = ''  # your bot's token
 tenor = ''  # tenor key for the hug command from https://tenor.com/developer/dashboard
-coinmarketcap = ''  # coinmarketcap key for crypto command from https://pro.coinmarketcap.com/
 client_id = ''  # The client id of your bot for the invite command
 ```
 
