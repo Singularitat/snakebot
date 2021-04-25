@@ -23,7 +23,6 @@ bot = commands.Bot(
 )
 
 bot.db = db
-bot.client_id = config.client_id
 bot.tenor = config.tenor
 
 if __name__ == "__main__":
