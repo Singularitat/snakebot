@@ -168,6 +168,7 @@ class stocks(commands.Cog):
             return await ctx.send(embed=embed)
 
         stock = ujson.loads(stock)
+        sign = "" if stock['change'][0] == "-" else "+"
 
         embed.title = f"{symbol} [{stock['name']}]"
         embed.description = textwrap.dedent(
@@ -176,10 +177,10 @@ class stocks(commands.Cog):
                 Price: {stock['price']}
 
                 24h Change:
-                {stock['change']}
+                {sign}{stock['change']}
 
                 Percent 24h Change:
-                {stock['%change']}
+                {sign}{stock['%change']}
 
                 Market Cap: {stock['cap']}
                 ```
