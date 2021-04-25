@@ -47,6 +47,13 @@ class stocks(commands.Cog):
 
         return bal
 
+    @commands.command(name="wipestocks")
+    async def wipe_stock_data(self, ctx):
+        """Wipes the stocks db."""
+        with self.stocks.write_batch() as wb:
+            for symbol in self.stocks.iterator(include_value=False):
+                wb.delete(symbol)
+
     @commands.command(name="stocks")
     async def _stocks(self, ctx):
         """Shows the price of stocks from yahoo finance."""
@@ -54,31 +61,6 @@ class stocks(commands.Cog):
             source=StockMenu(list(self.stocks)), clear_reactions_after=True
         )
         await pages.start(ctx)
-
-    @commands.command()
-    async def update_db(self, ctx):
-        """Updates the db to work with new stock and crypto history."""
-        for member_id, stockbal in self.stockbal:
-            stockbal = ujson.loads(stockbal)
-            for symbol in stockbal:
-                price = self.stocks.get(symbol.encode())["price"]
-                amount = 100 / price
-                stockbal[symbol] = {
-                    "total": stockbal[symbol]["total"] or stockbal[symbol],
-                    "history": [(amount, 100)],
-                }
-            self.stockbal.put(member_id, ujson.dumps(stockbal).encode())
-
-        for member_id, cryptobal in self.cryptobal:
-            cryptobal = ujson.loads(cryptobal)
-            for symbol in cryptobal:
-                price = self.crypto.get(symbol.encode())["price"]
-                amount = 100 / price
-                cryptobal[symbol] = {
-                    "total": cryptobal[symbol]["total"] or cryptobal[symbol],
-                    "history": [(amount, 100)],
-                }
-            self.cryptobal.put(member_id, ujson.dumps(cryptobal).encode())
 
     @commands.command()
     async def stockbal(self, ctx, symbol):
@@ -118,9 +100,6 @@ class stocks(commands.Cog):
 
                 Percent Gain/Loss:
                 {"" if str(change)[0] == "-" else "+"}{change:.2f}%
-
-                Volume: {stock['volume']}
-                3 Month Average: {stock['3Mvolume']}
 
                 Market Cap: {stock['cap']}
                 ```
@@ -189,6 +168,7 @@ class stocks(commands.Cog):
             return await ctx.send(embed=embed)
 
         stock = ujson.loads(stock)
+        sign = "" if stock["change"][0] == "-" else "+"
 
         embed.title = f"{symbol} [{stock['name']}]"
         embed.description = textwrap.dedent(
@@ -197,14 +177,10 @@ class stocks(commands.Cog):
                 Price: {stock['price']}
 
                 24h Change:
-                {stock['change']}
+                {sign}{stock['change']}
 
                 Percent 24h Change:
-                {stock['%change']}
-
-                Volume: {stock['volume']}
-
-                3 Month Average Volume: {stock['3Mvolume']}
+                {sign}{stock['%change']}
 
                 Market Cap: {stock['cap']}
                 ```
