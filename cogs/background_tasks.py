@@ -117,9 +117,11 @@ class background_tasks(commands.Cog):
         url = "https://api.nasdaq.com/api/screener/stocks?limit=50000"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36",
-            "accept-language": "en-US,en;q=0.9"
+            "accept-language": "en-US,en;q=0.9",
         }
-        async with aiohttp.ClientSession(headers=headers) as session, session.get(url) as response:
+        async with aiohttp.ClientSession(headers=headers) as session, session.get(
+            url
+        ) as response:
             stocks = await response.json()
 
         with self.stocks.write_batch() as wb:
@@ -128,7 +130,9 @@ class background_tasks(commands.Cog):
                 stock_data["name"] = stock["name"]
                 stock_data["price"] = stock["lastsale"][1:]
                 stock_data["change"] = stock["netchange"]
-                stock_data["%change"] = stock["pctchange"][:-1] if stock["pctchange"] != "--" else 0
+                stock_data["%change"] = (
+                    stock["pctchange"][:-1] if stock["pctchange"] != "--" else 0
+                )
                 stock_data["cap"] = stock["marketCap"]
 
                 wb.put(

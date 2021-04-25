@@ -506,7 +506,9 @@ class events(commands.Cog):
 
         elif isinstance(error, commands.errors.CommandOnCooldown):
             cooldown = int(error.cooldown.get_retry_after())
-            message = "You are on cooldown. Try again in {} hours {} minutes and {} seconds".format(cooldown // 3600, (cooldown % 3600) // 60, (cooldown % 3600) % 60)
+            message = "You are on cooldown. Try again in {} hours {} minutes and {} seconds".format(
+                cooldown // 3600, (cooldown % 3600) // 60, (cooldown % 3600) % 60
+            )
 
         elif isinstance(error, discord.Forbidden):
             message = "I do not have the required permissions to run this command."

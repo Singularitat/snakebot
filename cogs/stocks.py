@@ -168,7 +168,7 @@ class stocks(commands.Cog):
             return await ctx.send(embed=embed)
 
         stock = ujson.loads(stock)
-        sign = "" if stock['change'][0] == "-" else "+"
+        sign = "" if stock["change"][0] == "-" else "+"
 
         embed.title = f"{symbol} [{stock['name']}]"
         embed.description = textwrap.dedent(
