@@ -215,7 +215,9 @@ class information(commands.Cog):
         if day < 31:
             return f"{day // 7} weeks {day % 7} days and {sec // 3600} hours"
         if day < 365:
-            return f"{day // 30} months {(day % 30) // 7} weeks and {(day % 30) % 7} days"
+            return (
+                f"{day // 30} months {(day % 30) // 7} weeks and {(day % 30) % 7} days"
+            )
 
         return (
             f"{day // 365} years {(day % 365) // 30} months and {(day % 365) % 30} days"

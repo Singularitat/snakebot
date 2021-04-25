@@ -207,8 +207,7 @@ class background_tasks(commands.Cog):
                     if '"' not in value.decode()
                     else f'"{key.decode()}": {value.decode()}, '
                     for key, value in self.bot.db
-                    if not key.startswith(b"crypto-")
-                    and not key.startswith(b"stocks-")
+                    if not key.startswith(b"crypto-") and not key.startswith(b"stocks-")
                 ]
             )
             file.write(f"{{{json[:-2]}}}")
