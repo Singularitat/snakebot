@@ -1,4 +1,3 @@
-import lxml
 import aiohttp
 from datetime import datetime
 import os
@@ -19,10 +18,12 @@ class background_tasks(commands.Cog):
         self.start_tasks()
 
     def cog_unload(self):
+        """When the cog is unloaded stop all running tasks."""
         for task in self.tasks:
-            self.tasks[task].stop()
+            self.tasks[task].cancel()
 
     def start_tasks(self):
+        """Finds all the tasks in the cog and starts them."""
         task_dict = {}
 
         for task in dir(background_tasks):
@@ -110,54 +111,30 @@ class background_tasks(commands.Cog):
         embed.description = f"```\n{msg}```"
         await ctx.send(embed=embed)
 
-    async def stockupdate(self, url):
-        """Fetches stocks then updates the database.
-
-        url: str
-            The yahoo finance url to fetch stocks from.
-        """
-        async with aiohttp.ClientSession() as session, session.get(url) as page:
-            soup = lxml.html.fromstring(await page.text())
+    @tasks.loop(minutes=10)
+    async def update_stocks(self):
+        """Updates stock data every half hour."""
+        url = "https://api.nasdaq.com/api/screener/stocks?limit=50000"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36",
+            "accept-language": "en-US,en;q=0.9"
+        }
+        async with aiohttp.ClientSession(headers=headers) as session, session.get(url) as response:
+            stocks = await response.json()
 
         with self.stocks.write_batch() as wb:
-            for table in soup.xpath('.//table[@class="W(100%)"]'):
-                table_body = table.find("tbody")
-                rows = table_body.findall("tr")
-                for row in rows:
-                    cols = [col.text_content() for col in row.findall("td")]
+            for stock in stocks["data"]["table"]["rows"]:
+                stock_data = {}
+                stock_data["name"] = stock["name"]
+                stock_data["price"] = stock["lastsale"][1:]
+                stock_data["change"] = stock["netchange"]
+                stock_data["%change"] = stock["pctchange"][:-1] if stock["pctchange"] != "--" else 0
+                stock_data["cap"] = stock["marketCap"]
 
-                    price = cols[2]
-                    name = cols[0]
-
-                    if price == "N/A" or len(name) > 6 or float(price) == 0:
-                        continue
-
-                    stock_data = {}
-                    stock_data["name"] = cols[1]
-                    stock_data["price"] = price
-                    stock_data["change"] = cols[3]
-                    stock_data["%change"] = cols[4]
-                    stock_data["volume"] = cols[5]
-                    stock_data["3Mvolume"] = cols[6]
-                    stock_data["cap"] = cols[7]
-
-                    wb.put(
-                        name.replace(".NZ", "").encode(),
-                        ujson.dumps(stock_data).encode(),
-                    )
-
-    @tasks.loop(minutes=30)
-    async def update_stocks(self):
-        """Updates stock prices every half hour."""
-        await self.stockupdate(
-            "https://nz.finance.yahoo.com/most-active?offset=0&count=200"
-        )
-        await self.stockupdate(
-            "https://nz.finance.yahoo.com/most-active?offset=200&count=200"
-        )
-        await self.stockupdate(
-            "https://finance.yahoo.com/most-active?offset=0&count=200"
-        )
+                wb.put(
+                    stock["symbol"].encode(),
+                    ujson.dumps(stock_data).encode(),
+                )
 
     async def run_process(self, command):
         """Runs a shell command and returns the output.
