@@ -125,14 +125,15 @@ class background_tasks(commands.Cog):
 
         with self.stocks.write_batch() as wb:
             for stock in stocks["data"]["table"]["rows"]:
-                stock_data = {}
-                stock_data["name"] = stock["name"]
-                stock_data["price"] = stock["lastsale"][1:]
-                stock_data["change"] = stock["netchange"]
-                stock_data["%change"] = (
-                    stock["pctchange"][:-1] if stock["pctchange"] != "--" else 0
-                )
-                stock_data["cap"] = stock["marketCap"]
+                stock_data = {
+                    "name": stock["name"],
+                    "price": stock["lastsale"][1:],
+                    "change": stock["netchange"],
+                    "%change": stock["pctchange"][:-1]
+                    if stock["pctchange"] != "--"
+                    else 0,
+                    "cap": stock["marketCap"],
+                }
 
                 wb.put(
                     stock["symbol"].encode(),
