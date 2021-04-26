@@ -103,7 +103,7 @@ class admin(commands.Cog):
     @commands.has_permissions(administrator=True)
     @commands.command(hidden=True)
     async def edit(self, ctx, message: discord.Message, *, content):
-        """Edits one of the bots messages.
+        """Edits the content of a bot message.
 
         message: discord.Message
             The message you want to edit.
@@ -116,6 +116,42 @@ class admin(commands.Cog):
     async def edit_handler(self, ctx, error):
         """Error handler for edit command."""
         await ctx.send("```I cannot edit this message```")
+
+    @commands.has_permissions(administrator=True)
+    @commands.command(hidden=True)
+    async def embededit(self, ctx, message: discord.Message, description, title=None):
+        """Edits the embed of a bot message.
+
+        message: discord.Message
+            The message you want to edit.
+        description: str
+            Description of the embed.
+        title: str
+            Title of the embed.
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = description
+        if title:
+            embed.title = title
+        await message.edit(embed=embed)
+
+    @commands.has_permissions(administrator=True)
+    @commands.command(hidden=True)
+    async def embed(self, ctx, description, title=None):
+        """Sends an embed.
+
+        message: discord.Message
+            The message you want to edit.
+        description: str
+            Description of the embed.
+        title: str
+            Title of the embed.
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = description
+        if title:
+            embed.title = title
+        await ctx.send(embed=embed)
 
     async def say_permissions(self, ctx, member, channel):
         """Sends an embed containing a members permissions in a channel.
@@ -213,9 +249,10 @@ class admin(commands.Cog):
 
             embed.title = "Downvoted users"
             for member_id in self.blacklist.iterator(include_value=False):
+                guild, member_id = member_id.decode().split("-")
                 embed.add_field(
                     name="User:",
-                    value=member_id.decode().removeprefix(f"{ctx.guild.id}-"),
+                    value=f"{self.bot.get_guild(int(guild))}: {member_id}",
                 )
 
             return await ctx.send(embed=embed)
