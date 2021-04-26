@@ -246,12 +246,12 @@ class useful(commands.Cog):
             return url, title
         return cache
 
-    def delete_cache(self, command, search, cache):
+    def delete_cache(self, search, cache):
         """Deletes a search from the cache.
 
         search: str
         """
-        cache.pop(f"{command}-{search}")
+        cache.pop(search)
         self.bot.db.put(b"cache", ujson.dumps(cache).encode())
 
     @commands.command()

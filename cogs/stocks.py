@@ -47,6 +47,7 @@ class stocks(commands.Cog):
 
         return bal
 
+    @commands.has_permissions(administrator=True)
     @commands.command(name="wipestocks")
     async def wipe_stock_data(self, ctx):
         """Wipes the stocks db."""
