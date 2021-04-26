@@ -150,7 +150,7 @@ class misc(commands.Cog):
     async def invite(self, ctx):
         """Sends the invite link of the bot."""
         perms = discord.Permissions.all()
-        await ctx.send(f"<{discord.utils.oauth_url(self.bot.client_id, perms)}>")
+        await ctx.send(f"<{discord.utils.oauth_url(self.bot.user.id, perms)}>")
 
     @commands.command()
     async def icon(self, ctx, user: discord.User):

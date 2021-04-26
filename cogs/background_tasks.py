@@ -1,5 +1,4 @@
 import aiohttp
-from datetime import datetime
 import os
 import asyncio
 import subprocess
@@ -113,7 +112,7 @@ class background_tasks(commands.Cog):
 
     @tasks.loop(minutes=10)
     async def update_stocks(self):
-        """Updates stock data every half hour."""
+        """Updates stock data every 10 minutes."""
         url = "https://api.nasdaq.com/api/screener/stocks?limit=50000"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36",
@@ -179,18 +178,36 @@ class background_tasks(commands.Cog):
                 if isinstance(e, commands.errors.ExtensionNotLoaded):
                     self.bot.load_extension(f"cogs.{ext}")
 
-    @tasks.loop(hours=2)
+    @tasks.loop(hours=6)
     async def backup_bot(self):
-        """Makes a backup of the db every two hours."""
+        """Makes a backup of the db every 6 hours."""
+        if self.bot.db.get(b"restart") == b"1":
+            return self.bot.db.delete(b"restart")
+        number = self.bot.db.get(b"backup_number")
+
+        if not number:
+            number = -1
+        else:
+            number = int(number.decode())
+
+        number += 1
+
+        if number == 11:
+            number = 0
+
+        self.bot.db.put(b"backup_number", str(number).encode())
+
         os.makedirs("backup/", exist_ok=True)
-        time = datetime.now()
-        with open(f"backup/{time.hour // 2}backup.json", "w") as file:
+        with open(f"backup/{number}backup.json", "w") as file:
+            # I don't know why I did this as a jumbled mess but I did
+            # Basically it just formats the db to json
             json = "".join(
                 [
                     f'"{key.decode()}": "{value.decode()}", '
                     if '"' not in value.decode()
                     else f'"{key.decode()}": {value.decode()}, '
                     for key, value in self.bot.db
+                    if not key.startswith(b"crypto-") and not key.startswith(b"stocks-")
                 ]
             )
             file.write(f"{{{json[:-2]}}}")
@@ -210,39 +227,28 @@ class background_tasks(commands.Cog):
 
         self.bot.db.put(b"languages", ujson.dumps(list(languages)).encode())
 
-    @tasks.loop(minutes=20)
+    @tasks.loop(minutes=10)
     async def crypto_update(self):
-        """Updates crypto currency data every 20 minutes."""
-        # If we have just restarted we don't want to run this again
-        # As free coinmarketcap API keys can only be used 333 per day
-        if self.bot.db.get(b"restart") == b"1":
-            self.bot.db.put(b"restart", b"0")
-            return
-
-        url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
-        parameters = {"start": "1", "limit": "200", "convert": "NZD"}
-        headers = {
-            "Accepts": "application/json",
-            "X-CMC_PRO_API_KEY": self.bot.coinmarketcap,
-        }
-
-        async with aiohttp.ClientSession() as session:
-            response = await session.get(url, params=parameters, headers=headers)
-            data = await response.json()
+        """Updates crypto currency data every 10 minutes."""
+        url = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing?limit=50000&convert=NZD&cryptoType=coins"
+        async with aiohttp.ClientSession() as session, session.get(url) as response:
+            crypto = await response.json()
 
         with self.crypto.write_batch() as wb:
-            for coin in data["data"]:
+            for coin in crypto["data"]["cryptoCurrencyList"]:
+                if "price" not in coin:
+                    continue
                 wb.put(
                     coin["symbol"].encode(),
                     ujson.dumps(
                         {
                             "name": coin["name"],
-                            "price": coin["quote"]["NZD"]["price"],
-                            "circulating_supply": coin["circulating_supply"],
-                            "max_supply": coin["max_supply"] or 0,
-                            "market_cap": coin["quote"]["NZD"]["market_cap"],
-                            "change_24h": coin["quote"]["NZD"]["percent_change_24h"],
-                            "volume_24h": coin["quote"]["NZD"]["volume_24h"],
+                            "price": coin["quotes"][0]["price"],
+                            "circulating_supply": coin["circulatingSupply"],
+                            "max_supply": coin["maxSupply"],
+                            "market_cap": coin["quotes"][0]["marketCap"],
+                            "change_24h": coin["quotes"][0]["percentChange24h"],
+                            "volume_24h": coin["quotes"][0]["volume24h"],
                         }
                     ).encode(),
                 )
