@@ -10,9 +10,61 @@ class admin(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.loop = asyncio.get_event_loop()
+        self.infractions = self.bot.db.prefixed_db(b"infractions-")
         self.blacklist = self.bot.db.prefixed_db(b"blacklist-")
         self.deleted = self.bot.db.prefixed_db(b"deleted-")
         self.edited = self.bot.db.prefixed_db(b"edited-")
+
+    @commands.has_permissions(manage_messages=True)
+    @commands.command()
+    async def warn(self, ctx, member: discord.Member, *, reason=None):
+        """Warns a member and keeps track of how many warnings a member has."""
+        member_id = f"{ctx.guild.id}-{member.id}".encode()
+        infractions = self.infractions.get(member_id)
+        self.infractions.delete(b"225708387558490112")
+
+        if infractions is None:
+            infractions = {
+                "count": 0,
+                "bans": [],
+                "kicks": [],
+                "mutes": [],
+                "warnings": [],
+            }
+        else:
+            infractions = ujson.loads(infractions)
+
+        infractions["count"] += 1
+        infractions["warnings"].append(reason)
+
+        embed = discord.Embed(
+            color=discord.Color.red(),
+            description="{} has been warned. They have {} total infractions.".format(
+                member.mention, infractions["count"]
+            ),
+        )
+        await ctx.send(embed=embed)
+
+        self.infractions.put(member_id, ujson.dumps(infractions).encode())
+
+    @commands.has_permissions(manage_messages=True)
+    @commands.command(hidden=True)
+    async def warnings(self, ctx, member: discord.Member):
+        member_id = f"{ctx.guild.id}-{member.id}".encode()
+        infractions = self.infractions.get(member_id)
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not infractions:
+            embed.description = "```Member has no infractions```"
+            return await ctx.send(embed=embed)
+
+        infractions = ujson.loads(infractions)
+        embed.description = "```{} Has {} warnings\n\n{}```".format(
+            member.display_name,
+            len(infractions["warnings"]),
+            "\n".join([warning for warning in infractions["warnings"]]),
+        )
+        await ctx.send(embed=embed)
 
     @commands.has_permissions(administrator=True)
     @commands.command()
