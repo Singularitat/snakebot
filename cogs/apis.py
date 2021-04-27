@@ -114,6 +114,16 @@ class apis(commands.Cog):
         await ctx.send(image["image"])
 
     @commands.command()
+    async def fox2(self, ctx):
+        """Gets a random fox image."""
+        url = "https://wohlsoft.ru/images/foxybot/randomfox.php"
+
+        async with ctx.typing():
+            image = await self.get_json(url)
+
+        await ctx.send(image["file"])
+
+    @commands.command()
     async def cat(self, ctx):
         """Gets a random cat image."""
         url = "https://aws.random.cat/meow"

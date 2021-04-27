@@ -10,9 +10,61 @@ class admin(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.loop = asyncio.get_event_loop()
+        self.infractions = self.bot.db.prefixed_db(b"infractions-")
         self.blacklist = self.bot.db.prefixed_db(b"blacklist-")
         self.deleted = self.bot.db.prefixed_db(b"deleted-")
         self.edited = self.bot.db.prefixed_db(b"edited-")
+
+    @commands.has_permissions(manage_messages=True)
+    @commands.command()
+    async def warn(self, ctx, member: discord.Member, *, reason=None):
+        """Warns a member and keeps track of how many warnings a member has."""
+        member_id = f"{ctx.guild.id}-{member.id}".encode()
+        infractions = self.infractions.get(member_id)
+        self.infractions.delete(b"225708387558490112")
+
+        if infractions is None:
+            infractions = {
+                "count": 0,
+                "bans": [],
+                "kicks": [],
+                "mutes": [],
+                "warnings": [],
+            }
+        else:
+            infractions = ujson.loads(infractions)
+
+        infractions["count"] += 1
+        infractions["warnings"].append(reason)
+
+        embed = discord.Embed(
+            color=discord.Color.red(),
+            description="{} has been warned. They have {} total infractions.".format(
+                member.mention, infractions["count"]
+            ),
+        )
+        await ctx.send(embed=embed)
+
+        self.infractions.put(member_id, ujson.dumps(infractions).encode())
+
+    @commands.has_permissions(manage_messages=True)
+    @commands.command(hidden=True)
+    async def warnings(self, ctx, member: discord.Member):
+        member_id = f"{ctx.guild.id}-{member.id}".encode()
+        infractions = self.infractions.get(member_id)
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not infractions:
+            embed.description = "```Member has no infractions```"
+            return await ctx.send(embed=embed)
+
+        infractions = ujson.loads(infractions)
+        embed.description = "```{} Has {} warnings\n\n{}```".format(
+            member.display_name,
+            len(infractions["warnings"]),
+            "\n".join(infractions["warnings"]),
+        )
+        await ctx.send(embed=embed)
 
     @commands.has_permissions(administrator=True)
     @commands.command()
@@ -103,7 +155,7 @@ class admin(commands.Cog):
     @commands.has_permissions(administrator=True)
     @commands.command(hidden=True)
     async def edit(self, ctx, message: discord.Message, *, content):
-        """Edits one of the bots messages.
+        """Edits the content of a bot message.
 
         message: discord.Message
             The message you want to edit.
@@ -116,6 +168,42 @@ class admin(commands.Cog):
     async def edit_handler(self, ctx, error):
         """Error handler for edit command."""
         await ctx.send("```I cannot edit this message```")
+
+    @commands.has_permissions(administrator=True)
+    @commands.command(hidden=True)
+    async def embededit(self, ctx, message: discord.Message, description, title=None):
+        """Edits the embed of a bot message.
+
+        message: discord.Message
+            The message you want to edit.
+        description: str
+            Description of the embed.
+        title: str
+            Title of the embed.
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = description
+        if title:
+            embed.title = title
+        await message.edit(embed=embed)
+
+    @commands.has_permissions(administrator=True)
+    @commands.command(hidden=True)
+    async def embed(self, ctx, description, title=None):
+        """Sends an embed.
+
+        message: discord.Message
+            The message you want to edit.
+        description: str
+            Description of the embed.
+        title: str
+            Title of the embed.
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = description
+        if title:
+            embed.title = title
+        await ctx.send(embed=embed)
 
     async def say_permissions(self, ctx, member, channel):
         """Sends an embed containing a members permissions in a channel.
@@ -213,9 +301,10 @@ class admin(commands.Cog):
 
             embed.title = "Downvoted users"
             for member_id in self.blacklist.iterator(include_value=False):
+                guild, member_id = member_id.decode().split("-")
                 embed.add_field(
                     name="User:",
-                    value=member_id.decode().removeprefix(f"{ctx.guild.id}-"),
+                    value=f"{self.bot.get_guild(int(guild))}: {member_id}",
                 )
 
             return await ctx.send(embed=embed)
