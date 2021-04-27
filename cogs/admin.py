@@ -62,7 +62,7 @@ class admin(commands.Cog):
         embed.description = "```{} Has {} warnings\n\n{}```".format(
             member.display_name,
             len(infractions["warnings"]),
-            "\n".join([warning for warning in infractions["warnings"]]),
+            "\n".join(infractions["warnings"]),
         )
         await ctx.send(embed=embed)
 
