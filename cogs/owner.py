@@ -63,6 +63,28 @@ class owner(commands.Cog):
         return ctx.author.id in self.bot.owner_ids
 
     @commands.command(hidden=True)
+    async def gblacklist(self, ctx, user: discord.User):
+        """Globally blacklists someone from the bot.
+
+        user: discord.user
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        user_id = str(user.id).encode()
+        if self.blacklist.get(user_id):
+            self.blacklist.delete(user_id)
+
+            embed.title = "User Unblacklisted"
+            embed.description = f"***{user}*** has been unblacklisted"
+            return await ctx.send(embed=embed)
+
+        self.blacklist.put(user_id, b"2")
+        embed.title = "User Blacklisted"
+        embed.description = f"**{user}** has been added to the blacklist"
+
+        await ctx.send(embed=embed)
+
+    @commands.command(hidden=True)
     async def backup(self, ctx, number: int):
         """Sends the bot database backup as a json file.
 
