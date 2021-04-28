@@ -6,6 +6,7 @@ import discord
 import re
 from datetime import datetime
 import textwrap
+import ujson
 
 
 class apis(commands.Cog):
@@ -13,6 +14,7 @@ class apis(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.loop = asyncio.get_event_loop()
 
     async def get_json(self, url):
         """Gets and loads json from a url.
@@ -477,6 +479,14 @@ class apis(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    def delete_cache(self, search, cache):
+        """Deletes a search from the cache.
+
+        search: str
+        """
+        cache.pop(search)
+        self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+
     @commands.command()
     async def tenor(self, ctx, *, search):
         """Gets a random gif from tenor based off a search.
@@ -484,12 +494,33 @@ class apis(commands.Cog):
         search: str
             The gif search term.
         """
-        url = f"https://g.tenor.com/v1/search?q={search}&key={self.bot.tenor}&limit=50"
+        cache_search = f"tenor-{search}"
+        cache = ujson.loads(self.bot.db.get(b"cache"))
+
+        if cache_search in cache:
+            url = random.choice(cache[cache_search])
+            cache[cache_search].remove(url)
+
+            if len(cache[cache_search]) == 0:
+                cache.pop(cache_search)
+
+            self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+
+            return await ctx.send(url)
+
+        url = f"https://api.tenor.com/v1/search?q={search}&limit=50"
 
         async with ctx.typing():
             tenor = await self.get_json(url)
 
-        await ctx.send(random.choice(tenor["results"])["media"][0]["gif"]["url"])
+        tenor = [image["media"][0]["gif"]["url"] for image in tenor["results"]]
+        image = random.choice(tenor)
+        tenor.remove(image)
+        cache[cache_search] = tenor
+
+        self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+        self.loop.call_later(300, self.delete_cache, cache_search, cache)
+        await ctx.send(image)
 
 
 def setup(bot: commands.Bot) -> None:
