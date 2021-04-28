@@ -367,7 +367,7 @@ class admin(commands.Cog):
                 embed.add_field(name="Member:", value=user_id.decode())
             return await ctx.send(embed=embed)
 
-        user_id = str(user.id).encode()
+        user_id = f"{ctx.guild.id}-{str(user.id)}".encode()
         if self.blacklist.get(user_id):
             self.blacklist.delete(user_id)
 
