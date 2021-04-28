@@ -591,8 +591,10 @@ class events(commands.Cog):
             )
             return False
 
-        if ctx.guild and self.blacklist.get(
-            f"{ctx.guild.id}-{str(ctx.author.id)}".encode()
+        if (
+            ctx.guild
+            and self.blacklist.get(f"{ctx.guild.id}-{str(ctx.author.id)}".encode())
+            or self.blacklist.get(str(ctx.author.id).encode())
         ):
             await ctx.send(
                 embed=discord.Embed(
