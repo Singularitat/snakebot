@@ -129,6 +129,10 @@ class stocks(commands.Cog):
 
         stockbal = ujson.loads(stockbal)
 
+        if len(stockbal) == 0:
+            embed.description = "```You have sold all your stocks.```"
+            return await ctx.send(embed=embed)
+
         net_value = 0
         msg = f"{member.display_name}'s stock profile:\n\n"
         msg += " Name:                 Price:             Percent Gain:\n"
@@ -540,6 +544,10 @@ class stocks(commands.Cog):
             return await ctx.send(embed=embed)
 
         cryptobal = ujson.loads(cryptobal)
+
+        if len(cryptobal) == 0:
+            embed.description = "```You have sold all your crypto.```"
+            return await ctx.send(embed=embed)
 
         net_value = 0
         msg = f"{member.display_name}'s crypto profile:\n\n"
