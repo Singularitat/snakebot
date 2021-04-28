@@ -23,7 +23,6 @@ bot = commands.Bot(
 )
 
 bot.db = db
-bot.tenor = config.tenor
 
 if __name__ == "__main__":
     for extension in [

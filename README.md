@@ -44,7 +44,6 @@ the bot is with the following template:
 
 ```py
 token = ''  # your bot's token
-tenor = ''  # tenor key for the hug command from https://tenor.com/developer/dashboard
 ```
 
 ## Requirements
