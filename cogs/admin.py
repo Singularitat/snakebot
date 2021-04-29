@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import ujson
 import asyncio
+import cogs.utils.database as DB
 
 
 class admin(commands.Cog):
@@ -10,18 +11,14 @@ class admin(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.loop = asyncio.get_event_loop()
-        self.infractions = self.bot.db.prefixed_db(b"infractions-")
-        self.blacklist = self.bot.db.prefixed_db(b"blacklist-")
-        self.deleted = self.bot.db.prefixed_db(b"deleted-")
-        self.edited = self.bot.db.prefixed_db(b"edited-")
 
     @commands.has_permissions(manage_messages=True)
     @commands.command()
     async def warn(self, ctx, member: discord.Member, *, reason=None):
         """Warns a member and keeps track of how many warnings a member has."""
         member_id = f"{ctx.guild.id}-{member.id}".encode()
-        infractions = self.infractions.get(member_id)
-        self.infractions.delete(b"225708387558490112")
+        infractions = DB.infractions.get(member_id)
+        DB.infractions.delete(b"225708387558490112")
 
         if infractions is None:
             infractions = {
@@ -45,13 +42,13 @@ class admin(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-        self.infractions.put(member_id, ujson.dumps(infractions).encode())
+        DB.infractions.put(member_id, ujson.dumps(infractions).encode())
 
     @commands.has_permissions(manage_messages=True)
     @commands.command(hidden=True)
     async def warnings(self, ctx, member: discord.Member):
         member_id = f"{ctx.guild.id}-{member.id}".encode()
-        infractions = self.infractions.get(member_id)
+        infractions = DB.infractions.get(member_id)
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not infractions:
@@ -77,14 +74,14 @@ class admin(commands.Cog):
             return await ctx.send(embed=embed)
 
         key = f"{ctx.guild.id}-{command}".encode()
-        state = self.bot.db.get(key)
+        state = DB.db.get(key)
 
         if state is None:
-            self.bot.db.put(key, b"1")
+            DB.db.put(key, b"1")
             embed.description = f"```Disabled the {command} command```"
             return await ctx.send(embed=embed)
 
-        self.bot.db.delete(key)
+        DB.db.delete(key)
         embed.description = f"```Enabled the {command} command```"
         return await ctx.send(embed=embed)
 
@@ -92,7 +89,7 @@ class admin(commands.Cog):
     @commands.command(hidden=True)
     async def emojis(self, ctx):
         """Shows a list of the current emojis being voted on."""
-        emojis = self.bot.db.get(b"emoji_submissions")
+        emojis = DB.db.get(b"emoji_submissions")
 
         if not emojis:
             emojis = {}
@@ -119,7 +116,7 @@ class admin(commands.Cog):
         message_id: str
             Id of the message to remove from the db.
         """
-        emojis = self.bot.db.get(b"emoji_submissions")
+        emojis = DB.db.get(b"emoji_submissions")
 
         if not emojis:
             emojis = {}
@@ -131,7 +128,7 @@ class admin(commands.Cog):
         except KeyError:
             await ctx.send(f"Message {message_id} not found in emojis")
 
-        self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
+        DB.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
 
     @commands.has_permissions(administrator=True)
     @commands.command(hidden=True, aliases=["aemoji"])
@@ -141,7 +138,7 @@ class admin(commands.Cog):
         message_id: int
             Id of the message you are adding the emoji of.
         """
-        emojis = self.bot.db.get(b"emoji_submissions")
+        emojis = DB.db.get(b"emoji_submissions")
 
         if not emojis:
             emojis = {}
@@ -150,7 +147,7 @@ class admin(commands.Cog):
 
         emojis[message_id] = {"name": name, "users": []}
 
-        self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
+        DB.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
 
     @commands.has_permissions(administrator=True)
     @commands.command(hidden=True)
@@ -295,12 +292,12 @@ class admin(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
         if member is None:
-            if list(self.blacklist) == []:
+            if list(DB.blacklist) == []:
                 embed.title = "No downvoted users"
                 return await ctx.send(embed=embed)
 
             embed.title = "Downvoted users"
-            for member_id in self.blacklist.iterator(include_value=False):
+            for member_id in DB.blacklist.iterator(include_value=False):
                 guild, member_id = member_id.decode().split("-")
                 embed.add_field(
                     name="User:",
@@ -311,8 +308,8 @@ class admin(commands.Cog):
 
         member_id = f"{ctx.guild.id}-{str(member.id)}".encode()
 
-        if self.blacklist.get(member_id):
-            self.blacklist.delete(member_id)
+        if DB.blacklist.get(member_id):
+            DB.blacklist.delete(member_id)
 
             embed.title = "User Undownvoted"
             embed.description = (
@@ -323,7 +320,7 @@ class admin(commands.Cog):
         await member.edit(voice_channel=None)
 
         if duration is None:
-            self.blacklist.put(member_id, b"1")
+            DB.blacklist.put(member_id, b"1")
             embed.title = "User Downvoted"
             embed.description = f"**{member}** has been added to the downvote list"
             return await ctx.send(embed=embed)
@@ -334,8 +331,8 @@ class admin(commands.Cog):
             embed.description = "```Invalid duration. Example: '3d 5h 10m'```"
             return await ctx.send(embed=embed)
 
-        self.blacklist.put(member_id, b"1")
-        self.loop.call_later(seconds, self.blacklist.delete, member_id)
+        DB.blacklist.put(member_id, b"1")
+        self.loop.call_later(seconds, DB.blacklist.delete, member_id)
 
         embed.title = "User Undownvoted"
         embed.description = f"***{member}*** has been added from the downvote list"
@@ -345,8 +342,8 @@ class admin(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def wipe_downvote(self, ctx):
         """Wipes everyone from the downvote list."""
-        for member, value in self.blacklist:
-            self.blacklist.delete(member)
+        for member, value in DB.blacklist:
+            DB.blacklist.delete(member)
 
     @commands.command()
     @commands.has_permissions(administrator=True)
@@ -358,24 +355,24 @@ class admin(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
         if user is None:
-            if list(self.blacklist) == []:
+            if list(DB.blacklist) == []:
                 embed.title = "No blacklisted users"
                 return await ctx.send(embed=embed)
 
             embed.title = "Blacklisted users"
-            for user_id in self.blacklist.iterator(include_value=False):
+            for user_id in DB.blacklist.iterator(include_value=False):
                 embed.add_field(name="Member:", value=user_id.decode())
             return await ctx.send(embed=embed)
 
         user_id = f"{ctx.guild.id}-{str(user.id)}".encode()
-        if self.blacklist.get(user_id):
-            self.blacklist.delete(user_id)
+        if DB.blacklist.get(user_id):
+            DB.blacklist.delete(user_id)
 
             embed.title = "User Unblacklisted"
             embed.description = f"***{user}*** has been unblacklisted"
             return await ctx.send(embed=embed)
 
-        self.blacklist.put(user_id, b"2")
+        DB.blacklist.put(user_id, b"2")
         embed.title = "User Blacklisted"
         embed.description = f"**{user}** has been added to the blacklist"
 
@@ -567,7 +564,7 @@ class admin(commands.Cog):
             user = ctx.author
 
         user_id = str(user.id).encode()
-        deleted = self.deleted.get(user_id)
+        deleted = DB.deleted.get(user_id)
 
         if deleted is None:
             return await ctx.send("```No deleted messages found```")
@@ -605,7 +602,7 @@ class admin(commands.Cog):
             user = ctx.author
 
         user_id = str(user.id).encode()
-        edited = self.edited.get(user_id)
+        edited = DB.edited.get(user_id)
 
         if edited is None:
             return await ctx.send("```No edited messages found```")

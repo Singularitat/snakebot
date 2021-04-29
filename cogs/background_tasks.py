@@ -5,6 +5,7 @@ import subprocess
 import ujson
 from discord.ext import commands, tasks
 import discord
+import cogs.utils.database as DB
 
 
 class background_tasks(commands.Cog):
@@ -12,8 +13,6 @@ class background_tasks(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.stocks = self.bot.db.prefixed_db(b"stocks-")
-        self.crypto = self.bot.db.prefixed_db(b"crypto-")
         self.start_tasks()
 
     def cog_unload(self):
@@ -123,7 +122,7 @@ class background_tasks(commands.Cog):
         ) as response:
             stocks = await response.json()
 
-        with self.stocks.write_batch() as wb:
+        with DB.stocks.write_batch() as wb:
             for stock in stocks["data"]["table"]["rows"]:
                 stock_data = {
                     "name": stock["name"],
@@ -182,9 +181,10 @@ class background_tasks(commands.Cog):
     @tasks.loop(hours=6)
     async def backup_bot(self):
         """Makes a backup of the db every 6 hours."""
-        if self.bot.db.get(b"restart") == b"1":
-            return self.bot.db.delete(b"restart")
-        number = self.bot.db.get(b"backup_number")
+        if DB.db.get(b"restart") == b"1":
+            DB.db.delete(b"restart")
+            return
+        number = DB.db.get(b"backup_number")
 
         if not number:
             number = -1
@@ -196,7 +196,7 @@ class background_tasks(commands.Cog):
         if number == 11:
             number = 0
 
-        self.bot.db.put(b"backup_number", str(number).encode())
+        DB.db.put(b"backup_number", str(number).encode())
 
         os.makedirs("backup/", exist_ok=True)
         with open(f"backup/{number}backup.json", "w") as file:
@@ -207,7 +207,7 @@ class background_tasks(commands.Cog):
                     f'"{key.decode()}": "{value.decode()}", '
                     if '"' not in value.decode()
                     else f'"{key.decode()}": {value.decode()}, '
-                    for key, value in self.bot.db
+                    for key, value in DB.db
                     if not key.startswith(b"crypto-") and not key.startswith(b"stocks-")
                 ]
             )
@@ -226,7 +226,7 @@ class background_tasks(commands.Cog):
             languages.update(set(language["aliases"]))
             languages.add(language["name"])
 
-        self.bot.db.put(b"languages", ujson.dumps(list(languages)).encode())
+        DB.db.put(b"languages", ujson.dumps(list(languages)).encode())
 
     @tasks.loop(minutes=10)
     async def crypto_update(self):
@@ -235,16 +235,11 @@ class background_tasks(commands.Cog):
         async with aiohttp.ClientSession() as session, session.get(url) as response:
             crypto = await response.json()
 
-        with self.crypto.write_batch() as wb:
+        with DB.crypto.write_batch() as wb:
             for coin in crypto["data"]["cryptoCurrencyList"]:
                 if "price" not in coin["quotes"][0]:
                     continue
-                if "maxSupply" not in coin:
-                    coin["maxSupply"] = 0
-                if "volume24h" not in coin["quotes"][0]:
-                    coin["quotes"][0]["volume24h"] = 0
-                if "marketCap" not in coin["quotes"][0]:
-                    coin["quotes"][0]["marketCap"] = 0
+
                 wb.put(
                     coin["symbol"].encode(),
                     ujson.dumps(
@@ -252,10 +247,10 @@ class background_tasks(commands.Cog):
                             "name": coin["name"],
                             "price": coin["quotes"][0]["price"],
                             "circulating_supply": coin["circulatingSupply"],
-                            "max_supply": coin["maxSupply"],
-                            "market_cap": coin["quotes"][0]["marketCap"],
+                            "max_supply": coin.get("maxSupply", 0),
+                            "market_cap": coin["quotes"][0].get("marketCap", 0),
                             "change_24h": coin["quotes"][0]["percentChange24h"],
-                            "volume_24h": coin["quotes"][0]["volume24h"],
+                            "volume_24h": coin["quotes"][0].get("volume24h", 0),
                         }
                     ).encode(),
                 )

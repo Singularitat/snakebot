@@ -7,6 +7,7 @@ import time
 import lxml.html
 import re
 import asyncio
+import cogs.utils.database as DB
 
 
 class InviteMenu(menus.ListPageSource):
@@ -35,12 +36,11 @@ class useful(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.loop = asyncio.get_event_loop()
-        self.invites = self.bot.db.prefixed_db(b"invites-")
 
     @commands.command()
     async def languages(self, ctx):
         """Shows the languages that the run command can use."""
-        languages = self.bot.db.get(b"languages")
+        languages = DB.db.get(b"languages")
 
         if not languages:
             return await ctx.send("No languages found")
@@ -76,7 +76,7 @@ class useful(commands.Cog):
             return await ctx.send(
                 "```You need to attach the emoji image to the message```"
             )
-        emojis = self.bot.db.get(b"emoji_submissions")
+        emojis = DB.db.get(b"emoji_submissions")
 
         if not emojis:
             emojis = {}
@@ -85,7 +85,7 @@ class useful(commands.Cog):
 
         emojis[ctx.message.id] = {"name": name, "users": []}
 
-        self.bot.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
+        DB.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
 
     @commands.command()
     async def invites(self, ctx):
@@ -104,7 +104,7 @@ class useful(commands.Cog):
         code: str
             The code to run.
         """
-        if lang not in ujson.loads(self.bot.db.get(b"languages")):
+        if lang not in ujson.loads(DB.db.get(b"languages")):
             return await ctx.send(f"No support for language {lang}")
 
         code = re.sub(r"```\w+\n|```", "", code)
@@ -164,7 +164,7 @@ class useful(commands.Cog):
     @commands.command()
     async def snipe(self, ctx):
         """Snipes the last deleted message."""
-        message = self.bot.db.get(b"snipe_message")
+        message = DB.db.get(b"snipe_message")
 
         if message is not None:
             message = ujson.loads(message)
@@ -175,7 +175,7 @@ class useful(commands.Cog):
     @commands.command()
     async def editsnipe(self, ctx):
         """Snipes the last edited message."""
-        message = self.bot.db.get(b"editsnipe_message")
+        message = DB.db.get(b"editsnipe_message")
 
         if message is not None:
             message = ujson.loads(message)
@@ -231,7 +231,7 @@ class useful(commands.Cog):
 
         search: str
         """
-        cache = ujson.loads(self.bot.db.get(b"cache"))
+        cache = ujson.loads(DB.db.get(b"cache"))
 
         if search in cache:
             if len(cache[search]) == 0:
@@ -241,7 +241,7 @@ class useful(commands.Cog):
 
             cache[search].pop(url)
 
-            self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+            DB.db.put(b"cache", ujson.dumps(cache).encode())
 
             return url, title
         return cache
@@ -252,7 +252,7 @@ class useful(commands.Cog):
         search: str
         """
         cache.pop(search)
-        self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+        DB.db.put(b"cache", ujson.dumps(cache).encode())
 
     @commands.command()
     async def google(self, ctx, *, search):
@@ -304,7 +304,7 @@ class useful(commands.Cog):
 
             cache[cache_search] = images
             self.loop.call_later(300, self.delete_cache, cache_search, cache)
-            self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+            DB.db.put(b"cache", ujson.dumps(cache).encode())
 
     @commands.command(aliases=["img"])
     async def image(self, ctx, *, search):
@@ -354,7 +354,7 @@ class useful(commands.Cog):
 
             cache[cache_search] = images
             self.loop.call_later(300, self.delete_cache, cache_search, cache)
-            self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+            DB.db.put(b"cache", ujson.dumps(cache).encode())
 
     @commands.command()
     async def calc(self, ctx, num_base, *, args):

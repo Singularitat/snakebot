@@ -8,6 +8,7 @@ import traceback
 import time
 import subprocess
 import re
+import cogs.utils.database as DB
 
 
 class PerformanceMocker:
@@ -53,7 +54,6 @@ class owner(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.rrole = self.bot.db.prefixed_db(b"rrole-")
 
     async def cog_check(self, ctx):
         """Checks if the member is an owner.
@@ -98,7 +98,7 @@ class owner(commands.Cog):
 
     @commands.command(hidden=True, aliases=["boot"])
     async def boot_times(self, ctx, number=10):
-        boot_times = self.bot.db.get(b"boot_times")
+        boot_times = DB.db.get(b"boot_times")
 
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -120,7 +120,7 @@ class owner(commands.Cog):
     @commands.command(hidden=True, aliases=["wipec"])
     async def wipe_cache(self, ctx):
         """Wipes cache from the db."""
-        self.bot.db.put(b"cache", b"{}")
+        DB.db.put(b"cache", b"{}")
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.description = "```Wiped Cache```"
@@ -130,7 +130,7 @@ class owner(commands.Cog):
     async def list_cache(self, ctx):
         """Lists the cached items in the db."""
         embed = discord.Embed(color=discord.Color.blurple())
-        cache = self.bot.db.get(b"cache")
+        cache = DB.db.get(b"cache")
 
         if cache:
             cache = ujson.loads(cache)
@@ -153,9 +153,9 @@ class owner(commands.Cog):
     @commands.command(hidden=True)
     async def togglelog(self, ctx):
         """Toggles logging to logs channel."""
-        state = b"0" if self.bot.db.get(b"logging") == b"1" else b"1"
+        state = b"0" if DB.db.get(b"logging") == b"1" else b"1"
 
-        self.bot.db.put(b"logging", state)
+        DB.db.put(b"logging", state)
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.description = f"```Set logging to {bool(int(state))}```"
@@ -403,7 +403,7 @@ class owner(commands.Cog):
     async def restart(self, ctx):
         """Restarts all extensions."""
         embed = discord.Embed(color=discord.Color.blurple())
-        self.bot.db.put(b"restart", b"1")
+        DB.db.put(b"restart", b"1")
 
         for ext in [f[:-3] for f in os.listdir("cogs") if f.endswith(".py")]:
             try:
@@ -436,7 +436,7 @@ class owner(commands.Cog):
     async def lrrole(self, ctx):
         """Sends a list of the message ids of current reaction roles."""
         msg = ""
-        for message_id, roles in self.rrole:
+        for message_id, roles in DB.rrole:
             msg += f"\n\n{message_id.decode()}: {ujson.loads(roles)}"
         await ctx.send(f"```{msg}```")
 
@@ -447,7 +447,7 @@ class owner(commands.Cog):
         message: int
             Id of the reaction role messgae to delete.
         """
-        self.rrole.delete(str(message_id).encode())
+        DB.rrole.delete(str(message_id).encode())
         message = ctx.channel.get_partial_message(message_id)
         await message.delete()
 
@@ -509,7 +509,7 @@ class owner(commands.Cog):
             await message.delete()
             return await ctx.send("Invalid emoji")
 
-        self.rrole.put(
+        DB.rrole.put(
             str(message.id).encode(), ujson.dumps(dict(zip(emojis, roles))).encode()
         )
 
@@ -522,7 +522,7 @@ class owner(commands.Cog):
         emojis: tuple
             A tuple of emojis.
         """
-        reaction = self.rrole.get(str(message.id).encode())
+        reaction = DB.rrole.get(str(message.id).encode())
 
         if not reaction:
             return await ctx.send("```Message not found```")
@@ -560,7 +560,7 @@ class owner(commands.Cog):
         for emoji, role in zip(emojis, roles):
             reaction[emoji] = role
 
-        self.rrole.put(str(message.id).encode(), ujson.dumps(reaction).encode())
+        DB.rrole.put(str(message.id).encode(), ujson.dumps(reaction).encode())
 
     @staticmethod
     async def await_for_message(ctx, message):
