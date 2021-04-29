@@ -3,6 +3,7 @@ from discord.ext import commands
 import random
 import aiohttp
 import lxml.html
+import cogs.utils.database as DB
 
 
 class misc(commands.Cog):
@@ -10,7 +11,6 @@ class misc(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.karma = self.bot.db.prefixed_db(b"karma-")
 
     @commands.command(name="hex")
     async def _hex(self, ctx, number, convert: bool = False):
@@ -62,7 +62,7 @@ class misc(commands.Cog):
             user = ctx.author
 
         user_id = str(user.id).encode()
-        karma = self.karma.get(user_id)
+        karma = DB.karma.get(user_id)
 
         if not karma:
             karma = 0
@@ -78,7 +78,7 @@ class misc(commands.Cog):
     @commands.command(aliases=["kboard"])
     async def karmaboard(self, ctx):
         """Displays the top 5 and bottom 5 members karma."""
-        sorted_karma = sorted([(int(k), int(m)) for m, k in self.karma], reverse=True)
+        sorted_karma = sorted([(int(k), int(m)) for m, k in DB.karma], reverse=True)
         embed = discord.Embed(title="Karma Board", color=discord.Color.blurple())
         embed.add_field(
             name="Top Five",
