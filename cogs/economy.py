@@ -252,7 +252,7 @@ class economy(commands.Cog):
         _from = str(ctx.author.id).encode()
         to = str(user.id).encode()
 
-        bal = await DB.transfer(_from, to)
+        bal = await DB.transfer(_from, to, amount)
 
         embed = discord.Embed(
             title=f"Sent ${amount} to {user.display_name}",

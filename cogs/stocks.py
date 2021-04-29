@@ -301,14 +301,14 @@ class stocks(commands.Cog):
                     [
                         stock[1]["total"]
                         * float(ujson.loads(db.get(stock[0].encode()))["price"])
-                        for stock in ujson.loads(values).items()
+                        for stock in values.items()
                     ]
                 )
 
             return 0
 
-        stock_value = get_value(await DB.get_stockbal(member_id, DB.stocks))
-        crypto_value = get_value(await DB.get_cryptobal(member_id, DB.crypto))
+        stock_value = get_value(await DB.get_stockbal(member_id), DB.stocks)
+        crypto_value = get_value(await DB.get_cryptobal(member_id), DB.crypto)
 
         embed.add_field(
             name=f"{member.display_name}'s net worth",
