@@ -3,7 +3,9 @@ import plyvel
 import ujson
 
 
-db = plyvel.DB(f"{pathlib.Path(__file__).parent.parent.parent}/db", create_if_missing=True)
+db = plyvel.DB(
+    f"{pathlib.Path(__file__).parent.parent.parent}/db", create_if_missing=True
+)
 infractions = db.prefixed_db(b"infractions-")
 karma = db.prefixed_db(b"karma-")
 blacklist = db.prefixed_db(b"blacklist-")
