@@ -365,8 +365,8 @@ class admin(commands.Cog):
             return await ctx.send(embed=embed)
 
         user_id = f"{ctx.guild.id}-{str(user.id)}".encode()
-        if self.blacklist.get(user_id):
-            self.blacklist.delete(user_id)
+        if DB.blacklist.get(user_id):
+            DB.blacklist.delete(user_id)
 
             embed.title = "User Unblacklisted"
             embed.description = f"***{user}*** has been unblacklisted"
