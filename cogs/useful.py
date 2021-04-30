@@ -23,9 +23,7 @@ class InviteMenu(menus.ListPageSource):
             return embed
 
         for member, invite in entries:
-            if len(member) <= 18:
-                name = self.bot.get_user(int(member)).display_name
-                msg += f"{name}: {invite.decode()}\n"
+            msg += f"{member}: {invite.decode()}\n"
         embed.description = f"```{msg}```"
         return embed
 
@@ -90,8 +88,17 @@ class useful(commands.Cog):
     @commands.command()
     async def invites(self, ctx):
         """Shows the invites that users joined from."""
+        invite_list = []
+        for member, invite in DB.invites:
+            if len(member) <= 18:
+                member = self.bot.get_user(int(member))
+                # I don't fetch the invite cause it takes 0.3s per invite
+                if member:
+                    invite_list.append((member.display_name, invite))
+
         pages = menus.MenuPages(
-            source=InviteMenu(list(self.invites)), clear_reactions_after=True
+            source=InviteMenu(invite_list),
+            clear_reactions_after=True,
         )
         await pages.start(ctx)
 
