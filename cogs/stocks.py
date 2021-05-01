@@ -109,8 +109,10 @@ class stocks(commands.Cog):
             return await ctx.send(embed=embed)
 
         net_value = 0
-        msg = (f"{member.display_name}'s stock profile:\n\n"
-               " Name:                 Price:             Percent Gain:\n")
+        msg = (
+            f"{member.display_name}'s stock profile:\n\n"
+            " Name:                 Price:             Percent Gain:\n"
+        )
 
         for stock in stockbal:
             data = await DB.get_stock(stock)
@@ -500,8 +502,10 @@ class stocks(commands.Cog):
             return await ctx.send(embed=embed)
 
         net_value = 0
-        msg = (f"{member.display_name}'s crypto profile:\n\n"
-               " Name:                 Price:             Percent Gain:\n")
+        msg = (
+            f"{member.display_name}'s crypto profile:\n\n"
+            " Name:                 Price:             Percent Gain:\n"
+        )
 
         for crypto in cryptobal:
             data = await DB.get_crypto(crypto)
