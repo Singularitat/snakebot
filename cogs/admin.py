@@ -27,23 +27,25 @@ class admin(commands.Cog):
         }
         rrole = {}
 
-        msg = ("**Color Role Menu:**\nReact for a color role.\n"
-               "Also the emojis aren't accurate to what color the role is.\n\n")
+        msg = (
+            "**Color Role Menu:**\nReact for a color role.\n"
+            "Also the emojis aren't accurate to what color the role is.\n\n"
+        )
 
         for name in roles:
             role = discord.utils.get(ctx.guild.roles, name=name)
             if not role:
                 role = await ctx.guild.create_role(
-                    name=name, permissions=discord.Permissions.none(), color=roles[name][0]
+                    name=name,
+                    permissions=discord.Permissions.none(),
+                    color=roles[name][0],
                 )
             rrole[roles[name][1]] = role.id
             msg += f"{roles[name][1]}: `{name}`\n\n"
 
         message = await ctx.send(msg)
 
-        DB.rrole.put(
-            str(message.id).encode(), ujson.dumps(rrole).encode()
-        )
+        DB.rrole.put(str(message.id).encode(), ujson.dumps(rrole).encode())
         for name in roles:
             await message.add_reaction(roles[name][1])
 
