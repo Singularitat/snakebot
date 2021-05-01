@@ -486,16 +486,14 @@ class events(commands.Cog):
         if isinstance(error, commands.errors.CommandNotFound):
             if ctx.message.content.startswith(ctx.prefix * 2):
                 return
-            ratios = []
             invoked = ctx.message.content.split()[0].removeprefix(ctx.prefix)
+            all_commands = [str(command) for command in self.bot.walk_commands()]
+            matches = difflib.get_close_matches(invoked, all_commands, cutoff=0.5)
 
-            for command in self.bot.walk_commands():
-                seq = difflib.SequenceMatcher(None, str(command), invoked)
-                ratios.append((seq.ratio(), str(command)))
+            if len(matches) == 0:
+                return
 
-            message = "Did you mean:\n\n"
-            for ratio, command in sorted(ratios, reverse=True)[:3]:
-                message += f"{command}\n"
+            message = "Did you mean:\n\n" + "\n".join(matches)
             embed.title = f"Command {invoked} not found."
 
         elif isinstance(error, commands.errors.CommandOnCooldown):
