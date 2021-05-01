@@ -12,6 +12,25 @@ class admin(commands.Cog):
         self.bot = bot
         self.loop = asyncio.get_event_loop()
 
+    @commands.has_permissions(administrator=True)
+    @commands.command()
+    async def lockall(self, ctx, toggle: bool = True):
+        """Removes the send messages permissions from @everyone in every category.
+
+        toggle: bool
+            Use False to let @everyone send messages again.
+        """
+        for category in ctx.guild.categories:
+            await category.set_permissions(
+                ctx.guild.default_role, send_messages=not toggle if toggle else None
+            )
+        embed = discord.Embed(color=discord.Color.blurple())
+        if toggle:
+            embed.description = "```Set all categories to read only.```"
+        else:
+            embed.description = "```Reset categories read permissions to default.```"
+        await ctx.send(embed=embed)
+
     @commands.has_permissions(manage_messages=True)
     @commands.command()
     async def warn(self, ctx, member: discord.Member, *, reason=None):
