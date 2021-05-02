@@ -14,6 +14,62 @@ class information(commands.Cog):
         self.bot = bot
         self.process = psutil.Process()
 
+    async def say_permissions(self, ctx, member, channel):
+        """Sends an embed containing a members permissions in a channel.
+
+        member: discord.Member
+            The member to get permissions of.
+        channel: discord.TextChannel
+            The channel to get the permissions in.
+        """
+        permissions = channel.permissions_for(member)
+        e = discord.Embed(colour=member.colour)
+        avatar = member.avatar_url_as(static_format="png")
+        e.set_author(name=str(member), url=avatar)
+
+        allowed, denied = [], []
+        for name, value in permissions:
+            name = name.replace("_", " ").replace("guild", "server").title()
+            if value:
+                allowed.append(name)
+            else:
+                denied.append(name)
+
+        e.add_field(name="Allowed", value="\n".join(allowed))
+        e.add_field(name="Denied", value="\n".join(denied))
+        await ctx.send(embed=e)
+
+    @commands.command(hidden=True)
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def botpermissions(self, ctx, *, channel: discord.TextChannel = None):
+        """Shows the bot's permissions in a specific channel.
+
+        channel: discord.TextChannel
+            The channel to get the bots perrmissions in.
+        """
+        channel = channel or ctx.channel
+        member = ctx.guild.me
+        await self.say_permissions(ctx, member, channel)
+
+    @commands.command()
+    @commands.guild_only()
+    async def permissions(
+        self, ctx, member: discord.Member = None, channel: discord.TextChannel = None
+    ):
+        """Shows a member's permissions in a specific channel.
+
+        member: discord.Member
+            The member to get permissions of.
+        channel: discord.TextChannel
+            The channel to get the permissions in.
+        """
+        channel = channel or ctx.channel
+        if member is None:
+            member = ctx.author
+
+        await self.say_permissions(ctx, member, channel)
+
     @commands.command()
     async def ping(self, ctx):
         """Check how the bot is doing."""

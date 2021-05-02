@@ -60,7 +60,15 @@ class owner(commands.Cog):
 
         ctx: commands.Context
         """
-        return ctx.author.id in self.bot.owner_ids
+        if ctx.author.id not in self.bot.owner_ids:
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.red(),
+                    description="```You need to be an Owner to run this command.```",
+                )
+            )
+            return False
+        return True
 
     @commands.command(hidden=True)
     async def gblacklist(self, ctx, user: discord.User):
