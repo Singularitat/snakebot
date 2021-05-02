@@ -487,7 +487,7 @@ class events(commands.Cog):
             if ctx.message.content.startswith(ctx.prefix * 2):
                 return
             invoked = ctx.message.content.split()[0].removeprefix(ctx.prefix)
-            all_commands = [str(command) for command in self.bot.walk_commands()]
+            all_commands = [str(command) for command in self.bot.walk_commands() if not command.hidden]
             matches = difflib.get_close_matches(invoked, all_commands, cutoff=0.5)
 
             if len(matches) == 0:
