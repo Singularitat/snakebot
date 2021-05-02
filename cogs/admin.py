@@ -13,19 +13,11 @@ class admin(commands.Cog):
         self.loop = asyncio.get_event_loop()
 
     async def cog_check(self, ctx):
-        """Checks if the member is an owner.
+        """Checks if the member is an administrator.
 
         ctx: commands.Context
         """
-        if not ctx.author.guild_permissions.administrator:
-            await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.red(),
-                    description="```You need to be an Administrator to run this command.```",
-                )
-            )
-            return False
-        return True
+        return ctx.author.guild_permissions.administrator
 
     @commands.command()
     async def color_roles(self, ctx):
