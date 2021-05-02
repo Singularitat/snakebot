@@ -227,10 +227,7 @@ class economy(commands.Cog):
         bal = await DB.get_bal(user_id)
 
         embed = discord.Embed(color=discord.Color.blurple())
-
-        embed.add_field(
-            name=f"{user.display_name}'s balance", value=f"${bal:,.2f}", inline=False
-        )
+        embed.add_field(name=f"{user.display_name}'s balance", value=f"${bal:,}")
 
         await ctx.send(embed=embed)
 
