@@ -3,6 +3,7 @@ from discord.ext import commands
 import random
 import aiohttp
 import lxml.html
+import ujson
 import cogs.utils.database as DB
 
 
@@ -266,6 +267,146 @@ class misc(commands.Cog):
         bar_graph += "------" * len(graph_data)
 
         await ctx.send(f"```{bar_graph}```")
+
+    @commands.group(hidden=True)
+    @commands.has_permissions(administrator=True)
+    async def ledger(self, ctx):
+        """The ledger command group, call without args to show ledger."""
+        if ctx.invoked_subcommand is None:
+            ledger = DB.db.get(b"ledger")
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            if not ledger:
+                embed.description = "```Ledger is empty.```"
+                return await ctx.send(embed=embed)
+
+            ledger = ujson.loads(ledger)
+            msg = ""
+            for item in ledger["items"]:
+                msg += "{} {} {} ${} {}\n".format(
+                    self.bot.get_user(int(item["payer"])).display_name,
+                    item["type"],
+                    self.bot.get_user(int(item["payee"])).display_name,
+                    item["amount"],
+                    item.get("reason", "paying off their debts"),
+                )
+
+            if len(msg) == 0:
+                embed.description = "```Ledger is empty.```"
+                return await ctx.send(embed=embed)
+
+            embed.description = f"```{msg}```"
+            await ctx.send(embed=embed)
+
+    @ledger.command()
+    async def payme(self, ctx, member: discord.Member, amount: float, *, reason="idk"):
+        """Adds an amount to be paid by member to the ledger.
+
+        member: discord.Member
+            The person to pay you.
+        amount: float
+            How much they are to pay you.
+        reason: str
+            The reason for the payment.
+        """
+        ledger = DB.db.get(b"ledger")
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not ledger:
+            ledger = {"items": [], "members": {}}
+        else:
+            ledger = ujson.loads(ledger)
+
+        ledger["items"].append(
+            {
+                "type": "owes",
+                "amount": amount,
+                "reason": f"for {reason}",
+                "payee": ctx.author.id,
+                "payer": member.id,
+            }
+        )
+        if str(member.id) not in ledger["members"]:
+            ledger["members"][str(member.id)] = {}
+
+        if str(ctx.author.id) not in ledger["members"][str(member.id)]:
+            ledger["members"][str(member.id)][str(ctx.author.id)] = 0
+
+        ledger["members"][str(member.id)][str(ctx.author.id)] += amount
+
+        embed.description = "```{} is to pay {} ${:,} because {}```".format(
+            member.display_name, ctx.author.display_name, amount, reason
+        )
+        await ctx.send(embed=embed)
+        DB.db.put(b"ledger", ujson.dumps(ledger).encode())
+
+    @ledger.command()
+    async def delete(self, ctx, index: int):
+        """Deletes an item made by you off the ledger.
+
+        id: str
+            The id of the ledger item.
+        """
+        ledger = DB.db.get(b"ledger")
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not ledger:
+            embed.description = "```Ledger is empty.```"
+            return await ctx.send(embed=embed)
+
+        ledger = ujson.loads(ledger)
+        try:
+            item = ledger["items"][index]
+        except IndexError:
+            embed.description = "```Index not in ledger.```"
+            return await ctx.send(embed=embed)
+        if (
+            item["payee"] != ctx.author.id
+            and item["type"] == "owes"
+            or item["payer"] != ctx.author.id
+            and item["type"] == "paid"
+        ):
+            embed.description = "```You are not the creator of this ledger item.```"
+            return await ctx.send(embed=embed)
+
+        ledger["items"].pop(index)
+        DB.db.put(b"ledger", ujson.dumps(ledger).encode())
+
+    @ledger.command()
+    async def pay(self, ctx, member: discord.Member, amount: float):
+        """Pay for an ledger item.
+
+        member: discord.Member
+            The person to pay.
+        amount: float
+            The amount to pay.
+        """
+        ledger = DB.db.get(b"ledger")
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not ledger:
+            ledger = {"items": [], "members": {}}
+        else:
+            ledger = ujson.loads(ledger)
+
+        ledger["items"].append(
+            {
+                "type": "paid",
+                "amount": amount,
+                "payee": member.id,
+                "payer": ctx.author.id,
+            }
+        )
+
+        ledger["members"][str(member.id)][str(ctx.author.id)] = (
+            ledger["members"][str(member.id)][str(ctx.author.id)] or 0
+        ) - amount
+
+        embed.description = "```{} paid {} ${:,}```".format(
+            ctx.author.display_name, member.display_name, amount
+        )
+        await ctx.send(embed=embed)
+        DB.db.put(b"ledger", ujson.dumps(ledger).encode())
 
 
 def setup(bot: commands.Bot) -> None:
