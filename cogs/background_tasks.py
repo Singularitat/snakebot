@@ -245,6 +245,7 @@ class background_tasks(commands.Cog):
                     ujson.dumps(
                         {
                             "name": coin["name"],
+                            "id": coin["id"],
                             "price": coin["quotes"][0]["price"],
                             "circulating_supply": coin["circulatingSupply"],
                             "max_supply": coin.get("maxSupply", 0),
