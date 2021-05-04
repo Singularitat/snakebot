@@ -8,6 +8,7 @@ import traceback
 import time
 import subprocess
 import re
+import logging
 import cogs.utils.database as DB
 
 
@@ -61,6 +62,16 @@ class owner(commands.Cog):
         ctx: commands.Context
         """
         return ctx.author.id in self.bot.owner_ids
+
+    @commands.command(hidden=True)
+    async def loglevel(self, ctx, level):
+        """Changes logging level.
+
+        level: str
+            The new logging level.
+        """
+        if level.upper() in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
+            logging.getLogger("discord").setLevel(getattr(logging, level.upper()))
 
     @commands.command(hidden=True)
     async def gblacklist(self, ctx, user: discord.User):
