@@ -140,7 +140,7 @@ class useful(commands.Cog):
             )
 
     @commands.command(name="removereact")
-    async def _remove_reaction(self, ctx, message: discord.Message, reaction):
+    async def remove_reaction(self, ctx, message: discord.Message, reaction):
         """Removes a reaction from a message.
 
         message: discord.Message
