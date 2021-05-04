@@ -480,7 +480,10 @@ class events(commands.Cog):
         error = getattr(error, "original", error)
         embed = discord.Embed(color=discord.Color.red())
 
-        if str(error)[:19] == "The check functions" or str(error)[:16] == "The global check":
+        if (
+            str(error)[:19] == "The check functions"
+            or str(error)[:16] == "The global check"
+        ):
             return
 
         if isinstance(error, commands.errors.CommandNotFound):
