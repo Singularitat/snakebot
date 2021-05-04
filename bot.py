@@ -2,7 +2,21 @@ import discord
 from discord.ext import commands
 import os
 import config
+import logging
 
+
+log = logging.getLogger("discord")
+log.setLevel(logging.WARNING)
+
+handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="a")
+
+handler.setFormatter(
+    logging.Formatter(
+        '{"message": "%(message)s", "level": "%(levelname)s", "time": "%(asctime)s"}'
+    )
+)
+
+log.addHandler(handler)
 
 intents = discord.Intents.all()
 intents.dm_typing = False

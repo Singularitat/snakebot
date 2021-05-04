@@ -13,6 +13,35 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @commands.command()
+    async def rps(self, ctx, choice: str):
+        """Plays a game of rock paper scissors against an ai.
+
+        choice: str
+            Can be Rock, Paper, or Scissors.
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+        choice = choice[0].upper()
+
+        rps = {"R": 0, "P": 1, "S": 2}
+
+        if choice not in rps:
+            embed.description = "```Invalid choice.```"
+            await ctx.send(embed=embed)
+
+        history = DB.db.get(b"rps")
+        DB.db.put(b"rps", history if history else b"" + choice.encode())
+
+        url = f"https://smartplay.afiniti.com/v1/play/{str(history)}"
+        async with aiohttp.ClientSession() as session, session.get(url) as page:
+            result = await page.json()
+
+        result = ("tied", "won", "lost")[
+            (3 + rps[choice] - rps[result["nextBestMove"]]) % 3
+        ]
+        embed.description = f"```You {result}```"
+        await ctx.send(embed=embed)
+
     @commands.command(name="hex")
     async def _hex(self, ctx, number, convert: bool = False):
         """Shows a number in hexadecimal prefixed with “0x”.
@@ -407,6 +436,35 @@ class misc(commands.Cog):
         )
         await ctx.send(embed=embed)
         DB.db.put(b"ledger", ujson.dumps(ledger).encode())
+
+    @ledger.command()
+    async def member(self, ctx, member: discord.Member):
+        """Returns the ledger of the member."""
+        ledger = DB.db.get(b"ledger")
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not ledger:
+            embed.description = "```Ledger is empty.```"
+            return await ctx.send(embed=embed)
+
+        ledger = ujson.loads(ledger)
+        msg = ""
+        for item in ledger["items"]:
+            if item["payer"] == str(member.id) or item["payee"] == str(member.id):
+                msg += "{} {} {} ${} {}\n".format(
+                    self.bot.get_user(int(item["payer"])).display_name,
+                    item["type"],
+                    self.bot.get_user(int(item["payee"])).display_name,
+                    item["amount"],
+                    item.get("reason", "paying off their debts"),
+                )
+
+        if len(msg) == 0:
+            embed.description = "```Ledger is empty.```"
+            return await ctx.send(embed=embed)
+
+        embed.description = f"```{msg}```"
+        await ctx.send(embed=embed)
 
 
 def setup(bot: commands.Bot) -> None:

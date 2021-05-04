@@ -37,6 +37,22 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
+    async def latex(self, ctx, *, latex):
+        url = "http://www.latex2png.com/api/convert"
+        data = {
+            "auth": {"user": "guest", "password": "guest"},
+            "latex": latex,
+            "resolution": 600,
+            "color": "000000",
+        }
+
+        async with aiohttp.ClientSession() as session, session.post(
+            url, data=ujson.dumps(data)
+        ) as response:
+            r = await response.json()
+        await ctx.send(f"http://www.latex2png.com{r['url']}")
+
+    @commands.command()
     async def racoon(self, ctx):
         """Gets a random racoon image."""
         url = "https://some-random-api.ml/img/racoon"
