@@ -408,6 +408,35 @@ class misc(commands.Cog):
         await ctx.send(embed=embed)
         DB.db.put(b"ledger", ujson.dumps(ledger).encode())
 
+    @ledger.command()
+    async def member(self, ctx, member: discord.Member):
+        """Returns the ledger of the member."""
+        ledger = DB.db.get(b"ledger")
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not ledger:
+            embed.description = "```Ledger is empty.```"
+            return await ctx.send(embed=embed)
+
+        ledger = ujson.loads(ledger)
+        msg = ""
+        for item in ledger["items"]:
+            if item["payer"] == str(member.id) or item["payee"] == str(member.id):
+                msg += "{} {} {} ${} {}\n".format(
+                    self.bot.get_user(int(item["payer"])).display_name,
+                    item["type"],
+                    self.bot.get_user(int(item["payee"])).display_name,
+                    item["amount"],
+                    item.get("reason", "paying off their debts"),
+                )
+
+        if len(msg) == 0:
+            embed.description = "```Ledger is empty.```"
+            return await ctx.send(embed=embed)
+
+        embed.description = f"```{msg}```"
+        await ctx.send(embed=embed)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts misc cog."""
