@@ -52,32 +52,33 @@ class misc(commands.Cog):
         message: str
             The message you want to send.
         """
-        cookies = DB.db.get(b"chatcookies")
-        if cookies is None:
-            async with aiohttp.ClientSession() as session, session.get(
-                "https://www.cleverbot.com/"
+        async with ctx.typing():
+            cookies = DB.db.get(b"chatcookies")
+            if cookies is None:
+                async with aiohttp.ClientSession() as session, session.get(
+                    "https://www.cleverbot.com/"
+                ) as response:
+                    cookies = {
+                        "XVIS": re.search(
+                            r"\w+(?=;)", response.headers["Set-cookie"]
+                        ).group()
+                    }
+                    DB.db.put(b"chatcookies", ujson.dumps(cookies).encode())
+            else:
+                cookies = ujson.loads(cookies)
+
+            payload = f"stimulus={self.requote_uri(message)}&"
+            payload += "cb_settings_scripting=no&islearning=1&icognoid=wsf&icognocheck="
+            payload += hashlib.md5(payload[7:33].encode()).hexdigest()
+
+            url = "https://www.cleverbot.com/webservicemin?uc=UseOfficialCleverbotAPI"
+
+            async with aiohttp.ClientSession(cookies=cookies) as session, session.post(
+                url, data=payload
             ) as response:
-                cookies = {
-                    "XVIS": re.search(
-                        r"\w+(?=;)", response.headers["Set-cookie"]
-                    ).group()
-                }
-                DB.db.put(b"chatcookies", ujson.dumps(cookies).encode())
-        else:
-            cookies = ujson.loads(cookies)
+                response = re.split(r"\\r", str(await response.read()))[0][2:-1]
 
-        payload = f"stimulus={self.requote_uri(message)}&"
-        payload += "cb_settings_scripting=no&islearning=1&icognoid=wsf&icognocheck="
-        payload += hashlib.md5(payload[7:33].encode()).hexdigest()
-
-        url = "https://www.cleverbot.com/webservicemin?uc=UseOfficialCleverbotAPI"
-
-        async with aiohttp.ClientSession(cookies=cookies) as session, session.post(
-            url, data=payload
-        ) as response:
-            response = re.split(r"\\r", str(await response.read()))[0][2:-1]
-
-        await ctx.send(response)
+            await ctx.send(response)
 
     @commands.command()
     async def rps(self, ctx, choice: str):
