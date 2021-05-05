@@ -75,7 +75,10 @@ class apis(commands.Cog):
                 url, data=ujson.dumps(data)
             ) as response:
                 r = await response.json()
-            await ctx.send(f"http://www.latex2png.com{r['url']}")
+
+            if "url" in r:
+                return await ctx.send(f"http://www.latex2png.com{r['url']}")
+            await ctx.send(f"```latex\n{r['result-message']}```")
 
     @commands.command()
     async def racoon(self, ctx):
