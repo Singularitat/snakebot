@@ -39,6 +39,8 @@ class apis(commands.Cog):
     @commands.command()
     async def latex(self, ctx, *, latex):
         url = "http://www.latex2png.com/api/convert"
+        latex = re.sub(r"```\w+\n|```", "", latex)
+
         data = {
             "auth": {"user": "guest", "password": "guest"},
             "latex": latex,
