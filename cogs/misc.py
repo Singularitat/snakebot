@@ -16,7 +16,8 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    def unquote_unreserved(self, uri):
+    @staticmethod
+    def unquote_unreserved(uri):
         UNRESERVED_SET = frozenset(
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" + "0123456789-._~"
         )
