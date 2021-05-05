@@ -37,20 +37,45 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
-    async def latex(self, ctx, *, latex):
-        url = "http://www.latex2png.com/api/convert"
-        data = {
-            "auth": {"user": "guest", "password": "guest"},
-            "latex": latex,
-            "resolution": 600,
-            "color": "000000",
-        }
+    async def define(self, ctx, *, word):
+        url = f"https://api.dictionaryapi.dev/api/v2/entries/en_US/{word}"
 
-        async with aiohttp.ClientSession() as session, session.post(
-            url, data=ujson.dumps(data)
-        ) as response:
-            r = await response.json()
-        await ctx.send(f"http://www.latex2png.com{r['url']}")
+        async with ctx.typing():
+            definition = await self.get_json(url)
+
+            embed = discord.Embed(color=discord.Color.blurple())
+            msg = ""
+
+            for meaning in definition[0]["meanings"]:
+                msg += f'{meaning["partOfSpeech"]}:\n{meaning["definitions"][0]["definition"]}\n\n'
+
+            embed.description = f"```{msg}```"
+
+            await ctx.send(embed=embed)
+
+    @commands.command()
+    async def latex(self, ctx, *, latex):
+        """Converts latex to an transparent png image.
+
+        latex: str
+        """
+        url = "http://www.latex2png.com/api/convert"
+
+        async with ctx.typing():
+            latex = re.sub(r"```\w+\n|```", "", latex)
+
+            data = {
+                "auth": {"user": "guest", "password": "guest"},
+                "latex": latex,
+                "resolution": 600,
+                "color": "000000",
+            }
+
+            async with aiohttp.ClientSession() as session, session.post(
+                url, data=ujson.dumps(data)
+            ) as response:
+                r = await response.json()
+            await ctx.send(f"http://www.latex2png.com{r['url']}")
 
     @commands.command()
     async def racoon(self, ctx):
