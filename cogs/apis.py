@@ -55,16 +55,16 @@ class apis(commands.Cog):
 
     @commands.command()
     async def latex(self, ctx, *, latex):
-        """Converts latex into an image.
+        r"""Converts latex into an image.
 
         To have custom preamble wrap it with %%preamble%%
 
         Example:
 
         %%preamble%%
-        \\usepackage{tikz}
-        \\usepackage{pgfplots}
-        \\pgfplotsset{compat=newest}
+        \usepackage{tikz}
+        \usepackage{pgfplots}
+        \pgfplotsset{compat=newest}
         %%preamble%%
 
         latex: str
