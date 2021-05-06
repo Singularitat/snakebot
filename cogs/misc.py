@@ -77,7 +77,10 @@ class misc(commands.Cog):
             async with aiohttp.ClientSession(cookies=cookies) as session, session.post(
                 url, data=payload
             ) as response:
-                response = re.split(r"\\r", str(await response.read()))[0][2:-1]
+                res = await response.read()
+                if b"503 Service Temporarily Unavailable" in res:
+                    return await ctx.reply("```503 Service Temporarily Unavailable```")
+                response = re.split(r"\\r", str(res))[0][2:-1]
 
             await ctx.reply(response)
 
@@ -315,7 +318,7 @@ class misc(commands.Cog):
         await ctx.send("Oh yeah its all coming together")
 
     @commands.command()
-    async def slap(self, ctx, member: discord.Member, *, reason):
+    async def slap(self, ctx, member: discord.Member, *, reason="they are evil"):
         """Slaps a member.
 
         member: discord.Member
@@ -324,7 +327,7 @@ class misc(commands.Cog):
             The reason for the slap.
         """
         await ctx.send(
-            f"{ctx.author.mention} slapped {member.display_name} because {reason}"
+            f"{ctx.author.mention} slapped {member.mention} because {reason}"
         )
 
     @commands.command()
