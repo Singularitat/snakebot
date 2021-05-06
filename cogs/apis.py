@@ -85,7 +85,9 @@ class apis(commands.Cog):
         )
 
         async with ctx.typing():
-            latex = re.sub(r"```\w+\n|```", "", latex)
+            match = re.search(r"(?:^```([^\n]+|\w+\n[\s\S]+)```$|^`(.+)`$)|(^[\s\S]*$)", latex)
+            if match:
+                latex = match.group(1) or match.group(2) or match.group(3)
 
             if "%%preamble%%" in latex:
                 _, pre, latex = re.split("%%preamble%%", latex)
