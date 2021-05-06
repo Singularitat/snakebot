@@ -55,27 +55,62 @@ class apis(commands.Cog):
 
     @commands.command()
     async def latex(self, ctx, *, latex):
-        """Converts latex to an transparent png image.
+        r"""Converts latex into an image.
+
+        To have custom preamble wrap it with %%preamble%%
+
+        Example:
+
+        %%preamble%%
+        \usepackage{tikz}
+        \usepackage{pgfplots}
+        \pgfplotsset{compat=newest}
+        %%preamble%%
 
         latex: str
         """
-        url = "http://www.latex2png.com/api/convert"
+        url = "https://quicklatex.com/latex3.f"
+
+        preamble = (
+            r"\usepackage{amsmath}\n"
+            r"\usepackage{amsfonts}\n"
+            r"\usepackage{amssymb}\n"
+            r"\newcommand{\N}{\mathbb N}\n"
+            r"\newcommand{\Z}{\mathbb Z}\n"
+            r"\newcommand{\Q}{\mathbb Q}"
+            r"\newcommand{\R}{\mathbb R}\n"
+            r"\newcommand{\C}{\mathbb C}\n"
+            r"\newcommand{\V}[1]{\begin{bmatrix}#1\end{bmatrix}}\n"
+            r"\newcommand{\set}[1]{\left\{#1\right\}}\n"
+        )
 
         async with ctx.typing():
             latex = re.sub(r"```\w+\n|```", "", latex)
 
-            data = {
-                "auth": {"user": "guest", "password": "guest"},
-                "latex": latex,
-                "resolution": 600,
-                "color": "000000",
-            }
+            if "%%preamble%%" in latex:
+                _, pre, latex = re.split("%%preamble%%", latex)
+                preamble += pre
+
+            data = (
+                f"formula={latex}&fsize=50px&fcolor=FFFFFF&mode=0&out=1"
+                f"&remhost=quicklatex.com&preamble={preamble}"
+            )
 
             async with aiohttp.ClientSession() as session, session.post(
-                url, data=ujson.dumps(data)
+                url, data=data
             ) as response:
-                r = await response.json()
-            await ctx.send(f"http://www.latex2png.com{r['url']}")
+                r = await response.text()
+            image = r.split()[1]
+
+            if image == "https://quicklatex.com/cache3/error.png":
+                return await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description=f"```latex\n{r[49:]}```",
+                    )
+                )
+
+            await ctx.send(image)
 
     @commands.command()
     async def racoon(self, ctx):

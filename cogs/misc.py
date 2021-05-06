@@ -77,9 +77,12 @@ class misc(commands.Cog):
             async with aiohttp.ClientSession(cookies=cookies) as session, session.post(
                 url, data=payload
             ) as response:
-                response = re.split(r"\\r", str(await response.read()))[0][2:-1]
+                res = await response.read()
+                if b"503 Service Temporarily Unavailable" in res:
+                    return await ctx.reply("```503 Service Temporarily Unavailable```")
+                response = re.split(r"\\r", str(res))[0][2:-1]
 
-            await ctx.send(response)
+            await ctx.reply(response)
 
     @commands.command()
     async def rps(self, ctx, choice: str):
@@ -173,7 +176,7 @@ class misc(commands.Cog):
         embed.description = f"```diff\n{user.display_name}'s karma:\n{tenary}{karma}```"
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["kboard"])
+    @commands.command(aliases=["kboard", "karmab", "karmatop"])
     async def karmaboard(self, ctx):
         """Displays the top 5 and bottom 5 members karma."""
         sorted_karma = sorted([(int(k), int(m)) for m, k in DB.karma], reverse=True)
@@ -315,7 +318,7 @@ class misc(commands.Cog):
         await ctx.send("Oh yeah its all coming together")
 
     @commands.command()
-    async def slap(self, ctx, member: discord.Member, *, reason):
+    async def slap(self, ctx, member: discord.Member, *, reason="they are evil"):
         """Slaps a member.
 
         member: discord.Member
@@ -324,7 +327,7 @@ class misc(commands.Cog):
             The reason for the slap.
         """
         await ctx.send(
-            f"{ctx.author.mention} slapped {member.display_name} because {reason}"
+            f"{ctx.author.mention} slapped {member.mention} because {reason}"
         )
 
     @commands.command()
