@@ -79,7 +79,7 @@ class misc(commands.Cog):
             ) as response:
                 response = re.split(r"\\r", str(await response.read()))[0][2:-1]
 
-            await ctx.send(response)
+            await ctx.reply(response)
 
     @commands.command()
     async def rps(self, ctx, choice: str):
