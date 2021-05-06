@@ -345,11 +345,12 @@ class stocks(commands.Cog):
             embed.description = f"```Couldn't find {symbol}```"
             return await ctx.send(embed=embed)
 
+        sign = "+" if crypto['change_24h'] >= 0 else ""
+
+        embed.set_author(name=f"{crypto['name']} [{symbol}]", icon_url=f"https://s2.coinmarketcap.com/static/img/coins/64x64/{crypto['id']}.png")
         embed.description = textwrap.dedent(
             f"""
                 ```diff
-                {crypto['name']} [{symbol}]
-
                 Price:
                 ${crypto['price']:,.2f}
 
@@ -360,13 +361,14 @@ class stocks(commands.Cog):
                 ${crypto['market_cap']:,.2f}
 
                 24h Change:
-                {crypto['change_24h']}%
+                {sign}{crypto['change_24h']}%
 
                 24h Volume:
                 {crypto['volume_24h']:,.2f}
                 ```
             """
         )
+        embed.set_image(url=f"https://s3.coinmarketcap.com/generated/sparklines/web/1d/usd/{crypto['id']}.png")
 
         await ctx.send(embed=embed)
 
@@ -544,7 +546,7 @@ class stocks(commands.Cog):
             return await ctx.send(embed=embed)
 
         if symbol not in cryptobal:
-            embed.description = f"```You haven'tinvested in {symbol}```"
+            embed.description = f"```You haven't invested in {symbol}```"
             return await ctx.send(embed=embed)
 
         crypto = await DB.get_crypto(symbol)
@@ -557,11 +559,10 @@ class stocks(commands.Cog):
         change = ((crypto["price"] / (sum(trades) / len(trades))) - 1) * 100
         sign = "" if str(crypto["change_24h"])[0] == "-" else "+"
 
+        embed.set_author(name=f"{crypto['name']} [{symbol}]", icon_url=f"https://s2.coinmarketcap.com/static/img/coins/64x64/{crypto['id']}.png")
         embed.description = textwrap.dedent(
             f"""
                 ```diff
-                {crypto['name']} [{symbol}]
-
                 Bal: {cryptobal[symbol]['total']}
 
                 Percent Gain/Loss:
@@ -575,6 +576,7 @@ class stocks(commands.Cog):
                 ```
             """
         )
+        embed.set_image(url=f"https://s3.coinmarketcap.com/generated/sparklines/web/1d/usd/{crypto['id']}.png")
 
         await ctx.send(embed=embed)
 
