@@ -111,25 +111,31 @@ class useful(commands.Cog):
         code: str
             The code to run.
         """
+        embed = discord.Embed(color=discord.Color.blurple())
         if lang not in ujson.loads(DB.db.get(b"languages")):
-            return await ctx.send(f"No support for language {lang}")
+            embed.description = f"```No support for language {lang}```"
+            return await ctx.reply(embed=embed)
 
-        code = re.sub(r"```\w+\n|```", "", code)
+        match = re.search(r"(?:^```([^\n]+|\w+\n[\s\S]+)```$|^`(.+)`$)|(^[\s\S]*$)", code)
+        if match:
+            code = match.group(1) or match.group(2) or match.group(3)
 
         data = {"language": lang, "source": code, "args": "", "stdin": "", "log": 0}
 
-        async with aiohttp.ClientSession() as session, session.post(
-            "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
-        ) as response:
-            r = await response.json()
+        async with ctx.typing():
+            async with aiohttp.ClientSession() as session, session.post(
+                "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
+            ) as response:
+                r = await response.json()
 
         if not r["output"]:
             return await ctx.send("No output")
 
-        if len("```\n{r['output']}```") > 2000:
-            return await ctx.send(f"```\n{r['output'][:1975]}\nTruncated Output```")
+        if len("```\n{r['output']}```") > 2048:
+            embed.description = f"```\n{r['output'][:2023]}\nTruncated Output```"
+            return await ctx.reply(embed=embed)
 
-        await ctx.send(f"```\n{r['output']}```")
+        await ctx.reply(f"```\n{r['output']}```")
 
     @run.error
     async def run_handler(self, ctx, error):
