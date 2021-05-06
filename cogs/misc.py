@@ -173,7 +173,7 @@ class misc(commands.Cog):
         embed.description = f"```diff\n{user.display_name}'s karma:\n{tenary}{karma}```"
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["kboard"])
+    @commands.command(aliases=["kboard", "karmab", "karmatop"])
     async def karmaboard(self, ctx):
         """Displays the top 5 and bottom 5 members karma."""
         sorted_karma = sorted([(int(k), int(m)) for m, k in DB.karma], reverse=True)
