@@ -116,7 +116,9 @@ class useful(commands.Cog):
             embed.description = f"```No support for language {lang}```"
             return await ctx.reply(embed=embed)
 
-        match = re.search(r"(?:^```([^\n]+|\w+\n[\s\S]+)```$|^`(.+)`$)|(^[\s\S]*$)", code)
+        match = re.search(
+            r"(?:^```([^\n]+|\w+\n[\s\S]+)```$|^`(.+)`$)|(^[\s\S]*$)", code
+        )
         if match:
             code = match.group(1) or match.group(2) or match.group(3)
 

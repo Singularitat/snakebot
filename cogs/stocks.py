@@ -345,9 +345,12 @@ class stocks(commands.Cog):
             embed.description = f"```Couldn't find {symbol}```"
             return await ctx.send(embed=embed)
 
-        sign = "+" if crypto['change_24h'] >= 0 else ""
+        sign = "+" if crypto["change_24h"] >= 0 else ""
 
-        embed.set_author(name=f"{crypto['name']} [{symbol}]", icon_url=f"https://s2.coinmarketcap.com/static/img/coins/64x64/{crypto['id']}.png")
+        embed.set_author(
+            name=f"{crypto['name']} [{symbol}]",
+            icon_url=f"https://s2.coinmarketcap.com/static/img/coins/64x64/{crypto['id']}.png",
+        )
         embed.description = textwrap.dedent(
             f"""
                 ```diff
@@ -368,7 +371,9 @@ class stocks(commands.Cog):
                 ```
             """
         )
-        embed.set_image(url=f"https://s3.coinmarketcap.com/generated/sparklines/web/1d/usd/{crypto['id']}.png")
+        embed.set_image(
+            url=f"https://s3.coinmarketcap.com/generated/sparklines/web/1d/usd/{crypto['id']}.png"
+        )
 
         await ctx.send(embed=embed)
 
@@ -559,7 +564,10 @@ class stocks(commands.Cog):
         change = ((crypto["price"] / (sum(trades) / len(trades))) - 1) * 100
         sign = "" if str(crypto["change_24h"])[0] == "-" else "+"
 
-        embed.set_author(name=f"{crypto['name']} [{symbol}]", icon_url=f"https://s2.coinmarketcap.com/static/img/coins/64x64/{crypto['id']}.png")
+        embed.set_author(
+            name=f"{crypto['name']} [{symbol}]",
+            icon_url=f"https://s2.coinmarketcap.com/static/img/coins/64x64/{crypto['id']}.png",
+        )
         embed.description = textwrap.dedent(
             f"""
                 ```diff
@@ -576,7 +584,9 @@ class stocks(commands.Cog):
                 ```
             """
         )
-        embed.set_image(url=f"https://s3.coinmarketcap.com/generated/sparklines/web/1d/usd/{crypto['id']}.png")
+        embed.set_image(
+            url=f"https://s3.coinmarketcap.com/generated/sparklines/web/1d/usd/{crypto['id']}.png"
+        )
 
         await ctx.send(embed=embed)
 
