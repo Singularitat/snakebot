@@ -156,22 +156,23 @@ class information(commands.Cog):
         roles = len(ctx.guild.roles)
         member_count = ctx.guild.member_count
         owner = ctx.guild.owner
-        online_users = sum(
-            [member.status is discord.Status.online for member in ctx.guild.members]
-        )
-        offline_users = sum(
-            [member.status is discord.Status.offline for member in ctx.guild.members]
-        )
-        dnd_users = sum(
-            [member.status is discord.Status.dnd for member in ctx.guild.members]
-        )
-        idle_users = sum(
-            [member.status is discord.Status.idle for member in ctx.guild.members]
-        )
+
+        offline_users, online_users, dnd_users, idle_users = 0, 0, 0, 0
+        for member in ctx.guild.members:
+            if member.status is discord.Status.offline:
+                offline_users += 1
+            elif member.status is discord.Status.online:
+                online_users += 1
+            elif member.status is discord.Status.dnd:
+                dnd_users += 1
+            elif member.status is discord.Status.idle:
+                idle_users += 1
+
         offline = "<:offline:766076363048222740>"
         online = "<:online:766076316512157768>"
         dnd = "<:dnd:766197955597959208>"
         idle = "<:idle:766197981955096608>"
+
         embed = discord.Embed(colour=discord.Colour.blurple())
         embed.description = textwrap.dedent(
             f"""

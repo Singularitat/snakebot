@@ -100,6 +100,15 @@ class apis(commands.Cog):
                 url, data=data
             ) as response:
                 r = await response.text()
+
+            if "Internal Server Error" in r:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description="Internal Server Error.",
+                    )
+                )
+
             image = r.split()[1]
 
             if image == "https://quicklatex.com/cache3/error.png":
