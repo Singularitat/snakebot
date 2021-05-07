@@ -116,19 +116,14 @@ class useful(commands.Cog):
             embed.description = f"```No support for language {lang}```"
             return await ctx.reply(embed=embed)
 
-        match = re.search(
-            r"(?:^```([^\n]+|\w+\n[\s\S]+)```$|^`(.+)`$)|(^[\s\S]*$)", code
-        )
-        if match:
-            code = match.group(1) or match.group(2) or match.group(3)
+        code = re.sub(r"```\w+\n|```", "", code)
 
         data = {"language": lang, "source": code, "args": "", "stdin": "", "log": 0}
 
-        async with ctx.typing():
-            async with aiohttp.ClientSession() as session, session.post(
-                "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
-            ) as response:
-                r = await response.json()
+        async with ctx.typing(), aiohttp.ClientSession() as session, session.post(
+            "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
+        ) as response:
+            r = await response.json()
 
         if not r["output"]:
             return await ctx.send("No output")
