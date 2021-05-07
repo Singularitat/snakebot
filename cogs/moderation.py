@@ -122,7 +122,7 @@ class moderation(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)
-    async def role(self, ctx, role_name: str, member: discord.Member = None):
+    async def role(self, ctx, role: discord.Role, member: discord.Member = None):
         """Gives member a role.
 
         member: discord.Member
@@ -140,18 +140,17 @@ class moderation(commands.Cog):
             and ctx.author.top_role <= member.top_role
             and ctx.guild.owner != ctx.author
         ):
-            embed.title = "```You can't change the roles of someone higher than you```"
+            embed.title = "```You can't change the roles of someone higher than you.```"
             return await ctx.send(embed=embed)
 
-        role = None
-
-        for r in ctx.guild.roles:
-            if r.name.lower() == role_name.lower():
-                role = r
-                break
-
-        if role is None:
-            embed.title = "```Couldn't find role``"
+        if (
+            ctx.author == member
+            and ctx.author.top_role <= role
+            and ctx.guild.owner != ctx.author
+        ):
+            embed.title = (
+                "```You can't give yourself a role higher than your highest role.```"
+            )
             return await ctx.send(embed=embed)
 
         if role in member.roles:
