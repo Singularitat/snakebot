@@ -37,7 +37,47 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
+    async def minecraft(self, ctx, ip):
+        """Gets some information about a minecraft server.
+
+        ip: str
+        """
+        url = f"https://api.mcsrvstat.us/2/{ip}"
+
+        async with ctx.typing():
+            data = await self.get_json(url)
+
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            embed.description = textwrap.dedent(
+                f"""
+                    ```
+                    Hostname: {data["hostname"]}
+                    Online: {data["online"]}
+
+                    Players:
+                    {data["players"]["online"]}/{data["players"]["max"]}
+
+                    Version(s):
+                    {data["version"]}
+
+                    Mods:
+                    {len(data["mods"]["names"]) if "mods" in data else None}
+
+                    Motd:
+                    {data["motd"]["clean"]}
+                    ```
+                """
+            )
+
+            await ctx.send(embed=embed)
+
+    @commands.command()
     async def define(self, ctx, *, word):
+        """Defines a word via the dictionary.com api.
+
+        word: str
+        """
         url = f"https://api.dictionaryapi.dev/api/v2/entries/en_US/{word}"
 
         async with ctx.typing():
