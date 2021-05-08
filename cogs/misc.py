@@ -68,7 +68,21 @@ class misc(commands.Cog):
             else:
                 cookies = ujson.loads(cookies)
 
+            history = DB.db.get(b"chatbot-history")
+
+            if history:
+                history = ujson.loads(history)
+            else:
+                history = {}
+
             payload = f"stimulus={self.requote_uri(message)}&"
+
+            if str(ctx.author.id) not in history:
+                history[str(ctx.author.id)] = []
+
+            for i, context in enumerate(history[str(ctx.author.id)][::-1]):
+                payload += f"vText{i + 2}={self.requote_uri(context)}&"
+
             payload += "cb_settings_scripting=no&islearning=1&icognoid=wsf&icognocheck="
             payload += hashlib.md5(payload[7:33].encode()).hexdigest()
 
@@ -81,6 +95,13 @@ class misc(commands.Cog):
                 if b"503 Service Temporarily Unavailable" in res:
                     return await ctx.reply("```503 Service Temporarily Unavailable```")
                 response = re.split(r"\\r", str(res))[0][2:-1]
+
+            history[str(ctx.author.id)].extend([message, response])
+
+            if len(history[str(ctx.author.id)]) >= 20:
+                del history[str(ctx.author.id)][:2]
+
+            DB.db.put(b"chatbot-history", ujson.dumps(history).encode())
 
             await ctx.reply(response)
 
