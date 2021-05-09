@@ -49,6 +49,10 @@ class apis(commands.Cog):
 
             embed = discord.Embed(color=discord.Color.blurple())
 
+            if data["debug"]["ping"] is False:
+                embed.description = "```Pinging failed.```"
+                return await ctx.send(embed=embed)
+
             embed.description = textwrap.dedent(
                 f"""
                     ```
@@ -57,6 +61,7 @@ class apis(commands.Cog):
 
                     Players:
                     {data["players"]["online"]}/{data["players"]["max"]}
+                    {" ".join(data["players"]["list"]) if "list" in data["players"] else ""}
 
                     Version(s):
                     {data["version"]}
