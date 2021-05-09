@@ -14,14 +14,22 @@ class moderation(commands.Cog):
     @commands.has_permissions(manage_nicknames=True)
     @commands.command()
     async def nick(self, ctx, member: discord.Member, *, nickname):
-        """Changes a members nickname"""
+        """Changes a members nickname.
+
+        member: discord.Member
+        nickname: str
+        """
         await member.edit(nick=nickname)
         await ctx.send(f"Changed {member.display_name}'s nickname to {nickname}'")
 
     @commands.has_permissions(manage_messages=True)
     @commands.command()
     async def warn(self, ctx, member: discord.Member, *, reason=None):
-        """Warns a member and keeps track of how many warnings a member has."""
+        """Warns a member and keeps track of how many warnings a member has.
+
+        member: discord.member
+        reason: str
+        """
         member_id = f"{ctx.guild.id}-{member.id}".encode()
         infractions = DB.infractions.get(member_id)
 
@@ -52,6 +60,10 @@ class moderation(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     @commands.command(hidden=True)
     async def warnings(self, ctx, member: discord.Member):
+        """Shows the warnings a member has.
+
+        member: discord.members
+        """
         member_id = f"{ctx.guild.id}-{member.id}".encode()
         infractions = DB.infractions.get(member_id)
         embed = discord.Embed(color=discord.Color.blurple())
