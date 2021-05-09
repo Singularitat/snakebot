@@ -11,6 +11,13 @@ class moderation(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @commands.has_permissions(manage_nicknames=True)
+    @commands.command()
+    async def nick(self, ctx, member: discord.Member, *, nickname):
+        """Changes a members nickname"""
+        await member.edit(nick=nickname)
+        await ctx.send(f"Changed {member.display_name}'s nickname to {nickname}'")
+
     @commands.has_permissions(manage_messages=True)
     @commands.command()
     async def warn(self, ctx, member: discord.Member, *, reason=None):
