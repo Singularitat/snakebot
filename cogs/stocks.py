@@ -111,7 +111,7 @@ class stocks(commands.Cog):
         net_value = 0
         msg = (
             f"{member.display_name}'s stock profile:\n\n"
-            " Name:                 Price:             Percent Gain:\n"
+            " Name:  Amount:        Price:             Percent Gain:\n"
         )
 
         for stock in stockbal:
@@ -134,7 +134,7 @@ class stocks(commands.Cog):
         embed.description = f"```diff\n{msg}\nNet Value: ${net_value:.2f}```"
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["price"])
+    @commands.command(aliases=["price", "stock"])
     async def stockprice(self, ctx, symbol):
         """Gets the current price of a stock.
 
