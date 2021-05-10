@@ -273,7 +273,7 @@ class useful(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
 
-        cache_search = f"google-{search}"
+        cache_search = f"google-{search.lower()}"
         cache = await self.cache_check(cache_search)
 
         if isinstance(cache, tuple):
