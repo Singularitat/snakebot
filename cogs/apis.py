@@ -53,26 +53,22 @@ class apis(commands.Cog):
                 embed.description = "```Pinging failed.```"
                 return await ctx.send(embed=embed)
 
-            embed.description = textwrap.dedent(
-                f"""
-                    ```
-                    Hostname: {data["hostname"]}
-                    Online: {data["online"]}
-
-                    Players:
-                    {data["players"]["online"]}/{data["players"]["max"]}
-                    {" ".join(data["players"]["list"]) if "list" in data["players"] else ""}
-
-                    Version(s):
-                    {data["version"]}
-
-                    Mods:
-                    {len(data["mods"]["names"]) if "mods" in data else None}
-
-                    Motd:
-                    {data["motd"]["clean"]}
-                    ```
-                """
+            embed.description = (
+                "```Hostname: {}\n"
+                "Online: {}\n\n"
+                "Players:\n{}/{}\n{}\n"
+                "Version(s):\n{}\n\n"
+                "Mods:\n{}\n\n"
+                "Motd:\n{}```"
+            ).format(
+                data["hostname"],
+                data["online"],
+                data["players"]["online"],
+                data["players"]["max"],
+                ", ".join(data["players"]["list"]) if "list" in data["players"] else "",
+                data["version"],
+                len(data["mods"]["names"]) if "mods" in data else None,
+                f"{chr(10)}".join([s.strip() for s in data["motd"]["clean"]]),
             )
 
             await ctx.send(embed=embed)
