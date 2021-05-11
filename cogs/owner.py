@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import ujson
+import orjson
 import os
 import copy
 import asyncio
@@ -102,7 +102,7 @@ class owner(commands.Cog):
         number: int
             Which backup to get.
         """
-        number = min(11, max(number, 0))
+        number = min(10, max(number, 0))
 
         with open(f"backup/{number}backup.json", "rb") as file:
             await ctx.send(file=discord.File(file, "backup.json"))
@@ -117,7 +117,7 @@ class owner(commands.Cog):
             embed.description = "No boot times found"
             return await ctx.send(embed=embed)
 
-        boot_times = ujson.loads(boot_times)
+        boot_times = orjson.loads(boot_times)
 
         msg = (
             f"\n\nAverage: {(sum(boot_times) / len(boot_times)):.5f}s"
@@ -144,7 +144,7 @@ class owner(commands.Cog):
         cache = DB.db.get(b"cache")
 
         if cache:
-            cache = ujson.loads(cache)
+            cache = orjson.loads(cache)
         else:
             embed.description = "```Nothing has been cached```"
             return await ctx.send(embed=embed)
@@ -448,7 +448,7 @@ class owner(commands.Cog):
         """Sends a list of the message ids of current reaction roles."""
         msg = ""
         for message_id, roles in DB.rrole:
-            msg += f"\n\n{message_id.decode()}: {ujson.loads(roles)}"
+            msg += f"\n\n{message_id.decode()}: {orjson.loads(roles)}"
         await ctx.send(f"```{msg}```")
 
     @commands.command()
@@ -520,9 +520,7 @@ class owner(commands.Cog):
             await message.delete()
             return await ctx.send("Invalid emoji")
 
-        DB.rrole.put(
-            str(message.id).encode(), ujson.dumps(dict(zip(emojis, roles))).encode()
-        )
+        DB.rrole.put(str(message.id).encode(), orjson.dumps(dict(zip(emojis, roles))))
 
     @commands.command()
     async def redit(self, ctx, message: discord.Message, *emojis):
@@ -566,12 +564,12 @@ class owner(commands.Cog):
         for emoji in emojis:
             await message.add_reaction(emoji)
 
-        reaction = ujson.loads(reaction)
+        reaction = orjson.loads(reaction)
 
         for emoji, role in zip(emojis, roles):
             reaction[emoji] = role
 
-        DB.rrole.put(str(message.id).encode(), ujson.dumps(reaction).encode())
+        DB.rrole.put(str(message.id).encode(), orjson.dumps(reaction))
 
     @staticmethod
     async def await_for_message(ctx, message):

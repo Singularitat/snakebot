@@ -2,7 +2,7 @@ import aiohttp
 import os
 import asyncio
 import subprocess
-import ujson
+import orjson
 from discord.ext import commands, tasks
 import discord
 import cogs.utils.database as DB
@@ -136,7 +136,7 @@ class background_tasks(commands.Cog):
 
                 wb.put(
                     stock["symbol"].encode(),
-                    ujson.dumps(stock_data).encode(),
+                    orjson.dumps(stock_data),
                 )
 
     async def run_process(self, command):
@@ -199,7 +199,7 @@ class background_tasks(commands.Cog):
         DB.db.put(b"backup_number", str(number).encode())
 
         os.makedirs("backup/", exist_ok=True)
-        with open(f"backup/{number}backup.json", "w") as file:
+        with open(f"backup/{number}backup.json", "w", encoding="utf-8") as file:
             # I don't know why I did this as a jumbled mess but I did
             # Basically it just formats the db to json
             json = "".join(
@@ -211,7 +211,7 @@ class background_tasks(commands.Cog):
                     if not key.startswith(b"crypto-") and not key.startswith(b"stocks-")
                 ]
             )
-            file.write(f"{{{json[:-2]}}}")
+            file.write(f"{{{json[:-3]}}}")
 
     @tasks.loop(count=1)
     async def update_languages(self):
@@ -226,7 +226,7 @@ class background_tasks(commands.Cog):
             languages.update(set(language["aliases"]))
             languages.add(language["name"])
 
-        DB.db.put(b"languages", ujson.dumps(list(languages)).encode())
+        DB.db.put(b"languages", orjson.dumps(list(languages)))
 
     @tasks.loop(minutes=10)
     async def crypto_update(self):
@@ -242,7 +242,7 @@ class background_tasks(commands.Cog):
 
                 wb.put(
                     coin["symbol"].encode(),
-                    ujson.dumps(
+                    orjson.dumps(
                         {
                             "name": coin["name"],
                             "id": coin["id"],
@@ -253,7 +253,7 @@ class background_tasks(commands.Cog):
                             "change_24h": coin["quotes"][0]["percentChange24h"],
                             "volume_24h": coin["quotes"][0].get("volume24h", 0),
                         }
-                    ).encode(),
+                    ),
                 )
 
 

@@ -6,7 +6,7 @@ import discord
 import re
 from datetime import datetime
 import textwrap
-import ujson
+import orjson
 
 
 class apis(commands.Cog):
@@ -611,7 +611,7 @@ class apis(commands.Cog):
         search: str
         """
         cache.pop(search)
-        self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+        self.bot.db.put(b"cache", orjson.dumps(cache))
 
     @commands.command()
     async def tenor(self, ctx, *, search):
@@ -621,7 +621,7 @@ class apis(commands.Cog):
             The gif search term.
         """
         cache_search = f"tenor-{search}"
-        cache = ujson.loads(self.bot.db.get(b"cache"))
+        cache = orjson.loads(self.bot.db.get(b"cache"))
 
         if cache_search in cache:
             url = random.choice(cache[cache_search])
@@ -630,7 +630,7 @@ class apis(commands.Cog):
             if len(cache[cache_search]) == 0:
                 cache.pop(cache_search)
 
-            self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+            self.bot.db.put(b"cache", orjson.dumps(cache))
 
             return await ctx.send(url)
 
@@ -644,7 +644,7 @@ class apis(commands.Cog):
         tenor.remove(image)
         cache[cache_search] = tenor
 
-        self.bot.db.put(b"cache", ujson.dumps(cache).encode())
+        self.bot.db.put(b"cache", orjson.dumps(cache))
         self.loop.call_later(300, self.delete_cache, cache_search, cache)
         await ctx.send(image)
 

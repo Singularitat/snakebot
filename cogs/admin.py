@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import ujson
+import orjson
 import asyncio
 import cogs.utils.database as DB
 
@@ -51,7 +51,7 @@ class admin(commands.Cog):
 
         message = await ctx.send(msg)
 
-        DB.rrole.put(str(message.id).encode(), ujson.dumps(rrole).encode())
+        DB.rrole.put(str(message.id).encode(), orjson.dumps(rrole))
         for name in roles:
             await message.add_reaction(roles[name][1])
 
@@ -102,7 +102,7 @@ class admin(commands.Cog):
         if not emojis:
             emojis = {}
         else:
-            emojis = ujson.loads(emojis)
+            emojis = orjson.loads(emojis)
 
         if len(emojis) == 0:
             return await ctx.send("```No emojis found```")
@@ -128,14 +128,14 @@ class admin(commands.Cog):
         if not emojis:
             emojis = {}
         else:
-            emojis = ujson.loads(emojis)
+            emojis = orjson.loads(emojis)
 
         try:
             emojis.pop(message_id)
         except KeyError:
             await ctx.send(f"Message {message_id} not found in emojis")
 
-        DB.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
+        DB.db.put(b"emoji_submissions", orjson.dumps(emojis))
 
     @commands.command(hidden=True, aliases=["aemoji"])
     async def add_emoji(self, ctx, message_id, name):
@@ -149,11 +149,11 @@ class admin(commands.Cog):
         if not emojis:
             emojis = {}
         else:
-            emojis = ujson.loads(emojis)
+            emojis = orjson.loads(emojis)
 
         emojis[message_id] = {"name": name, "users": []}
 
-        DB.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
+        DB.db.put(b"emoji_submissions", orjson.dumps(emojis))
 
     @commands.command(hidden=True)
     async def edit(self, ctx, message: discord.Message, *, content):

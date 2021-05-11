@@ -9,9 +9,9 @@ license = "MIT"
 python = "^3.9"
 lxml = "^4.6.2"
 psutil = "^5.8.0"
-ujson = "^4.0.2"
 discord-ext-menus = {git = "https://github.com/Rapptz/discord-ext-menus"}
 Pillow = "^8.2.0"
+orjson = "^3.5.2"
 
 [tool.poetry.dev-dependencies]
 async-timeout = "3.0.1"

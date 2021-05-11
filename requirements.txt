@@ -2,6 +2,6 @@ discord-ext-menus @ git+https://github.com/Rapptz/discord-ext-menus@master ; pyt
 discord.py[voice]
 lxml
 psutil
-ujson
 youtube_dl
 pillow
+orjson

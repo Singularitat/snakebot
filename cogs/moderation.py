@@ -2,7 +2,7 @@ from discord.ext import commands
 import discord
 import asyncio
 import cogs.utils.database as DB
-import ujson
+import orjson
 
 
 class moderation(commands.Cog):
@@ -42,7 +42,7 @@ class moderation(commands.Cog):
                 "warnings": [],
             }
         else:
-            infractions = ujson.loads(infractions)
+            infractions = orjson.loads(infractions)
 
         infractions["count"] += 1
         infractions["warnings"].append(reason)
@@ -55,7 +55,7 @@ class moderation(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-        DB.infractions.put(member_id, ujson.dumps(infractions).encode())
+        DB.infractions.put(member_id, orjson.dumps(infractions))
 
     @commands.has_permissions(manage_messages=True)
     @commands.command(hidden=True)
@@ -72,7 +72,7 @@ class moderation(commands.Cog):
             embed.description = "```Member has no infractions```"
             return await ctx.send(embed=embed)
 
-        infractions = ujson.loads(infractions)
+        infractions = orjson.loads(infractions)
         embed.description = "```{} Has {} warnings\n\n{}```".format(
             member.display_name,
             len(infractions["warnings"]),
@@ -267,7 +267,7 @@ class moderation(commands.Cog):
         if deleted is None:
             return await ctx.send("```No deleted messages found```")
 
-        deleted = ujson.loads(deleted)
+        deleted = orjson.loads(deleted)
 
         embed = discord.Embed(
             color=discord.Color.blurple(),
@@ -305,7 +305,7 @@ class moderation(commands.Cog):
         if edited is None:
             return await ctx.send("```No edited messages found```")
 
-        edited = ujson.loads(edited)
+        edited = orjson.loads(edited)
 
         embed = discord.Embed(
             color=discord.Color.blurple(),

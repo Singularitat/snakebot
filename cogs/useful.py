@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands, menus
-import ujson
+import orjson
 import random
 import aiohttp
 import time
@@ -43,7 +43,7 @@ class useful(commands.Cog):
         if not languages:
             return await ctx.send("No languages found")
 
-        languages = ujson.loads(languages)
+        languages = orjson.loads(languages)
         msg = ""
 
         for count, language in enumerate(languages):
@@ -79,11 +79,11 @@ class useful(commands.Cog):
         if not emojis:
             emojis = {}
         else:
-            emojis = ujson.loads(emojis)
+            emojis = orjson.loads(emojis)
 
         emojis[ctx.message.id] = {"name": name, "users": []}
 
-        DB.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
+        DB.db.put(b"emoji_submissions", orjson.dumps(emojis))
 
     @commands.command()
     async def invites(self, ctx):
@@ -112,7 +112,7 @@ class useful(commands.Cog):
             The code to run.
         """
         embed = discord.Embed(color=discord.Color.blurple())
-        if lang not in ujson.loads(DB.db.get(b"languages")):
+        if lang not in orjson.loads(DB.db.get(b"languages")):
             embed.description = f"```No support for language {lang}```"
             return await ctx.reply(embed=embed)
 
@@ -121,7 +121,7 @@ class useful(commands.Cog):
         data = {"language": lang, "source": code, "args": "", "stdin": "", "log": 0}
 
         async with ctx.typing(), aiohttp.ClientSession() as session, session.post(
-            "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
+            "https://emkc.org/api/v1/piston/execute", data=orjson.dumps(data)
         ) as response:
             r = await response.json()
 
@@ -177,7 +177,7 @@ class useful(commands.Cog):
         message = DB.db.get(b"snipe_message")
 
         if message is not None:
-            message = ujson.loads(message)
+            message = orjson.loads(message)
 
             # Example, ["Yeah I deleted this", "Singulaity"]
             await ctx.send(f"```{message[1]} deleted:\n{message[0]}```")
@@ -188,7 +188,7 @@ class useful(commands.Cog):
         message = DB.db.get(b"editsnipe_message")
 
         if message is not None:
-            message = ujson.loads(message)
+            message = orjson.loads(message)
             await ctx.send(f"```{message[2]} edited:\n{message[0]} >>> {message[1]}```")
 
     @commands.command(name="dir")
@@ -241,7 +241,7 @@ class useful(commands.Cog):
 
         search: str
         """
-        cache = ujson.loads(DB.db.get(b"cache"))
+        cache = orjson.loads(DB.db.get(b"cache"))
 
         if search in cache:
             if len(cache[search]) == 0:
@@ -251,7 +251,7 @@ class useful(commands.Cog):
 
             cache[search].pop(url)
 
-            DB.db.put(b"cache", ujson.dumps(cache).encode())
+            DB.db.put(b"cache", orjson.dumps(cache))
 
             return url, title
         return cache
@@ -262,7 +262,7 @@ class useful(commands.Cog):
         search: str
         """
         cache.pop(search)
-        DB.db.put(b"cache", ujson.dumps(cache).encode())
+        DB.db.put(b"cache", orjson.dumps(cache))
 
     @commands.command()
     async def google(self, ctx, *, search):
@@ -314,7 +314,7 @@ class useful(commands.Cog):
 
             cache[cache_search] = images
             self.loop.call_later(300, self.delete_cache, cache_search, cache)
-            DB.db.put(b"cache", ujson.dumps(cache).encode())
+            DB.db.put(b"cache", orjson.dumps(cache))
 
     @commands.command(aliases=["img"])
     async def image(self, ctx, *, search):
@@ -347,7 +347,7 @@ class useful(commands.Cog):
 
             images = {}
             for a in soup.xpath('.//a[@class="iusc"]'):
-                data = ujson.loads(a.attrib["m"])
+                data = orjson.loads(a.attrib["m"])
                 images[data["turl"]] = data["desc"]
 
             if images == {}:
@@ -364,7 +364,7 @@ class useful(commands.Cog):
 
             cache[cache_search] = images
             self.loop.call_later(300, self.delete_cache, cache_search, cache)
-            DB.db.put(b"cache", ujson.dumps(cache).encode())
+            DB.db.put(b"cache", orjson.dumps(cache))
 
     @commands.command()
     async def calc(self, ctx, num_base, *, args):
@@ -399,7 +399,7 @@ class useful(commands.Cog):
         }
 
         async with aiohttp.ClientSession() as session, session.post(
-            "https://emkc.org/api/v1/piston/execute", data=ujson.dumps(data)
+            "https://emkc.org/api/v1/piston/execute", data=orjson.dumps(data)
         ) as response:
             r = await response.json()
 

@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import ujson
+import orjson
 import platform
 import os
 from datetime import datetime
@@ -32,7 +32,7 @@ class events(commands.Cog):
         if not emojis or payload.emoji.name.lower() != "upvote":
             return
 
-        emojis = ujson.loads(emojis)
+        emojis = orjson.loads(emojis)
         message_id = str(payload.message_id)
 
         if message_id not in emojis:
@@ -61,7 +61,7 @@ class events(commands.Cog):
 
             emojis.pop(message_id)
 
-        DB.db.put(b"emoji_submissions", ujson.dumps(emojis).encode())
+        DB.db.put(b"emoji_submissions", orjson.dumps(emojis))
 
     async def reaction_role_check(self, payload):
         """Checks if a reaction was on a reaction role message.
@@ -75,7 +75,7 @@ class events(commands.Cog):
         if not reaction:
             return
 
-        reaction = ujson.loads(reaction)
+        reaction = orjson.loads(reaction)
 
         if str(payload.emoji) in reaction:
             role_id = int(reaction[str(payload.emoji)])
@@ -245,16 +245,14 @@ class events(commands.Cog):
         if edited is None:
             edited = {}
         else:
-            edited = ujson.loads(edited)
+            edited = orjson.loads(edited)
 
         date = str(datetime.now())[:-7]
         edited[date] = [before.content, after.content]
-        DB.edited.put(member_id, ujson.dumps(edited).encode())
+        DB.edited.put(member_id, orjson.dumps(edited))
         DB.db.put(
             b"editsnipe_message",
-            ujson.dumps(
-                [before.content, after.content, after.author.display_name]
-            ).encode(),
+            orjson.dumps([before.content, after.content, after.author.display_name]),
         )
 
         if after.content.startswith("https"):
@@ -299,15 +297,15 @@ class events(commands.Cog):
         if deleted is None:
             deleted = {}
         else:
-            deleted = ujson.loads(deleted)
+            deleted = orjson.loads(deleted)
 
         date = str(datetime.now())[:-7]
         deleted[date] = message.content
 
-        DB.deleted.put(member_id, ujson.dumps(deleted).encode())
+        DB.deleted.put(member_id, orjson.dumps(deleted))
         DB.db.put(
             b"snipe_message",
-            ujson.dumps([message.content, message.author.display_name]).encode(),
+            orjson.dumps([message.content, message.author.display_name]),
         )
 
         if discord.utils.escape_mentions(message.content) != message.content:
@@ -363,7 +361,7 @@ class events(commands.Cog):
         if nicks is None:
             nicks = {"nicks": {}, "names": {}}
         else:
-            nicks = ujson.loads(nicks)
+            nicks = orjson.loads(nicks)
 
         now = str(datetime.now())[:-7]
 
@@ -375,7 +373,7 @@ class events(commands.Cog):
         nicks["nicks"][date] = before.nick
         nicks["nicks"]["current"] = [after.nick, now]
 
-        DB.nicks.put(member_id, ujson.dumps(nicks).encode())
+        DB.nicks.put(member_id, orjson.dumps(nicks))
 
     @commands.Cog.listener()
     async def on_user_update(self, before, after):
@@ -396,7 +394,7 @@ class events(commands.Cog):
         if names is None:
             names = {"nicks": {}, "names": {}}
         else:
-            names = ujson.loads(names)
+            names = orjson.loads(names)
 
         now = str(datetime.now())[:-7]
 
@@ -408,7 +406,7 @@ class events(commands.Cog):
         names["names"][date] = before.name
         names["names"]["current"] = [after.name, now]
 
-        DB.nicks.put(member_id, ujson.dumps(names).encode())
+        DB.nicks.put(member_id, orjson.dumps(names))
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -558,12 +556,12 @@ class events(commands.Cog):
             boot_times = DB.db.get(b"boot_times")
 
             if boot_times:
-                boot_times = ujson.loads(boot_times)
+                boot_times = orjson.loads(boot_times)
             else:
                 boot_times = []
 
-            boot_times.append(boot_time)
-            DB.db.put(b"boot_times", ujson.dumps(boot_times).encode())
+            boot_times.append(round(boot_time, 5))
+            DB.db.put(b"boot_times", orjson.dumps(boot_times))
 
             # Wipe the cache as we have no way of knowing if it has expired
             DB.db.put(b"cache", b"{}")
