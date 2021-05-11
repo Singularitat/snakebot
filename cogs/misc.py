@@ -3,7 +3,7 @@ from discord.ext import commands
 import random
 import aiohttp
 import lxml.html
-import ujson
+import orjson
 import hashlib
 from urllib.parse import quote
 import re
@@ -64,14 +64,14 @@ class misc(commands.Cog):
                             r"\w+(?=;)", response.headers["Set-cookie"]
                         ).group()
                     }
-                    DB.db.put(b"chatcookies", ujson.dumps(cookies).encode())
+                    DB.db.put(b"chatcookies", orjson.dumps(cookies))
             else:
-                cookies = ujson.loads(cookies)
+                cookies = orjson.loads(cookies)
 
             history = DB.db.get(b"chatbot-history")
 
             if history:
-                history = ujson.loads(history)
+                history = orjson.loads(history)
             else:
                 history = {}
 
@@ -101,7 +101,7 @@ class misc(commands.Cog):
             if len(history[str(ctx.author.id)]) >= 20:
                 del history[str(ctx.author.id)][:2]
 
-            DB.db.put(b"chatbot-history", ujson.dumps(history).encode())
+            DB.db.put(b"chatbot-history", orjson.dumps(history))
 
             await ctx.reply(response)
 
@@ -401,7 +401,7 @@ class misc(commands.Cog):
                 embed.description = "```Ledger is empty.```"
                 return await ctx.send(embed=embed)
 
-            ledger = ujson.loads(ledger)
+            ledger = orjson.loads(ledger)
             msg = ""
             for item in ledger["items"]:
                 msg += "{} {} {} ${} {}\n".format(
@@ -436,7 +436,7 @@ class misc(commands.Cog):
         if not ledger:
             ledger = {"items": [], "members": {}}
         else:
-            ledger = ujson.loads(ledger)
+            ledger = orjson.loads(ledger)
 
         ledger["items"].append(
             {
@@ -459,7 +459,7 @@ class misc(commands.Cog):
             member.display_name, ctx.author.display_name, amount, reason
         )
         await ctx.send(embed=embed)
-        DB.db.put(b"ledger", ujson.dumps(ledger).encode())
+        DB.db.put(b"ledger", orjson.dumps(ledger))
 
     @ledger.command()
     async def delete(self, ctx, index: int):
@@ -475,7 +475,7 @@ class misc(commands.Cog):
             embed.description = "```Ledger is empty.```"
             return await ctx.send(embed=embed)
 
-        ledger = ujson.loads(ledger)
+        ledger = orjson.loads(ledger)
         try:
             item = ledger["items"][index]
         except IndexError:
@@ -491,7 +491,7 @@ class misc(commands.Cog):
             return await ctx.send(embed=embed)
 
         ledger["items"].pop(index)
-        DB.db.put(b"ledger", ujson.dumps(ledger).encode())
+        DB.db.put(b"ledger", orjson.dumps(ledger))
 
     @ledger.command()
     async def pay(self, ctx, member: discord.Member, amount: float):
@@ -508,7 +508,7 @@ class misc(commands.Cog):
         if not ledger:
             ledger = {"items": [], "members": {}}
         else:
-            ledger = ujson.loads(ledger)
+            ledger = orjson.loads(ledger)
 
         ledger["items"].append(
             {
@@ -527,7 +527,7 @@ class misc(commands.Cog):
             ctx.author.display_name, member.display_name, amount
         )
         await ctx.send(embed=embed)
-        DB.db.put(b"ledger", ujson.dumps(ledger).encode())
+        DB.db.put(b"ledger", orjson.dumps(ledger))
 
     @ledger.command()
     async def member(self, ctx, member: discord.Member):
@@ -539,7 +539,7 @@ class misc(commands.Cog):
             embed.description = "```Ledger is empty.```"
             return await ctx.send(embed=embed)
 
-        ledger = ujson.loads(ledger)
+        ledger = orjson.loads(ledger)
         msg = ""
         for item in ledger["items"]:
             if item["payer"] == str(member.id) or item["payee"] == str(member.id):

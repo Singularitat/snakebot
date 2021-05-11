@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import ujson
+import orjson
 import random
 import cogs.utils.database as DB
 
@@ -78,7 +78,7 @@ class economy(commands.Cog):
                 "totalwin": 0,
             }
         else:
-            data = ujson.loads(data.decode())
+            data = orjson.loads(data.decode())
 
         if result == "won":
             data["highestlose"] = max(data["highestlose"], data["currentlose"])
@@ -90,7 +90,7 @@ class economy(commands.Cog):
             data["totallose"] += 1
             data["currentlose"] += 1
             data["currentwin"] = 0
-        DB.wins.put(member, ujson.dumps(data).encode())
+        DB.wins.put(member, orjson.dumps(data))
 
     @commands.command(aliases=["slots"])
     async def slot(self, ctx, bet):
@@ -179,7 +179,7 @@ class economy(commands.Cog):
         if not wins:
             return
 
-        wins = ujson.loads(wins.decode())
+        wins = orjson.loads(wins.decode())
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(
@@ -281,7 +281,7 @@ class economy(commands.Cog):
         for member, data in DB.wins:
             user = self.bot.get_user(int(member))
             if user is not None:
-                json = ujson.loads(data)
+                json = orjson.loads(data)
                 data = ((json["highestwin"], json["highestlose"]), user.display_name)
                 streak_top.append(data)
 

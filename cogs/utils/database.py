@@ -1,6 +1,6 @@
 import pathlib
 import plyvel
-import ujson
+import orjson
 
 
 db = plyvel.DB(
@@ -100,7 +100,7 @@ async def get_stock(symbol):
     stock = stocks.get(symbol.encode())
 
     if stock:
-        return ujson.loads(stock)
+        return orjson.loads(stock)
     return None
 
 
@@ -109,7 +109,7 @@ async def put_stock(symbol, data):
 
     symbol: bytes
     """
-    data = ujson.dumps(data).encode()
+    data = orjson.dumps(data)
     stocks.put(symbol.encode(), data)
 
 
@@ -121,7 +121,7 @@ async def get_stockbal(member_id):
     data = stockbal.get(member_id)
 
     if data:
-        return ujson.loads(data)
+        return orjson.loads(data)
     return {}
 
 
@@ -130,7 +130,7 @@ async def put_stockbal(member_id, data):
 
     member_id: bytes
     """
-    data = ujson.dumps(data).encode()
+    data = orjson.dumps(data)
     stockbal.put(member_id, data)
 
 
@@ -142,7 +142,7 @@ async def get_crypto(symbol):
     data = crypto.get(symbol.encode())
 
     if data:
-        return ujson.loads(data)
+        return orjson.loads(data)
     return None
 
 
@@ -151,7 +151,7 @@ async def put_crypto(symbol, data):
 
     symbol: bytes
     """
-    data = ujson.dumps(data).encode()
+    data = orjson.dumps(data)
     crypto.put(symbol.encode(), data)
 
 
@@ -163,7 +163,7 @@ async def get_cryptobal(member_id):
     data = cryptobal.get(member_id)
 
     if data:
-        return ujson.loads(data)
+        return orjson.loads(data)
     return {}
 
 
@@ -172,5 +172,5 @@ async def put_cryptobal(member_id, data):
 
     member_id: bytes
     """
-    data = ujson.dumps(data).encode()
+    data = orjson.dumps(data)
     cryptobal.put(member_id, data)
