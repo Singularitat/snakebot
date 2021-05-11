@@ -98,7 +98,7 @@ class misc(commands.Cog):
 
             history[str(ctx.author.id)].extend([message, response])
 
-            if len(history[str(ctx.author.id)]) >= 20:
+            if len(history[str(ctx.author.id)]) >= 40:
                 del history[str(ctx.author.id)][:2]
 
             DB.db.put(b"chatbot-history", orjson.dumps(history))
