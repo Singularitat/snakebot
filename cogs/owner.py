@@ -102,7 +102,7 @@ class owner(commands.Cog):
         number: int
             Which backup to get.
         """
-        number = min(11, max(number, 0))
+        number = min(10, max(number, 0))
 
         with open(f"backup/{number}backup.json", "rb") as file:
             await ctx.send(file=discord.File(file, "backup.json"))
