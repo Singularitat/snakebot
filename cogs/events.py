@@ -252,9 +252,7 @@ class events(commands.Cog):
         DB.edited.put(member_id, orjson.dumps(edited))
         DB.db.put(
             b"editsnipe_message",
-            orjson.dumps(
-                [before.content, after.content, after.author.display_name]
-            ),
+            orjson.dumps([before.content, after.content, after.author.display_name]),
         )
 
         if after.content.startswith("https"):

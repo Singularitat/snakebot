@@ -520,9 +520,7 @@ class owner(commands.Cog):
             await message.delete()
             return await ctx.send("Invalid emoji")
 
-        DB.rrole.put(
-            str(message.id).encode(), orjson.dumps(dict(zip(emojis, roles)))
-        )
+        DB.rrole.put(str(message.id).encode(), orjson.dumps(dict(zip(emojis, roles))))
 
     @commands.command()
     async def redit(self, ctx, message: discord.Message, *emojis):
