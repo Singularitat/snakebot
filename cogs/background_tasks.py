@@ -199,7 +199,7 @@ class background_tasks(commands.Cog):
         DB.db.put(b"backup_number", str(number).encode())
 
         os.makedirs("backup/", exist_ok=True)
-        with open(f"backup/{number}backup.json", "w") as file:
+        with open(f"backup/{number}backup.json", "w", encoding="utf-8") as file:
             # I don't know why I did this as a jumbled mess but I did
             # Basically it just formats the db to json
             json = "".join(
@@ -211,7 +211,7 @@ class background_tasks(commands.Cog):
                     if not key.startswith(b"crypto-") and not key.startswith(b"stocks-")
                 ]
             )
-            file.write(f"{{{json[:-2]}}}")
+            file.write(f"{{{json[:-3]}}}")
 
     @tasks.loop(count=1)
     async def update_languages(self):
