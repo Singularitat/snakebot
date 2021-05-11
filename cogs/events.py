@@ -562,7 +562,7 @@ class events(commands.Cog):
             else:
                 boot_times = []
 
-            boot_times.append(boot_time)
+            boot_times.append(round(boot_time, 5))
             DB.db.put(b"boot_times", orjson.dumps(boot_times))
 
             # Wipe the cache as we have no way of knowing if it has expired
