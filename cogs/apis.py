@@ -51,12 +51,14 @@ class apis(commands.Cog):
 
         result = data["results"][0]
 
-        embed = discord.Embed(color=discord.Color.blurple(), title=html.unescape(result["question"]))
+        embed = discord.Embed(
+            color=discord.Color.blurple(), title=html.unescape(result["question"])
+        )
         options = result["incorrect_answers"] + [result["correct_answer"]]
         random.shuffle(options)
 
         for i, option in enumerate(options, start=0):
-            embed.add_field(name=i+1, value=option)
+            embed.add_field(name=i + 1, value=option)
 
         message = await ctx.send(embed=embed)
         reactions = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
@@ -65,15 +67,26 @@ class apis(commands.Cog):
             await message.add_reaction(emoji)
 
         def check(reaction: discord.Reaction, user: discord.User) -> bool:
-            return user.id == ctx.author.id and reaction.message.channel == ctx.channel and reaction.emoji in reactions
+            return (
+                user.id == ctx.author.id
+                and reaction.message.channel == ctx.channel
+                and reaction.emoji in reactions
+            )
 
-        reaction, user = await ctx.bot.wait_for("reaction_add", timeout=60.0, check=check)
+        reaction, user = await ctx.bot.wait_for(
+            "reaction_add", timeout=60.0, check=check
+        )
 
         if reactions.index(reaction.emoji) == options.index(result["correct_answer"]):
             return await message.add_reaction("✅")
 
         await message.add_reaction("❎")
-        await ctx.send(embed=discord.Embed(color=discord.Color.blurple(), description=f"Correct answer was {result['correct_answer']}"))
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"Correct answer was {result['correct_answer']}",
+            )
+        )
 
     @commands.command()
     async def minecraft(self, ctx, ip):
