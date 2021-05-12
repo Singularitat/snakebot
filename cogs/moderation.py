@@ -48,7 +48,7 @@ class moderation(commands.Cog):
         infractions["warnings"].append(reason)
 
         embed = discord.Embed(
-            color=discord.Color.red(),
+            color=discord.Color.dark_red(),
             description="{} has been warned. They have {} total infractions.".format(
                 member.mention, infractions["count"]
             ),
@@ -104,40 +104,84 @@ class moderation(commands.Cog):
             embed.description = "```You can't ban someone higher or equal to you```"
             return await ctx.send(embed=embed)
 
-        if not duration:
-            await member.ban(reason=reason)
+        if duration:
+            seconds = await self.end_date(duration)
+
+            if not seconds:
+                embed.description = "```Invalid duration. Example: '3d 5h 10m'```"
+                return await ctx.send(embed=embed)
+
+            self.loop.call_later(seconds, asyncio.create_task, ctx.guild.unban(member))
+            embed.title = f"Banned {member} for {seconds}s"
+        else:
             embed.title = f"Banned {member}"
-            return await ctx.send(embed=embed)
-
-        seconds = await self.end_date(duration)
-
-        if not seconds:
-            embed.description = "```Invalid duration. Example: '3d 5h 10m'```"
-            return await ctx.send(embed=embed)
 
         await member.ban(reason=reason)
-        self.loop.call_later(seconds, asyncio.create_task, ctx.guild.unban(member))
 
-        embed.title = f"Banned {member} for {seconds}s"
+        member_id = f"{ctx.guild.id}-{member.id}".encode()
+        infractions = DB.infractions.get(member_id)
+
+        if infractions is None:
+            infractions = {
+                "count": 0,
+                "bans": [],
+                "kicks": [],
+                "mutes": [],
+                "warnings": [],
+            }
+        else:
+            infractions = orjson.loads(infractions)
+
+        infractions["count"] += 1
+        infractions["bans"].append(reason)
+
+        embed = discord.Embed(
+            color=discord.Color.dark_red(),
+            description="They have {} total infractions.".format(infractions["count"]),
+        )
+        DB.infractions.put(member_id, orjson.dumps(infractions))
+
         await ctx.send(embed=embed)
 
     @commands.command(name="kick")
     @commands.has_permissions(kick_members=True)
-    async def kick_member(self, ctx, member: discord.Member):
+    async def kick_member(self, ctx, member: discord.Member, *, reason=None):
         """Kicks a member.
 
         member: discord.Member
-            The member to kick.
+            The member to kick can be an id, @ or name.
+        reason: str
         """
         if ctx.author.top_role <= member.top_role and ctx.guild.owner != ctx.author:
             return await ctx.send("```You can't kick someone higher or equal to you```")
 
         await member.kick()
-        await ctx.send(
-            embed=discord.Embed(
-                title=f"Kicked {member}", color=discord.Color.dark_red()
-            )
+
+        member_id = f"{ctx.guild.id}-{member.id}".encode()
+        infractions = DB.infractions.get(member_id)
+
+        if infractions is None:
+            infractions = {
+                "count": 0,
+                "bans": [],
+                "kicks": [],
+                "mutes": [],
+                "warnings": [],
+            }
+        else:
+            infractions = orjson.loads(infractions)
+
+        infractions["count"] += 1
+        infractions["kicks"].append(reason)
+
+        embed = discord.Embed(
+            color=discord.Color.dark_red(),
+            description="{} has been kicked. They have {} total infractions.".format(
+                member.display_name, infractions["count"]
+            ),
         )
+        await ctx.send(embed=embed)
+        DB.infractions.put(member_id, orjson.dumps(infractions))
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)

@@ -29,12 +29,10 @@ async def get_bal(member_id):
     """
     balance = bal.get(member_id)
 
-    if balance is None:
-        balance = 1000
-    else:
-        balance = float(balance)
+    if balance:
+        return float(balance)
 
-    return balance
+    return 1000.0
 
 
 async def get_baltop(amount: int):
@@ -51,8 +49,7 @@ async def put_bal(member_id, amount: float):
     member_id: bytes
     amount: int
     """
-    encoded = str(amount).encode()
-    bal.put(member_id, encoded)
+    bal.put(member_id, str(amount).encode())
     return amount
 
 
@@ -108,9 +105,9 @@ async def put_stock(symbol, data):
     """Sets the data of a stock.
 
     symbol: bytes
+    data: dict
     """
-    data = orjson.dumps(data)
-    stocks.put(symbol.encode(), data)
+    stocks.put(symbol.encode(), orjson.dumps(data))
 
 
 async def get_stockbal(member_id):
@@ -129,9 +126,9 @@ async def put_stockbal(member_id, data):
     """Sets a members stockbal.
 
     member_id: bytes
+    data: dict
     """
-    data = orjson.dumps(data)
-    stockbal.put(member_id, data)
+    stockbal.put(member_id, orjson.dumps(data))
 
 
 async def get_crypto(symbol):
@@ -150,6 +147,7 @@ async def put_crypto(symbol, data):
     """Sets the data of a crypto.
 
     symbol: bytes
+    data: dict
     """
     data = orjson.dumps(data)
     crypto.put(symbol.encode(), data)
@@ -171,6 +169,6 @@ async def put_cryptobal(member_id, data):
     """Sets a members cryptobal.
 
     member_id: bytes
+    data: dict
     """
-    data = orjson.dumps(data)
-    cryptobal.put(member_id, data)
+    cryptobal.put(member_id, orjson.dumps(data))
