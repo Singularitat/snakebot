@@ -38,6 +38,30 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
+    async def lyrics(self, ctx, artist, *, song):
+        """Shows the lyrics of a song.
+
+        e.g .lyrics "sum 41" in too deep
+        . lyrics incubus drive
+
+        artist: str
+        song: str
+        """
+        url = f"https://api.lyrics.ovh/v1/{artist}/{song}"
+
+        async with ctx.typing():
+            lyrics = await self.get_json(url)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if "error" in lyrics:
+            embed.description = "```No lyrics found```"
+            return await ctx.send(embed=embed)
+
+        embed.description = f"```{lyrics['lyrics']}```"
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def trivia(self, ctx, difficulty="easy"):
         """Does a simple trivia game.
 
