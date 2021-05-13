@@ -36,6 +36,113 @@ class useful(commands.Cog):
         self.loop = asyncio.get_event_loop()
 
     @commands.command()
+    async def statuscodes(self, ctx):
+        """List of status codes for catstatus command."""
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.add_field(
+            name="1xx informational response",
+            value=(
+                "```An informational response indicates that the request was received and understood.\n\n"
+                "100 Continue\n"
+                "101 Switching Protocols\n"
+                "102 Processing\n"
+                "103 Early Hints```"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="2xx success",
+            value=(
+                "```Action requested by the client was received, understood, and accepted.\n\n"
+                "200 OK\n"
+                "201 Created\n"
+                "202 Accepted\n"
+                "203 Non-Authoritative Information\n"
+                "204 No Content\n"
+                "205 Reset Content\n"
+                "206 Partial Content\n"
+                "207 Multi-Status\n"
+                "208 Already Reported```"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="3xx redirection",
+            value=(
+                "```Client must take additional action to complete the request.\n\n"
+                "300 Multiple Choices\n"
+                "301 Moved Permanently\n"
+                "302 Found (Previously 'Moved temporarily')\n"
+                "303 See Other\n"
+                "304 Not Modified\n"
+                "305 Use Proxy\n"
+                "306 Switch Proxy\n"
+                "307 Temporary Redirect\n"
+                "308 Permanent Redirect```"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="4xx client errors",
+            value=(
+                "```Errors that seem to have been caused by the client.\n\n"
+                "400 Bad Request\n"
+                "401 Unauthorized\n"
+                "402 Payment Required\n"
+                "403 Forbidden\n"
+                "404 Not Found\n"
+                "405 Method Not Allowed\n"
+                "406 Not Acceptable\n"
+                "407 Proxy Authentication Required\n"
+                "408 Request Timeout\n"
+                "409 Conflict\n"
+                "410 Gone\n"
+                "411 Length Required\n"
+                "412 Precondition Failed\n"
+                "413 Payload Too Large\n"
+                "414 URI Too Long\n"
+                "415 Unsupported Media Type\n"
+                "416 Range Not Satisfiable\n"
+                "417 Expectation Failed\n"
+                "418 I'm a teapot\n"
+                "420 Enhance Your Calm\n"
+                "421 Misdirected Request\n"
+                "422 Unprocessable Entity\n"
+                "423 Locked\n"
+                "424 Failed Dependency\n"
+                "425 Too Early\n"
+                "426 Upgrade Required\n"
+                "428 Precondition Required\n"
+                "429 Too Many Requests\n"
+                "431 Request Header Fields Too Large\n"
+                "444 No Response\n"
+                "450 Blocked by Windows Parental Controls\n"
+                "451 Unavailable For Legal Reasons\n"
+                "499 Client Closed Request```"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="5xx server errors",
+            value=(
+                "```The server failed to fulfil a request.\n\n"
+                "500 Internal Server Error\n"
+                "501 Not Implemented\n"
+                "502 Bad Gateway\n"
+                "503 Service Unavailable\n"
+                "504 Gateway Timeout\n"
+                "505 HTTP Version Not Supported\n"
+                "506 Variant Also Negotiates\n"
+                "507 Insufficient Storage\n"
+                "508 Loop Detected\n"
+                "510 Not Extended\n"
+                "511 Network Authentication Required```"
+            ),
+            inline=False,
+        )
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def languages(self, ctx):
         """Shows the languages that the run command can use."""
         languages = DB.db.get(b"languages")

@@ -7,6 +7,7 @@ import re
 from datetime import datetime
 import textwrap
 import orjson
+import html
 
 
 class apis(commands.Cog):
@@ -35,6 +36,115 @@ class apis(commands.Cog):
             return data
         except asyncio.exceptions.TimeoutError:
             return None
+
+    @commands.command()
+    async def weather(self, ctx, location):
+        url = f"https://www.metaweather.com/api/location/search/?query={location}"
+
+        async with ctx.typing():
+            data = await self.get_json(url)
+
+            url = f"https://www.metaweather.com/api/location/{data[0]['woeid']}"
+
+            data = await self.get_json(url)
+            weather = data["consolidated_weather"][0]
+
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            embed.set_author(
+                name=data["title"],
+                icon_url=f"https://www.metaweather.com/static/img/weather/png/{weather['weather_state_abbr']}.png",
+            )
+
+            embed.description = textwrap.dedent(
+                f"""
+            ```
+            Weather: {weather['weather_state_name']}
+            Wind Direction: {weather['wind_direction_compass']}
+            Wind Speed: {weather['wind_speed']}
+            Temp: {weather['the_temp']}
+            Air Pressure: {weather['air_pressure']}
+            Humidity: {weather['humidity']}
+            Visibility: {weather['visibility']}
+            ```"""
+            )
+
+            await ctx.send(embed=embed)
+
+    @commands.command()
+    async def lyrics(self, ctx, artist, *, song):
+        """Shows the lyrics of a song.
+
+        e.g .lyrics "sum 41" in too deep
+        . lyrics incubus drive
+
+        artist: str
+        song: str
+        """
+        url = f"https://api.lyrics.ovh/v1/{artist}/{song}"
+
+        async with ctx.typing():
+            lyrics = await self.get_json(url)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if "error" in lyrics:
+            embed.description = "```No lyrics found```"
+            return await ctx.send(embed=embed)
+
+        embed.description = f"```{lyrics['lyrics']}```"
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def trivia(self, ctx, difficulty="easy"):
+        """Does a simple trivia game.
+
+        difficulty: str
+            Choices are easy, medium or hard.
+        """
+        url = f"https://opentdb.com/api.php?amount=1&difficulty={difficulty}&type=multiple"
+
+        async with ctx.typing():
+            data = await self.get_json(url)
+
+        result = data["results"][0]
+
+        embed = discord.Embed(
+            color=discord.Color.blurple(), title=html.unescape(result["question"])
+        )
+        options = result["incorrect_answers"] + [result["correct_answer"]]
+        random.shuffle(options)
+
+        for i, option in enumerate(options, start=0):
+            embed.add_field(name=i + 1, value=option)
+
+        message = await ctx.send(embed=embed)
+        reactions = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
+
+        for emoji in reactions:
+            await message.add_reaction(emoji)
+
+        def check(reaction: discord.Reaction, user: discord.User) -> bool:
+            return (
+                user.id == ctx.author.id
+                and reaction.message.channel == ctx.channel
+                and reaction.emoji in reactions
+            )
+
+        reaction, user = await ctx.bot.wait_for(
+            "reaction_add", timeout=60.0, check=check
+        )
+
+        if reactions.index(reaction.emoji) == options.index(result["correct_answer"]):
+            return await message.add_reaction("✅")
+
+        await message.add_reaction("❎")
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"Correct answer was {result['correct_answer']}",
+            )
+        )
 
     @commands.command()
     async def minecraft(self, ctx, ip):
