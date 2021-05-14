@@ -98,7 +98,7 @@ class owner(commands.Cog):
 
     @commands.command(hidden=True, aliases=["removeinf"])
     async def removeinfraction(
-        self, ctx, member: discord.Member, type: str, index: int
+        self, ctx, member: discord.Member, infraction: str, index: int
     ):
         """Removes an infraction at an index from a member.
 
@@ -118,7 +118,7 @@ class owner(commands.Cog):
             return await ctx.send(embed=embed)
 
         inf = orjson.loads(infractions)
-        infraction = inf[type].pop(index)
+        infraction = inf[infraction].pop(index)
 
         embed.description = f"Deleted infraction [{infraction}] from {member}"
         await ctx.send(embed=embed)
