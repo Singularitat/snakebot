@@ -63,6 +63,68 @@ class owner(commands.Cog):
         """
         return ctx.author.id in self.bot.owner_ids
 
+    @commands.command(hidden=True, aliases=["clearinf"])
+    async def clearinfractions(self, ctx, member: discord.Member):
+        """Removes all infractions of a member.
+
+        member: discord.Member
+        """
+        DB.infractions.delete(f"{ctx.guild.id}-{member.id}".encode())
+
+    @commands.command(hidden=True, aliases=["showinf"])
+    async def showinfractions(self, ctx, member: discord.Member):
+        """Shows all infractions of a member.
+
+        member: discord.Member
+        """
+        member_id = f"{ctx.guild.id}-{member.id}".encode()
+        infractions = DB.infractions.get(member_id)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if infractions is None:
+            embed.description = "No infractions found for member"
+            return await ctx.send(embed=embed)
+
+        inf = orjson.loads(infractions)
+
+        embed.description = "Warnings: {}, Mutes: {}, Kicks: {}, Bans: {}".format(
+            inf["warnings"], inf["mutes"], inf["kicks"], inf["bans"]
+        )
+
+        await ctx.send(embed=embed)
+
+        DB.infractions.put(member_id, orjson.dumps(infractions))
+
+    @commands.command(hidden=True, aliases=["removeinf"])
+    async def removeinfraction(
+        self, ctx, member: discord.Member, infraction: str, index: int
+    ):
+        """Removes an infraction at an index from a member.
+
+        member: discord.Member
+        type: str
+            The type of infraction to remove e.g warnings, mutes, kicks, bans
+        index: int
+            The index of the infraction to remove e.g 0, 1, 2
+        """
+        member_id = f"{ctx.guild.id}-{member.id}".encode()
+        infractions = DB.infractions.get(member_id)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if infractions is None:
+            embed.description = "No infractions found for member"
+            return await ctx.send(embed=embed)
+
+        inf = orjson.loads(infractions)
+        infraction = inf[infraction].pop(index)
+
+        embed.description = f"Deleted infraction [{infraction}] from {member}"
+        await ctx.send(embed=embed)
+
+        DB.infractions.put(member_id, orjson.dumps(infractions))
+
     @commands.command(hidden=True)
     async def loglevel(self, ctx, level):
         """Changes logging level.

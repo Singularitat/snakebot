@@ -38,7 +38,52 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
+    async def cocktail(self, ctx, name, rand: bool = True):
+        """Searchs for a cocktail and gets a random result by default.
+
+        name: str
+            Name to search for
+        rand: bool
+            If it should randomly get the cocktail defaults to True
+        """
+        url = f"https://www.thecocktaildb.com/api/json/v1/1/search.php?s={name}"
+
+        async with ctx.typing():
+            data = await self.get_json(url)
+            drink = random.choice(data["drinks"]) if rand else data["drinks"][0]
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.set_image(url=drink["strDrinkThumb"])
+        embed.set_author(name=drink["strDrink"], icon_url=drink["strDrinkThumb"])
+
+        ingredients = []
+
+        for i in range(1, 16):
+            if not drink[f"strIngredient{i}"]:
+                break
+            ingredients.append(
+                f"{drink[f'strIngredient{i}']}: {drink[f'strMeasure{i}']}"
+            )
+
+        embed.description = textwrap.dedent(
+            f"""
+        ```Category: {drink["strCategory"]}
+        \nGlass: {drink["strGlass"]}
+        \nAlcohol: {drink["strAlcoholic"]}
+        \nInstructions: {drink["strInstructions"]}
+        \n\nIngredients:
+        \n{f"{chr(10)}".join(ingredients)}
+        ```"""
+        )
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def weather(self, ctx, location):
+        """Shows the weather at a location.
+
+        location: str
+            The name of the location.
+        """
         url = f"https://www.metaweather.com/api/location/search/?query={location}"
 
         async with ctx.typing():
