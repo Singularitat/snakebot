@@ -41,6 +41,10 @@ class apis(commands.Cog):
     async def cocktail(self, ctx, name, rand: bool = True):
         """Searchs for a cocktail and gets a random result by default.
 
+        name: str
+            Name to search for
+        rand: bool
+            If it should randomly get the cocktail defaults to True
         """
         url = f"https://www.thecocktaildb.com/api/json/v1/1/search.php?s={name}"
 
@@ -57,7 +61,9 @@ class apis(commands.Cog):
         for i in range(1, 16):
             if not drink[f"strIngredient{i}"]:
                 break
-            ingredients.append(f"{drink[f'strIngredient{i}']}: {drink[f'strMeasure{i}']}")
+            ingredients.append(
+                f"{drink[f'strIngredient{i}']}: {drink[f'strMeasure{i}']}"
+            )
 
         embed.description = textwrap.dedent(
             f"""
