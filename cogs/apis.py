@@ -84,33 +84,33 @@ class apis(commands.Cog):
         location: str
             The name of the location.
         """
-        url = f"https://www.metaweather.com/api/location/search/?query={location}"
+        url = f"https://goweather.herokuapp.com/weather/{location}"
 
         async with ctx.typing():
-            data = await self.get_json(url)
-
-            url = f"https://www.metaweather.com/api/location/{data[0]['woeid']}"
-
-            data = await self.get_json(url)
-            weather = data["consolidated_weather"][0]
+            weather = await self.get_json(url)
 
             embed = discord.Embed(color=discord.Color.blurple())
-
-            embed.set_author(
-                name=data["title"],
-                icon_url=f"https://www.metaweather.com/static/img/weather/png/{weather['weather_state_abbr']}.png",
-            )
 
             embed.description = textwrap.dedent(
                 f"""
             ```
-            Weather: {weather['weather_state_name']}
-            Wind Direction: {weather['wind_direction_compass']}
-            Wind Speed: {weather['wind_speed']}
-            Temp: {weather['the_temp']}
-            Air Pressure: {weather['air_pressure']}
-            Humidity: {weather['humidity']}
-            Visibility: {weather['visibility']}
+            Weather: {weather['description']}
+            Temperature: {weather['temperature']}
+            Wind: {weather['wind']}
+
+            Forcast:
+
+            day 1:
+            Temperature: {weather['forecast'][0]['temperature']}
+            Wind: {weather['forecast'][0]['wind']}
+
+            day 2:
+            Temperature: {weather['forecast'][1]['temperature']}
+            Wind: {weather['forecast'][1]['wind']}
+
+            day 3:
+            Temperature: {weather['forecast'][2]['temperature']}
+            Wind: {weather['forecast'][2]['wind']}
             ```"""
             )
 

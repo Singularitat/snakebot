@@ -200,10 +200,7 @@ class events(commands.Cog):
         message: discord.Message
         reactions: List[discord.Reaction]
         """
-        if (
-            DB.blacklist.get(f"{message.guild.id}-{str(message.author.id)}".encode())
-            == b"1"
-        ):
+        if await DB.get_blacklist(message.author.id, message.guild.id) == b"1":
             await message.add_reaction("<:downvote:766414744730206228>")
 
     @commands.Cog.listener()
@@ -220,7 +217,7 @@ class events(commands.Cog):
         if after.channel is None:
             return
 
-        if DB.blacklist.get(f"{member.guild.id}-{str(member.id)}".encode()) == b"1":
+        if await DB.get_blacklist(member.id, member.guild.id) == b"1":
             await member.edit(voice_channel=None)
 
     @commands.Cog.listener()
@@ -312,7 +309,7 @@ class events(commands.Cog):
             timesince = datetime.utcnow() - message.created_at
 
             if timesince.total_seconds() < 30:
-                DB.blacklist.put(str(message.author.id).encode(), b"1")
+                DB.blacklist.put(f"{message.guild}-{message.author.id}".encode(), b"1")
 
         channel = discord.utils.get(message.guild.channels, name="logs")
 
@@ -334,12 +331,8 @@ class events(commands.Cog):
 
         message: discord.Message
         """
-        if not message.guild:
-            return
-        if (
-            DB.blacklist.get(f"{message.guild.id}-{str(message.author.id)}".encode())
-            == b"1"
-        ):
+        guild = message.guild.id if message.guild else None
+        if await DB.get_blacklist(message.author.id, guild) == b"1":
             await message.add_reaction("<:downvote:766414744730206228>")
 
     @commands.Cog.listener()
@@ -588,11 +581,7 @@ class events(commands.Cog):
             )
             return False
 
-        if (
-            ctx.guild
-            and DB.blacklist.get(f"{ctx.guild.id}-{str(ctx.author.id)}".encode())
-            or DB.blacklist.get(str(ctx.author.id).encode())
-        ):
+        if await DB.get_blacklist(ctx.author.id, ctx.guild.id if ctx.guild else None):
             await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.red(),

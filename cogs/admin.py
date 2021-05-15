@@ -244,10 +244,17 @@ class admin(commands.Cog):
 
             embed.title = "Downvoted users"
             for member_id in DB.blacklist.iterator(include_value=False):
-                guild, member_id = member_id.decode().split("-")
+                member_id = member_id.decode().split("-")
+
+                if len(member_id) > 1:
+                    guild, member_id = member_id
+                    guild = self.bot.get_guild(int(guild))
+                else:
+                    guild, member_id = "Global", member_id[0]
+
                 embed.add_field(
                     name="User:",
-                    value=f"{self.bot.get_guild(int(guild))}: {member_id}",
+                    value=f"{guild}: {member_id}",
                 )
 
             return await ctx.send(embed=embed)
@@ -304,8 +311,20 @@ class admin(commands.Cog):
                 return await ctx.send(embed=embed)
 
             embed.title = "Blacklisted users"
-            for user_id in DB.blacklist.iterator(include_value=False):
-                embed.add_field(name="Member:", value=user_id.decode())
+            for member_id in DB.blacklist.iterator(include_value=False):
+                member_id = member_id.decode().split("-")
+
+                if len(member_id) > 1:
+                    guild, member_id = member_id
+                    guild = self.bot.get_guild(int(guild))
+                else:
+                    guild, member_id = "Global", member_id[0]
+
+                embed.add_field(
+                    name="User:",
+                    value=f"{guild}: {member_id}",
+                )
+
             return await ctx.send(embed=embed)
 
         user_id = f"{ctx.guild.id}-{str(user.id)}".encode()
