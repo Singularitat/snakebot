@@ -453,6 +453,20 @@ class misc(commands.Cog):
         if str(ctx.author.id) not in ledger["members"][str(member.id)]:
             ledger["members"][str(member.id)][str(ctx.author.id)] = 0
 
+        if str(member.id) in ledger["members"][str(ctx.author.id)]:
+            if ledger["members"][str(ctx.author.id)][str(member.id)] >= amount:
+                embed.description = (
+                    "```Since {} owes {} {} their debt was canceled out```".format(
+                        ctx.author.display_name,
+                        member.display_name,
+                        ledger["members"][str(ctx.author.id)][str(member.id)],
+                    )
+                )
+                ledger["members"][str(ctx.author.id)][str(member.id)] -= amount
+                return await ctx.send(embed=embed)
+            else:
+                amount -= ledger["members"][str(ctx.author.id)][str(member.id)]
+
         ledger["members"][str(member.id)][str(ctx.author.id)] += amount
 
         embed.description = "```{} is to pay {} ${:,} because {}```".format(
