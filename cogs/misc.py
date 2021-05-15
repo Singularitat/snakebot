@@ -464,8 +464,8 @@ class misc(commands.Cog):
                 )
                 ledger["members"][str(ctx.author.id)][str(member.id)] -= amount
                 return await ctx.send(embed=embed)
-            else:
-                amount -= ledger["members"][str(ctx.author.id)][str(member.id)]
+
+            amount -= ledger["members"][str(ctx.author.id)][str(member.id)]
 
         ledger["members"][str(member.id)][str(ctx.author.id)] += amount
 
@@ -490,11 +490,13 @@ class misc(commands.Cog):
             return await ctx.send(embed=embed)
 
         ledger = orjson.loads(ledger)
+
         try:
             item = ledger["items"][index]
         except IndexError:
             embed.description = "```Index not in ledger.```"
             return await ctx.send(embed=embed)
+
         if (
             item["payee"] != ctx.author.id
             and item["type"] == "owes"
