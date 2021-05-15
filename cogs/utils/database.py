@@ -22,6 +22,18 @@ bal = db.prefixed_db(b"bal-")
 wins = db.prefixed_db(b"wins-")
 
 
+async def get_blacklist(member_id, guild=None):
+    """ "Returns whether someone is blacklisted.
+
+    member_id: int
+    """
+    if state := blacklist.get(str(member_id).encode()):
+        return state
+
+    if guild and (state := blacklist.get(f"{guild}-{member_id}".encode())):
+        return state
+
+
 async def get_bal(member_id):
     """Gets the balance of an member.
 
