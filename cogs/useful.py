@@ -541,9 +541,9 @@ class useful(commands.Cog):
         escape = str.maketrans({"`": "\\`"})
         ansi = re.compile(r"\x1b\[.*?m")
 
-        async with aiohttp.ClientSession(headers=headers) as session, session.get(
-            url
-        ) as page:
+        async with ctx.typing(), aiohttp.ClientSession(
+            headers=headers
+        ) as session, session.get(url) as page:
             result = ansi.sub("", await page.text()).translate(escape)
 
         embed = discord.Embed(
