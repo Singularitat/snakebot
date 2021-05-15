@@ -144,16 +144,38 @@ class owner(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         user_id = str(user.id).encode()
-        if self.blacklist.get(user_id):
-            self.blacklist.delete(user_id)
+        if DB.blacklist.get(user_id):
+            DB.blacklist.delete(user_id)
 
             embed.title = "User Unblacklisted"
             embed.description = f"***{user}*** has been unblacklisted"
             return await ctx.send(embed=embed)
 
-        self.blacklist.put(user_id, b"2")
+        DB.blacklist.put(user_id, b"2")
         embed.title = "User Blacklisted"
         embed.description = f"**{user}** has been added to the blacklist"
+
+        await ctx.send(embed=embed)
+
+    @commands.command(hidden=True)
+    async def gdownvote(self, ctx, user: discord.User):
+        """Globally downvotes someones.
+
+        user: discord.user
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        user_id = str(user.id).encode()
+        if DB.blacklist.get(user_id):
+            DB.blacklist.delete(user_id)
+
+            embed.title = "User Undownvoted"
+            embed.description = f"***{user}*** has been undownvoted"
+            return await ctx.send(embed=embed)
+
+        DB.blacklist.put(user_id, b"1")
+        embed.title = "User Downvoted"
+        embed.description = f"**{user}** has been added to the downvote list"
 
         await ctx.send(embed=embed)
 
