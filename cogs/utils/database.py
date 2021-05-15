@@ -23,7 +23,7 @@ wins = db.prefixed_db(b"wins-")
 
 
 async def get_blacklist(member_id, guild=None):
-    """ "Returns whether someone is blacklisted.
+    """Returns whether someone is blacklisted.
 
     member_id: int
     """
