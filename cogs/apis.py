@@ -526,7 +526,7 @@ class apis(commands.Cog):
         async with ctx.typing():
             urban = await self.get_json(url)
 
-        if "list" not in urban:
+        if not urban["list"]:
             return await ctx.send(
                 embed=discord.Embed(title="No results found", color=discord.Color.red())
             )

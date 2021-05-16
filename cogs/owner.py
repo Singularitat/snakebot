@@ -237,12 +237,12 @@ class owner(commands.Cog):
             embed.description = "```Nothing has been cached```"
             return await ctx.send(embed=embed)
 
-        msg = ""
+        msg = []
 
         for item in cache:
-            msg += f"{item}\n"
+            msg.append(item)
 
-        embed.description = f"```{msg}```"
+        embed.description = "```{}```".format("\n".join(msg))
         await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
