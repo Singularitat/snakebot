@@ -154,10 +154,10 @@ class useful(commands.Cog):
         msg = ""
 
         for count, language in enumerate(languages):
-            if (count + 1) % 5 == 0:
+            if (count + 1) % 4 == 0:
                 msg += f"{language}\n"
             else:
-                msg += f"{language:<12}"
+                msg += f"{language:<13}"
 
         embed = discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
         await ctx.send(embed=embed)
