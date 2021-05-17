@@ -315,7 +315,6 @@ class stocks(commands.Cog):
         embed.add_field(
             name=f"{member.display_name}'s net worth",
             value=f"${bal + stock_value + crypto_value:,.2f}",
-            inline=False,
         )
 
         embed.set_footer(
