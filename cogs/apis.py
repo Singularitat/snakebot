@@ -38,19 +38,19 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
-    async def cocktail(self, ctx, name, rand: bool = True):
+    async def cocktail(self, ctx, *, name=None):
         """Searchs for a cocktail and gets a random result by default.
 
         name: str
-            Name to search for
-        rand: bool
-            If it should randomly get the cocktail defaults to True
         """
-        url = f"https://www.thecocktaildb.com/api/json/v1/1/search.php?s={name}"
+        if not name:
+            url = "https://www.thecocktaildb.com/api/json/v1/1/random.php"
+        else:
+            url = f"https://www.thecocktaildb.com/api/json/v1/1/search.php?s={name}"
 
         async with ctx.typing():
             data = await self.get_json(url)
-            drink = random.choice(data["drinks"]) if rand else data["drinks"][0]
+            drink = random.choice(data["drinks"])
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.set_image(url=drink["strDrinkThumb"])
