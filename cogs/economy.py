@@ -21,14 +21,12 @@ class economy(commands.Cog):
         topbal = await DB.get_baltop(amount)
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.add_field(
-            name=f"Top {len(topbal)} Balances",
-            value="\n".join(
-                [
-                    f"**{self.bot.get_user(member).display_name}:** ${bal:,.2f}"
-                    for bal, member in topbal
-                ]
-            ),
+        embed.title = f"Top {len(topbal)} Balances"
+        embed.description = "\n".join(
+            [
+                f"**{self.bot.get_user(member).display_name}:** ${bal:,.2f}"
+                for bal, member in topbal
+            ]
         )
         await ctx.send(embed=embed)
 
