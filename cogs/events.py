@@ -331,7 +331,21 @@ class events(commands.Cog):
 
         message: discord.Message
         """
-        guild = message.guild.id if message.guild else None
+        if message.guild:
+            guild = message.guild.id
+
+            key = f"{guild}-{message.author.id}".encode()
+            count = DB.message_count.get(key)
+
+            if count:
+                count = int(count) + 1
+            else:
+                count = 1
+
+            DB.message_count.put(key, str(count).encode())
+        else:
+            guild = None
+
         if await DB.get_blacklist(message.author.id, guild) == b"1":
             await message.add_reaction("<:downvote:766414744730206228>")
 
