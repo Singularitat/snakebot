@@ -20,6 +20,7 @@ stocks = db.prefixed_db(b"stocks-")
 stockbal = db.prefixed_db(b"stockbal-")
 bal = db.prefixed_db(b"bal-")
 wins = db.prefixed_db(b"wins-")
+message_count = db.prefixed_db(b"message_count-")
 
 
 async def get_blacklist(member_id, guild=None):
