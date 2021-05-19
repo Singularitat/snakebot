@@ -63,6 +63,20 @@ class owner(commands.Cog):
         """
         return ctx.author.id in self.bot.owner_ids
 
+    @commands.command()
+    async def get_count(self, ctx):
+        for channel in ctx.guild.text_channels:
+            async for message in channel.history(limit=None):
+                key = f"{ctx.guild.id}-{message.author.id}".encode()
+                count = DB.message_count.get(key)
+
+                if count:
+                    count = int(count) + 1
+                else:
+                    count = 1
+
+                DB.message_count.put(key, str(count).encode())
+
     @commands.command(hidden=True, aliases=["clearinf"])
     async def clearinfractions(self, ctx, member: discord.Member):
         """Removes all infractions of a member.
