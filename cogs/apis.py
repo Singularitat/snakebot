@@ -121,7 +121,7 @@ class apis(commands.Cog):
         """Shows the lyrics of a song.
 
         e.g .lyrics "sum 41" in too deep
-        . lyrics incubus drive
+        .lyrics incubus drive
 
         artist: str
         song: str
@@ -133,11 +133,11 @@ class apis(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
 
-        if "error" in lyrics:
+        if not lyrics or "error" in lyrics:
             embed.description = "```No lyrics found```"
             return await ctx.send(embed=embed)
 
-        embed.description = f"```{lyrics['lyrics']}```"
+        embed.description = f"```{lyrics['lyrics'][:2000]}```"
         await ctx.send(embed=embed)
 
     @commands.command()

@@ -16,6 +16,46 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @commands.command(aliases=["accdate"])
+    async def oldest(self, ctx, amount: int = 10):
+        """Gets the oldest accounts in a server.
+
+        amount: int
+        """
+        top = sorted(ctx.guild.members, key=lambda member: member.id)[:amount]
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.title = "Oldest Accounts"
+        embed.description = "\n".join([f"**{member}:** {member.id}" for member in top])
+
+        await ctx.send(embed=embed)
+
+    @commands.command(aliases=["msgtop"])
+    async def message_top(self, ctx, amount=10):
+        """Gets the users with the most messages in a server.
+
+        amount: int
+        """
+        msgtop = sorted(
+            [
+                (int(b), m.decode())
+                for m, b in DB.message_count
+                if int(m.decode().split("-")[0]) == ctx.guild.id
+            ],
+            reverse=True,
+        )[:amount]
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.title = f"Top {len(msgtop)} chatters"
+
+        embed.description = "\n".join(
+            [
+                f"**{self.bot.get_user(int(member.split('-')[1])).display_name}:** {count} messages"
+                for count, member in msgtop
+            ]
+        )
+        await ctx.send(embed=embed)
+
     @staticmethod
     def unquote_unreserved(uri):
         UNRESERVED_SET = frozenset(
