@@ -16,17 +16,26 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.command(aliases=["accdate"])
+    @commands.command(aliases=["accdate", "newest"])
     async def oldest(self, ctx, amount: int = 10):
         """Gets the oldest accounts in a server.
 
         amount: int
         """
-        top = sorted(ctx.guild.members, key=lambda member: member.id)[:amount]
+        reverse = "newest" == ctx.invoked_with.lower()
+        top = sorted(ctx.guild.members, key=lambda member: member.id, reverse=reverse)[
+            :amount
+        ]
 
+        description = "\n".join([f"**{member}:** {member.id}" for member in top])
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.title = "Oldest Accounts"
-        embed.description = "\n".join([f"**{member}:** {member.id}" for member in top])
+
+        if len(description) > 2048:
+            embed.description = "```Message is too large to send.```"
+            return await ctx.send(embed=embed)
+
+        embed.title = f"{'Youngest' if reverse else 'Oldest'} Accounts"
+        embed.description = description
 
         await ctx.send(embed=embed)
 
@@ -46,14 +55,23 @@ class misc(commands.Cog):
         )[:amount]
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.title = f"Top {len(msgtop)} chatters"
+        result = []
 
-        embed.description = "\n".join(
-            [
-                f"**{self.bot.get_user(int(member.split('-')[1])).display_name}:** {count} messages"
-                for count, member in msgtop
-            ]
+        for count, member in msgtop:
+            user = self.bot.get_user(int(member.split("-")[1]))
+            result.append((count, user.display_name if user else member))
+
+        description = "\n".join(
+            [f"**{member}:** {count} messages" for count, member in result]
         )
+
+        if len(description) > 2048:
+            embed.description = "```Message to large to send.```"
+            return await ctx.send(embed=embed)
+
+        embed.title = f"Top {len(msgtop)} chatters"
+        embed.description = description
+
         await ctx.send(embed=embed)
 
     @staticmethod
@@ -613,6 +631,49 @@ class misc(commands.Cog):
 
         embed.description = f"```{msg}```"
         await ctx.send(embed=embed)
+
+    @ledger.command()
+    async def split(
+        self, ctx, amount: float, members: commands.Greedy[discord.Member], reason="idk"
+    ):
+        ledger = DB.db.get(b"ledger")
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not ledger:
+            ledger = {"items": [], "members": {}}
+        else:
+            ledger = orjson.loads(ledger)
+
+        for member in members:
+            ledger["items"].append(
+                {
+                    "type": "owes",
+                    "amount": amount,
+                    "reason": f"for {reason}",
+                    "payee": ctx.author.id,
+                    "payer": member.id,
+                }
+            )
+            if str(member.id) not in ledger["members"]:
+                ledger["members"][str(member.id)] = {}
+
+            if str(ctx.author.id) not in ledger["members"][str(member.id)]:
+                ledger["members"][str(member.id)][str(ctx.author.id)] = 0
+
+            if str(member.id) in ledger["members"][str(ctx.author.id)]:
+                if ledger["members"][str(ctx.author.id)][str(member.id)] >= amount:
+                    ledger["members"][str(ctx.author.id)][str(member.id)] -= amount
+                    continue
+
+                amount -= ledger["members"][str(ctx.author.id)][str(member.id)]
+
+            ledger["members"][str(member.id)][str(ctx.author.id)] += amount
+
+            embed.description = "```{} is to pay {} ${:,} because {}```".format(
+                member.display_name, ctx.author.display_name, amount, reason
+            )
+            await ctx.send(embed=embed)
+        DB.db.put(b"ledger", orjson.dumps(ledger))
 
 
 def setup(bot: commands.Bot) -> None:
