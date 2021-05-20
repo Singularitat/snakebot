@@ -27,9 +27,15 @@ class misc(commands.Cog):
             :amount
         ]
 
+        description = "\n".join([f"**{member}:** {member.id}" for member in top])
         embed = discord.Embed(color=discord.Color.blurple())
+
+        if len(description) > 2048:
+            embed.description = "```Message is too large to send.```"
+            return await ctx.send(embed=embed)
+
         embed.title = f"{'Youngest' if reverse else 'Oldest'} Accounts"
-        embed.description = "\n".join([f"**{member}:** {member.id}" for member in top])
+        embed.description = description
 
         await ctx.send(embed=embed)
 
@@ -49,17 +55,23 @@ class misc(commands.Cog):
         )[:amount]
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.title = f"Top {len(msgtop)} chatters"
-
         result = []
 
         for count, member in msgtop:
             user = self.bot.get_user(int(member.split("-")[1]))
             result.append((count, user.display_name if user else member))
 
-        embed.description = "\n".join(
+        description = "\n".join(
             [f"**{member}:** {count} messages" for count, member in result]
         )
+
+        if len(description) > 2048:
+            embed.description = "```Message to large to send.```"
+            return await ctx.send(embed=embed)
+
+        embed.title = f"Top {len(msgtop)} chatters"
+        embed.description = description
+
         await ctx.send(embed=embed)
 
     @staticmethod
