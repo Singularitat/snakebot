@@ -19,6 +19,35 @@ class admin(commands.Cog):
         """
         return ctx.author.guild_permissions.administrator
 
+    @commands.command(aliases=["disablech"])
+    async def disable_channel(self, ctx, channel: discord.TextChannel = None):
+        if not channel:
+            channel = ctx.channel
+
+        disabled = DB.db.get(b"disabled_channels")
+
+        if not disabled:
+            disabled = {}
+        else:
+            disabled = orjson.loads(disabled)
+
+        tenary = "disabled"
+
+        if str(ctx.guild.id) not in disabled:
+            disabled[str(ctx.guild.id)] = []
+        elif channel.id in disabled[str(ctx.guild.id)]:
+            disabled[str(ctx.guild.id)].remove(channel.id)
+            tenary = "enabled"
+
+        disabled[str(ctx.guild.id)].append(channel.id)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = f"```Commands {tenary} in {channel}```"
+
+        return await ctx.send(embed=embed)
+
+        DB.db.put(b"disabled_channels", orjson.dumps(disabled))
+
     @commands.command()
     async def color_roles(self, ctx):
         """Creates basiic color roles if they don't exist."""
