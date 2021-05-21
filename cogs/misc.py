@@ -22,7 +22,7 @@ class misc(commands.Cog):
 
         amount: int
         """
-        reverse = "newest" == ctx.invoked_with.lower()
+        reverse = ctx.invoked_with.lower() == "newest"
         top = sorted(ctx.guild.members, key=lambda member: member.id, reverse=reverse)[
             :amount
         ]
@@ -260,13 +260,26 @@ class misc(commands.Cog):
         """Displays the top 5 and bottom 5 members karma."""
         sorted_karma = sorted([(int(k), int(m)) for m, k in DB.karma], reverse=True)
         embed = discord.Embed(title="Karma Board", color=discord.Color.blurple())
+
+        top = []
+        for karma, member in sorted_karma[:5]:
+            temp = self.bot.get_user(member)
+            member = temp.display_name if temp else member
+            top.append((karma, member))
+
+        bot = []
+        for karma, member in sorted_karma[-5:]:
+            temp = self.bot.get_user(member)
+            member = temp.display_name if temp else member
+            bot.append((karma, member))
+
         embed.add_field(
             name="Top Five",
             value="```diff\n{}```".format(
                 "\n".join(
                     [
-                        f"+ {self.bot.get_user(member).display_name}: {karma}"
-                        for karma, member in sorted_karma[:5]
+                        f"{'-' if karma > 0 else '+'} {member}: {karma}"
+                        for karma, member in top
                     ]
                 )
             ),
@@ -276,8 +289,8 @@ class misc(commands.Cog):
             value="```diff\n{}```".format(
                 "\n".join(
                     [
-                        f"- {self.bot.get_user(member).display_name}: {karma}"
-                        for karma, member in sorted_karma[-5:]
+                        f"{'-' if karma > 0 else '+'} {member}: {karma}"
+                        for karma, member in bot
                     ]
                 )
             ),
