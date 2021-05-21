@@ -44,7 +44,7 @@ class admin(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
         embed.description = f"```Commands {tenary} in {channel}```"
 
-        return await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
         DB.db.put(b"disabled_channels", orjson.dumps(disabled))
 
