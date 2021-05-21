@@ -287,7 +287,12 @@ class useful(commands.Cog):
             message = orjson.loads(message)
 
             # Example, ["Yeah I deleted this", "Singulaity"]
-            await ctx.send(f"```{message[1]} deleted:\n{message[0]}```")
+            embed = discord.Embed(
+                title=f"{message[1]} deleted:",
+                description=f"```{message[0]}```",
+                color=discord.Color.blurple(),
+            )
+            await ctx.send(embed=embed)
 
     @commands.command()
     async def editsnipe(self, ctx):
@@ -296,7 +301,15 @@ class useful(commands.Cog):
 
         if message is not None:
             message = orjson.loads(message)
-            await ctx.send(f"```{message[2]} edited:\n{message[0]} >>> {message[1]}```")
+
+            # Example, ["Yeah I deleted this", "Yeah I edited this", "Singulaity"]
+            embed = discord.Embed(
+                title=f"{message[2]} edited:",
+                color=discord.Color.blurple(),
+            )
+            embed.add_field(name="From:", value=f"```{message[0]}```")
+            embed.add_field(name="To:", value=f"```{message[1]}```")
+            await ctx.send(embed=embed)
 
     @commands.command(name="dir")
     async def _dir(self, ctx, obj, arg, *, attr=None):
