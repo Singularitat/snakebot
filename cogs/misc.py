@@ -22,6 +22,8 @@ class misc(commands.Cog):
 
         amount: int
         """
+        amount = max(0, min(50, amount))
+
         reverse = ctx.invoked_with.lower() == "newest"
         top = sorted(ctx.guild.members, key=lambda member: member.id, reverse=reverse)[
             :amount
@@ -45,6 +47,8 @@ class misc(commands.Cog):
 
         amount: int
         """
+        amount = max(0, min(50, amount))
+
         msgtop = sorted(
             [
                 (int(b), m.decode())
