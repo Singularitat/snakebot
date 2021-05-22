@@ -52,13 +52,13 @@ class useful(commands.Cog):
 
             soup = soup.xpath('.//div[@class="nawv0d"]')[0]
 
-            image = soup.xpath('.//img')[0].attrib["src"]
+            image = soup.xpath(".//img")[0].attrib["src"]
             temp = soup.xpath('.//span[@id="wob_tm"]')[0].text_content()
             precipitation = soup.xpath('.//span[@id="wob_pp"]')[0].text_content()
             humidity = soup.xpath('.//span[@id="wob_hm"]')[0].text_content()
             wind = soup.xpath('.//span[@id="wob_ws"]')[0].text_content()
             state = soup.xpath('//span[@id="wob_dc"]')[0].text_content()
-            time = soup.xpath('//div[@id="wob_dts"]')[0].text_content()
+            current_time = soup.xpath('//div[@id="wob_dts"]')[0].text_content()
 
             embed = discord.Embed(color=discord.Color.blurple())
 
@@ -70,7 +70,7 @@ class useful(commands.Cog):
             embed.add_field(name="Precipitation:", value=precipitation)
             embed.add_field(name="Humidity:", value=humidity)
             embed.add_field(name="Wind:", value=wind)
-            embed.add_field(name="Time:", value=time)
+            embed.add_field(name="Time:", value=current_time)
 
             await ctx.send(embed=embed)
 
