@@ -282,7 +282,7 @@ class misc(commands.Cog):
             value="```diff\n{}```".format(
                 "\n".join(
                     [
-                        f"{'-' if karma > 0 else '+'} {member}: {karma}"
+                        f"{'-' if karma < 0 else '+'} {member}: {karma}"
                         for karma, member in top
                     ]
                 )
@@ -293,7 +293,7 @@ class misc(commands.Cog):
             value="```diff\n{}```".format(
                 "\n".join(
                     [
-                        f"{'-' if karma > 0 else '+'} {member}: {karma}"
+                        f"{'-' if karma < 0 else '+'} {member}: {karma}"
                         for karma, member in bot
                     ]
                 )
