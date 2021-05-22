@@ -36,6 +36,45 @@ class useful(commands.Cog):
         self.loop = asyncio.get_event_loop()
 
     @commands.command()
+    async def weather(self, ctx, location):
+        """Gets the weather from google."""
+        location = location.capitalize()
+        url = f"https://www.google.co.nz/search?q={location}+weather"
+
+        async with ctx.typing():
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
+            }
+            async with aiohttp.ClientSession(headers=headers) as session, session.get(
+                url
+            ) as page:
+                soup = lxml.html.fromstring(await page.text())
+
+            soup = soup.xpath('.//div[@class="nawv0d"]')[0]
+
+            image = soup.xpath(".//img")[0].attrib["src"]
+            temp = soup.xpath('.//span[@id="wob_tm"]')[0].text_content()
+            precipitation = soup.xpath('.//span[@id="wob_pp"]')[0].text_content()
+            humidity = soup.xpath('.//span[@id="wob_hm"]')[0].text_content()
+            wind = soup.xpath('.//span[@id="wob_ws"]')[0].text_content()
+            state = soup.xpath('//span[@id="wob_dc"]')[0].text_content()
+            current_time = soup.xpath('//div[@id="wob_dts"]')[0].text_content()
+
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            embed.set_image(url=f"https:{image}")
+            embed.title = f"{location} weather."
+            embed.description = state
+
+            embed.add_field(name="Temp:", value=f"{temp}°C")
+            embed.add_field(name="Precipitation:", value=precipitation)
+            embed.add_field(name="Humidity:", value=humidity)
+            embed.add_field(name="Wind:", value=wind)
+            embed.add_field(name="Time:", value=current_time)
+
+            await ctx.send(embed=embed)
+
+    @commands.command()
     async def statuscodes(self, ctx):
         """List of status codes for catstatus command."""
         embed = discord.Embed(color=discord.Color.blurple())

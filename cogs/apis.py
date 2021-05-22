@@ -78,45 +78,6 @@ class apis(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def weather(self, ctx, location):
-        """Shows the weather at a location.
-
-        location: str
-            The name of the location.
-        """
-        url = f"https://goweather.herokuapp.com/weather/{location}"
-
-        async with ctx.typing():
-            weather = await self.get_json(url)
-
-            embed = discord.Embed(color=discord.Color.blurple())
-
-            embed.description = textwrap.dedent(
-                f"""
-            ```
-            Weather: {weather['description']}
-            Temperature: {weather['temperature']}
-            Wind: {weather['wind']}
-
-            Forcast:
-
-            day 1:
-            Temperature: {weather['forecast'][0]['temperature']}
-            Wind: {weather['forecast'][0]['wind']}
-
-            day 2:
-            Temperature: {weather['forecast'][1]['temperature']}
-            Wind: {weather['forecast'][1]['wind']}
-
-            day 3:
-            Temperature: {weather['forecast'][2]['temperature']}
-            Wind: {weather['forecast'][2]['wind']}
-            ```"""
-            )
-
-            await ctx.send(embed=embed)
-
-    @commands.command()
     async def lyrics(self, ctx, artist, *, song):
         """Shows the lyrics of a song.
 
