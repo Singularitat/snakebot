@@ -265,39 +265,21 @@ class misc(commands.Cog):
         sorted_karma = sorted([(int(k), int(m)) for m, k in DB.karma], reverse=True)
         embed = discord.Embed(title="Karma Board", color=discord.Color.blurple())
 
-        top = []
-        for karma, member in sorted_karma[:5]:
-            temp = self.bot.get_user(member)
-            member = temp.display_name if temp else member
-            top.append((karma, member))
-
-        bot = []
-        for karma, member in sorted_karma[-5:]:
-            temp = self.bot.get_user(member)
-            member = temp.display_name if temp else member
-            bot.append((karma, member))
+        def parse_karma(data):
+            lst = []
+            for karma, member in data:
+                temp = self.bot.get_user(member)
+                member = temp.display_name if temp else member
+                lst.append(f"{'-' if karma < 0 else '+'} {member}: {karma}")
+            return lst
 
         embed.add_field(
             name="Top Five",
-            value="```diff\n{}```".format(
-                "\n".join(
-                    [
-                        f"{'-' if karma < 0 else '+'} {member}: {karma}"
-                        for karma, member in top
-                    ]
-                )
-            ),
+            value="```diff\n{}```".format("\n".join(parse_karma(sorted_karma[:5]))),
         )
         embed.add_field(
             name="Bottom Five",
-            value="```diff\n{}```".format(
-                "\n".join(
-                    [
-                        f"{'-' if karma < 0 else '+'} {member}: {karma}"
-                        for karma, member in bot
-                    ]
-                )
-            ),
+            value="```diff\n{}```".format("\n".join(parse_karma(sorted_karma[-5:]))),
         )
         await ctx.send(embed=embed)
 
@@ -309,31 +291,28 @@ class misc(commands.Cog):
             The symbol of the element to search for.
         """
         url = f"http://www.chemicalelements.com/elements/{element.lower()}.html"
+        embed = discord.Embed(colour=discord.Color.blurple())
 
-        try:
-            async with aiohttp.ClientSession(
-                raise_for_status=True
-            ) as session, session.get(url) as page:
-                text = lxml.html.fromstring(await page.text())
-        except aiohttp.client_exceptions.ClientResponseError:
-            return await ctx.send(
-                f"Could not find and element with the symbol {element.upper()}"
-            )
+        async with ctx.typing():
+            try:
+                async with aiohttp.ClientSession(
+                    raise_for_status=True
+                ) as session, session.get(url) as page:
+                    text = lxml.html.fromstring(await page.text())
+            except aiohttp.client_exceptions.ClientResponseError:
+                embed.description = f"```Could not find and element with the symbol {element.upper()}```"
+                return await ctx.send(embed=embed)
 
         image = f"http://www.chemicalelements.com{text.xpath('.//img')[1].attrib['src'][2:]}"
         text = text.xpath("//text()")[108:]
 
-        embed = discord.Embed(title=text[1], colour=0x33CC82, type="rich")
+        embed.title = text[1]
         embed.set_thumbnail(url=image)
-        embed.add_field(name="Name", value=text[text.index("Name:") + 1])
-        embed.add_field(name="Symbol", value=text[text.index("Symbol:") + 1])
-        embed.add_field(
-            name="Atomic Number", value=text[text.index("Atomic Number:") + 1]
-        )
-        embed.add_field(name="Atomic Mass", value=text[text.index("Atomic Mass:") + 1])
-        embed.add_field(
-            name="Neutrons", value=text[text.index("Number of Neutrons:") + 1]
-        )
+        embed.add_field(name="Name", value=text[1])
+        embed.add_field(name="Symbol", value=text[3])
+        embed.add_field(name="Atomic Number", value=text[5])
+        embed.add_field(name="Atomic Mass", value=text[7])
+        embed.add_field(name="Neutrons", value=text[15])
         embed.add_field(name="Color", value=text[text.index("Color:") + 1])
         embed.add_field(name="Uses", value=text[text.index("Uses:") + 1])
         embed.add_field(
