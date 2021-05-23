@@ -11,6 +11,50 @@ class economy(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @commands.command(aliases=["flip", "fcoin", "coinf"])
+    async def coinflip(self, ctx, choice, bet: float):
+        """Flips a coin.
+
+        choice: str
+        bet: int
+        """
+        embed = discord.Embed(color=discord.Color.red())
+        if bet < 0:
+            embed.title = "Bet must be positive"
+            return await ctx.send(embed=embed)
+
+        member = str(ctx.author.id).encode()
+        bal = await DB.get_bal(member)
+
+        if bal <= 1:
+            bal += 1
+
+        if bal < bet:
+            embed.title = "You don't have enough cash"
+            return await ctx.send(embed=embed)
+
+        images = {
+            "heads": "https://i.imgur.com/168G0Cr.jpg",
+            "tails": "https://i.imgur.com/EdBBcsz.jpg",
+        }
+
+        result = random.choice(["heads", "tails"])
+
+        embed.set_author(name=result.capitalize(), icon_url=images[result])
+
+        if choice.lower() == result:
+            embed.color = discord.Color.blurple()
+            embed.description = f"You won ${bet}"
+            bal += bet
+        else:
+            embed.description = f"You lost ${bet}"
+            bal -= bet
+
+        await DB.put_bal(member, bal)
+
+        embed.set_footer(text=f"Balance: ${bal:,}")
+        await ctx.send(embed=embed)
+
     @commands.command()
     async def baltop(self, ctx, amount: int = 10):
         """Gets the top balances.
