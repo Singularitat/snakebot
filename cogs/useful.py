@@ -36,7 +36,7 @@ class useful(commands.Cog):
         self.loop = asyncio.get_event_loop()
 
     @commands.command()
-    async def weather(self, ctx, location):
+    async def weather(self, ctx, *, location):
         """Gets the weather from google."""
         location = location.capitalize()
         url = f"https://www.google.co.nz/search?q={location}+weather"
@@ -53,6 +53,7 @@ class useful(commands.Cog):
             soup = soup.xpath('.//div[@class="nawv0d"]')[0]
 
             image = soup.xpath(".//img")[0].attrib["src"]
+            location = soup.xpath('.//div[@id="wob_loc"]')[0].text_content()
             temp = soup.xpath('.//span[@id="wob_tm"]')[0].text_content()
             precipitation = soup.xpath('.//span[@id="wob_pp"]')[0].text_content()
             humidity = soup.xpath('.//span[@id="wob_hm"]')[0].text_content()
@@ -63,7 +64,7 @@ class useful(commands.Cog):
             embed = discord.Embed(color=discord.Color.blurple())
 
             embed.set_image(url=f"https:{image}")
-            embed.title = f"{location} weather."
+            embed.title = location
             embed.description = state
 
             embed.add_field(name="Temp:", value=f"{temp}°C")
