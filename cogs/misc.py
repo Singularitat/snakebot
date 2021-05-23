@@ -195,7 +195,7 @@ class misc(commands.Cog):
         ]
         embed.description = f"```You {result}```"
         await ctx.send(embed=embed)
-        
+
     @commands.command(name="8ball")
     async def eightball(self, ctx):
         """Seek advice or fortune-telling."""
@@ -214,10 +214,10 @@ class misc(commands.Cog):
             "My reply is no",
             "My sources say no",
             "Outlook not so good",
-            "Very doubtful"  
+            "Very doubtful",
         ]
         answer = random.choice(responses)
-        await ctx.reply(f'{answer}.')
+        await ctx.reply(f"{answer}.")
 
     @commands.command(name="hex")
     async def _hex(self, ctx, number, convert: bool = False):
