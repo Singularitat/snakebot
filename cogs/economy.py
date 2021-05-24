@@ -19,6 +19,11 @@ class economy(commands.Cog):
         bet: int
         """
         embed = discord.Embed(color=discord.Color.red())
+        choice = choice[0].lower()
+        if choice not in ("h", "t"):
+            embed.title = "Must be [h]eads or [t]ails"
+            return await ctx.send(embed=embed)
+
         if bet < 0:
             embed.title = "Bet must be positive"
             return await ctx.send(embed=embed)
@@ -42,7 +47,7 @@ class economy(commands.Cog):
 
         embed.set_author(name=result.capitalize(), icon_url=images[result])
 
-        if choice.lower() == result:
+        if choice == result[0]:
             embed.color = discord.Color.blurple()
             embed.description = f"You won ${bet}"
             bal += bet

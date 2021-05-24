@@ -48,11 +48,16 @@ class apis(commands.Cog):
         else:
             url = f"https://www.thecocktaildb.com/api/json/v1/1/search.php?s={name}"
 
+        embed = discord.Embed(color=discord.Color.blurple())
+
         async with ctx.typing():
             data = await self.get_json(url)
+            if not data["drinks"]:
+                embed.description = "```No cocktails found.```"
+                embed.color = discord.Color.red()
+                return await ctx.send(embed=embed)
             drink = random.choice(data["drinks"])
 
-        embed = discord.Embed(color=discord.Color.blurple())
         embed.set_image(url=drink["strDrinkThumb"])
         embed.set_author(name=drink["strDrink"], icon_url=drink["strDrinkThumb"])
 
