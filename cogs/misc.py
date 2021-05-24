@@ -200,24 +200,23 @@ class misc(commands.Cog):
     async def eightball(self, ctx):
         """Seek advice or fortune-telling."""
         responses = [
-            "It is certain",
-            "Without a doubt",
-            "Most likely",
-            "Outlook good",
-            "Yes",
-            "Reply hazy, try again",
-            "Ask again later",
-            "Better not tell you now",
-            "Cannot predict now",
-            "Concentrate and ask again",
-            "Don't count on it",
-            "My reply is no",
-            "My sources say no",
-            "Outlook not so good",
-            "Very doubtful",
+            "It is certain.",
+            "Without a doubt.",
+            "Most likely.",
+            "Outlook good.",
+            "Yes.",
+            "Reply hazy, try again.",
+            "Ask again later.",
+            "Better not tell you now.",
+            "Cannot predict now.",
+            "Concentrate and ask again.",
+            "Don't count on it.",
+            "My reply is no.",
+            "My sources say no.",
+            "Outlook not so good.",
+            "Very doubtful.",
         ]
-        answer = random.choice(responses)
-        await ctx.reply(f"{answer}.")
+        await ctx.reply(random.choice(responses))
 
     @commands.command(name="hex")
     async def _hex(self, ctx, number, convert: bool = False):
