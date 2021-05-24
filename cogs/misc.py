@@ -495,7 +495,7 @@ class misc(commands.Cog):
             embed.description = f"```{msg}```"
             await ctx.send(embed=embed)
 
-    @ledger.command()
+    @ledger.command(hidden=True)
     async def payme(self, ctx, member: discord.Member, amount: float, *, reason="idk"):
         """Adds an amount to be paid by member to the ledger.
 
@@ -551,7 +551,7 @@ class misc(commands.Cog):
         await ctx.send(embed=embed)
         DB.db.put(b"ledger", orjson.dumps(ledger))
 
-    @ledger.command()
+    @ledger.command(hidden=True)
     async def delete(self, ctx, index: int):
         """Deletes an item made by you off the ledger.
 
@@ -585,7 +585,7 @@ class misc(commands.Cog):
         ledger["items"].pop(index)
         DB.db.put(b"ledger", orjson.dumps(ledger))
 
-    @ledger.command()
+    @ledger.command(hidden=True)
     async def pay(self, ctx, member: discord.Member, amount: float):
         """Pay for an ledger item.
 
@@ -621,9 +621,12 @@ class misc(commands.Cog):
         await ctx.send(embed=embed)
         DB.db.put(b"ledger", orjson.dumps(ledger))
 
-    @ledger.command()
+    @ledger.command(hidden=True)
     async def member(self, ctx, member: discord.Member):
-        """Returns the ledger of the member."""
+        """Returns the ledger of the member.
+
+        member: discord.Member
+        """
         ledger = DB.db.get(b"ledger")
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -650,10 +653,16 @@ class misc(commands.Cog):
         embed.description = f"```{msg}```"
         await ctx.send(embed=embed)
 
-    @ledger.command()
+    @ledger.command(hidden=True)
     async def split(
         self, ctx, amount: float, members: commands.Greedy[discord.Member], reason="idk"
     ):
+        """Splits an amount between mutiple ledger members.
+
+        amount: float
+        members: list[discord.Member]
+        reason: str
+        """
         ledger = DB.db.get(b"ledger")
         embed = discord.Embed(color=discord.Color.blurple())
 
