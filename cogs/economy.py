@@ -20,7 +20,7 @@ class economy(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.red())
         choice = choice[0].lower()
-        if choice != "h" and choice != "t":
+        if choice not in ("h", "t"):
             embed.title = "Must be [h]eads or [t]ails"
             return await ctx.send(embed=embed)
 
