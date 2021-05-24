@@ -216,8 +216,7 @@ class misc(commands.Cog):
             "Outlook not so good",
             "Very doubtful",
         ]
-        answer = random.choice(responses)
-        await ctx.reply(f"{answer}.")
+        await ctx.reply(f"{random.choice(responses)}.")
 
     @commands.command(name="hex")
     async def _hex(self, ctx, number, convert: bool = False):
@@ -402,12 +401,13 @@ class misc(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def choose(self, ctx, *options: str):
+    async def choose(self, ctx, *, options: str):
         """Chooses between mulitple things.
 
         options: str
-            The options to choose from.
+            The options to choose from. Separate options with commas.
         """
+        options = options.split(',')
         await ctx.send(random.choice(options))
 
     @commands.command()
