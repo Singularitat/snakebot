@@ -21,6 +21,10 @@ class admin(commands.Cog):
 
     @commands.command(aliases=["disablech"])
     async def disable_channel(self, ctx, channel: discord.TextChannel = None):
+        """Disables commands from being used in a channel.
+
+        channel: discord.TextChannel
+        """
         if not channel:
             channel = ctx.channel
 
