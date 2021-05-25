@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands, menus
-import ujson
+import orjson
 import textwrap
 import cogs.utils.database as DB
 
@@ -13,7 +13,7 @@ class StockMenu(menus.ListPageSource):
         msg = "\n"
         i = 1
         for stock, price in entries:
-            price = ujson.loads(price)["price"]
+            price = orjson.loads(price)["price"]
             if len(msg) >= 2000:
                 break
 
@@ -282,6 +282,45 @@ class stocks(commands.Cog):
         await DB.put_bal(member_id, bal)
         await DB.put_stockbal(member_id, stockbal)
 
+    @commands.command()
+    async def nettop(self, ctx, amount: int = 10):
+        """Gets members with the highest net worth"""
+
+        def get_value(values, db):
+            if values:
+                return sum(
+                    [
+                        stock[1]["total"]
+                        * float(orjson.loads(db.get(stock[0].encode()))["price"])
+                        for stock in values.items()
+                    ]
+                )
+
+            return 0
+
+        net_top = []
+
+        for member_id, value in DB.bal:
+            stock_value = get_value(await DB.get_stockbal(member_id), DB.stocks)
+            crypto_value = get_value(await DB.get_cryptobal(member_id), DB.crypto)
+            # fmt: off
+            if (member := self.bot.get_user(int(member_id))):
+                net_top.append(
+                    (float(value) + stock_value + crypto_value, member.display_name)
+                )
+            # fmt: on
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        embed.title = f"Top {len(net_top)} Richest"
+        embed.description = "\n".join(
+            [
+                f"**{member}:** ${bal:,.2f}"
+                for bal, member in sorted(net_top, reverse=True)[:amount]
+            ]
+        )
+        await ctx.send(embed=embed)
+
     @commands.command(aliases=["networth"])
     async def net(self, ctx, member: discord.Member = None):
         """Gets a members net worth.
@@ -302,7 +341,7 @@ class stocks(commands.Cog):
                 return sum(
                     [
                         stock[1]["total"]
-                        * float(ujson.loads(db.get(stock[0].encode()))["price"])
+                        * float(orjson.loads(db.get(stock[0].encode()))["price"])
                         for stock in values.items()
                     ]
                 )
