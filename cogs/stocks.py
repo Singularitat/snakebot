@@ -303,7 +303,9 @@ class stocks(commands.Cog):
         for member_id, value in DB.bal:
             stock_value = get_value(await DB.get_stockbal(member_id), DB.stocks)
             crypto_value = get_value(await DB.get_cryptobal(member_id), DB.crypto)
+            # fmt: off
             if (member := self.bot.get_user(int(member_id))):
+                # fmt: on
                 net_top.append(
                     (float(value) + stock_value + crypto_value, member.display_name)
                 )
