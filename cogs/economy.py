@@ -6,9 +6,9 @@ import cogs.utils.database as DB
 
 
 class Card:
-    def __init__(self, suit, card, value):
+    def __init__(self, suit, name, value):
         self.suit = suit
-        self.card = card
+        self.name = name
         self.value = value
 
 
@@ -37,10 +37,10 @@ class Deck:
             "K": 10,
         }
 
-        self.deck = []
+        self.card_deck = []
         for suit in suits:
             for card in cards:
-                self.deck.append(Card(suits[suit], card, cards[card]))
+                self.card_deck.append(Card(suits[suit], card, cards[card]))
 
         self.member_cards = [self.get_card(), self.get_card()]
         self.dealer_cards = [self.get_card(), self.get_card()]
@@ -49,7 +49,7 @@ class Deck:
         return sum(card.value for card in cards)
 
     def get_card(self):
-        return self.deck.pop(random.randrange(len(self.deck)))
+        return self.card_deck.pop(random.randrange(len(self.card_deck)))
 
     def get_embed(self, bet, hidden=True):
         embed = discord.Embed(color=discord.Color.blurple())
@@ -61,11 +61,11 @@ class Deck:
         {}
         """.format(
             self.get_score(self.member_cards),
-            " ".join([f"`{c.card}{c.suit}`" for c in self.member_cards]),
+            " ".join([f"`{c.name}{c.suit}`" for c in self.member_cards]),
             self.get_score(self.dealer_cards) if not hidden else "",
-            " ".join([f"`{c.card}{c.suit}`" for c in self.dealer_cards])
+            " ".join([f"`{c.name}{c.suit}`" for c in self.dealer_cards])
             if not hidden
-            else f"`{self.dealer_cards[0].card}{self.dealer_cards[0].suit}` `##`",
+            else f"`{self.dealer_cards[0].name}{self.dealer_cards[0].suit}` `##`",
         )
         return embed
 
