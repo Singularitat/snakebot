@@ -113,7 +113,11 @@ class information(commands.Cog):
         else:
             obj = self.bot.get_command(command)
             if obj is None:
-                return await ctx.send("```Could not find command.```")
+                embed = discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```Couldn't find command.```",
+                )
+                return await ctx.send(embed=embed)
 
             src = obj.callback.__code__
             filename = src.co_filename
