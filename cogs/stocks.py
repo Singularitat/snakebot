@@ -310,14 +310,12 @@ class stocks(commands.Cog):
                 )
             # fmt: on
 
+        net_top = sorted(net_top, reverse=True)[:amount]
         embed = discord.Embed(color=discord.Color.blurple())
 
-        embed.title = f"Top {len(net_top)} Richest"
+        embed.title = f"Top {len(net_top)} Richest Members"
         embed.description = "\n".join(
-            [
-                f"**{member}:** ${bal:,.2f}"
-                for bal, member in sorted(net_top, reverse=True)[:amount]
-            ]
+            [f"**{member}:** ${bal:,.2f}" for bal, member in net_top]
         )
         await ctx.send(embed=embed)
 
