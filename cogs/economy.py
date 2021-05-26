@@ -5,11 +5,150 @@ import random
 import cogs.utils.database as DB
 
 
+class Card:
+    def __init__(self, suit, card, value):
+        self.suit = suit
+        self.card = card
+        self.value = value
+
+
+class Deck:
+    def __init__(self):
+        suits = {
+            "Spades": "\u2664",
+            "Hearts": "\u2661",
+            "Clubs": "\u2667",
+            "Diamonds": "\u2662",
+        }
+
+        cards = {
+            "A": 11,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 5,
+            "6": 6,
+            "7": 7,
+            "8": 8,
+            "9": 9,
+            "10": 10,
+            "J": 10,
+            "Q": 10,
+            "K": 10,
+        }
+
+        self.deck = []
+        for suit in suits:
+            for card in cards:
+                self.deck.append(Card(suits[suit], card, cards[card]))
+
+        self.member_cards = [self.get_card(), self.get_card()]
+        self.dealer_cards = [self.get_card(), self.get_card()]
+
+    def get_score(self, cards):
+        return sum(card.value for card in cards)
+
+    def get_card(self):
+        return self.deck.pop(random.randrange(len(self.deck)))
+
+    def get_embed(self, bet, hidden=True):
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.title = f"Blackjack game (${bet})"
+        embed.description = """
+        **Your Hand: {}**
+        {}
+        **Dealers Hand: {}**
+        {}
+        """.format(
+            self.get_score(self.member_cards),
+            " ".join([f"`{c.card}{c.suit}`" for c in self.member_cards]),
+            self.get_score(self.dealer_cards) if not hidden else "",
+            " ".join([f"`{c.card}{c.suit}`" for c in self.dealer_cards])
+            if not hidden
+            else f"`{self.dealer_cards[0].card}{self.dealer_cards[0].suit}` `##`",
+        )
+        return embed
+
+
 class economy(commands.Cog):
     """Commands related to the economy."""
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    @commands.command()
+    async def blackjack(self, ctx, bet: float):
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if bet < 0:
+            embed.title = "Bet must be positive"
+            return await ctx.send(embed=embed)
+
+        member = str(ctx.author.id).encode()
+        bal = await DB.get_bal(member)
+
+        if bal < bet:
+            embed.title = "You don't have enough cash"
+            return await ctx.send(embed=embed)
+
+        deck = Deck()
+
+        m_cards = deck.member_cards
+        d_cards = deck.dealer_cards
+
+        message = await ctx.send(embed=deck.get_embed(bet))
+
+        if deck.get_score(m_cards) == 21:
+            await message.edit(embed=deck.get_embed(bet, False))
+            await DB.put_bal(member, bal + bet)
+            return
+
+        if deck.get_score(m_cards) == 21:
+            await message.edit(embed=deck.get_embed(bet, False))
+            await DB.put_bal(member, bal - bet)
+            return
+
+        reactions = ["🇭", "🇸"]
+
+        def check(reaction: discord.Reaction, user: discord.User) -> bool:
+            return (
+                user.id == ctx.author.id
+                and reaction.message.channel == ctx.channel
+                and reaction.emoji in reactions
+            )
+
+        for reaction in reactions:
+            await message.add_reaction(reaction)
+
+        while deck.get_score(m_cards) < 21:
+            reaction, user = await ctx.bot.wait_for(
+                "reaction_add", timeout=60.0, check=check
+            )
+            await reaction.remove(user)
+            if reaction.emoji == "🇭":
+                m_cards.append(deck.get_card())
+            else:
+                break
+            await message.edit(embed=deck.get_embed(bet, False))
+
+        if (m_score := deck.get_score(m_cards)) > 21:
+            bal -= bet
+            await message.add_reaction("❎")
+        else:
+            while (score := deck.get_score(d_cards)) < 16 or score < m_score:
+                d_cards.append(deck.get_card())
+
+            if score > 21 or m_score > score:
+                bal += bet
+                await message.add_reaction("✅")
+            elif score == m_score:
+                await message.add_reaction("➖")
+            else:
+                bal -= bet
+                await message.add_reaction("❎")
+
+        await message.edit(embed=deck.get_embed(bet, False))
+        await DB.put_bal(member, bal)
 
     @commands.command(aliases=["flip", "fcoin", "coinf"])
     async def coinflip(self, ctx, choice, bet: float):
@@ -62,7 +201,7 @@ class economy(commands.Cog):
 
     @commands.command()
     async def baltop(self, ctx, amount: int = 10):
-        """Gets the top balances.
+        """Gets members with the highest balances.
 
         amount: int
             The amount of balances to get defaulting to 3.
