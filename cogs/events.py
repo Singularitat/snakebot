@@ -589,8 +589,9 @@ class events(commands.Cog):
 
         disabled = DB.db.get(b"disabled_channels")
 
-        if disabled and ctx.channel.id in orjson.loads(disabled)[str(ctx.guild.id)]:
-            return False
+        if disabled and str(ctx.guild.id) in (disabled := orjson.loads(disabled)):
+            if ctx.channel.id in disabled[str(ctx.guild.id)]:
+                return False
 
         if DB.db.get(f"{ctx.guild.id}-{ctx.command}".encode()):
             await ctx.send(
