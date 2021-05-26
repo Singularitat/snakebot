@@ -39,8 +39,8 @@ class Deck:
 
         self.card_deck = []
         for suit in suits:
-            for card in cards:
-                self.card_deck.append(Card(suits[suit], card, cards[card]))
+            for card, value in cards.items():
+                self.card_deck.append(Card(suits[suit], card, value))
 
         self.member_cards = [self.get_card(), self.get_card()]
         self.dealer_cards = [self.get_card(), self.get_card()]
