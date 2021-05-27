@@ -8,6 +8,7 @@ import hashlib
 from urllib.parse import quote
 import re
 import cogs.utils.database as DB
+import config
 
 
 class misc(commands.Cog):
@@ -15,6 +16,158 @@ class misc(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    @commands.command()
+    async def youtube(self, ctx):
+        """Starts a YouTube Together."""
+        if (code := DB.db.get(b"youtube_together")) and discord.utils.get(
+            await ctx.guild.invites(), code=code.decode()
+        ):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="There is another active Youtube Together",
+                    description=f"https://discord.gg/{code.decode()}",
+                )
+            )
+
+        if not ctx.author.voice:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You aren't connected to a voice channel.```",
+                )
+            )
+
+        headers = {"Authorization": f"Bot {config.token}"}
+        json = {
+            "max_age": 300,
+            "target_type": 2,
+            "target_application_id": 755600276941176913,
+        }
+
+        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
+            json=json,
+        ) as response:
+            data = await response.json()
+
+        await ctx.send(f"https://discord.gg/{data['code']}")
+        DB.db.put(b"youtube_together", data["code"].encode())
+
+    @commands.command()
+    async def poker(self, ctx):
+        """Starts a Discord Poke Night."""
+        if (code := DB.db.get(b"poker_night")) and discord.utils.get(
+            await ctx.guild.invites(), code=code.decode()
+        ):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="There is another active Poker Night",
+                    description=f"https://discord.gg/{code.decode()}",
+                )
+            )
+
+        if not ctx.author.voice:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You aren't connected to a voice channel.```",
+                )
+            )
+
+        headers = {"Authorization": f"Bot {config.token}"}
+        json = {
+            "max_age": 300,
+            "target_type": 2,
+            "target_application_id": 755827207812677713,
+        }
+
+        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
+            json=json,
+        ) as response:
+            data = await response.json()
+
+        await ctx.send(f"https://discord.gg/{data['code']}")
+        DB.db.put(b"poker_night", data["code"].encode())
+
+    @commands.command()
+    async def betrayal(self, ctx):
+        """Starts a Betrayal.io game."""
+        if (code := DB.db.get(b"betrayal_io")) and discord.utils.get(
+            await ctx.guild.invites(), code=code.decode()
+        ):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="There is another active Betrayal.io game",
+                    description=f"https://discord.gg/{code.decode()}",
+                )
+            )
+
+        if not ctx.author.voice:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You aren't connected to a voice channel.```",
+                )
+            )
+
+        headers = {"Authorization": f"Bot {config.token}"}
+        json = {
+            "max_age": 300,
+            "target_type": 2,
+            "target_application_id": 773336526917861400,
+        }
+
+        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
+            json=json,
+        ) as response:
+            data = await response.json()
+
+        await ctx.send(f"https://discord.gg/{data['code']}")
+        DB.db.put(b"betrayal_io", data["code"].encode())
+
+    @commands.command()
+    async def fishing(self, ctx):
+        """Starts a Fishington.io game."""
+        if (code := DB.db.get(b"fishington")) and discord.utils.get(
+            await ctx.guild.invites(), code=code.decode()
+        ):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="There is another active Fishington.io game",
+                    description=f"https://discord.gg/{code.decode()}",
+                )
+            )
+
+        if not ctx.author.voice:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You aren't connected to a voice channel.```",
+                )
+            )
+
+        headers = {"Authorization": f"Bot {config.token}"}
+        json = {
+            "max_age": 300,
+            "target_type": 2,
+            "target_application_id": 814288819477020702,
+        }
+
+        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
+            json=json,
+        ) as response:
+            data = await response.json()
+
+        await ctx.send(f"https://discord.gg/{data['code']}")
+        DB.db.put(b"fishington", data["code"].encode())
 
     @commands.command(aliases=["accdate", "newest"])
     async def oldest(self, ctx, amount: int = 10):
@@ -194,7 +347,7 @@ class misc(commands.Cog):
             (3 + rps[choice] - rps[result["nextBestMove"]]) % 3
         ]
         embed.description = f"```You {result}```"
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command(name="8ball")
     async def eightball(self, ctx):
@@ -398,7 +551,7 @@ class misc(commands.Cog):
         result = ", ".join(nums)
         total = sum([int(num) for num in nums])
         embed.description = f"```Results: {result} Total: {total}```"
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command()
     async def choose(self, ctx, *options: str):
@@ -407,7 +560,7 @@ class misc(commands.Cog):
         options: str
             The options to choose from.
         """
-        await ctx.send(random.choice(options))
+        await ctx.reply(random.choice(options))
 
     @commands.command()
     async def yeah(self, ctx):
