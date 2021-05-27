@@ -374,9 +374,6 @@ class admin(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    async def unban(self, guild: discord.Guild, member: discord.Member):
-        await guild.unban(member)
-
 
 def setup(bot: commands.Bot) -> None:
     """Starts admin cog."""
