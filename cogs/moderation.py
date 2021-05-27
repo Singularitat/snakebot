@@ -112,9 +112,9 @@ class moderation(commands.Cog):
                 return await ctx.send(embed=embed)
 
             self.loop.call_later(seconds, asyncio.create_task, ctx.guild.unban(member))
-            embed.title = f"Banned {member} for {seconds}s"
+            embed.title = f"Banned {member.display_name} for {seconds}s"
         else:
-            embed.title = f"Banned {member}"
+            embed.title = f"Banned {member.display_name}"
 
         await member.ban(reason=reason)
 
@@ -135,10 +135,7 @@ class moderation(commands.Cog):
         infractions["count"] += 1
         infractions["bans"].append(reason)
 
-        embed = discord.Embed(
-            color=discord.Color.dark_red(),
-            description="They have {} total infractions.".format(infractions["count"]),
-        )
+        embed.description = f"```They had {infractions['count']} total infractions.```"
         DB.infractions.put(member_id, orjson.dumps(infractions))
 
         await ctx.send(embed=embed)
@@ -176,9 +173,8 @@ class moderation(commands.Cog):
 
         embed = discord.Embed(
             color=discord.Color.dark_red(),
-            description="{} has been kicked. They have {} total infractions.".format(
-                member.display_name, infractions["count"]
-            ),
+            title=f"{member.display_name} has been kicked",
+            description=f"```They had {infractions['count']} total infractions.```",
         )
         await ctx.send(embed=embed)
         DB.infractions.put(member_id, orjson.dumps(infractions))
