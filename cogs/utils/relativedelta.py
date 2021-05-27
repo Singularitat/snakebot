@@ -11,7 +11,7 @@ from six import integer_types
 from warnings import warn
 
 
-class weekday():
+class weekday:
     __slots__ = ["weekday", "n"]
 
     def __init__(self, weekday, n=None):
@@ -54,7 +54,7 @@ MO, TU, WE, TH, FR, SA, SU = weekdays = tuple(weekday(x) for x in range(7))
 __all__ = ["relativedelta", "MO", "TU", "WE", "TH", "FR", "SA", "SU"]
 
 
-class relativedelta():
+class relativedelta:
     def __init__(
         self,
         dt1=None,
