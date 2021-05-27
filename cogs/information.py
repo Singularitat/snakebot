@@ -5,6 +5,7 @@ import psutil
 import inspect
 import os
 from datetime import datetime
+from .utils.relativedelta import relativedelta
 
 
 class information(commands.Cog):
@@ -251,38 +252,54 @@ class information(commands.Cog):
         now = datetime.utcnow()
 
         if isinstance(past_time, int):
-            diff = now - datetime.fromtimestamp(past_time)
+            diff = relativedelta(now, datetime.fromtimestamp(past_time))
         elif isinstance(past_time, datetime):
-            diff = now - past_time
+            diff = relativedelta(now, past_time)
         elif not past_time:
-            diff = now - now
+            diff = relativedelta(now, now)
 
-        sec = diff.seconds
-        day = diff.days
-
-        if day < 0:
-            return ""
-
-        if day == 0:
-            if sec < 60:
-                return f"{sec} seconds"
-            if sec < 3600:
-                return f"{sec // 60} minutes and {sec % 60} seconds"
-            if sec < 86400:
-                return f"{sec // 3600} hours {(sec % 3600) // 60} minutes and {(sec % 3600) % 60} seconds"
-
-        if day < 7:
-            return f"{day} days {sec // 3600} hours and {(sec % 3600) // 60} minutes"
-        if day < 31:
-            return f"{day // 7} weeks {day % 7} days and {sec // 3600} hours"
-        if day < 365:
-            return (
-                f"{day // 30} months {(day % 30) // 7} weeks and {(day % 30) % 7} days"
+        if not diff.days and not diff.months and not diff.years:
+            hours = (
+                (
+                    f"{diff.hours} hour{'s' if diff.hours > 1 else ''}"
+                    f" {'and' if not diff.seconds else ''}"
+                )
+                if diff.hours
+                else ""
             )
+            minutes = (
+                (
+                    f"{diff.minutes} minute{'s' if diff.minutes > 1 else ''}"
+                    f" {'and' if diff.hours else ''} "
+                )
+                if diff.minutes
+                else ""
+            )
+            seconds = (
+                f"{diff.seconds} second{'s' if diff.seconds > 1 else ''}"
+                if diff.seconds
+                else ""
+            )
+            return f"{hours}{minutes}{seconds}"
 
-        return (
-            f"{day // 365} years {(day % 365) // 30} months and {(day % 365) % 30} days"
+        years = (
+            (
+                f"{diff.years} year{'s' if diff.years > 1 else ''}"
+                f" {'and' if not diff.days else ''} "
+            )
+            if diff.years
+            else ""
         )
+        months = (
+            (
+                f"{diff.months} month{'s' if diff.months > 1 else ''}"
+                f" {'and' if diff.days else ''} "
+            )
+            if diff.months
+            else ""
+        )
+        days = f"{diff.days} day{'s' if diff.days > 1 else ''}" if diff.days else ""
+        return f"{years}{months}{days}"
 
 
 def setup(bot: commands.Bot) -> None:

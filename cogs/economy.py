@@ -46,7 +46,14 @@ class Deck:
         self.dealer_cards = [self.get_card(), self.get_card()]
 
     def get_score(self, cards):
-        return sum(card.value for card in cards)
+        score = sum(card.value for card in cards)
+        if score > 21:
+            for card in cards:
+                if card.name == "A":
+                    score -= 10
+                    if score < 21:
+                        return score
+        return score
 
     def get_card(self):
         return self.card_deck.pop(random.randrange(len(self.card_deck)))
@@ -101,12 +108,12 @@ class economy(commands.Cog):
         if deck.get_score(m_cards) == 21:
             await message.edit(embed=deck.get_embed(bet, False))
             await DB.put_bal(member, bal + bet)
-            return
+            return await message.add_reaction("✅")
 
-        if deck.get_score(m_cards) == 21:
+        if deck.get_score(d_cards) == 21:
             await message.edit(embed=deck.get_embed(bet, False))
             await DB.put_bal(member, bal - bet)
-            return
+            return await message.add_reaction("❎")
 
         reactions = ["🇭", "🇸"]
 
@@ -124,12 +131,12 @@ class economy(commands.Cog):
             reaction, user = await ctx.bot.wait_for(
                 "reaction_add", timeout=60.0, check=check
             )
-            await reaction.remove(user)
             if reaction.emoji == "🇭":
                 m_cards.append(deck.get_card())
             else:
                 break
-            await message.edit(embed=deck.get_embed(bet, False))
+            await reaction.remove(user)
+            await message.edit(embed=deck.get_embed(bet))
 
         if (m_score := deck.get_score(m_cards)) > 21:
             bal -= bet
