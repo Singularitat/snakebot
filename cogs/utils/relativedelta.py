@@ -11,7 +11,7 @@ from six import integer_types
 from warnings import warn
 
 
-class weekday(object):
+class weekday():
     __slots__ = ["weekday", "n"]
 
     def __init__(self, weekday, n=None):
@@ -21,8 +21,7 @@ class weekday(object):
     def __call__(self, n):
         if n == self.n:
             return self
-        else:
-            return self.__class__(self.weekday, n)
+        return self.__class__(self.weekday, n)
 
     def __eq__(self, other):
         try:
@@ -41,14 +40,13 @@ class weekday(object):
         )
 
     def __ne__(self, other):
-        return not (self == other)
+        return not self == other
 
     def __repr__(self):
         s = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")[self.weekday]
         if not self.n:
             return s
-        else:
-            return "%s(%+d)" % (s, self.n)
+        return "%s(%+d)" % (s, self.n)
 
 
 MO, TU, WE, TH, FR, SA, SU = weekdays = tuple(weekday(x) for x in range(7))
@@ -56,7 +54,7 @@ MO, TU, WE, TH, FR, SA, SU = weekdays = tuple(weekday(x) for x in range(7))
 __all__ = ["relativedelta", "MO", "TU", "WE", "TH", "FR", "SA", "SU"]
 
 
-class relativedelta(object):
+class relativedelta():
     def __init__(
         self,
         dt1=None,
@@ -362,14 +360,15 @@ class relativedelta(object):
 
         if not isinstance(other, datetime.date):
             return NotImplemented
-        elif self._has_time and not isinstance(other, datetime.datetime):
+        if self._has_time and not isinstance(other, datetime.datetime):
             other = datetime.datetime.fromordinal(other.toordinal())
 
         year = (self.year or other.year) + self.years
         month = self.month or other.month
 
         if self.months:
-            assert 1 <= abs(self.months) <= 12
+            if not 1 <= abs(self.months) <= 12:
+                raise ValueError
             month += self.months
             if month > 12:
                 year += 1
