@@ -228,7 +228,7 @@ class useful(commands.Cog):
         else:
             emojis = orjson.loads(emojis)
 
-        emojis[ctx.message.id] = {"name": name, "users": []}
+        emojis[str(ctx.message.id)] = {"name": name, "users": []}
 
         DB.db.put(b"emoji_submissions", orjson.dumps(emojis))
 
