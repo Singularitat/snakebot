@@ -170,6 +170,10 @@ class apis(commands.Cog):
 
             embed = discord.Embed(color=discord.Color.blurple())
 
+            if not data:
+                embed.description = "```Pinging timed out.```"
+                return await ctx.send(embed=embed)
+
             if data["debug"]["ping"] is False:
                 embed.description = "```Pinging failed.```"
                 return await ctx.send(embed=embed)
