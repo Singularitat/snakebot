@@ -53,7 +53,7 @@ token = ''  # your bot's token
 - discord.py[voice]
 - lxml
 - psutil
-- ujson
+- orjson
 - youtube_dl
 - plyvel
 - pillow
