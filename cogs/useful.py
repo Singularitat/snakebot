@@ -50,8 +50,14 @@ class useful(commands.Cog):
             ) as page:
                 soup = lxml.html.fromstring(await page.text())
 
-            soup = soup.xpath('.//div[@class="nawv0d"]')[0]
+            embed = discord.Embed(color=discord.Color.blurple())
+            soup = soup.xpath('.//div[@class="nawv0d"]')
 
+            if not soup:
+                embed.description = f"```No weather for {location} found```"
+                return await ctx.send(embed=embed)
+
+            soup = soup[0]
             image = soup.xpath(".//img")[0].attrib["src"]
             location = soup.xpath('.//div[@id="wob_loc"]')[0].text_content()
             temp = soup.xpath('.//span[@id="wob_tm"]')[0].text_content()
@@ -60,8 +66,6 @@ class useful(commands.Cog):
             wind = soup.xpath('.//span[@id="wob_ws"]')[0].text_content()
             state = soup.xpath('//span[@id="wob_dc"]')[0].text_content()
             current_time = soup.xpath('//div[@id="wob_dts"]')[0].text_content()
-
-            embed = discord.Embed(color=discord.Color.blurple())
 
             embed.set_image(url=f"https:{image}")
             embed.title = location
