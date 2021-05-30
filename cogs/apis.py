@@ -38,6 +38,16 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
+    async def dadjoke(self, ctx):
+        """Gets a random dad joke."""
+        url = "https://icanhazdadjoke.com/"
+        headers = {"Accept": "application/json"}
+        async with ctx.typing(), aiohttp.ClientSession(headers=headers) as session:
+            reponse = await session.get(url)
+            data = await reponse.json()
+        await ctx.reply(data["joke"])
+
+    @commands.command()
     async def cocktail(self, ctx, *, name=None):
         """Searchs for a cocktail and gets a random result by default.
 

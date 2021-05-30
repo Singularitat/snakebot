@@ -85,6 +85,10 @@ class economy(commands.Cog):
 
     @commands.command()
     async def blackjack(self, ctx, bet: float):
+        """Starts a game of blackjack.
+
+        bet: float
+        """
         embed = discord.Embed(color=discord.Color.blurple())
 
         if bet < 0:
