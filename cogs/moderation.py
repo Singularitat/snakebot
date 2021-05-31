@@ -11,6 +11,82 @@ class moderation(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @commands.command()
+    async def mute(self, ctx, member: discord.Member, *, reason=None):
+        """Mutes a membe.
+
+        member: discord.member
+        reason: str
+        """
+        role = discord.utils.get(ctx.guild.roles, name="Muted")
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if role in member.roles:
+            await member.remove_roles(role)
+            embed.description = f"```Unmuted {member.display_name}```"
+            return await ctx.send(embed=embed)
+
+        member_id = f"{ctx.guild.id}-{member.id}".encode()
+        infractions = DB.infractions.get(member_id)
+
+        if infractions is None:
+            infractions = {
+                "count": 0,
+                "bans": [],
+                "kicks": [],
+                "mutes": [],
+                "warnings": [],
+            }
+        else:
+            infractions = orjson.loads(infractions)
+
+        infractions["count"] += 1
+        infractions["mutes"].append(reason)
+
+        if not role:
+            reactions = ["✅", "❎"]
+
+            def check(reaction: discord.Reaction, user: discord.User) -> bool:
+                return (
+                    user.id == ctx.author.id
+                    and reaction.message.channel == ctx.channel
+                    and reaction.emoji in reactions
+                )
+
+            embed.description = "```No muted role found react to add Muted role.```"
+
+            message = await ctx.send(embed=embed)
+
+            for reaction in reactions:
+                await message.add_reaction(reaction)
+
+            reaction, user = await ctx.bot.wait_for(
+                "reaction_add", timeout=60.0, check=check
+            )
+
+            if reaction.emoji == "✅":
+                role = await ctx.guild.create_role(
+                    name="Muted", color=discord.Color.dark_red()
+                )
+                for categories in ctx.guild.categories:
+                    await categories.set_permissions(
+                        role, send_messages=False, connect=False
+                    )
+            else:
+                return
+
+        await member.add_roles(role)
+
+        embed = discord.Embed(
+            color=discord.Color.dark_red(),
+            description="{} has been muted. They have {} total infractions.".format(
+                member.mention, infractions["count"]
+            ),
+        )
+        await ctx.send(embed=embed)
+
+        DB.infractions.put(member_id, orjson.dumps(infractions))
+
     @commands.has_permissions(manage_nicknames=True)
     @commands.command()
     async def nick(self, ctx, member: discord.Member, *, nickname):
