@@ -662,7 +662,6 @@ class apis(commands.Cog):
             )
 
     @commands.command(name="github", aliases=["gh"])
-    @commands.cooldown(1, 60, commands.BucketType.member)
     async def get_github_info(self, ctx: commands.Context, username: str) -> None:
         """Fetches a members's GitHub information."""
         async with ctx.typing():
