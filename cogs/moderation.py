@@ -65,9 +65,13 @@ class moderation(commands.Cog):
             )
 
             if reaction.emoji == "✅":
-                role = await ctx.guild.create_role(name="Muted", color=discord.Color.dark_red())
+                role = await ctx.guild.create_role(
+                    name="Muted", color=discord.Color.dark_red()
+                )
                 for categories in ctx.guild.categories:
-                    await categories.set_permissions(role, send_messages=False, connect=False)
+                    await categories.set_permissions(
+                        role, send_messages=False, connect=False
+                    )
             else:
                 return
 
