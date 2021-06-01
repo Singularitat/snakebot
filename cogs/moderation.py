@@ -12,8 +12,9 @@ class moderation(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    @commands.has_permissions(mute_members=True)
     async def mute(self, ctx, member: discord.Member, *, reason=None):
-        """Mutes a membe.
+        """Mutes a member.
 
         member: discord.member
         reason: str
@@ -87,8 +88,8 @@ class moderation(commands.Cog):
 
         DB.infractions.put(member_id, orjson.dumps(infractions))
 
-    @commands.has_permissions(manage_nicknames=True)
     @commands.command()
+    @commands.has_permissions(manage_nicknames=True)
     async def nick(self, ctx, member: discord.Member, *, nickname):
         """Changes a members nickname.
 
@@ -98,8 +99,8 @@ class moderation(commands.Cog):
         await member.edit(nick=nickname)
         await ctx.send(f"Changed {member.display_name}'s nickname to {nickname}'")
 
-    @commands.has_permissions(manage_messages=True)
     @commands.command()
+    @commands.has_permissions(manage_messages=True)
     async def warn(self, ctx, member: discord.Member, *, reason=None):
         """Warns a member and keeps track of how many warnings a member has.
 
@@ -133,8 +134,8 @@ class moderation(commands.Cog):
 
         DB.infractions.put(member_id, orjson.dumps(infractions))
 
-    @commands.has_permissions(manage_messages=True)
     @commands.command(hidden=True)
+    @commands.has_permissions(manage_messages=True)
     async def warnings(self, ctx, member: discord.Member):
         """Shows the warnings a member has.
 
@@ -155,6 +156,28 @@ class moderation(commands.Cog):
             "\n".join(infractions["warnings"]),
         )
         await ctx.send(embed=embed)
+
+    async def end_date(self, duration):
+        """Converts a duration to an end date.
+
+        duration: str
+            How much to add onto the current date e.g 5d 10h 25m 5s
+        """
+        seconds = 0
+        try:
+            for time in duration.split():
+                if time[-1] == "s":
+                    seconds += int(time[:-1])
+                elif time[-1] == "m":
+                    seconds += int(time[:-1]) * 60
+                elif time[-1] == "h":
+                    seconds += int(time[:-1]) * 3600
+                elif time[-1] == "d":
+                    seconds += int(time[:-1]) * 86400
+        except ValueError:
+            return None
+
+        return seconds
 
     @commands.command(name="ban")
     @commands.has_permissions(ban_members=True)
