@@ -1,5 +1,6 @@
-discord-ext-menus @ git+https://github.com/Rapptz/discord-ext-menus@master ; python_full_version >= "3.5.3"
+discord-ext-menus @ git+https://github.com/Rapptz/discord-ext-menus@master
 discord.py[voice]
+aiohttp[speedups]
 lxml
 psutil
 youtube_dl
