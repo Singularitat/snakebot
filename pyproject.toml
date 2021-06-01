@@ -12,6 +12,7 @@ psutil = "^5.8.0"
 discord-ext-menus = {git = "https://github.com/Rapptz/discord-ext-menus"}
 Pillow = "^8.2.0"
 orjson = "^3.5.2"
+aiohttp = {extras = ["speedups"], version = "^3.7.4"}
 
 [tool.poetry.dev-dependencies]
 async-timeout = "3.0.1"
