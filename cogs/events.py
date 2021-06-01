@@ -593,7 +593,7 @@ class events(commands.Cog):
             if ctx.channel.id in disabled[str(ctx.guild.id)]:
                 return False
 
-        if DB.db.get(f"{ctx.guild.id}-{ctx.command}".encode()):
+        if ctx.guild and DB.db.get(f"{ctx.guild.id}-{ctx.command}".encode()):
             await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.red(), description="```Command disabled```"
