@@ -63,7 +63,7 @@ class owner(commands.Cog):
         """
         return ctx.author.id in self.bot.owner_ids
 
-    @commands.command(hidden=True, aliases=["clearinf"])
+    @commands.command(aliases=["clearinf"])
     async def clearinfractions(self, ctx, member: discord.Member):
         """Removes all infractions of a member.
 
@@ -71,7 +71,7 @@ class owner(commands.Cog):
         """
         DB.infractions.delete(f"{ctx.guild.id}-{member.id}".encode())
 
-    @commands.command(hidden=True, aliases=["showinf"])
+    @commands.command(aliases=["showinf"])
     async def showinfractions(self, ctx, member: discord.Member):
         """Shows all infractions of a member.
 
@@ -96,7 +96,7 @@ class owner(commands.Cog):
 
         DB.infractions.put(member_id, orjson.dumps(infractions))
 
-    @commands.command(hidden=True, aliases=["removeinf"])
+    @commands.command(aliases=["removeinf"])
     async def removeinfraction(
         self, ctx, member: discord.Member, infraction: str, index: int
     ):
@@ -125,7 +125,7 @@ class owner(commands.Cog):
 
         DB.infractions.put(member_id, orjson.dumps(infractions))
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def loglevel(self, ctx, level):
         """Changes logging level.
 
@@ -135,7 +135,7 @@ class owner(commands.Cog):
         if level.upper() in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
             logging.getLogger("discord").setLevel(getattr(logging, level.upper()))
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def gblacklist(self, ctx, user: discord.User):
         """Globally blacklists someone from the bot.
 
@@ -157,7 +157,7 @@ class owner(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def gdownvote(self, ctx, user: discord.User):
         """Globally downvotes someones.
 
@@ -179,7 +179,7 @@ class owner(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def backup(self, ctx, number: int):
         """Sends the bot database backup as a json file.
 
@@ -191,7 +191,7 @@ class owner(commands.Cog):
         with open(f"backup/{number}backup.json", "rb") as file:
             await ctx.send(file=discord.File(file, "backup.json"))
 
-    @commands.command(hidden=True, aliases=["boot"])
+    @commands.command(aliases=["boot"])
     async def boot_times(self, ctx, number=10):
         boot_times = DB.db.get(b"boot_times")
 
@@ -212,7 +212,7 @@ class owner(commands.Cog):
         embed.description = f"```{msg}```"
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True, aliases=["wipec"])
+    @commands.command(aliases=["wipec"])
     async def wipe_cache(self, ctx):
         """Wipes cache from the db."""
         DB.db.put(b"cache", b"{}")
@@ -221,7 +221,7 @@ class owner(commands.Cog):
         embed.description = "```Wiped Cache```"
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True, aliases=["cache"])
+    @commands.command(aliases=["cache"])
     async def list_cache(self, ctx):
         """Lists the cached items in the db."""
         embed = discord.Embed(color=discord.Color.blurple())
@@ -245,7 +245,7 @@ class owner(commands.Cog):
         embed.description = "```{}```".format("\n".join(msg))
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def togglelog(self, ctx):
         """Toggles logging to logs channel."""
         state = b"0" if DB.db.get(b"logging") == b"1" else b"1"
@@ -256,7 +256,7 @@ class owner(commands.Cog):
         embed.description = f"```Set logging to {bool(int(state))}```"
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def disable(self, ctx, *, command):
         """Disables the use of a command for every guild.
 
@@ -278,7 +278,7 @@ class owner(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def presence(self, ctx, *, presence):
         """Changes the bots activity.
 
@@ -290,7 +290,7 @@ class owner(commands.Cog):
             activity=discord.Game(name=presence),
         )
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def perf(self, ctx, *, command):
         """Checks the timing of a command, while attempting to suppress HTTP calls.
 
@@ -330,7 +330,7 @@ class owner(commands.Cog):
 
         await ctx.send(f"```css\n{result}: {(end - start) * 1000:.2f}ms```")
 
-    @commands.command(hiiden=True)
+    @commands.command()
     async def prefix(self, ctx, prefix: str):
         """Changes the bots command prefix.
 
@@ -343,7 +343,7 @@ class owner(commands.Cog):
         embed.description = f"```Prefix changed to {prefix}```"
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def sudo(
         self, ctx, channel: discord.TextChannel, member: discord.Member, *, command: str
     ):
@@ -388,7 +388,7 @@ class owner(commands.Cog):
 
         return "".join([output.decode() for output in result]).split()
 
-    @commands.command(hidden=True, aliases=["pull"])
+    @commands.command(aliases=["pull"])
     async def update(self, ctx):
         """Gets latest commits and applies them through git."""
         pull = await self.run_process("git pull")
@@ -427,7 +427,7 @@ class owner(commands.Cog):
                 if isinstance(e, commands.errors.ExtensionNotLoaded):
                     self.bot.load_extension(f"cogs.{ext}")
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def status(self, ctx):
         await self.run_process("git fetch")
         status = await self.run_process("git status", True)
@@ -437,7 +437,7 @@ class owner(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True, aliases=["deletecmd", "removecmd"])
+    @commands.command(aliases=["deletecmd", "removecmd"])
     async def deletecommand(self, ctx, command):
         """Removes command from the bot.
 
@@ -447,12 +447,12 @@ class owner(commands.Cog):
         self.bot.remove_command(command)
         await ctx.send(embed=discord.Embed(title=f"```Removed command {command}```"))
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def kill(self, ctx):
         """Kills the bot."""
         await self.bot.logout()
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def load(self, ctx, extension: str):
         """Loads an extension.
 
@@ -470,7 +470,7 @@ class owner(commands.Cog):
         embed.title = f"{extension} loaded."
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def unload(self, ctx, ext: str):
         """Unloads an extension.
 
@@ -482,7 +482,7 @@ class owner(commands.Cog):
             embed=discord.Embed(title=f"{ext} unloaded.", color=discord.Color.blurple())
         )
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def reload(self, ctx, ext: str):
         """Reloads an extension.
 
@@ -494,7 +494,7 @@ class owner(commands.Cog):
             embed=discord.Embed(title=f"{ext} reloaded.", color=discord.Color.blurple())
         )
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def restart(self, ctx):
         """Restarts all extensions."""
         embed = discord.Embed(color=discord.Color.blurple())
@@ -512,7 +512,7 @@ class owner(commands.Cog):
         embed.title = "Extensions restarted."
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def revive(self, ctx):
         """Kills the bot then revives it."""
         await ctx.send(
