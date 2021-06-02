@@ -552,7 +552,9 @@ class apis(commands.Cog):
 
             if not urban["list"]:
                 return await ctx.send(
-                    embed=discord.Embed(title="No results found", color=discord.Color.red())
+                    embed=discord.Embed(
+                        title="No results found", color=discord.Color.red()
+                    )
                 )
 
             urban["list"].sort(key=lambda defin: defin["thumbs_up"])
