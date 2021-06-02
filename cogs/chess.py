@@ -467,7 +467,7 @@ class chess(commands.Cog):
 
             hist.append(hist[-1].move(move))
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def chess(self, ctx):
         """Starts a game of chess against an AI."""
         await self.start_chess(ctx)
