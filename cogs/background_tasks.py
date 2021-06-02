@@ -38,7 +38,11 @@ class background_tasks(commands.Cog):
     async def task(self, ctx):
         """The task command group."""
         if ctx.invoked_subcommand is None:
-            await ctx.send("```No subcommand passed```")
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}task [restart/start/stop/list]```",
+            )
+            await ctx.send(embed=embed)
 
     @task.command()
     async def restart(self, ctx, task):
