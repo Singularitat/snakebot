@@ -172,6 +172,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             command_attrs={
                 "cooldown": commands.Cooldown(1, 3.0, commands.BucketType.member),
                 "help": "Shows help about the bot, a command, or a category",
+                "hidden": True,
             }
         )
 
