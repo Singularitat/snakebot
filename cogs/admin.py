@@ -17,6 +17,8 @@ class admin(commands.Cog):
 
         ctx: commands.Context
         """
+        if isinstance(ctx.author, discord.User):
+            return ctx.author.id in self.bot.owner_ids
         return ctx.author.guild_permissions.administrator
 
     @commands.command(aliases=["disablech"])
@@ -127,7 +129,7 @@ class admin(commands.Cog):
         embed.description = f"```Enabled the {command} command```"
         return await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def emojis(self, ctx):
         """Shows a list of the current emojis being voted on."""
         emojis = DB.db.get(b"emoji_submissions")
@@ -149,9 +151,9 @@ class admin(commands.Cog):
         embed.description = f"```{msg}```"
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True, aliases=["demoji"])
+    @commands.command(aliases=["demoji"])
     async def delete_emoji(self, ctx, message_id):
-        """Shows a list of the current emojis being voted on.
+        """Deletes an emoji from the emojis being voted on.
 
         message_id: str
             Id of the message to remove from the db.
@@ -170,7 +172,7 @@ class admin(commands.Cog):
 
         DB.db.put(b"emoji_submissions", orjson.dumps(emojis))
 
-    @commands.command(hidden=True, aliases=["aemoji"])
+    @commands.command(aliases=["aemoji"])
     async def add_emoji(self, ctx, message_id, name):
         """Adds a emoji to be voted on.
 
@@ -188,7 +190,7 @@ class admin(commands.Cog):
 
         DB.db.put(b"emoji_submissions", orjson.dumps(emojis))
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def edit(self, ctx, message: discord.Message, *, content):
         """Edits the content of a bot message.
 
@@ -204,7 +206,7 @@ class admin(commands.Cog):
         """Error handler for edit command."""
         await ctx.send("```I cannot edit this message```")
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def embededit(self, ctx, message: discord.Message, description, title=None):
         """Edits the embed of a bot message.
 
@@ -221,7 +223,7 @@ class admin(commands.Cog):
             embed.title = title
         await message.edit(embed=embed)
 
-    @commands.command(hidden=True)
+    @commands.command()
     async def embed(self, ctx, description, title=None):
         """Sends an embed.
 
