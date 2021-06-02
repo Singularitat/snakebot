@@ -134,7 +134,7 @@ class moderation(commands.Cog):
 
         DB.infractions.put(member_id, orjson.dumps(infractions))
 
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.has_permissions(manage_messages=True)
     async def warnings(self, ctx, member: discord.Member):
         """Shows the warnings a member has.
@@ -333,7 +333,11 @@ class moderation(commands.Cog):
             try:
                 await ctx.channel.purge(limit=int(ctx.subcommand_passed) + 1)
             except ValueError:
-                await ctx.send("No subcommand passed")
+                embed = discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"```Usage: {ctx.prefix}purge [amount]```",
+                )
+                await ctx.send(embed=embed)
 
     @purge.command()
     @commands.has_permissions(manage_messages=True)
@@ -379,12 +383,15 @@ class moderation(commands.Cog):
         await channel.clone()
         await channel.delete()
 
-    @commands.group(hidden=True)
+    @commands.group()
+    @commands.has_permissions(manage_messages=True)
     async def history(self, ctx):
         """Shows the edited message or deleted message history of a member."""
         if ctx.invoked_subcommand is None:
-            embed = discord.Embed(color=discord.Color.blurple())
-            embed.description = f"```Usage: {ctx.prefix}history [deleted/edited]```"
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}history [deleted/edited]```",
+            )
             await ctx.send(embed=embed)
 
     @history.command(aliases=["d"])

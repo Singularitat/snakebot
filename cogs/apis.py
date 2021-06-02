@@ -8,6 +8,7 @@ from datetime import datetime
 import textwrap
 import orjson
 import html
+import cogs.utils.database as DB
 
 
 class apis(commands.Cog):
@@ -535,17 +536,31 @@ class apis(commands.Cog):
         search: str
             The term to search for.
         """
-        url = f"https://api.urbandictionary.com/v0/define?term={search}"
+        cache_search = f"urban-{search}"
+        cache = orjson.loads(DB.db.get(b"cache"))
 
-        async with ctx.typing():
-            urban = await self.get_json(url)
+        if cache_search in cache:
+            defin = cache[cache_search].pop()
 
-        if not urban["list"]:
-            return await ctx.send(
-                embed=discord.Embed(title="No results found", color=discord.Color.red())
-            )
+            if len(cache[cache_search]) == 0:
+                cache.pop(cache_search)
+        else:
+            url = f"https://api.urbandictionary.com/v0/define?term={search}"
 
-        defin = random.choice(urban["list"])
+            async with ctx.typing():
+                urban = await self.get_json(url)
+
+            if not urban["list"]:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        title="No results found", color=discord.Color.red()
+                    )
+                )
+
+            urban["list"].sort(key=lambda defin: defin["thumbs_up"])
+
+            defin = urban["list"].pop()
+            cache[cache_search] = urban["list"]
 
         embed = discord.Embed(colour=discord.Color.blurple())
 
@@ -561,6 +576,8 @@ class apis(commands.Cog):
             defin["thumbs_up"],
         )
 
+        DB.db.put(b"cache", orjson.dumps(cache))
+        self.loop.call_later(300, self.delete_cache, cache_search, cache)
         await ctx.send(embed=embed)
 
     @staticmethod
@@ -779,7 +796,7 @@ class apis(commands.Cog):
         search: str
         """
         cache.pop(search)
-        self.bot.db.put(b"cache", orjson.dumps(cache))
+        DB.db.put(b"cache", orjson.dumps(cache))
 
     @commands.command()
     async def tenor(self, ctx, *, search):
@@ -789,7 +806,7 @@ class apis(commands.Cog):
             The gif search term.
         """
         cache_search = f"tenor-{search}"
-        cache = orjson.loads(self.bot.db.get(b"cache"))
+        cache = orjson.loads(DB.db.get(b"cache"))
 
         if cache_search in cache:
             url = random.choice(cache[cache_search])
@@ -798,7 +815,7 @@ class apis(commands.Cog):
             if len(cache[cache_search]) == 0:
                 cache.pop(cache_search)
 
-            self.bot.db.put(b"cache", orjson.dumps(cache))
+            DB.db.put(b"cache", orjson.dumps(cache))
 
             return await ctx.send(url)
 
@@ -812,7 +829,7 @@ class apis(commands.Cog):
         tenor.remove(image)
         cache[cache_search] = tenor
 
-        self.bot.db.put(b"cache", orjson.dumps(cache))
+        DB.db.put(b"cache", orjson.dumps(cache))
         self.loop.call_later(300, self.delete_cache, cache_search, cache)
         await ctx.send(image)
 

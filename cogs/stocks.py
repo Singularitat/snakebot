@@ -371,7 +371,10 @@ class stocks(commands.Cog):
         embed = discord.Embed(colour=discord.Colour.blurple())
 
         if not ctx.subcommand_passed:
-            embed.description = "```No subcommand passed```"
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}coin [symbol]```",
+            )
             return await ctx.send(embed=embed)
 
         symbol = ctx.subcommand_passed.upper()

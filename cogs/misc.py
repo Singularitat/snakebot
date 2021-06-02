@@ -18,6 +18,58 @@ class misc(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    async def cipher(self, ctx, *, message):
+        """Solves a caesar cipher via brute force.
+        Shows results sorted by the chi-square of letter frequencies
+
+        message: str
+        """
+        if message.isupper():
+            chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        else:
+            message = message.lower()
+            chars = "abcdefghijklmnopqrstuvwxyz"
+
+        # fmt: off
+
+        freq = {
+            "a": 8.04, "b": 1.48, "c": 3.34,
+            "d": 3.82, "e": 12.49, "f": 2.4,
+            "g": 1.87, "h": 5.05, "i": 7.57,
+            "j": 0.16, "k": 0.54, "l": 4.07,
+            "m": 2.51, "n": 7.23, "o": 7.64,
+            "p": 2.14, "q": 0.12, "r": 6.28,
+            "s": 6.51, "t": 9.28, "u": 2.73,
+            "v": 1.05, "w": 1.68, "x": 0.23,
+            "y": 1.66, "z": 0.09,
+        }
+
+        # fmt: on
+
+        msg_len = len(message)
+
+        rotate1 = str.maketrans(chars, chars[1:] + chars[0])
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        results = []
+
+        for i in range(25, 0, -1):
+            message = message.translate(rotate1)
+            # Chi-square
+            chi = sum(
+                [
+                    (((message.count(char) / msg_len) - freq[char]) ** 2) / freq[char]
+                    for char in set(message.lower().replace(" ", ""))
+                ]
+            )
+            results.append((chi, (i, message)))
+
+        for chi, result in sorted(results, reverse=True):
+            embed.add_field(name=f"{result[0]}, {chi:.2f}%", value=result[1])
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def youtube(self, ctx):
         """Starts a YouTube Together."""
         if (code := DB.db.get(b"youtube_together")) and discord.utils.get(
