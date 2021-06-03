@@ -49,12 +49,14 @@ class misc(commands.Cog):
             mask = Image.new("RGBA", img.size, color + (0,))
             draw = ImageDraw.Draw(mask)
 
-            font = ImageFont.truetype(r"fonts\DejaVuSans.ttf", round(img.width/25))
+            font = ImageFont.truetype(r"fonts\DejaVuSans.ttf", round(img.width / 25))
             text_x, text_y = font.getsize(label)
 
             draw.rectangle(((x1, y1), (x2, y2)), fill=color + (96,))
             if (y1 - text_y) > 0 and x1 > 0 and x2 > 0:
-                draw.rectangle(((x1, y1), (x1 + text_x, y1 - text_y)), fill=color + (96,))
+                draw.rectangle(
+                    ((x1, y1), (x1 + text_x, y1 - text_y)), fill=color + (96,)
+                )
             else:
                 text_y = 0
 
@@ -90,7 +92,9 @@ class misc(commands.Cog):
                 data=form,
             ) as response:
                 if 200 < response.status < 300:
-                    embed.description = "```Couldn't process image might be too large```"
+                    embed.description = (
+                        "```Couldn't process image might be too large```"
+                    )
                     return await ctx.send(embed=embed)
                 data = await response.json()
 
@@ -183,9 +187,13 @@ class misc(commands.Cog):
         results = ""
 
         for block in A:
-            results += f"{[sum(starmap(self.mul, zip(block, col))) for col in zip(*B)]}\n"
+            results += (
+                f"{[sum(starmap(self.mul, zip(block, col))) for col in zip(*B)]}\n"
+            )
 
-        embed = discord.Embed(color=discord.Color.blurple(), description=f"```{results}```")
+        embed = discord.Embed(
+            color=discord.Color.blurple(), description=f"```{results}```"
+        )
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -675,12 +683,14 @@ class misc(commands.Cog):
         await ctx.send(f"<{discord.utils.oauth_url(self.bot.user.id, perms)}>")
 
     @commands.command()
-    async def icon(self, ctx, user: discord.User):
+    async def icon(self, ctx, user: discord.User = None):
         """Sends a members avatar url.
 
         user: discord.User
             The member to show the avatar of.
         """
+        if not user:
+            user = ctx.author
         await ctx.send(user.avatar_url)
 
     @commands.command()
