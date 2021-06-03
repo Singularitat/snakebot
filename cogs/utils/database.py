@@ -23,6 +23,23 @@ wins = db.prefixed_db(b"wins-")
 message_count = db.prefixed_db(b"message_count-")
 
 
+async def add_karma(member_id, amount):
+    """Adds or removes an amount from a members karma.
+
+    member_id: int
+    amount: int
+    """
+    member_id = str(member_id).encode()
+    member_karma = karma.get(member_id)
+
+    if not member_karma:
+        member_karma = amount
+    else:
+        member_karma = int(member_karma) + amount
+
+    karma.put(member_id, str(member_karma).encode())
+
+
 async def get_blacklist(member_id, guild=None):
     """Returns whether someone is blacklisted.
 
