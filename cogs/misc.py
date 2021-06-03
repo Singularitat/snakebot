@@ -9,6 +9,9 @@ from urllib.parse import quote
 import re
 import cogs.utils.database as DB
 import config
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
+from itertools import starmap
 
 
 class misc(commands.Cog):
@@ -16,6 +19,95 @@ class misc(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    @staticmethod
+    async def visualize_predictions(image, predictions):
+        img = Image.open(BytesIO(await image.read()))
+        img = img.convert("RGBA")
+
+        labels = set([prediction["label"] for prediction in predictions])
+        colors = {
+            label: (
+                random.randint(0, 200),
+                random.randint(0, 200),
+                random.randint(0, 200),
+            )
+            for label in labels
+        }
+
+        for prediction in predictions:
+            bounding_boxes = (
+                prediction["bbox"]["x1"],
+                prediction["bbox"]["y1"],
+                prediction["bbox"]["x2"],
+                prediction["bbox"]["y2"],
+            )
+            label = prediction["label"]
+            color = colors[label]
+
+            x1, y1, x2, y2 = bounding_boxes
+            mask = Image.new("RGBA", img.size, color + (0,))
+            draw = ImageDraw.Draw(mask)
+
+            font = ImageFont.truetype(r"fonts\DejaVuSans.ttf", round(img.width/25))
+            text_x, text_y = font.getsize(label)
+
+            draw.rectangle(((x1, y1), (x2, y2)), fill=color + (96,))
+            if (y1 - text_y) > 0 and x1 > 0 and x2 > 0:
+                draw.rectangle(((x1, y1), (x1 + text_x, y1 - text_y)), fill=color + (96,))
+            else:
+                text_y = 0
+
+            draw.text((x1, y1 - text_y), text=label, fill="white", font=font)
+            img = Image.alpha_composite(img, mask)
+
+        img = img.convert("RGB")
+
+        return img
+
+    @commands.command()
+    async def vision(self, ctx):
+        """Machine vision via openvisionapi.com"""
+        embed = discord.Embed(color=discord.Color.blurple())
+        if not ctx.message.attachments:
+            embed.description = "```You need to attach an image.```"
+            return await ctx.send(embed=embed)
+
+        image = ctx.message.attachments[0]
+
+        if image.content_type not in ["image/png", "image/jpg", "image/jpeg"]:
+            embed.description = "```Invalid file type.```"
+            return await ctx.send(embed=embed)
+
+        form = aiohttp.FormData({"model": "yolov4"})
+        form.add_field(
+            name="image", value=await image.read(), content_type=image.content_type
+        )
+
+        async with ctx.typing():
+            async with aiohttp.ClientSession() as session, session.post(
+                "https://api.openvisionapi.com/api/v1/detection",
+                data=form,
+            ) as response:
+                if 200 < response.status < 300:
+                    embed.description = "```Couldn't process image might be too large```"
+                    return await ctx.send(embed=embed)
+                data = await response.json()
+
+            if "predictions" not in data:
+                embed.description = "```Couldn't process image.```"
+                return await ctx.send(embed=embed)
+
+            if not data["predictions"]:
+                embed.description = "```No predictions.```"
+                return await ctx.send(embed=embed)
+
+            img = await self.visualize_predictions(image, data["predictions"])
+
+            with BytesIO() as image_binary:
+                img.save(image_binary, "PNG")
+                image_binary.seek(0)
+                await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
 
     @commands.command()
     async def cipher(self, ctx, *, message):
@@ -67,6 +159,33 @@ class misc(commands.Cog):
         for chi, result in sorted(results, reverse=True):
             embed.add_field(name=f"{result[0]}, {chi:.2f}%", value=result[1])
 
+        await ctx.send(embed=embed)
+
+    @staticmethod
+    def mul(a, b):
+        return a * b
+
+    @commands.command()
+    async def block(self, ctx, A, B):
+        """Solves a block cipher in the format of a python matrix.
+
+        e.g
+        "1 2 3" "3 7 15, 6 2 61, 2 5 1"
+
+        block1: str
+        block2: str
+        """
+        A = A.split(",")
+        A = [[int(num) for num in block.split()] for block in A]
+        B = B.split(",")
+        B = [[int(num) for num in block.split()] for block in B]
+
+        results = ""
+
+        for block in A:
+            results += f"{[sum(starmap(self.mul, zip(block, col))) for col in zip(*B)]}\n"
+
+        embed = discord.Embed(color=discord.Color.blurple(), description=f"```{results}```")
         await ctx.send(embed=embed)
 
     @commands.command()
