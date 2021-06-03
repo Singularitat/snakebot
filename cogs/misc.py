@@ -25,7 +25,7 @@ class misc(commands.Cog):
         img = Image.open(BytesIO(await image.read()))
         img = img.convert("RGBA")
 
-        labels = set([prediction["label"] for prediction in predictions])
+        labels = {prediction["label"] for prediction in predictions}
         colors = {
             label: (
                 random.randint(0, 200),
