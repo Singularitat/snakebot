@@ -470,6 +470,11 @@ class apis(commands.Cog):
         await ctx.send(image["url"])
 
     @commands.command()
+    async def dogstatus(self, ctx, status):
+        """Gets a dog image for a status e.g Error 404 not found."""
+        await ctx.send(f"https://httpstatusdogs.com/img/{status}.jpg")
+
+    @commands.command()
     async def shibe(self, ctx):
         """Gets a random dog image."""
         url = "http://shibe.online/api/shibes?count=1&urls=true&httpsUrls=true"
@@ -795,7 +800,10 @@ class apis(commands.Cog):
 
         search: str
         """
-        cache.pop(search)
+        try:
+            cache.pop(search)
+        except KeyError:
+            return
         DB.db.put(b"cache", orjson.dumps(cache))
 
     @commands.command()
