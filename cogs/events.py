@@ -139,23 +139,10 @@ class events(commands.Cog):
         if time_since > 1800:
             return
 
-        member = str(reaction.message.author.id).encode()
-
         if reaction.emoji.name.lower() == "downvote":
-            karma = DB.karma.get(member)
-            if not karma:
-                karma = -1
-            else:
-                karma = int(karma.decode()) - 1
-            DB.karma.put(member, str(karma).encode())
-
+            await DB.add_karma(reaction.message.author.id, -1)
         elif reaction.emoji.name.lower() == "upvote":
-            karma = DB.karma.get(member)
-            if not karma:
-                karma = 1
-            else:
-                karma = int(karma.decode()) + 1
-            DB.karma.put(member, str(karma).encode())
+            await DB.add_karma(reaction.message.author.id, 1)
 
     @commands.Cog.listener()
     async def on_reaction_remove(self, reaction, user):
@@ -175,23 +162,10 @@ class events(commands.Cog):
         if time_since > 1800:
             return
 
-        member = str(reaction.message.author.id).encode()
-
         if reaction.emoji.name.lower() == "downvote":
-            karma = DB.karma.get(member)
-            if not karma:
-                karma = 1
-            else:
-                karma = int(karma.decode()) + 1
-            DB.karma.put(member, str(karma).encode())
-
+            await DB.add_karma(reaction.message.author.id, 1)
         elif reaction.emoji.name.lower() == "upvote":
-            karma = DB.karma.get(member)
-            if not karma:
-                karma = -1
-            else:
-                karma = int(karma.decode()) - 1
-            DB.karma.put(member, str(karma).encode())
+            await DB.add_karma(reaction.message.author.id, -1)
 
     @commands.Cog.listener()
     async def on_reaction_clear(self, message, reactions):
@@ -219,6 +193,7 @@ class events(commands.Cog):
 
         if await DB.get_blacklist(member.id, member.guild.id) == b"1":
             await member.edit(voice_channel=None)
+            await DB.add_karma(member.id, -1)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
