@@ -216,10 +216,20 @@ class useful(commands.Cog):
         name: str
             The emoji name. Must be at least 2 characters."""
         if len(name) < 2:
-            return await ctx.send("```Name has to be at least 2 characters```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```Name has to be at least 2 characters```",
+                )
+            )
 
         if discord.utils.get(ctx.guild.emojis, name=name):
-            return await ctx.send("```An emoji already exists with that name```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```An emoji already exists with that name```",
+                )
+            )
 
         if len(ctx.message.attachments) == 0:
             return await ctx.send(
@@ -309,7 +319,11 @@ class useful(commands.Cog):
         ctx = await self.bot.get_context(ctx, cls=type(ctx))
 
         if not ctx.command:
-            return await ctx.send("```No command found```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```No command found```"
+                )
+            )
 
         start = time.time()
         await ctx.command.invoke(ctx)
@@ -375,12 +389,21 @@ class useful(commands.Cog):
         }
 
         if obj not in objects:
-            return await ctx.send("```Could not find object```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```Could not find object```",
+                )
+            )
 
         try:
             obj = await objects[obj].convert(ctx, arg)
         except commands.BadArgument:
-            return await ctx.send("```Conversion failed```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```Conversion failed```"
+                )
+            )
 
         if attr:
             attributes = attr.split(".")
@@ -561,7 +584,11 @@ class useful(commands.Cog):
             r = await response.json()
 
         if r["stderr"]:
-            return await ctx.send("```Invalid```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```Invalid```"
+                )
+            )
 
         if num_base.lower() == "hex":
             result = hex(int(r["output"]))

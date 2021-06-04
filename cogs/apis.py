@@ -508,10 +508,18 @@ class apis(commands.Cog):
             data = await self.get_json(url)
 
         if data is None:
-            return await ctx.send("```Invalid url```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```Invalid url```"
+                )
+            )
 
         if data[0]["symbol"][0]["data"] is None:
-            return await ctx.send("```Could not decode```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```Could not decode```"
+                )
+            )
 
         await ctx.send(data[0]["symbol"][0]["data"])
 
@@ -530,7 +538,11 @@ class apis(commands.Cog):
             data = await self.get_json(url)
 
         if data is None:
-            return await ctx.send("```xkcd timed out.```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```xkcd timed out.```"
+                )
+            )
 
         await ctx.send(data["img"])
 

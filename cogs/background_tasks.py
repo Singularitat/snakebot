@@ -55,7 +55,11 @@ class background_tasks(commands.Cog):
             getattr(self, task).restart()
             await ctx.send(f"{task} restarted")
         except AttributeError:
-            return await ctx.send("```Task not found```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```Task not found```"
+                )
+            )
 
     @task.command()
     async def start(self, ctx, task):
@@ -68,7 +72,11 @@ class background_tasks(commands.Cog):
             getattr(self, task).start()
             await ctx.send(f"{task} started")
         except AttributeError:
-            return await ctx.send("```Task not found```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```Task not found```"
+                )
+            )
 
     @task.command()
     async def stop(self, ctx, task):
