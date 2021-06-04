@@ -192,7 +192,8 @@ class owner(commands.Cog):
             await ctx.send(file=discord.File(file, "backup.json"))
 
     @commands.command(aliases=["boot"])
-    async def boot_times(self, ctx, number=10):
+    async def boot_times(self, ctx):
+        """Shows the average fastest and slowest boot times of the bot."""
         boot_times = DB.db.get(b"boot_times")
 
         embed = discord.Embed(color=discord.Color.blurple())
