@@ -277,21 +277,14 @@ class useful(commands.Cog):
             r = await response.json()
 
         if not r["output"]:
-            return await ctx.send("No output")
+            embed.description = "```No output```"
+            return await ctx.reply(embed=embed)
 
         if len("```\n{r['output']}```") > 2048:
             embed.description = f"```\n{r['output'][:2023]}\nTruncated Output```"
             return await ctx.reply(embed=embed)
 
         await ctx.reply(f"```\n{r['output']}```")
-
-    @run.error
-    async def run_handler(self, ctx, error):
-        """Error handler for run command."""
-        if isinstance(error, commands.errors.MissingRequiredArgument):
-            await ctx.send(
-                f"```Usage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}```"
-            )
 
     @commands.command(name="removereact")
     async def remove_reaction(self, ctx, message: discord.Message, reaction):
