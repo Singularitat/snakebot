@@ -192,7 +192,8 @@ class owner(commands.Cog):
             await ctx.send(file=discord.File(file, "backup.json"))
 
     @commands.command(aliases=["boot"])
-    async def boot_times(self, ctx, number=10):
+    async def boot_times(self, ctx):
+        """Shows the average fastest and slowest boot times of the bot."""
         boot_times = DB.db.get(b"boot_times")
 
         embed = discord.Embed(color=discord.Color.blurple())
@@ -309,7 +310,11 @@ class owner(commands.Cog):
         new_ctx.channel = PerformanceMocker()
 
         if not new_ctx.command:
-            return await ctx.send("```No command found```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```No command found```"
+                )
+            )
 
         start = time.perf_counter()
 
@@ -618,7 +623,11 @@ class owner(commands.Cog):
         reaction = DB.rrole.get(str(message.id).encode())
 
         if not reaction:
-            return await ctx.send("```Message not found```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```Message not found```"
+                )
+            )
 
         msg = message.content
 
@@ -665,7 +674,11 @@ class owner(commands.Cog):
         try:
             message = await ctx.bot.wait_for("message", timeout=300.0, check=check)
         except asyncio.TimeoutError:
-            return await ctx.send("```Timed out```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```Timed out```"
+                )
+            )
 
         await tmp_msg.delete()
         await message.delete()

@@ -249,7 +249,12 @@ class moderation(commands.Cog):
         reason: str
         """
         if ctx.author.top_role <= member.top_role and ctx.guild.owner != ctx.author:
-            return await ctx.send("```You can't kick someone higher or equal to you```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You can't kick someone higher or equal to you```",
+                )
+            )
 
         await member.kick()
 
@@ -347,7 +352,12 @@ class moderation(commands.Cog):
         try:
             message = await ctx.fetch_message(message_id)
         except discord.errors.NotFound:
-            return await ctx.send("```Message could not be found in this channel```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```Message could not be found in this channel```",
+                )
+            )
 
         await ctx.channel.purge(after=message)
 
@@ -411,7 +421,12 @@ class moderation(commands.Cog):
         deleted = DB.deleted.get(user_id)
 
         if deleted is None:
-            return await ctx.send("```No deleted messages found```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```No deleted messages found```",
+                )
+            )
 
         deleted = orjson.loads(deleted)
 
@@ -449,7 +464,12 @@ class moderation(commands.Cog):
         edited = DB.edited.get(user_id)
 
         if edited is None:
-            return await ctx.send("```No edited messages found```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```No edited messages found```",
+                )
+            )
 
         edited = orjson.loads(edited)
 

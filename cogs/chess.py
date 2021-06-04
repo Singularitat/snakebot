@@ -408,7 +408,12 @@ class chess(commands.Cog):
 
     async def start_chess(self, ctx):
         if self.is_running is True:
-            return await ctx.send("```A game is already running```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```A game is already running```",
+                )
+            )
 
         self.is_running = True
         embed = discord.Embed(color=discord.Color.blurple())

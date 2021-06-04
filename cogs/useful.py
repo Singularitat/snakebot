@@ -216,10 +216,20 @@ class useful(commands.Cog):
         name: str
             The emoji name. Must be at least 2 characters."""
         if len(name) < 2:
-            return await ctx.send("```Name has to be at least 2 characters```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```Name has to be at least 2 characters```",
+                )
+            )
 
         if discord.utils.get(ctx.guild.emojis, name=name):
-            return await ctx.send("```An emoji already exists with that name```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```An emoji already exists with that name```",
+                )
+            )
 
         if len(ctx.message.attachments) == 0:
             return await ctx.send(
@@ -277,21 +287,14 @@ class useful(commands.Cog):
             r = await response.json()
 
         if not r["output"]:
-            return await ctx.send("No output")
+            embed.description = "```No output```"
+            return await ctx.reply(embed=embed)
 
         if len("```\n{r['output']}```") > 2048:
             embed.description = f"```\n{r['output'][:2023]}\nTruncated Output```"
             return await ctx.reply(embed=embed)
 
         await ctx.reply(f"```\n{r['output']}```")
-
-    @run.error
-    async def run_handler(self, ctx, error):
-        """Error handler for run command."""
-        if isinstance(error, commands.errors.MissingRequiredArgument):
-            await ctx.send(
-                f"```Usage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}```"
-            )
 
     @commands.command(name="removereact")
     async def remove_reaction(self, ctx, message: discord.Message, reaction):
@@ -316,7 +319,11 @@ class useful(commands.Cog):
         ctx = await self.bot.get_context(ctx, cls=type(ctx))
 
         if not ctx.command:
-            return await ctx.send("```No command found```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```No command found```"
+                )
+            )
 
         start = time.time()
         await ctx.command.invoke(ctx)
@@ -382,12 +389,21 @@ class useful(commands.Cog):
         }
 
         if obj not in objects:
-            return await ctx.send("```Could not find object```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```Could not find object```",
+                )
+            )
 
         try:
             obj = await objects[obj].convert(ctx, arg)
         except commands.BadArgument:
-            return await ctx.send("```Conversion failed```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```Conversion failed```"
+                )
+            )
 
         if attr:
             attributes = attr.split(".")
@@ -568,7 +584,11 @@ class useful(commands.Cog):
             r = await response.json()
 
         if r["stderr"]:
-            return await ctx.send("```Invalid```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```Invalid```"
+                )
+            )
 
         if num_base.lower() == "hex":
             result = hex(int(r["output"]))

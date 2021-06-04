@@ -139,15 +139,17 @@ class admin(commands.Cog):
         else:
             emojis = orjson.loads(emojis)
 
+        embed = discord.Embed(color=discord.Color.blurple())
+
         if len(emojis) == 0:
-            return await ctx.send("```No emojis found```")
+            embed.description = "```No emojis found```"
+            return await ctx.send(embed=embed)
 
         msg = ""
 
         for name, users in emojis.items():
             msg += f"{name}: {users}\n"
 
-        embed = discord.Embed(color=discord.Color.blurple())
         embed.description = f"```{msg}```"
         await ctx.send(embed=embed)
 
@@ -200,11 +202,6 @@ class admin(commands.Cog):
             What the content of the message will be changed to.
         """
         await message.edit(content=content)
-
-    @edit.error
-    async def edit_handler(self, ctx, error):
-        """Error handler for edit command."""
-        await ctx.send("```I cannot edit this message```")
 
     @commands.command()
     async def embededit(self, ctx, message: discord.Message, description, title=None):
