@@ -89,7 +89,11 @@ class background_tasks(commands.Cog):
             getattr(self, task).stop()
             await ctx.send(f"{task} stopped")
         except AttributeError:
-            return await ctx.send("```Task not found```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```Task not found```"
+                )
+            )
 
     @task.command()
     async def list(self, ctx):
