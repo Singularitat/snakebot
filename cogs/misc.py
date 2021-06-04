@@ -11,7 +11,6 @@ import cogs.utils.database as DB
 import config
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
-from itertools import starmap
 
 
 class misc(commands.Cog):
@@ -166,8 +165,9 @@ class misc(commands.Cog):
         await ctx.send(embed=embed)
 
     @staticmethod
-    def mul(a, b):
-        return a * b
+    def starmap(iterable):
+        for num1, num2 in iterable:
+            yield num1 * num2
 
     @commands.command()
     async def block(self, ctx, A, B):
@@ -187,9 +187,7 @@ class misc(commands.Cog):
         results = ""
 
         for block in A:
-            results += (
-                f"{[sum(starmap(self.mul, zip(block, col))) for col in zip(*B)]}\n"
-            )
+            results += f"{[chr((sum(self.starmap(zip(block, col))) % 26) + 97) for col in zip(*B)]}\n"
 
         embed = discord.Embed(
             color=discord.Color.blurple(), description=f"```{results}```"
