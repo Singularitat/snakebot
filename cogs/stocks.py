@@ -93,8 +93,7 @@ class stocks(commands.Cog):
         member: discord.Member
             The member whos stockprofile will be shown
         """
-        if not member:
-            member = ctx.author
+        member = member or ctx.author
 
         member_id = str(member.id).encode()
         stockbal = await DB.get_stockbal(member_id)
@@ -326,8 +325,7 @@ class stocks(commands.Cog):
         members: discord.Member
             The member whos net worth will be returned.
         """
-        if not member:
-            member = ctx.author
+        member = member or ctx.author
 
         member_id = str(member.id).encode()
         bal = await DB.get_bal(member_id)
@@ -536,8 +534,7 @@ class stocks(commands.Cog):
         member: discord.Member
             The member whos crypto profile will be shown.
         """
-        if not member:
-            member = ctx.author
+        member = member or ctx.author
 
         member_id = str(member.id).encode()
         cryptobal = await DB.get_cryptobal(member_id)
@@ -640,8 +637,7 @@ class stocks(commands.Cog):
 
     @_crypto.command()
     async def history(self, ctx, member: discord.Member = None, amount=10):
-        if not member:
-            member = ctx.author
+        member = member or ctx.author
 
         embed = discord.Embed(color=discord.Color.blurple())
         cryptobal = await DB.get_cryptobal(str(member.id).encode())

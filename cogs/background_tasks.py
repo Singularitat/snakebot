@@ -37,7 +37,7 @@ class background_tasks(commands.Cog):
     @commands.is_owner()
     async def task(self, ctx):
         """The task command group."""
-        if ctx.invoked_subcommand is None:
+        if not ctx.invoked_subcommand:
             embed = discord.Embed(
                 color=discord.Color.blurple(),
                 description=f"```Usage: {ctx.prefix}task [restart/start/stop/list]```",

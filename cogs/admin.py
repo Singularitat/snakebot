@@ -27,8 +27,7 @@ class admin(commands.Cog):
 
         channel: discord.TextChannel
         """
-        if not channel:
-            channel = ctx.channel
+        channel = channel or ctx.channel
 
         disabled = DB.db.get(b"disabled_channels")
 
@@ -120,7 +119,7 @@ class admin(commands.Cog):
         key = f"{ctx.guild.id}-{command}".encode()
         state = DB.db.get(key)
 
-        if state is None:
+        if not state:
             DB.db.put(key, b"1")
             embed.description = f"```Disabled the {command} command```"
             return await ctx.send(embed=embed)
@@ -269,7 +268,7 @@ class admin(commands.Cog):
             How long to downvote the user for e.g 5d 10h 25m 5s
         """
         embed = discord.Embed(color=discord.Color.blurple())
-        if member is None:
+        if not member:
             if list(DB.blacklist) == []:
                 embed.title = "No downvoted users"
                 return await ctx.send(embed=embed)
@@ -304,7 +303,7 @@ class admin(commands.Cog):
 
         await member.edit(voice_channel=None)
 
-        if duration is None:
+        if not duration:
             DB.blacklist.put(member_id, b"1")
             embed.title = "User Downvoted"
             embed.description = f"**{member}** has been added to the downvote list"
@@ -337,7 +336,7 @@ class admin(commands.Cog):
             The blacklisted user.
         """
         embed = discord.Embed(color=discord.Color.blurple())
-        if user is None:
+        if not user:
             if list(DB.blacklist) == []:
                 embed.title = "No blacklisted users"
                 return await ctx.send(embed=embed)
