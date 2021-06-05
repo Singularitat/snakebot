@@ -490,7 +490,9 @@ class misc(commands.Cog):
                         "```Didn't get a response try again later.```"
                     )
                 if b"503 Service Temporarily Unavailable" in res:
-                    return await ctx.reply("```Didn't get a response try again later.```")
+                    return await ctx.reply(
+                        "```Didn't get a response try again later.```"
+                    )
                 response = re.split(r"\\r", str(res))[0][2:-1]
 
             history[str(ctx.author.id)].extend([message, response])
