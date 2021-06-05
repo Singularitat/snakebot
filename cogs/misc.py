@@ -446,19 +446,19 @@ class misc(commands.Cog):
             The message you want to send.
         """
         async with ctx.typing():
+            timestamp = ctx.message.created_at.timestamp()
             cookies = DB.db.get(b"chatcookies")
-            if cookies is None:
+            if not cookies or (cookies := orjson.loads(cookies))["expiry"] < timestamp:
                 async with aiohttp.ClientSession() as session, session.get(
                     "https://www.cleverbot.com/"
                 ) as response:
                     cookies = {
                         "XVIS": re.search(
                             r"\w+(?=;)", response.headers["Set-cookie"]
-                        ).group()
+                        ).group(),
+                        "expiry": timestamp + 86400,
                     }
                     DB.db.put(b"chatcookies", orjson.dumps(cookies))
-            else:
-                cookies = orjson.loads(cookies)
 
             history = DB.db.get(b"chatbot-history")
 
@@ -484,8 +484,15 @@ class misc(commands.Cog):
                 url, data=payload
             ) as response:
                 res = await response.read()
+                if res == b"Hello from Cleverbot\n":
+                    DB.db.delete(b"chatcookies")
+                    return await ctx.reply(
+                        "```Didn't get a response try again later.```"
+                    )
                 if b"503 Service Temporarily Unavailable" in res:
-                    return await ctx.reply("```503 Service Temporarily Unavailable```")
+                    return await ctx.reply(
+                        "```Didn't get a response try again later.```"
+                    )
                 response = re.split(r"\\r", str(res))[0][2:-1]
 
             history[str(ctx.author.id)].extend([message, response])
@@ -594,9 +601,7 @@ class misc(commands.Cog):
         user: discord.User
             The user to get the karma of.
         """
-        if not user:
-            user = ctx.author
-
+        user = user or ctx.author
         user_id = str(user.id).encode()
         karma = DB.karma.get(user_id)
 
@@ -687,8 +692,7 @@ class misc(commands.Cog):
         user: discord.User
             The member to show the avatar of.
         """
-        if not user:
-            user = ctx.author
+        user = user or ctx.author
         await ctx.send(user.avatar_url)
 
     @commands.command()
@@ -801,7 +805,7 @@ class misc(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def ledger(self, ctx):
         """The ledger command group, call without args to show ledger."""
-        if ctx.invoked_subcommand is None:
+        if not ctx.invoked_subcommand:
             ledger = DB.db.get(b"ledger")
             embed = discord.Embed(color=discord.Color.blurple())
 

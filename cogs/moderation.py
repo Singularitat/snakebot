@@ -30,7 +30,7 @@ class moderation(commands.Cog):
         member_id = f"{ctx.guild.id}-{member.id}".encode()
         infractions = DB.infractions.get(member_id)
 
-        if infractions is None:
+        if not infractions:
             infractions = {
                 "count": 0,
                 "bans": [],
@@ -110,7 +110,7 @@ class moderation(commands.Cog):
         member_id = f"{ctx.guild.id}-{member.id}".encode()
         infractions = DB.infractions.get(member_id)
 
-        if infractions is None:
+        if not infractions:
             infractions = {
                 "count": 0,
                 "bans": [],
@@ -220,7 +220,7 @@ class moderation(commands.Cog):
         member_id = f"{ctx.guild.id}-{member.id}".encode()
         infractions = DB.infractions.get(member_id)
 
-        if infractions is None:
+        if not infractions:
             infractions = {
                 "count": 0,
                 "bans": [],
@@ -261,7 +261,7 @@ class moderation(commands.Cog):
         member_id = f"{ctx.guild.id}-{member.id}".encode()
         infractions = DB.infractions.get(member_id)
 
-        if infractions is None:
+        if not infractions:
             infractions = {
                 "count": 0,
                 "bans": [],
@@ -294,9 +294,7 @@ class moderation(commands.Cog):
             The name of the role.
         """
         embed = discord.Embed(color=discord.Color.blurple())
-
-        if member is None:
-            member = ctx.author
+        member = member or ctx.author
 
         if (
             ctx.author != member
@@ -334,7 +332,7 @@ class moderation(commands.Cog):
         num: int
             The number of messages to delete.
         """
-        if ctx.invoked_subcommand is None:
+        if not ctx.invoked_subcommand:
             try:
                 await ctx.channel.purge(limit=int(ctx.subcommand_passed) + 1)
             except ValueError:
@@ -387,9 +385,7 @@ class moderation(commands.Cog):
         channel: discord.TextChannel
             The channel to clone and delete.
         """
-        if channel is None:
-            channel = ctx.channel
-
+        channel = channel or ctx.channel
         await channel.clone()
         await channel.delete()
 
@@ -397,7 +393,7 @@ class moderation(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     async def history(self, ctx):
         """Shows the edited message or deleted message history of a member."""
-        if ctx.invoked_subcommand is None:
+        if not ctx.invoked_subcommand:
             embed = discord.Embed(
                 color=discord.Color.blurple(),
                 description=f"```Usage: {ctx.prefix}history [deleted/edited]```",
@@ -414,13 +410,12 @@ class moderation(commands.Cog):
         amount: int
             The amount of messages to get.
         """
-        if user is None:
-            user = ctx.author
+        user = user or ctx.author
 
         user_id = str(user.id).encode()
         deleted = DB.deleted.get(user_id)
 
-        if deleted is None:
+        if not deleted:
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
@@ -457,13 +452,12 @@ class moderation(commands.Cog):
         amount: int
             The amount of messages to get.
         """
-        if user is None:
-            user = ctx.author
+        user = user or ctx.author
 
         user_id = str(user.id).encode()
         edited = DB.edited.get(user_id)
 
-        if edited is None:
+        if not edited:
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),

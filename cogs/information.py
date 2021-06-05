@@ -66,8 +66,7 @@ class information(commands.Cog):
             The channel to get the permissions in.
         """
         channel = channel or ctx.channel
-        if member is None:
-            member = ctx.author
+        member = member or ctx.author
 
         await self.say_permissions(ctx, member, channel)
 
@@ -105,7 +104,7 @@ class information(commands.Cog):
         command: str
             The command to find the source code of.
         """
-        if command is None:
+        if not command:
             return await ctx.send("https://github.com/Singularitat/snakebot")
 
         if command == "help":
@@ -113,7 +112,7 @@ class information(commands.Cog):
             filename = inspect.getsourcefile(src)
         else:
             obj = self.bot.get_command(command)
-            if obj is None:
+            if not obj:
                 embed = discord.Embed(
                     color=discord.Color.blurple(),
                     description="```Couldn't find command.```",
@@ -157,7 +156,7 @@ class information(commands.Cog):
     async def server_info(self, ctx):
         """Sends an embed of server information."""
         created = f"{self.time_since(ctx.guild.created_at)} ago"
-        region = ctx.guild.region.name.capitalize()
+        region = ctx.guild.region.name.title()
         roles = len(ctx.guild.roles)
         member_count = ctx.guild.member_count
         owner = ctx.guild.owner
@@ -203,8 +202,7 @@ class information(commands.Cog):
         member: discord.Member
             The member to get info of defulting to the invoker.
         """
-        if member is None:
-            member = ctx.author
+        member = member or ctx.author
         embed = await self.create_user_embed(ctx, member)
         await ctx.send(embed=embed)
 

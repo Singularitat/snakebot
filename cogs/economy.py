@@ -417,8 +417,7 @@ class economy(commands.Cog):
         user: discord.User
             The user whos balance will be returned.
         """
-        if not user:
-            user = ctx.author
+        user = user or ctx.author
 
         user_id = str(user.id).encode()
         bal = await DB.get_bal(user_id)

@@ -199,7 +199,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
         all_commands = {}
         for command in entries:
-            if command.cog is None:
+            if not command.cog:
                 continue
             try:
                 all_commands[command.cog].append(command)

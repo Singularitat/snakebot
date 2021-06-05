@@ -188,7 +188,7 @@ class events(commands.Cog):
         after: discord.VoiceState
             The new voice state.
         """
-        if after.channel is None:
+        if not after.channel:
             return
 
         if await DB.get_blacklist(member.id, member.guild.id) == b"1":
@@ -214,7 +214,7 @@ class events(commands.Cog):
         member_id = str(after.author.id).encode()
         edited = DB.edited.get(member_id)
 
-        if edited is None:
+        if not edited:
             edited = {}
         else:
             edited = orjson.loads(edited)
@@ -232,7 +232,7 @@ class events(commands.Cog):
 
         channel = discord.utils.get(after.guild.channels, name="logs")
 
-        if channel is None:
+        if not channel:
             return
 
         embed = discord.Embed(color=discord.Color.blurple())
@@ -266,7 +266,7 @@ class events(commands.Cog):
         member_id = str(message.author.id).encode()
         deleted = DB.deleted.get(member_id)
 
-        if deleted is None:
+        if not deleted:
             deleted = {}
         else:
             deleted = orjson.loads(deleted)
@@ -288,7 +288,7 @@ class events(commands.Cog):
 
         channel = discord.utils.get(message.guild.channels, name="logs")
 
-        if channel is None:
+        if not channel:
             return
 
         embed = discord.Embed(color=discord.Color.blurple())
@@ -340,7 +340,7 @@ class events(commands.Cog):
 
         nicks = DB.nicks.get(member_id)
 
-        if nicks is None:
+        if not nicks:
             nicks = {"nicks": {}, "names": {}}
         else:
             nicks = orjson.loads(nicks)
@@ -373,7 +373,7 @@ class events(commands.Cog):
 
         names = DB.nicks.get(member_id)
 
-        if names is None:
+        if not names:
             names = {"nicks": {}, "names": {}}
         else:
             names = orjson.loads(names)
@@ -400,7 +400,7 @@ class events(commands.Cog):
             key = f"{invite.code}-{invite.guild.id}"
             uses = DB.invites.get(key.encode())
 
-            if uses is None:
+            if not uses:
                 DB.invites.put(key.encode(), str(invite.uses).encode())
                 continue
 
@@ -415,7 +415,7 @@ class events(commands.Cog):
         """
         channel = discord.utils.get(member.guild.channels, name="logs")
 
-        if channel is None:
+        if not channel:
             return
 
         embed = discord.Embed(color=discord.Color.blurple())

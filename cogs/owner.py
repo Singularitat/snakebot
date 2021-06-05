@@ -82,7 +82,7 @@ class owner(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
 
-        if infractions is None:
+        if not infractions:
             embed.description = "No infractions found for member"
             return await ctx.send(embed=embed)
 
@@ -113,7 +113,7 @@ class owner(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
 
-        if infractions is None:
+        if not infractions:
             embed.description = "No infractions found for member"
             return await ctx.send(embed=embed)
 

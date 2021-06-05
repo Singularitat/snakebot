@@ -39,6 +39,27 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
+    async def trends(self, ctx, *, country="new zealand"):
+        """Gets the current google search trends in a country.
+
+        country: str
+        """
+        url = "https://trends.google.com/trends/hottrends/visualize/internal/data"
+        country = country.lower()
+
+        async with ctx.typing():
+            data = await self.get_json(url)
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            if country not in data:
+                embed.description = f"```Country {country.title()} not found.```"
+                return await ctx.send(embed=embed)
+
+            embed.title = f"{country.title()} Search Trends"
+            embed.description = "```{}```".format("\n".join(data[country]))
+            await ctx.send(embed=embed)
+
+    @commands.command()
     async def fakeuser(self, ctx):
         """Gets a fake user with some random data."""
         url = "https://randomuser.me/api/?results=1"
@@ -507,14 +528,14 @@ class apis(commands.Cog):
         async with ctx.typing():
             data = await self.get_json(url)
 
-        if data is None:
+        if not data:
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(), description="```Invalid url```"
                 )
             )
 
-        if data[0]["symbol"][0]["data"] is None:
+        if not data[0]["symbol"][0]["data"]:
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(), description="```Could not decode```"
@@ -537,7 +558,7 @@ class apis(commands.Cog):
         async with ctx.typing():
             data = await self.get_json(url)
 
-        if data is None:
+        if not data:
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(), description="```xkcd timed out.```"

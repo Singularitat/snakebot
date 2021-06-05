@@ -37,7 +37,7 @@ class background_tasks(commands.Cog):
     @commands.is_owner()
     async def task(self, ctx):
         """The task command group."""
-        if ctx.invoked_subcommand is None:
+        if not ctx.invoked_subcommand:
             embed = discord.Embed(
                 color=discord.Color.blurple(),
                 description=f"```Usage: {ctx.prefix}task [restart/start/stop/list]```",
@@ -89,7 +89,11 @@ class background_tasks(commands.Cog):
             getattr(self, task).stop()
             await ctx.send(f"{task} stopped")
         except AttributeError:
-            return await ctx.send("```Task not found```")
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```Task not found```"
+                )
+            )
 
     @task.command()
     async def list(self, ctx):
