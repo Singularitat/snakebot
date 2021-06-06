@@ -18,7 +18,8 @@ class apis(commands.Cog):
         self.bot = bot
         self.loop = asyncio.get_event_loop()
 
-    async def get_json(self, url):
+    @staticmethod
+    async def get_json(url):
         """Gets and loads json from a url.
 
         url: str
@@ -39,6 +40,35 @@ class apis(commands.Cog):
         except asyncio.exceptions.TimeoutError:
             return None
 
+    @commands.command(aliases=["githubt", "tgithub"])
+    async def githubtrending(self, ctx):
+        """Gets trending github repositories."""
+        url = "https://api.trending-github.com/github/repositories?spokenLanguage=en"
+
+        async with ctx.typing():
+            repositories = await self.get_json(url)
+            embed = discord.Embed(
+                color=discord.Color.blurple(), title="5 Trending Github Repositories"
+            )
+
+            for index, repo in enumerate(repositories, start=1):
+                if index == 6:
+                    break
+                embed.add_field(
+                    name=repo["name"].title(),
+                    value=textwrap.dedent(
+                        f"""
+                    `Description:` {repo['description']}
+                    `Language:` {repo['language']}
+                    `Url:` {repo['url']}
+                    `Stars:` {repo['stars']:,}
+                    `Forks:` {repo['forks']:,}
+                    """
+                    ),
+                    inline=False,
+                )
+            await ctx.send(embed=embed)
+
     @commands.command()
     async def gender(self, ctx, first_name):
         """Estimates a gender from a first name.
@@ -46,6 +76,7 @@ class apis(commands.Cog):
         first_name: str
         """
         url = f"https://api.genderize.io/?name={first_name}"
+
         async with ctx.typing():
             data = await self.get_json(url)
             embed = discord.Embed(color=discord.Color.blurple())
