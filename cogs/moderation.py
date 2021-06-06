@@ -437,7 +437,11 @@ class moderation(commands.Cog):
             # Replaces backticks with a backtick and a zero width space
             messages.append(f"{date}: {deleted[date].replace('`', '`​')}\n")
 
-        pages = menus.MenuPages(source=HistoryMenu(messages), clear_reactions_after=True, delete_message_after=True)
+        pages = menus.MenuPages(
+            source=HistoryMenu(messages),
+            clear_reactions_after=True,
+            delete_message_after=True,
+        )
         await pages.start(ctx)
 
     @history.command(aliases=["e"])
@@ -457,7 +461,7 @@ class moderation(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not edited:
-            embed.description = "```No edited messages found```",
+            embed.description = ("```No edited messages found```",)
             return await ctx.send(embed=embed)
 
         edited = orjson.loads(edited)
@@ -473,7 +477,11 @@ class moderation(commands.Cog):
 
             messages.append(f"{date}: {before} >>> {after}\n")
 
-        pages = menus.MenuPages(source=HistoryMenu(messages), clear_reactions_after=True, delete_message_after=True)
+        pages = menus.MenuPages(
+            source=HistoryMenu(messages),
+            clear_reactions_after=True,
+            delete_message_after=True,
+        )
         await pages.start(ctx)
 
 
