@@ -260,6 +260,7 @@ class useful(commands.Cog):
         pages = menus.MenuPages(
             source=InviteMenu(invite_list),
             clear_reactions_after=True,
+            delete_message_after=True,
         )
         await pages.start(ctx)
 

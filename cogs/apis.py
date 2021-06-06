@@ -18,7 +18,8 @@ class apis(commands.Cog):
         self.bot = bot
         self.loop = asyncio.get_event_loop()
 
-    async def get_json(self, url):
+    @staticmethod
+    async def get_json(url):
         """Gets and loads json from a url.
 
         url: str
@@ -26,8 +27,9 @@ class apis(commands.Cog):
         """
         timeout = aiohttp.ClientTimeout(total=6)
         try:
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                response = await session.get(url)
+            async with aiohttp.ClientSession(timeout=timeout) as session, session.get(
+                url
+            ) as response:
 
                 try:
                     data = await response.json()
@@ -37,6 +39,56 @@ class apis(commands.Cog):
             return data
         except asyncio.exceptions.TimeoutError:
             return None
+
+    @commands.command(aliases=["githubt", "tgithub"])
+    async def githubtrending(self, ctx):
+        """Gets trending github repositories."""
+        url = "https://api.trending-github.com/github/repositories?spokenLanguage=en"
+
+        async with ctx.typing():
+            repositories = await self.get_json(url)
+            embed = discord.Embed(
+                color=discord.Color.blurple(), title="5 Trending Github Repositories"
+            )
+
+            for index, repo in enumerate(repositories, start=1):
+                if index == 6:
+                    break
+                embed.add_field(
+                    name=repo["name"].title(),
+                    value=textwrap.dedent(
+                        f"""
+                    `Description:` {repo['description']}
+                    `Language:` {repo['language']}
+                    `Url:` {repo['url']}
+                    `Stars:` {repo['stars']:,}
+                    `Forks:` {repo['forks']:,}
+                    """
+                    ),
+                    inline=False,
+                )
+            await ctx.send(embed=embed)
+
+    @commands.command()
+    async def gender(self, ctx, first_name):
+        """Estimates a gender from a first name.
+
+        first_name: str
+        """
+        url = f"https://api.genderize.io/?name={first_name}"
+
+        async with ctx.typing():
+            data = await self.get_json(url)
+            embed = discord.Embed(color=discord.Color.blurple())
+            embed.description = textwrap.dedent(
+                f"""
+                ```First Name: {data['name']}
+                Gender: {data['gender']}
+                Probability: {data['probability'] * 100}%
+                Count: {data['count']}```
+                """
+            )
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def trends(self, ctx, *, country="new zealand"):
@@ -98,8 +150,9 @@ class apis(commands.Cog):
         """Gets a random dad joke."""
         url = "https://icanhazdadjoke.com/"
         headers = {"Accept": "application/json"}
-        async with ctx.typing(), aiohttp.ClientSession(headers=headers) as session:
-            reponse = await session.get(url)
+        async with ctx.typing(), aiohttp.ClientSession(
+            headers=headers
+        ) as session, session.get(url) as reponse:
             data = await reponse.json()
         await ctx.reply(data["joke"])
 

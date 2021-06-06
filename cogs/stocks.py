@@ -39,6 +39,7 @@ class stocks(commands.Cog):
         pages = menus.MenuPages(
             source=StockMenu(list(DB.stocks)),
             clear_reactions_after=True,
+            delete_message_after=True,
         )
         await pages.start(ctx)
 
@@ -632,6 +633,7 @@ class stocks(commands.Cog):
         pages = menus.MenuPages(
             source=StockMenu(list(DB.crypto)),
             clear_reactions_after=True,
+            delete_message_after=True,
         )
         await pages.start(ctx)
 

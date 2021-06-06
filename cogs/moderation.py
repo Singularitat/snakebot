@@ -1,8 +1,18 @@
-from discord.ext import commands
+from discord.ext import commands, menus
 import discord
 import asyncio
 import cogs.utils.database as DB
 import orjson
+
+
+class HistoryMenu(menus.ListPageSource):
+    def __init__(self, data):
+        super().__init__(data, per_page=10)
+
+    async def format_page(self, menu, entries):
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = f"```{''.join(entries)}```"
+        return embed
 
 
 class moderation(commands.Cog):
@@ -402,7 +412,7 @@ class moderation(commands.Cog):
 
     @history.command(aliases=["d"])
     @commands.has_permissions(manage_messages=True)
-    async def deleted(self, ctx, user: discord.User = None, amount: int = 10):
+    async def deleted(self, ctx, user: discord.User = None):
         """Shows a members most recent deleted message history.
 
         user: discord.User
@@ -414,33 +424,25 @@ class moderation(commands.Cog):
 
         user_id = str(user.id).encode()
         deleted = DB.deleted.get(user_id)
+        embed = discord.Embed(color=discord.Color.blurple())
 
         if not deleted:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```No deleted messages found```",
-                )
-            )
+            embed.description = "```No deleted messages found```"
+            return await ctx.send(embed=embed)
 
         deleted = orjson.loads(deleted)
-
-        embed = discord.Embed(
-            color=discord.Color.blurple(),
-            title=f"{user.display_name}'s Deleted Messages",
-        )
-
-        msg = ""
+        messages = []
 
         for index, date in enumerate(reversed(deleted)):
-            if index == amount:
-                break
+            # Replaces backticks with a backtick and a zero width space
+            messages.append(f"{date}: {deleted[date].replace('`', '`​')}\n")
 
-            # The replace replaces the backticks with a backtick and a zero width space
-            msg += f"{date}: {deleted[date].replace('`', '`​')}\n"
-
-        embed.description = f"```{msg}```"
-        return await ctx.send(embed=embed)
+        pages = menus.MenuPages(
+            source=HistoryMenu(messages),
+            clear_reactions_after=True,
+            delete_message_after=True,
+        )
+        await pages.start(ctx)
 
     @history.command(aliases=["e"])
     @commands.has_permissions(manage_messages=True)
@@ -456,36 +458,31 @@ class moderation(commands.Cog):
 
         user_id = str(user.id).encode()
         edited = DB.edited.get(user_id)
+        embed = discord.Embed(color=discord.Color.blurple())
 
         if not edited:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```No edited messages found```",
-                )
-            )
+            embed.description = ("```No edited messages found```",)
+            return await ctx.send(embed=embed)
 
         edited = orjson.loads(edited)
-
-        embed = discord.Embed(
-            color=discord.Color.blurple(),
-            title=f"{user.display_name}'s Edited Messages",
-        )
-
-        msg = ""
+        messages = []
 
         for index, date in enumerate(reversed(edited)):
             if index == amount:
                 break
 
-            # The replace replaces the backticks with a backtick and a zero width space
+            # Replaces backticks with a backtick and a zero width space
             before = edited[date][0].replace("`", "`​")
             after = edited[date][1].replace("`", "`​")
 
-            msg += f"{date}: {before} >>> {after}\n"
+            messages.append(f"{date}: {before} >>> {after}\n")
 
-        embed.description = f"```{msg}```"
-        return await ctx.send(embed=embed)
+        pages = menus.MenuPages(
+            source=HistoryMenu(messages),
+            clear_reactions_after=True,
+            delete_message_after=True,
+        )
+        await pages.start(ctx)
 
 
 def setup(bot: commands.Bot) -> None:
