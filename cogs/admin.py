@@ -23,7 +23,11 @@ class admin(commands.Cog):
 
     @commands.command()
     async def addrule(self, ctx, *, rule):
-        """Adds a rule to the server rules."""
+        """Adds a rule to the server rules.
+
+        rule: str
+            The rule to add.
+        """
         key = f"{ctx.guild.id}-rules".encode()
         rules = DB.db.get(key)
 
