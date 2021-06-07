@@ -7,24 +7,12 @@ import cogs.utils.database as DB
 
 class StockMenu(menus.ListPageSource):
     def __init__(self, data):
-        super().__init__(data, per_page=100)
+        super().__init__(data, per_page=99)
 
     async def format_page(self, menu, entries):
-        msg = "\n"
-        i = 1
-        for stock, price in entries:
-            price = orjson.loads(price)["price"]
-            if len(msg) >= 2000:
-                break
-
-            if i % 3 == 0:
-                msg += f"{stock.decode():<5}: ${float(price):.2f}\n"
-            else:
-                msg += f"{stock.decode():<5}: ${float(price):<9.2f}"
-            i += 1
-
-        embed = discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
-        return embed
+        return discord.Embed(
+            color=discord.Color.blurple(), description=f"```{''.join(entries)}```"
+        )
 
 
 class stocks(commands.Cog):
@@ -36,8 +24,17 @@ class stocks(commands.Cog):
     @commands.command(name="stocks")
     async def _stocks(self, ctx):
         """Shows the price of stocks from yahoo finance."""
+        stocks = []
+        for i, (stock, price) in enumerate(DB.stocks, start=1):
+            price = orjson.loads(price)["price"]
+
+            if not i % 3:
+                stocks.append(f"{stock.decode():}: ${float(price):.2f}\n")
+            else:
+                stocks.append(f"{stock.decode():}: ${float(price):.2f}\t".expandtabs())
+
         pages = menus.MenuPages(
-            source=StockMenu(list(DB.stocks)),
+            source=StockMenu(stocks),
             clear_reactions_after=True,
             delete_message_after=True,
         )
@@ -630,8 +627,18 @@ class stocks(commands.Cog):
     @_crypto.command()
     async def list(self, ctx):
         """Shows the prices of crypto with pagination."""
+        """Shows the price of stocks from yahoo finance."""
+        stocks = []
+        for i, (stock, price) in enumerate(DB.crypto, start=1):
+            price = orjson.loads(price)["price"]
+
+            if not i % 3:
+                stocks.append(f"{stock.decode()}: ${float(price):.2f}\n")
+            else:
+                stocks.append(f"{stock.decode()}: ${float(price):.2f}\t".expandtabs())
+
         pages = menus.MenuPages(
-            source=StockMenu(list(DB.crypto)),
+            source=StockMenu(stocks),
             clear_reactions_after=True,
             delete_message_after=True,
         )
