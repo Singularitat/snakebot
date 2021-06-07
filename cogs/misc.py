@@ -19,6 +19,29 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @commands.command()
+    async def rule(self, ctx, number: int):
+        """Shows the rules of the server.
+
+        number: int
+            Which rule to get.
+        """
+        rules = DB.db.get(f"{ctx.guild.id}-rules".encode())
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not rules:
+            embed.description = "```No rules.```"
+            return await ctx.send(embed=embed)
+
+        rules = orjson.loads(rules)
+
+        if 0 < number - 1 < len(rules):
+            embed.description = "```No rule found.```"
+            return await ctx.send(embed=embed)
+
+        embed.description = f"```{rules[number-1]}```"
+        await ctx.send(embed=embed)
+
     @staticmethod
     async def visualize_predictions(image, predictions):
         img = Image.open(BytesIO(await image.read()))
