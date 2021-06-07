@@ -40,6 +40,22 @@ class apis(commands.Cog):
         except asyncio.exceptions.TimeoutError:
             return None
 
+    @commands.command()
+    async def apod(self, ctx):
+        """Gets the NASA Astronomy Picture of the Day."""
+        url = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
+
+        async with ctx.typing():
+            apod = await self.get_json(url)
+
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                title=f"{apod['title']}",
+                description="[Link](https://apod.nasa.gov/apod/astropix.html)",
+            )
+            embed.set_image(url=apod["hdurl"])
+        await ctx.send(embed=embed)
+
     @commands.command(aliases=["githubt", "tgithub"])
     async def githubtrending(self, ctx):
         """Gets trending github repositories."""

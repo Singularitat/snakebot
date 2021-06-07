@@ -15,17 +15,9 @@ class InviteMenu(menus.ListPageSource):
         super().__init__(data, per_page=20)
 
     async def format_page(self, menu, entries):
-        msg = ""
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if entries == []:
-            embed.description = "```No stored information found```"
-            return embed
-
-        for member, invite in entries:
-            msg += f"{member}: {invite.decode()}\n"
-        embed.description = f"```{msg}```"
-        return embed
+        return discord.Embed(
+            color=discord.Color.blurple(), description=f"```{''.join(entries)}```"
+        )
 
 
 class useful(commands.Cog):
@@ -253,9 +245,17 @@ class useful(commands.Cog):
         for member, invite in DB.invites:
             if len(member) <= 18:
                 member = self.bot.get_user(int(member))
-                # I don't fetch the invite cause it takes 0.3s per invite
+                # I don't fetch the invite cause it takes 300ms per invite
                 if member:
-                    invite_list.append((member.display_name, invite))
+                    invite_list.append(f"{member.display_name}: {invite.decode()}\n")
+
+        if not invite_list:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```No stored invites```",
+                )
+            )
 
         pages = menus.MenuPages(
             source=InviteMenu(invite_list),
@@ -556,20 +556,12 @@ class useful(commands.Cog):
         args: str
             A str of arguments to calculate.
         """
-        if num_base.lower() == "hex":
-            base = 16
-        elif num_base.lower() == "oct":
-            base = 8
-        elif num_base.lower() == "bin":
-            base = 2
-        else:
-            base = int(num_base)
+        num_bases = {"h": (16, hex), "o": (8, oct), "b": (2, bin)}
+        base, method = num_bases.get(num_base.lower()[:1], (10, int))
 
-        operators = re.sub(r"\d+", "%s", args)
-        numbers = re.findall(r"\d+", args)
-        numbers = [str(int(num, base)) for num in numbers]
-
-        code = operators % tuple(numbers)
+        regex = r"0[xX][0-9a-fA-F]+" if base == 16 else r"\d+"
+        numbers = [str(int(num, base)) for num in re.findall(regex, args)]
+        code = re.sub(regex, "%s", args) % tuple(numbers)
 
         data = {
             "language": "python",
@@ -584,25 +576,15 @@ class useful(commands.Cog):
         ) as response:
             r = await response.json()
 
+        embed = discord.Embed(color=discord.Color.blurple())
+
         if r["stderr"]:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description="```Invalid```"
-                )
-            )
+            embed.description = "Calculation failed"
+            return await ctx.send(embed=embed)
 
-        if num_base.lower() == "hex":
-            result = hex(int(r["output"]))
-        elif num_base.lower() == "oct":
-            result = oct(int(r["output"]))
-        elif num_base.lower() == "bin":
-            result = bin(int(r["output"]))
-        else:
-            result = r["output"]
-
-        await ctx.send(
-            f"```{num_base.capitalize()}: {result} Decimal: {r['output']}```"
-        )
+        result = method(int(r["output"]))
+        embed.description = f"```\n{code}\n\n{result}\n\nDecimal: {r['output']}```"
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["ch", "cht"])
     async def cheatsheet(self, ctx, *search):
