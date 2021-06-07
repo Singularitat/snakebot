@@ -627,7 +627,6 @@ class stocks(commands.Cog):
     @_crypto.command()
     async def list(self, ctx):
         """Shows the prices of crypto with pagination."""
-        """Shows the price of stocks from yahoo finance."""
         stocks = []
         for i, (stock, price) in enumerate(DB.crypto, start=1):
             price = orjson.loads(price)["price"]
