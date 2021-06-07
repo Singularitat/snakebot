@@ -10,9 +10,9 @@ class HistoryMenu(menus.ListPageSource):
         super().__init__(data, per_page=10)
 
     async def format_page(self, menu, entries):
-        embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = f"```{''.join(entries)}```"
-        return embed
+        return discord.Embed(
+            color=discord.Color.blurple(), description=f"```{''.join(entries)}```"
+        )
 
 
 class moderation(commands.Cog):
