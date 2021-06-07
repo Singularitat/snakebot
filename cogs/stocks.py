@@ -24,17 +24,17 @@ class stocks(commands.Cog):
     @commands.command(name="stocks")
     async def _stocks(self, ctx):
         """Shows the price of stocks from yahoo finance."""
-        stocks = []
+        data = []
         for i, (stock, price) in enumerate(DB.stocks, start=1):
             price = orjson.loads(price)["price"]
 
             if not i % 3:
-                stocks.append(f"{stock.decode():}: ${float(price):.2f}\n")
+                data.append(f"{stock.decode():}: ${float(price):.2f}\n")
             else:
-                stocks.append(f"{stock.decode():}: ${float(price):.2f}\t".expandtabs())
+                data.append(f"{stock.decode():}: ${float(price):.2f}\t".expandtabs())
 
         pages = menus.MenuPages(
-            source=StockMenu(stocks),
+            source=StockMenu(data),
             clear_reactions_after=True,
             delete_message_after=True,
         )
@@ -627,17 +627,17 @@ class stocks(commands.Cog):
     @_crypto.command()
     async def list(self, ctx):
         """Shows the prices of crypto with pagination."""
-        stocks = []
+        data = []
         for i, (stock, price) in enumerate(DB.crypto, start=1):
             price = orjson.loads(price)["price"]
 
             if not i % 3:
-                stocks.append(f"{stock.decode()}: ${float(price):.2f}\n")
+                data.append(f"{stock.decode()}: ${float(price):.2f}\n")
             else:
-                stocks.append(f"{stock.decode()}: ${float(price):.2f}\t".expandtabs())
+                data.append(f"{stock.decode()}: ${float(price):.2f}\t".expandtabs())
 
         pages = menus.MenuPages(
-            source=StockMenu(stocks),
+            source=StockMenu(data),
             clear_reactions_after=True,
             delete_message_after=True,
         )
