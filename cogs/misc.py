@@ -564,9 +564,12 @@ class misc(commands.Cog):
         convert: bool
             If you want to convert to decimal or not
         """
+        embed = discord.Embed(color=discord.Color.blurple())
         if convert:
-            return await ctx.send(f"```{int(number, 16)}```")
-        await ctx.send(f"```{hex(int(number))}```")
+            embed.description = f"```{int(number, 16)}```"
+            return await ctx.send(embed=embed)
+        embed.description = f"```{hex(int(number))}```"
+        await ctx.send(embed=embed)
 
     @commands.command(name="oct")
     async def _oct(self, ctx, number, convert: bool = False):
@@ -577,9 +580,12 @@ class misc(commands.Cog):
         convert: bool
             If you want to convert to decimal or not
         """
+        embed = discord.Embed(color=discord.Color.blurple())
         if convert:
-            return await ctx.send(f"```{int(number, 8)}```")
-        await ctx.send(f"```{oct(int(number))}```")
+            embed.description = f"```{int(number, 8)}```"
+            return await ctx.send(embed=embed)
+        embed.description = f"```{oct(int(number))}```"
+        await ctx.send(embed=embed)
 
     @commands.command(name="bin")
     async def _bin(self, ctx, number, convert: bool = False):
@@ -590,9 +596,12 @@ class misc(commands.Cog):
         convert: bool
             If you want to convert to decimal or not
         """
+        embed = discord.Embed(color=discord.Color.blurple())
         if convert:
-            return await ctx.send(f"```{int(number, 2)}```")
-        await ctx.send(f"```{bin(int(number))}```")
+            embed.description = f"```{int(number, 2)}```"
+            return await ctx.send(embed=embed)
+        embed.description = f"```{bin(int(number))}```"
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def karma(self, ctx, user: discord.User = None):
