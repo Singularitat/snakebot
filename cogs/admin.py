@@ -21,6 +21,30 @@ class admin(commands.Cog):
             return ctx.author.id in self.bot.owner_ids
         return ctx.author.guild_permissions.administrator
 
+    @commands.command()
+    async def addrule(self, ctx, *, rule):
+        """Adds a rule to the server rules.
+
+        rule: str
+            The rule to add.
+        """
+        key = f"{ctx.guild.id}-rules".encode()
+        rules = DB.db.get(key)
+
+        if not rules:
+            rules = []
+        else:
+            rules = orjson.loads(rules)
+
+        rules.append(rule)
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Added rule {len(rules)}\n{rule}```",
+            )
+        )
+        DB.db.put(key, orjson.dumps(rules))
+
     @commands.command(aliases=["disablech"])
     async def disable_channel(self, ctx, channel: discord.TextChannel = None):
         """Disables commands from being used in a channel.
