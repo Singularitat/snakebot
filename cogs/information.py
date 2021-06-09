@@ -95,7 +95,7 @@ class information(commands.Cog):
 
         rules = orjson.loads(rules)
 
-        if number not in range(1, len(rules)+1):
+        if number not in range(1, len(rules) + 1):
             embed.description = "```No rule found.```"
             return await ctx.send(embed=embed)
 
