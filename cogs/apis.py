@@ -394,11 +394,10 @@ class apis(commands.Cog):
             f"&remhost=quicklatex.com&preamble={preamble}"
         )
 
-        async with ctx.typing():
-            async with aiohttp.ClientSession() as session, session.post(
-                url, data=data
-            ) as response:
-                res = await response.text()
+        async with ctx.typing(), aiohttp.ClientSession() as session, session.post(
+            url, data=data
+        ) as response:
+            res = await response.text()
 
         if "Internal Server Error" in res:
             return await ctx.send(
