@@ -25,19 +25,15 @@ class apis(commands.Cog):
         url: str
             The url to fetch the json from.
         """
-        timeout = aiohttp.ClientTimeout(total=6)
         try:
-            async with aiohttp.ClientSession(timeout=timeout) as session, session.get(
-                url
-            ) as response:
-
-                try:
-                    data = await response.json()
-                except aiohttp.client_exceptions.ContentTypeError:
-                    return None
-
-            return data
-        except asyncio.exceptions.TimeoutError:
+            async with aiohttp.ClientSession(
+                timeout=aiohttp.ClientTimeout(total=6)
+            ) as session, session.get(url) as response:
+                return await response.json()
+        except (
+            asyncio.exceptions.TimeoutError,
+            aiohttp.client_exceptions.ContentTypeError,
+        ):
             return None
 
     @commands.command()
@@ -54,7 +50,7 @@ class apis(commands.Cog):
                 description="[Link](https://apod.nasa.gov/apod/astropix.html)",
             )
             embed.set_image(url=apod["hdurl"])
-        await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
 
     @commands.command(aliases=["githubt", "tgithub"])
     async def githubtrending(self, ctx):
@@ -104,7 +100,7 @@ class apis(commands.Cog):
                 Count: {data['count']}```
                 """
             )
-        await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
 
     @commands.command()
     async def trends(self, ctx, *, country="new zealand"):
@@ -159,18 +155,20 @@ class apis(commands.Cog):
             embed.add_field(name="Date of birth", value=data["dob"]["date"])
             embed.add_field(name="Phone", value=data["phone"])
 
-        await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
 
     @commands.command()
     async def dadjoke(self, ctx):
         """Gets a random dad joke."""
         url = "https://icanhazdadjoke.com/"
         headers = {"Accept": "application/json"}
+
         async with ctx.typing(), aiohttp.ClientSession(
             headers=headers
         ) as session, session.get(url) as reponse:
             data = await reponse.json()
-        await ctx.reply(data["joke"])
+
+            await ctx.reply(data["joke"])
 
     @commands.command()
     async def cocktail(self, ctx, *, name=None):
@@ -232,14 +230,14 @@ class apis(commands.Cog):
         async with ctx.typing():
             lyrics = await self.get_json(url)
 
-        embed = discord.Embed(color=discord.Color.blurple())
+            embed = discord.Embed(color=discord.Color.blurple())
 
-        if not lyrics or "error" in lyrics:
-            embed.description = "```No lyrics found```"
-            return await ctx.send(embed=embed)
+            if not lyrics or "error" in lyrics:
+                embed.description = "```No lyrics found```"
+                return await ctx.send(embed=embed)
 
-        embed.description = f"```{lyrics['lyrics'][:2000]}```"
-        await ctx.send(embed=embed)
+            embed.description = f"```{lyrics['lyrics'][:2000]}```"
+            await ctx.send(embed=embed)
 
     @commands.command()
     async def trivia(self, ctx, difficulty="easy"):
@@ -303,35 +301,35 @@ class apis(commands.Cog):
         async with ctx.typing():
             data = await self.get_json(url)
 
-            embed = discord.Embed(color=discord.Color.blurple())
+        embed = discord.Embed(color=discord.Color.blurple())
 
-            if not data:
-                embed.description = "```Pinging timed out.```"
-                return await ctx.send(embed=embed)
+        if not data:
+            embed.description = "```Pinging timed out.```"
+            return await ctx.send(embed=embed)
 
-            if data["debug"]["ping"] is False:
-                embed.description = "```Pinging failed.```"
-                return await ctx.send(embed=embed)
+        if data["debug"]["ping"] is False:
+            embed.description = "```Pinging failed.```"
+            return await ctx.send(embed=embed)
 
-            embed.description = (
-                "```Hostname: {}\n"
-                "Online: {}\n\n"
-                "Players:\n{}/{}\n{}\n"
-                "Version(s):\n{}\n\n"
-                "Mods:\n{}\n\n"
-                "Motd:\n{}```"
-            ).format(
-                data["hostname"],
-                data["online"],
-                data["players"]["online"],
-                data["players"]["max"],
-                ", ".join(data["players"]["list"]) if "list" in data["players"] else "",
-                data["version"],
-                len(data["mods"]["names"]) if "mods" in data else None,
-                f"{chr(10)}".join([s.strip() for s in data["motd"]["clean"]]),
-            )
+        embed.description = (
+            "```Hostname: {}\n"
+            "Online: {}\n\n"
+            "Players:\n{}/{}\n{}\n"
+            "Version(s):\n{}\n\n"
+            "Mods:\n{}\n\n"
+            "Motd:\n{}```"
+        ).format(
+            data["hostname"],
+            data["online"],
+            data["players"]["online"],
+            data["players"]["max"],
+            ", ".join(data["players"]["list"]) if "list" in data["players"] else "",
+            data["version"],
+            len(data["mods"]["names"]) if "mods" in data else None,
+            "\n".join([s.strip() for s in data["motd"]["clean"]]),
+        )
 
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def define(self, ctx, *, word):
@@ -385,42 +383,42 @@ class apis(commands.Cog):
             r"\newcommand{\set}[1]{\left\{#1\right\}}\n"
         )
 
+        latex = re.sub(r"```\w+\n|```", "", latex)
+
+        if "%%preamble%%" in latex:
+            _, pre, latex = re.split("%%preamble%%", latex)
+            preamble += pre
+
+        data = (
+            f"formula={latex}&fsize=50px&fcolor=FFFFFF&mode=0&out=1"
+            f"&remhost=quicklatex.com&preamble={preamble}"
+        )
+
         async with ctx.typing():
-            latex = re.sub(r"```\w+\n|```", "", latex)
-
-            if "%%preamble%%" in latex:
-                _, pre, latex = re.split("%%preamble%%", latex)
-                preamble += pre
-
-            data = (
-                f"formula={latex}&fsize=50px&fcolor=FFFFFF&mode=0&out=1"
-                f"&remhost=quicklatex.com&preamble={preamble}"
-            )
-
             async with aiohttp.ClientSession() as session, session.post(
                 url, data=data
             ) as response:
-                r = await response.text()
+                res = await response.text()
 
-            if "Internal Server Error" in r:
-                return await ctx.send(
-                    embed=discord.Embed(
-                        color=discord.Color.blurple(),
-                        description="Internal Server Error.",
-                    )
+        if "Internal Server Error" in res:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="Internal Server Error.",
                 )
+            )
 
-            image = r.split()[1]
+        image = res.split()[1]
 
-            if image == "https://quicklatex.com/cache3/error.png":
-                return await ctx.send(
-                    embed=discord.Embed(
-                        color=discord.Color.blurple(),
-                        description=f"```latex\n{r[49:]}```",
-                    )
+        if image == "https://quicklatex.com/cache3/error.png":
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"```latex\n{res[49:]}```",
                 )
+            )
 
-            await ctx.send(image)
+        await ctx.send(image)
 
     @commands.command()
     async def racoon(self, ctx):
