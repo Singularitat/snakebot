@@ -19,29 +19,6 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.command()
-    async def rule(self, ctx, number: int):
-        """Shows the rules of the server.
-
-        number: int
-            Which rule to get.
-        """
-        rules = DB.db.get(f"{ctx.guild.id}-rules".encode())
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if not rules:
-            embed.description = "```No rules.```"
-            return await ctx.send(embed=embed)
-
-        rules = orjson.loads(rules)
-
-        if 0 < number - 1 < len(rules):
-            embed.description = "```No rule found.```"
-            return await ctx.send(embed=embed)
-
-        embed.description = f"```{rules[number-1]}```"
-        await ctx.send(embed=embed)
-
     @staticmethod
     async def visualize_predictions(image, predictions):
         img = Image.open(BytesIO(await image.read()))
@@ -199,11 +176,14 @@ class misc(commands.Cog):
         e.g
         "1 2 3" "3 7 15, 6 2 61, 2 5 1"
 
-        block1: str
-        block2: str
+        A: str
+        B: str
         """
-        A = A.split(",")
-        A = [[int(num) for num in block.split()] for block in A]
+        if "a" < A:
+            A = [[ord(letter) - 97 for letter in A]]
+        else:
+            A = A.split(",")
+            A = [[int(num) for num in block.split()] for block in A]
         B = B.split(",")
         B = [[int(num) for num in block.split()] for block in B]
 
@@ -368,68 +348,6 @@ class misc(commands.Cog):
 
         await ctx.send(f"https://discord.gg/{data['code']}")
         DB.db.put(b"fishington", data["code"].encode())
-
-    @commands.command(aliases=["accdate", "newest"])
-    async def oldest(self, ctx, amount: int = 10):
-        """Gets the oldest accounts in a server.
-
-        amount: int
-        """
-        amount = max(0, min(50, amount))
-
-        reverse = ctx.invoked_with.lower() == "newest"
-        top = sorted(ctx.guild.members, key=lambda member: member.id, reverse=reverse)[
-            :amount
-        ]
-
-        description = "\n".join([f"**{member}:** {member.id}" for member in top])
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if len(description) > 2048:
-            embed.description = "```Message is too large to send.```"
-            return await ctx.send(embed=embed)
-
-        embed.title = f"{'Youngest' if reverse else 'Oldest'} Accounts"
-        embed.description = description
-
-        await ctx.send(embed=embed)
-
-    @commands.command(aliases=["msgtop"])
-    async def message_top(self, ctx, amount=10):
-        """Gets the users with the most messages in a server.
-
-        amount: int
-        """
-        amount = max(0, min(50, amount))
-
-        msgtop = sorted(
-            [
-                (int(b), m.decode())
-                for m, b in DB.message_count
-                if int(m.decode().split("-")[0]) == ctx.guild.id
-            ],
-            reverse=True,
-        )[:amount]
-
-        embed = discord.Embed(color=discord.Color.blurple())
-        result = []
-
-        for count, member in msgtop:
-            user = self.bot.get_user(int(member.split("-")[1]))
-            result.append((count, user.display_name if user else member))
-
-        description = "\n".join(
-            [f"**{member}:** {count} messages" for count, member in result]
-        )
-
-        if len(description) > 2048:
-            embed.description = "```Message to large to send.```"
-            return await ctx.send(embed=embed)
-
-        embed.title = f"Top {len(msgtop)} chatters"
-        embed.description = description
-
-        await ctx.send(embed=embed)
 
     @staticmethod
     def unquote_unreserved(uri):
