@@ -316,26 +316,24 @@ class useful(commands.Cog):
             The command to run including arguments.
         """
         ctx.content = f"{ctx.prefix}{command}"
-
         ctx = await self.bot.get_context(ctx, cls=type(ctx))
+        embed = discord.Embed(color=discord.Color.blurple())
 
         if not ctx.command:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description="```No command found```"
-                )
-            )
+            embed.description = "```No command found```"
+            return await ctx.send(embed=embed)
 
         start = time.time()
         await ctx.command.invoke(ctx)
-        await ctx.send(f"`Time: {(time.time() - start) * 1000:.2f}ms`")
+        embed.description = f"`Time: {(time.time() - start) * 1000:.2f}ms`"
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def snipe(self, ctx):
         """Snipes the last deleted message."""
         message = DB.db.get(b"snipe_message")
 
-        if message is not None:
+        if message:
             message = orjson.loads(message)
 
             # Example, ["Yeah I deleted this", "Singulaity"]
@@ -351,7 +349,7 @@ class useful(commands.Cog):
         """Snipes the last edited message."""
         message = DB.db.get(b"editsnipe_message")
 
-        if message is not None:
+        if message:
             message = orjson.loads(message)
 
             # Example, ["Yeah I deleted this", "Yeah I edited this", "Singulaity"]
