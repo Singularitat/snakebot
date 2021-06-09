@@ -22,6 +22,32 @@ class admin(commands.Cog):
         return ctx.author.guild_permissions.administrator
 
     @commands.command()
+    async def removerule(self, ctx, number: int):
+        """Removes a rule from the server rules.
+
+        number: int
+            The number of the rule to delete starting from 1.
+        """
+        key = f"{ctx.guild.id}-rules".encode()
+        rules = DB.db.get(key)
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not rules:
+            embed.description = "```No rules added yet.```"
+            return await ctx.send(embed=embed)
+
+        rules = orjson.loads(rules)
+
+        if 0 < number - 1 < len(rules):
+            embed.description = "```No rule found.```"
+            return await ctx.send(embed=embed)
+
+        rule = rules.pop(number - 1)
+        DB.db.put(key, orjson.dumps(rules))
+        embed.description = f"```Removed rule {rule}.```"
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def addrule(self, ctx, *, rule):
         """Adds a rule to the server rules.
 
