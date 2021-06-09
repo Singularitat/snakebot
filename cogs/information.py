@@ -6,6 +6,8 @@ import inspect
 import os
 from datetime import datetime
 from .utils.relativedelta import relativedelta
+import cogs.utils.database as DB
+import orjson
 
 
 class information(commands.Cog):
@@ -14,6 +16,108 @@ class information(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.process = psutil.Process()
+
+    @commands.command(aliases=["accdate", "newest"])
+    async def oldest(self, ctx, amount: int = 10):
+        """Gets the oldest accounts in a server.
+
+        amount: int
+        """
+        amount = max(0, min(50, amount))
+
+        reverse = ctx.invoked_with.lower() == "newest"
+        top = sorted(ctx.guild.members, key=lambda member: member.id, reverse=reverse)[
+            :amount
+        ]
+
+        description = "\n".join([f"**{member}:** {member.id}" for member in top])
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if len(description) > 2048:
+            embed.description = "```Message is too large to send.```"
+            return await ctx.send(embed=embed)
+
+        embed.title = f"{'Youngest' if reverse else 'Oldest'} Accounts"
+        embed.description = description
+
+        await ctx.send(embed=embed)
+
+    @commands.command(aliases=["msgtop"])
+    async def message_top(self, ctx, amount=10):
+        """Gets the users with the most messages in a server.
+
+        amount: int
+        """
+        amount = max(0, min(50, amount))
+
+        msgtop = sorted(
+            [
+                (int(b), m.decode())
+                for m, b in DB.message_count
+                if int(m.decode().split("-")[0]) == ctx.guild.id
+            ],
+            reverse=True,
+        )[:amount]
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        result = []
+
+        for count, member in msgtop:
+            user = self.bot.get_user(int(member.split("-")[1]))
+            result.append((count, user.display_name if user else member))
+
+        description = "\n".join(
+            [f"**{member}:** {count} messages" for count, member in result]
+        )
+
+        if len(description) > 2048:
+            embed.description = "```Message to large to send.```"
+            return await ctx.send(embed=embed)
+
+        embed.title = f"Top {len(msgtop)} chatters"
+        embed.description = description
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def rule(self, ctx, number: int):
+        """Shows the rules of the server.
+
+        number: int
+            Which rule to get.
+        """
+        rules = DB.db.get(f"{ctx.guild.id}-rules".encode())
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not rules:
+            embed.description = "```No rules added yet.```"
+            return await ctx.send(embed=embed)
+
+        rules = orjson.loads(rules)
+
+        if number not in range(1, len(rules)+1):
+            embed.description = "```No rule found.```"
+            return await ctx.send(embed=embed)
+
+        embed.description = f"```{rules[number-1]}```"
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def rules(self, ctx):
+        """Shows all the rules of the server"""
+        rules = DB.db.get(f"{ctx.guild.id}-rules".encode())
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not rules:
+            embed.description = "```No rules added yet.```"
+            return await ctx.send(embed=embed)
+
+        rules = orjson.loads(rules)
+        embed.title = "Server Rules"
+        for index, rule in enumerate(rules, start=1):
+            embed.add_field(name=f"Rule {index}", value=rule, inline=False)
+
+        await ctx.send(embed=embed)
 
     async def say_permissions(self, ctx, member, channel):
         """Sends an embed containing a members permissions in a channel.
@@ -24,21 +128,21 @@ class information(commands.Cog):
             The channel to get the permissions in.
         """
         permissions = channel.permissions_for(member)
-        e = discord.Embed(colour=member.colour)
+        embed = discord.Embed(colour=member.colour)
         avatar = member.avatar_url_as(static_format="png")
-        e.set_author(name=str(member), url=avatar)
+        embed.set_author(name=str(member), icon_url=avatar)
 
         allowed, denied = [], []
         for name, value in permissions:
             name = name.replace("_", " ").replace("guild", "server").title()
             if value:
-                allowed.append(name)
+                allowed.append(f"+ {name}\n")
             else:
-                denied.append(name)
+                denied.append(f"- {name}\n")
 
-        e.add_field(name="Allowed", value="\n".join(allowed))
-        e.add_field(name="Denied", value="\n".join(denied))
-        await ctx.send(embed=e)
+        embed.add_field(name="Allowed", value=f"```diff\n{''.join(allowed)}```")
+        embed.add_field(name="Denied", value=f"```diff\n{''.join(denied)}```")
+        await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
     @commands.guild_only()
@@ -73,7 +177,11 @@ class information(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         """Check how the bot is doing."""
-        pinger = await ctx.send("Pinging...")
+        pinger = await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(), description="```Pinging...```"
+            )
+        )
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(
@@ -141,26 +249,25 @@ class information(commands.Cog):
         cog_name: str
             The name of the cog.
         """
-        with open(f"cogs/{cog_name}.py", "rb") as file:
-            await ctx.send(file=discord.File(file, f"{cog_name}.py"))
+        if f"{cog_name}.py" in os.listdir("cogs"):
+            with open(f"cogs/{cog_name}.py", "rb") as file:
+                await ctx.send(file=discord.File(file, f"{cog_name}.py"))
+        else:
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"```No cog named {cog_name} found```",
+                )
+            )
 
     @commands.command()
     async def uptime(self, ctx):
         """Shows the bots uptime."""
         await ctx.send(f"**{self.time_since(self.bot.uptime)}**")
 
-    @commands.command(
-        name="server",
-        aliases=["guild", "info"],
-    )
+    @commands.command(name="server")
     async def server_info(self, ctx):
-        """Sends an embed of server information."""
-        created = f"{self.time_since(ctx.guild.created_at)} ago"
-        region = ctx.guild.region.name.title()
-        roles = len(ctx.guild.roles)
-        member_count = ctx.guild.member_count
-        owner = ctx.guild.owner
-
+        """Shows information about the current server."""
         offline_users, online_users, dnd_users, idle_users = 0, 0, 0, 0
         for member in ctx.guild.members:
             if member.status is discord.Status.offline:
@@ -181,12 +288,12 @@ class information(commands.Cog):
         embed.description = textwrap.dedent(
             f"""
                 **Server Information**
-                Created: {created}
-                Region: {region}
-                Owner: {owner}
+                Created: {self.time_since(ctx.guild.created_at)} ago
+                Region: {ctx.guild.region.name.title()}
+                Owner: {ctx.guild.owner}
 
                 **Member Counts**
-                Members: {member_count:,} Roles: {roles}
+                Members: {ctx.guild.member_count:,} Roles: {len(ctx.guild.roles)}
 
                 **Member Statuses**
                 {online} {online_users:,} {dnd} {dnd_users:,} {idle} {idle_users:,} {offline} {offline_users:,}
@@ -209,37 +316,25 @@ class information(commands.Cog):
     async def create_user_embed(self, ctx, member: discord.Member) -> discord.Embed:
         """Creates an embed containing information on the `user`."""
         created = f"{self.time_since(member.created_at)} ago"
-        name = str(member)
-        if member.nick:
-            name = f"{member.nick} ({name})"
         joined = f"{self.time_since(member.joined_at)} ago"
         roles = ", ".join(role.mention for role in member.roles[1:])
-        fields = [
-            (
-                "User information",
-                textwrap.dedent(
-                    f"""
-                    Created: {created}
-                    Profile: {member.mention}
-                    ID: {member.id}
-                """
-                ).strip(),
-            ),
-            (
-                "Member information",
-                textwrap.dedent(
-                    f"""
-                    Joined: {joined}
-                    Roles: {roles or None}
-                """
-                ).strip(),
-            ),
-        ]
+
         embed = discord.Embed(
-            title=name,
+            title=f"{member.nick} ({member})" if member.nick else str(member),
+            color=member.top_role.colour if roles else discord.Colour.blurple(),
         )
-        for field_name, field_content in fields:
-            embed.add_field(name=field_name, value=field_content, inline=False)
+
+        embed.add_field(
+            name="User information",
+            value=f"Created: {created}\nProfile: {member.mention}\nID: {member.id}",
+            inline=False,
+        )
+        embed.add_field(
+            name="Member information",
+            value=f"Joined: {joined}\nRoles: {roles or None}",
+            inline=False,
+        )
+
         embed.set_thumbnail(url=member.avatar_url_as(static_format="png"))
         embed.colour = member.top_role.colour if roles else discord.Colour.blurple()
         return embed
@@ -256,48 +351,40 @@ class information(commands.Cog):
         elif not past_time:
             diff = relativedelta(now, now)
 
-        if not diff.days and not diff.months and not diff.years:
-            hours = (
-                (
-                    f"{diff.hours} hour{'s' if diff.hours > 1 else ''}"
-                    f" {'and' if not diff.seconds else ''}"
-                )
-                if diff.hours
-                else ""
-            )
-            minutes = (
-                (
-                    f"{diff.minutes} minute{'s' if diff.minutes > 1 else ''}"
-                    f" {'and' if diff.hours else ''} "
-                )
-                if diff.minutes
-                else ""
-            )
-            seconds = (
-                f"{diff.seconds} second{'s' if diff.seconds > 1 else ''}"
-                if diff.seconds
-                else ""
-            )
-            return f"{hours}{minutes}{seconds}"
+        years = diff.years
+        months = diff.months
+        days = diff.days
+        hours = diff.hours
+        minutes = diff.minutes
+        seconds = diff.seconds
 
-        years = (
-            (
-                f"{diff.years} year{'s' if diff.years > 1 else ''}"
-                f" {'and' if not diff.days else ''} "
-            )
-            if diff.years
-            else ""
-        )
-        months = (
-            (
-                f"{diff.months} month{'s' if diff.months > 1 else ''}"
-                f" {'and' if diff.days else ''} "
-            )
-            if diff.months
-            else ""
-        )
-        days = f"{diff.days} day{'s' if diff.days > 1 else ''}" if diff.days else ""
-        return f"{years}{months}{days}"
+        def fmt_time(amount: int, unit: str):
+            return f"{amount} {unit}{'s' if amount else ''}"
+
+        if not days and not months and not years:
+            h, m, s = ("",) * 3
+            if hours:
+                h = f"{fmt_time(hours, 'hour')} {'and' if not seconds else ''}"
+
+            if minutes:
+                m = f"{fmt_time(minutes, 'minute')} {'and' if hours else ''} "
+
+            if seconds:
+                s = f"{seconds} second{'s' if seconds > 1 else ''}"
+            return f"{h}{m}{s}"
+
+        y, m, d = ("",) * 3
+
+        if years:
+            y = f"{fmt_time(years, 'year')} {'and' if not days else ''} "
+
+        if months:
+            m = f"{fmt_time(months, 'month')} {'and' if days else ''} "
+
+        if days:
+            d = f"{days} day{'s' if days > 1 else ''}"
+
+        return f"{y}{m}{d}"
 
 
 def setup(bot: commands.Bot) -> None:
