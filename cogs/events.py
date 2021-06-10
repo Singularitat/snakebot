@@ -205,7 +205,8 @@ class events(commands.Cog):
             The new message.
         """
         if (
-            not after.content
+            DB.db.get(f"{after.guild.id}-logging".encode())
+            or not after.content
             or before.content == after.content
             or after.author == self.bot.user
         ):
@@ -238,7 +239,7 @@ class events(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         if "`" in before.content or "`" in after.content:
-            # The replace replaces the backticks with a backtick and a zero width space
+            # Replaces backticks with a backtick and a zero width space
             before.content = before.content.replace("`", "`​")
             after.content = after.content.replace("`", "`​")
 
@@ -256,7 +257,7 @@ class events(commands.Cog):
         message: discord.Message
         """
         if (
-            DB.db.get(b"logging") == b"0"
+            DB.db.get(f"{message.guild.id}-logging".encode())
             or not message.content
             or message.author == self.bot.user
             or not message.guild
@@ -292,7 +293,7 @@ class events(commands.Cog):
             return
 
         embed = discord.Embed(color=discord.Color.blurple())
-        # The replace replaces the backticks with a backtick and a zero width space
+        # Replaces backticks with a backtick and a zero width space
         msg = message.content.replace("`", "`​")
         embed.description = (
             f"```{message.author.display_name}"
