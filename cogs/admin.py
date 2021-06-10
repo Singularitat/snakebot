@@ -22,6 +22,21 @@ class admin(commands.Cog):
         return ctx.author.guild_permissions.administrator
 
     @commands.command()
+    async def togglelog(self, ctx):
+        """Toggles logging to the logs channel."""
+        key = f"{ctx.guild.id}-logging".encode()
+        if DB.db.get(key):
+            DB.db.delete(key)
+            tenary = "Enabled"
+        else:
+            DB.db.put(key, b"1")
+            tenary = "Disabled"
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = f"```{tenary} logging```"
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def removerule(self, ctx, number: int):
         """Removes a rule from the server rules.
 
@@ -78,8 +93,10 @@ class admin(commands.Cog):
         channel: discord.TextChannel
         """
         channel = channel or ctx.channel
+        guild = str(ctx.guild.id)
+        key = f"{guild}-disabled_channels".encode()
 
-        disabled = DB.db.get(b"disabled_channels")
+        disabled = DB.db.get(key)
 
         if not disabled:
             disabled = {}
@@ -88,20 +105,20 @@ class admin(commands.Cog):
 
         tenary = "disabled"
 
-        if str(ctx.guild.id) not in disabled:
-            disabled[str(ctx.guild.id)] = []
-        elif channel.id in disabled[str(ctx.guild.id)]:
-            disabled[str(ctx.guild.id)].remove(channel.id)
-            tenary = "enabled"
+        if guild not in disabled:
+            disabled[guild] = []
 
-        disabled[str(ctx.guild.id)].append(channel.id)
+        if channel.id in disabled[guild]:
+            disabled[guild].remove(channel.id)
+            tenary = "enabled"
+        else:
+            disabled[guild].append(channel.id)
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.description = f"```Commands {tenary} in {channel}```"
 
         await ctx.send(embed=embed)
-
-        DB.db.put(b"disabled_channels", orjson.dumps(disabled))
+        DB.db.put(key, orjson.dumps(disabled))
 
     @commands.command()
     async def color_roles(self, ctx):

@@ -247,17 +247,6 @@ class owner(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def togglelog(self, ctx):
-        """Toggles logging to logs channel."""
-        state = b"0" if DB.db.get(b"logging") == b"1" else b"1"
-
-        DB.db.put(b"logging", state)
-
-        embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = f"```Set logging to {bool(int(state))}```"
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def disable(self, ctx, *, command):
         """Disables the use of a command for every guild.
 
