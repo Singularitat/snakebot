@@ -225,7 +225,7 @@ class events(commands.Cog):
         DB.edited.put(member_id, orjson.dumps(edited))
         DB.db.put(
             b"editsnipe_message",
-            orjson.dumps([before.content, after.content, after.author.display_name]),
+            orjson.dumps([before.content, after.content, before.author.display_name]),
         )
 
         if after.content.startswith("https"):
@@ -236,17 +236,17 @@ class events(commands.Cog):
         if not channel:
             return
 
-        embed = discord.Embed(color=discord.Color.blurple())
+        # Replaces backticks with a backtick and a zero width space
+        before.content = before.content.replace("`", "`​")
+        after.content = after.content.replace("`", "`​")
 
-        if "`" in before.content or "`" in after.content:
-            # Replaces backticks with a backtick and a zero width space
-            before.content = before.content.replace("`", "`​")
-            after.content = after.content.replace("`", "`​")
-
-        embed.description = (
-            f"```{before.author.display_name} edited:\n{before.content}"
-            f" >>> {after.content}\n\nMember ID: {after.author.id}```"
+        embed = discord.Embed(
+            title=f"{before.author.display_name} edited:",
+            color=discord.Color.blurple(),
         )
+        embed.add_field(name="From:", value=f"```{before.content}```")
+        embed.add_field(name="To:", value=f"```{after.content}```")
+        embed.set_footer(text=f"Member ID: {before.author.id}")
 
         await channel.send(embed=embed)
 
@@ -292,13 +292,15 @@ class events(commands.Cog):
         if not channel:
             return
 
-        embed = discord.Embed(color=discord.Color.blurple())
         # Replaces backticks with a backtick and a zero width space
         msg = message.content.replace("`", "`​")
-        embed.description = (
-            f"```{message.author.display_name}"
-            f" deleted:\n{msg}\n\nMember ID: {message.author.id}```"
+
+        embed = discord.Embed(
+            title=f"{message.author.display_name} deleted:",
+            description=f"```{msg}```",
+            color=discord.Color.blurple(),
         )
+        embed.set_footer(text=f"Member ID: {message.author.id}")
         await channel.send(embed=embed)
 
     @commands.Cog.listener()
