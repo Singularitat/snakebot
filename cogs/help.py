@@ -183,10 +183,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             for command in self.context.bot.walk_commands()
             if not command.hidden
         ]
-        matches = difflib.get_close_matches(command, all_commands, cutoff=0.5)
-
-        if len(matches) == 0:
-            return
+        matches = difflib.get_close_matches(command, all_commands, cutoff=0)
 
         return discord.Embed(
             color=discord.Color.red(),
