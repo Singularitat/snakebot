@@ -12,13 +12,19 @@ You should be able to run it on earlier versions but I haven't tried
 <details>
 <summary><span style="font-size:1.43em;">Windows</span></summary>
 
-```pip install -U -r requirements.txt```
+```
+pip install -U -r requirements.txt
+```
 or
-```poetry install```
+```
+poetry install
+```
 
 On windows you will also need plyvel-win32
 
-```pip install plyvel-win32```
+```
+pip install plyvel-win32
+```
 
 </details>
 
@@ -26,15 +32,24 @@ On windows you will also need plyvel-win32
 
 <summary><span style="font-size:1.43em;">Linux</span></summary>
 
-```pip install -U -r requirements.txt```
+```
+pip install -U -r requirements.txt
+```
 or
-```pip3 install -U -r requirements.txt```
+```
+pip3 install -U -r requirements.txt
+```
 
 On linux you will need plyvel
 
-```pip install plyvel```
+```
+pip install plyvel
+```
 
-If it fails to install on Debian or Ubuntu try `apt-get install libleveldb1v5 libleveldb-dev`
+If it fails to install on Debian or Ubuntu try
+```
+apt-get install libleveldb1v5 libleveldb-dev
+```
 
 </details>
 
