@@ -1,11 +1,15 @@
 ## snakebot
 A basic discord.py bot that tries to do everything
 
+&nbsp;
+
 ## Running
 
 1. **Python 3.9 or higher**
 
 You should be able to run it on earlier versions but I haven't tried
+
+&nbsp;
 
 2. **Install dependencies**
 
@@ -36,6 +40,7 @@ If it fails to install on Debian or Ubuntu try `apt-get install libleveldb1v5 li
 
 </details>
 
+&nbsp;
 
 3. **Setup configuration**
 
@@ -45,6 +50,14 @@ the bot is with the following template:
 ```py
 token = ''  # your bot's token
 ```
+
+&nbsp;
+
+**Note:**
+
+You will probably want to remove my discord id from the owner_ids in [bot.py](/bot.py#L30) and replace it with your own
+
+&nbsp;
 
 ## Requirements
 
