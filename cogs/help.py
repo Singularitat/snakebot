@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands, menus
 import asyncio
+import difflib
 
 
 # Taken From https://github.com/Rapptz/RoboDanny
@@ -175,6 +176,29 @@ class PaginatedHelpCommand(commands.HelpCommand):
                 "hidden": True,
             }
         )
+
+    def command_not_found(self, command):
+        all_commands = [
+            str(command)
+            for command in self.context.bot.walk_commands()
+            if not command.hidden
+        ]
+        matches = difflib.get_close_matches(command, all_commands, cutoff=0.5)
+
+        if len(matches) == 0:
+            return
+
+        return discord.Embed(
+            color=discord.Color.red(),
+            title=f"Command {command} not found.",
+            description="```Did you mean:\n\n{}```".format("\n".join(matches)),
+        )
+
+    async def send_error_message(self, error):
+        if isinstance(error, discord.Embed):
+            await self.context.channel.send(embed=error)
+        else:
+            await self.context.channel.send(error)
 
     async def on_help_command_error(self, ctx, error):
         if isinstance(error, commands.CommandInvokeError):
