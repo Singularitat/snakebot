@@ -37,6 +37,27 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
+    async def game(self, ctx):
+        """Gets a random game that is free"""
+        url = "https://www.freetogame.com/api/games?platform=pc"
+
+        async with ctx.typing():
+            games = await self.get_json(url)
+            game = random.choice(games)
+
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                title=game["title"],
+                description=f"{game['short_description']}\n[Link]({game['game_url']})",
+            )
+            embed.add_field(name="Genre", value=game["genre"])
+            embed.add_field(name="Publisher", value=game["publisher"])
+            embed.add_field(name="Developer", value=game["developer"])
+            embed.set_image(url=game["thumbnail"])
+
+            await ctx.send(embed=embed)
+
+    @commands.command()
     async def apod(self, ctx):
         """Gets the NASA Astronomy Picture of the Day."""
         url = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
@@ -343,13 +364,18 @@ class apis(commands.Cog):
             definition = await self.get_json(url)
 
             embed = discord.Embed(color=discord.Color.blurple())
-            msg = ""
+            if isinstance(definition, dict):
+                embed.description = "```No definition found```"
+                return await ctx.send(embed=embed)
+
+            meanings = []
 
             for meaning in definition[0]["meanings"]:
-                msg += f'{meaning["partOfSpeech"]}:\n{meaning["definitions"][0]["definition"]}\n\n'
+                meanings.append(
+                    f'{meaning["partOfSpeech"]}:\n{meaning["definitions"][0]["definition"]}\n\n'
+                )
 
-            embed.description = f"```{msg}```"
-
+            embed.description = f"```{''.join(meanings)}```"
             await ctx.send(embed=embed)
 
     @commands.command()
