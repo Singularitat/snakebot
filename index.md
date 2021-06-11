@@ -1,37 +1,72 @@
-## Welcome to GitHub Pages
+## snakebot
+A basic discord.py bot that tries to do everything
 
-You can use the [editor on GitHub](https://github.com/Singularitat/snakebot/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+&nbsp;
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## Running
 
-### Markdown
+1. **Python 3.9 or higher**
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+You should be able to run it on earlier versions but I haven't tried
 
-```markdown
-Syntax highlighted code block
+&nbsp;
 
-# Header 1
-## Header 2
-### Header 3
+2. **Install dependencies**
 
-- Bulleted
-- List
+<details>
+<summary><span style="font-size:1.43em;">Windows</span></summary>
 
-1. Numbered
-2. List
+`pip install -U -r requirements.txt`
+or
+`poetry install`
 
-**Bold** and _Italic_ and `Code` text
+On windows you will also need plyvel-win32
 
-[Link](url) and ![Image](src)
+`pip install plyvel-win32`
+
+</details>
+
+<details>
+
+<summary><span style="font-size:1.43em;">Linux</span></summary>
+
+`pip install -U -r requirements.txt` or `pip3 install -U -r requirements.txt`
+
+On linux you will need plyvel
+
+`pip install plyvel`
+
+If it fails to install on Debian or Ubuntu try `apt-get install libleveldb1v5 libleveldb-dev`
+
+</details>
+
+&nbsp;
+
+3. **Setup configuration**
+
+The next step is just to create a `config.py` file in the root directory where
+the bot is with the following template:
+
+```py
+token = ''  # your bot's token
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+&nbsp;
 
-### Jekyll Themes
+**Note:**
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/Singularitat/snakebot/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+You will probably want to remove my discord id from the owner_ids in [bot.py](/bot.py#L30) and replace it with your own
 
-### Support or Contact
+&nbsp;
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+## Requirements
+
+- Python 3.9+
+- discord-ext-menus @ git+https://github.com/Rapptz/discord-ext-menus@master
+- discord.py[voice]
+- lxml
+- psutil
+- orjson
+- youtube_dl
+- plyvel
+- pillow
