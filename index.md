@@ -40,7 +40,7 @@ If it fails to install on Debian or Ubuntu try `apt-get install libleveldb1v5 li
 
 3. **Setup configuration**
 
-The next step is just to create a `config.py` file in the root directory where
+The next step is just to create a config.py file in the root directory where
 the bot is with the following template:
 
 ```py
