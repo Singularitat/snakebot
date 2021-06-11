@@ -1,15 +1,11 @@
 ## snakebot
 A basic discord.py bot that tries to do everything
 
-&nbsp;
-
 ## Running
 
 1. **Python 3.9 or higher**
 
 You should be able to run it on earlier versions but I haven't tried
-
-&nbsp;
 
 2. **Install dependencies**
 
@@ -39,8 +35,6 @@ On linux you will need plyvel
 If it fails to install on Debian or Ubuntu try `apt-get install libleveldb1v5 libleveldb-dev`
 
 </details>
-
-&nbsp;
 
 3. **Setup configuration**
 
