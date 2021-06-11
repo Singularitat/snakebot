@@ -37,6 +37,28 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
+    async def nationalize(self, ctx, first_name):
+        """Estimate the nationality of a first name.
+
+        first_name: str
+        """
+        url = f"https://api.nationalize.io/?name={first_name}"
+
+        async with ctx.typing():
+            data = await self.get_json(url)
+
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                title=f"Estimates of the nationality of {data['name']}",
+            )
+            for country in data["country"]:
+                embed.add_field(
+                    name=country["country_id"],
+                    value=f"{country['probability'] * 100:.2f}%",
+                )
+            await ctx.send(embed=embed)
+
+    @commands.command()
     async def game(self, ctx):
         """Gets a random game that is free"""
         url = "https://www.freetogame.com/api/games?platform=pc"
