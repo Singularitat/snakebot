@@ -406,7 +406,9 @@ class chess(commands.Cog):
         self.bot = bot
         self.is_running = False
 
-    async def start_chess(self, ctx):
+    @commands.command(hidden=True)
+    async def chess(self, ctx):
+        """Starts a game of chess against an bot."""
         if self.is_running is True:
             return await ctx.send(
                 embed=discord.Embed(
@@ -464,21 +466,16 @@ class chess(commands.Cog):
 
             start = time.time()
             for _depth, move, score in searcher.search(hist[-1], hist):
-                if time.time() - start > 0.1:
+                if time.time() - start > 0.3:
                     if score == MATE_UPPER:
                         embed.title = "Checkmate!"
                         return await ctx.send(embed=embed)
                     break
 
             hist.append(hist[-1].move(move))
-
-    @commands.command(hidden=True)
-    async def chess(self, ctx):
-        """Starts a game of chess against an AI."""
-        await self.start_chess(ctx)
         self.is_running = False
 
 
 def setup(bot: commands.Bot) -> None:
-    """Starts logger cog."""
+    """Starts the chess cog."""
     bot.add_cog(chess(bot))
