@@ -124,6 +124,9 @@ class YTDLSource(discord.PCMVolumeTransformer):
                         f"Couldn't retrieve any matches for `{webpage_url}`"
                     )
 
+        if info["duration"] > 1800:
+            raise YTDLError("Video is longer than 30 minutes")
+
         return cls(
             ctx, discord.FFmpegPCMAudio(info["url"], **cls.FFMPEG_OPTIONS), data=info
         )
@@ -583,15 +586,19 @@ class music(commands.Cog):
         async with ctx.typing():
             try:
                 source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
-            except YTDLError:
-                pass
-            else:
-                if not ctx.voice_state.voice:
-                    await ctx.invoke(self._join)
+            except YTDLError as e:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(), description=f"```{e}```"
+                    )
+                )
 
-                song = Song(source)
-                await ctx.voice_state.songs.put(song)
-                await ctx.send(f"Enqueued {source}")
+            if not ctx.voice_state.voice:
+                await ctx.invoke(self._join)
+
+            song = Song(source)
+            await ctx.voice_state.songs.put(song)
+            await ctx.send(f"Enqueued {source}")
 
     @commands.command(name="search")
     async def _search(self, ctx: commands.Context, *, search: str):
