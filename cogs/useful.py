@@ -29,7 +29,11 @@ class useful(commands.Cog):
 
     @commands.command()
     async def weather(self, ctx, *, location):
-        """Gets the weather from google."""
+        """Gets the weather from google.
+
+        location: str
+            The name of the location to get the weather of.
+        """
         location = location.capitalize()
         url = f"https://www.google.co.nz/search?q={location}+weather"
 
@@ -71,8 +75,8 @@ class useful(commands.Cog):
 
             await ctx.send(embed=embed)
 
-    @commands.command()
-    async def statuscodes(self, ctx):
+    @commands.command(name="statuscodes")
+    async def status_codes(self, ctx):
         """List of status codes for catstatus command."""
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(
@@ -206,7 +210,8 @@ class useful(commands.Cog):
         ".emoji [name]" as the comment
 
         name: str
-            The emoji name. Must be at least 2 characters."""
+            The emoji name. Must be at least 2 characters.
+        """
         if len(name) < 2:
             return await ctx.send(
                 embed=discord.Embed(
@@ -297,17 +302,6 @@ class useful(commands.Cog):
 
         await ctx.reply(f"```\n{r['output']}```")
 
-    @commands.command(name="removereact")
-    async def remove_reaction(self, ctx, message: discord.Message, reaction):
-        """Removes a reaction from a message.
-
-        message: discord.Message
-            The id of the message you want to remove the reaction from.
-        reaction: Union[discord.Emoji, str]
-            The reaction to remove.
-        """
-        await message.clear_reaction(reaction)
-
     @commands.command()
     async def time(self, ctx, *, command):
         """Runs a command whilst timing it.
@@ -362,7 +356,7 @@ class useful(commands.Cog):
             await ctx.send(embed=embed)
 
     @commands.command(name="dir")
-    async def _dir(self, ctx, obj, arg, *, attr=None):
+    async def get_object(self, ctx, obj, arg, *, attr=None):
         """Converts arguments to a chosen discord object.
 
         arg: str

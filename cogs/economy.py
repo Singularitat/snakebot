@@ -210,8 +210,8 @@ class economy(commands.Cog):
         embed.set_footer(text=f"Balance: ${bal:,}")
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def baltop(self, ctx, amount: int = 10):
+    @commands.command(name="baltop")
+    async def top_balances(self, ctx, amount: int = 10):
         """Gets members with the highest balances.
 
         amount: int
@@ -469,8 +469,8 @@ class economy(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def streaktop(self, ctx):
+    @commands.command(name="streaktop")
+    async def top_streaks(self, ctx):
         """Shows the top slot streaks."""
         streak_top = []
 
