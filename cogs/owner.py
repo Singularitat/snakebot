@@ -64,7 +64,7 @@ class owner(commands.Cog):
         return ctx.author.id in self.bot.owner_ids
 
     @commands.command(aliases=["clearinf"])
-    async def clearinfractions(self, ctx, member: discord.Member):
+    async def clear_infractions(self, ctx, member: discord.Member):
         """Removes all infractions of a member.
 
         member: discord.Member
@@ -72,7 +72,7 @@ class owner(commands.Cog):
         DB.infractions.delete(f"{ctx.guild.id}-{member.id}".encode())
 
     @commands.command(aliases=["showinf"])
-    async def showinfractions(self, ctx, member: discord.Member):
+    async def show_infractions(self, ctx, member: discord.Member):
         """Shows all infractions of a member.
 
         member: discord.Member
@@ -97,7 +97,7 @@ class owner(commands.Cog):
         DB.infractions.put(member_id, orjson.dumps(infractions))
 
     @commands.command(aliases=["removeinf"])
-    async def removeinfraction(
+    async def remove_infraction(
         self, ctx, member: discord.Member, infraction: str, index: int
     ):
         """Removes an infraction at an index from a member.
@@ -125,8 +125,8 @@ class owner(commands.Cog):
 
         DB.infractions.put(member_id, orjson.dumps(infractions))
 
-    @commands.command()
-    async def loglevel(self, ctx, level):
+    @commands.command(name="loglevel")
+    async def log_level(self, ctx, level):
         """Changes logging level.
 
         level: str
@@ -135,8 +135,8 @@ class owner(commands.Cog):
         if level.upper() in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
             logging.getLogger("discord").setLevel(getattr(logging, level.upper()))
 
-    @commands.command()
-    async def gblacklist(self, ctx, user: discord.User):
+    @commands.command(name="gblacklist")
+    async def global_blacklist(self, ctx, user: discord.User):
         """Globally blacklists someone from the bot.
 
         user: discord.user
@@ -157,8 +157,8 @@ class owner(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def gdownvote(self, ctx, user: discord.User):
+    @commands.command(name="gdownvote")
+    async def global_downvote(self, ctx, user: discord.User):
         """Globally downvotes someones.
 
         user: discord.user
@@ -191,7 +191,7 @@ class owner(commands.Cog):
         with open(f"backup/{number}backup.json", "rb") as file:
             await ctx.send(file=discord.File(file, "backup.json"))
 
-    @commands.command(aliases=["boot"])
+    @commands.command(name="boot")
     async def boot_times(self, ctx):
         """Shows the average fastest and slowest boot times of the bot."""
         boot_times = DB.db.get(b"boot_times")
@@ -213,31 +213,39 @@ class owner(commands.Cog):
         embed.description = f"```{msg}```"
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["wipec"])
-    async def wipe_cache(self, ctx):
+    @commands.group()
+    async def cache(self, ctx):
+        """Command group for interacting with the cache."""
+        if not ctx.invoked_subcommand:
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"```Usage: {ctx.prefix}cache [wipe/list]```",
+                )
+            )
+
+    @cache.command()
+    async def wipe(self, ctx):
         """Wipes cache from the db."""
-        DB.db.put(b"cache", b"{}")
+        DB.db.delete(b"cache")
 
-        embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = "```Wiped Cache```"
-        await ctx.send(embed=embed)
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(), description="```Wiped Cache```"
+            )
+        )
 
-    @commands.command(aliases=["cache"])
-    async def list_cache(self, ctx):
+    @cache.command()
+    async def list(self, ctx):
         """Lists the cached items in the db."""
         embed = discord.Embed(color=discord.Color.blurple())
         cache = DB.db.get(b"cache")
 
-        if cache:
-            cache = orjson.loads(cache)
-        else:
+        if not cache or cache == b"{}":
             embed.description = "```Nothing has been cached```"
             return await ctx.send(embed=embed)
 
-        if cache == {}:
-            embed.description = "```Nothing has been cached```"
-            return await ctx.send(embed=embed)
-
+        cache = orjson.loads(cache)
         msg = []
 
         for item in cache:
@@ -268,16 +276,66 @@ class owner(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def presence(self, ctx, *, presence):
-        """Changes the bots activity.
+    @commands.group()
+    async def presence(self, ctx):
+        """Command group for changing the bots precence"""
+        if not ctx.invoked_subcommand:
+            embed = discord.Embed(color=discord.Color.blurple())
+            embed.description = (
+                "```Usage: {}presence [game/streaming/listening/watching]```".format(
+                    ctx.prefix
+                )
+            )
+            await ctx.send(embed=embed)
 
-        presence: str
-            The new activity.
+    @presence.command()
+    async def game(self, ctx, *, name):
+        """Changes the bots status to playing a game.
+        In the format of 'Playing [name]'
+
+        name: str
         """
         await self.bot.change_presence(
             status=discord.Status.online,
-            activity=discord.Game(name=presence),
+            activity=discord.Game(name=name),
+        )
+
+    @presence.command()
+    async def streaming(self, ctx, url, *, name):
+        """Changes the bots status to streaming something.
+
+        url: str
+            The url of the stream
+        name: str
+            The name of the stream
+        """
+        await self.bot.change_presence(
+            status=discord.Status.online,
+            activity=discord.Streaming(url=url, name=name),
+        )
+
+    @presence.command()
+    async def listening(self, ctx, *, name):
+        """Changes the bots status to listening to something.
+        In the format of 'Listening to [name]'
+
+        name: str
+        """
+        await self.bot.change_presence(
+            status=discord.Status.online,
+            activity=discord.Activity(type=discord.ActivityType.listening, name=name),
+        )
+
+    @presence.command()
+    async def watching(self, ctx, *, name):
+        """Changes the bots status to listening to something.
+        In the format of 'Watching [name]'
+
+        name: str
+        """
+        await self.bot.change_presence(
+            status=discord.Status.online,
+            activity=discord.Activity(type=discord.ActivityType.watching, name=name),
         )
 
     @commands.command()
@@ -298,12 +356,11 @@ class owner(commands.Cog):
         new_ctx._state = PerformanceMocker()
         new_ctx.channel = PerformanceMocker()
 
+        embed = discord.Embed(color=discord.Color.blurple())
+
         if not new_ctx.command:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description="```No command found```"
-                )
-            )
+            embed.description = "```No command found```"
+            return await ctx.send(embed=embed)
 
         start = time.perf_counter()
 
@@ -322,7 +379,8 @@ class owner(commands.Cog):
             end = time.perf_counter()
             result = "Success"
 
-        await ctx.send(f"```css\n{result}: {(end - start) * 1000:.2f}ms```")
+        embed.description = f"```css\n{result}: {(end - start) * 1000:.2f}ms```"
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def prefix(self, ctx, prefix: str):
@@ -432,14 +490,19 @@ class owner(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["deletecmd", "removecmd"])
-    async def deletecommand(self, ctx, command):
+    async def delete_command(self, ctx, command):
         """Removes command from the bot.
 
         command: str
             The command to remove.
         """
         self.bot.remove_command(command)
-        await ctx.send(embed=discord.Embed(title=f"```Removed command {command}```"))
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Removed command {command}```",
+            )
+        )
 
     @commands.command()
     async def kill(self, ctx):
@@ -521,16 +584,26 @@ class owner(commands.Cog):
         else:
             os.system("nohup python3 bot.py &")
 
-    @commands.command()
-    async def lrrole(self, ctx):
+    @commands.group()
+    async def rrole(self, ctx):
+        if not ctx.invoked_subcommand:
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"```Usage: {ctx.prefix}rrole [list/delete/start/edit]```",
+                )
+            )
+
+    @rrole.command(name="list")
+    async def rrole_list(self, ctx):
         """Sends a list of the message ids of current reaction roles."""
         msg = ""
         for message_id, roles in DB.rrole:
             msg += f"\n\n{message_id.decode()}: {orjson.loads(roles)}"
         await ctx.send(f"```{msg}```")
 
-    @commands.command()
-    async def drrole(self, ctx, message_id: int):
+    @rrole.command()
+    async def delete(self, ctx, message_id: int):
         """Deletes a reaction role message and removes it from the db.
 
         message: int
@@ -540,8 +613,8 @@ class owner(commands.Cog):
         message = ctx.channel.get_partial_message(message_id)
         await message.delete()
 
-    @commands.command()
-    async def rrole(self, ctx, *emojis):
+    @rrole.command()
+    async def start(self, ctx, *emojis):
         """Starts a slightly interactive session to create a reaction role.
 
         emojis: tuple
@@ -600,8 +673,8 @@ class owner(commands.Cog):
 
         DB.rrole.put(str(message.id).encode(), orjson.dumps(dict(zip(emojis, roles))))
 
-    @commands.command()
-    async def redit(self, ctx, message: discord.Message, *emojis):
+    @rrole.command()
+    async def edit(self, ctx, message: discord.Message, *emojis):
         """Edit a reaction role message.
 
         message: discord.Message
