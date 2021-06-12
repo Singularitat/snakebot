@@ -258,6 +258,7 @@ class events(commands.Cog):
         """
         if (
             DB.db.get(f"{message.guild.id}-logging".encode())
+            or DB.db.get(b"playing_chess")
             or not message.content
             or message.author == self.bot.user
             or not message.guild
@@ -461,7 +462,7 @@ class events(commands.Cog):
                 return
 
         error = getattr(error, "original", error)
-        embed = discord.Embed(color=discord.Color.red())
+        embed = discord.Embed(color=discord.Color.dark_red())
 
         if (
             str(error)[:19] == "The check functions"
@@ -472,12 +473,15 @@ class events(commands.Cog):
         if isinstance(error, commands.errors.CommandNotFound):
             if ctx.message.content.startswith(ctx.prefix * 2):
                 return
+
             invoked = ctx.message.content.split()[0].removeprefix(ctx.prefix)
+
             all_commands = [
                 str(command)
                 for command in self.bot.walk_commands()
                 if not command.hidden
             ]
+
             matches = difflib.get_close_matches(invoked, all_commands, cutoff=0.5)
 
             if len(matches) == 0:
