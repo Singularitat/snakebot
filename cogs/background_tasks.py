@@ -45,55 +45,104 @@ class background_tasks(commands.Cog):
             await ctx.send(embed=embed)
 
     @task.command()
-    async def restart(self, ctx, task):
+    async def restart(self, ctx, task_name=None):
         """Restarts a background task.
 
         task: str
             The name of the task to restart.
+            If not passed in then all tasks are restarted
         """
-        try:
-            getattr(self, task).restart()
-            await ctx.send(f"{task} restarted")
-        except AttributeError:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description="```Task not found```"
-                )
-            )
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not task_name:
+            for task in self.tasks.values():
+                task.restart()
+            embed.description = "```Restarted all tasks```"
+            return await ctx.send(embed=embed)
+
+        if task_name not in self.tasks:
+            embed.description = "```Task not found```"
+            return await ctx.send(embed=embed)
+
+        self.tasks[task_name].restart()
+        embed.description = f"{task_name} restarted"
+        await ctx.send(embed=embed)
 
     @task.command()
-    async def start(self, ctx, task):
+    async def start(self, ctx, task_name=None):
         """Starts a background task.
 
         task: str
             The name of the task to start.
+            If not passed in then all tasks are started
         """
-        try:
-            getattr(self, task).start()
-            await ctx.send(f"{task} started")
-        except AttributeError:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description="```Task not found```"
-                )
-            )
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not task_name:
+            for task in self.tasks.values():
+                task.start()
+            embed.description = "```Started all tasks```"
+            return await ctx.send(embed=embed)
+
+        if task_name not in self.tasks:
+            embed.description = "```Task not found```"
+            return await ctx.send(embed=embed)
+
+        self.tasks[task_name].start()
+        embed.description = f"{task_name} started"
+        await ctx.send(embed=embed)
 
     @task.command()
-    async def stop(self, ctx, task):
+    async def stop(self, ctx, task_name=None):
         """Stops a background task.
+
+        Unlike cancel it waits for the task to finish its current loop
 
         task: str
             The name of the task to stop.
+            If not passed in then all tasks are stopped
         """
-        try:
-            getattr(self, task).stop()
-            await ctx.send(f"{task} stopped")
-        except AttributeError:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description="```Task not found```"
-                )
-            )
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not task_name:
+            for task in self.tasks.values():
+                task.stop()
+            embed.description = "```Stopped all tasks```"
+            return await ctx.send(embed=embed)
+
+        if task_name not in self.tasks:
+            embed.description = "```Task not found```"
+            return await ctx.send(embed=embed)
+
+        self.tasks[task_name].stop()
+        embed.description = f"{task_name} stopped"
+        await ctx.send(embed=embed)
+
+    @task.command()
+    async def cancel(self, ctx, task_name=None):
+        """Cancels a background task.
+
+        Unlike stop it ends the task immediately
+
+        task: str
+            The name of the task to stop.
+            If not passed in then all tasks are canceled
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not task_name:
+            for task in self.tasks.values():
+                task.cancel()
+            embed.description = "```Canceled all tasks```"
+            return await ctx.send(embed=embed)
+
+        if task_name not in self.tasks:
+            embed.description = "```Task not found```"
+            return await ctx.send(embed=embed)
+
+        self.tasks[task_name].cancel()
+        embed.description = f"{task_name} canceled"
+        await ctx.send(embed=embed)
 
     @task.command()
     async def list(self, ctx):

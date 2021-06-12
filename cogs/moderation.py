@@ -20,10 +20,11 @@ class moderation(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.loop = asyncio.get_event_loop()
 
-    @commands.command()
-    @commands.has_permissions(mute_members=True)
-    async def mute(self, ctx, member: discord.Member, *, reason=None):
+    @commands.command(name="mute")
+    @commands.has_permissions(kick_members=True)
+    async def mute_member(self, ctx, member: discord.Member, *, reason=None):
         """Mutes a member.
 
         member: discord.member
@@ -109,9 +110,9 @@ class moderation(commands.Cog):
         await member.edit(nick=nickname)
         await ctx.send(f"Changed {member.display_name}'s nickname to {nickname}'")
 
-    @commands.command()
+    @commands.command(name="warn")
     @commands.has_permissions(manage_messages=True)
-    async def warn(self, ctx, member: discord.Member, *, reason=None):
+    async def warn_member(self, ctx, member: discord.Member, *, reason=None):
         """Warns a member and keeps track of how many warnings a member has.
 
         member: discord.member
@@ -189,17 +190,8 @@ class moderation(commands.Cog):
 
         return seconds
 
-    @commands.command(name="ban")
-    @commands.has_permissions(ban_members=True)
-    async def ban_member(
-        self, ctx, member: discord.Member, duration=None, *, reason=None
-    ):
+    async def ban(self, ctx, member: discord.Member, duration=None, *, reason=None):
         """Bans a member.
-
-        Usage:
-        .ban @Singularity#8953 "3d 5h 10m" He was rude
-
-        You need the quotes for the duration or it will only get the first argument
 
         member: discord.Member
             The member to ban.
@@ -248,6 +240,42 @@ class moderation(commands.Cog):
         DB.infractions.put(member_id, orjson.dumps(infractions))
 
         await ctx.send(embed=embed)
+
+    @commands.command(name="ban")
+    @commands.has_permissions(ban_members=True)
+    async def ban_member(self, ctx, member: discord.Member, *, reason=None):
+        """Bans a member.
+
+        Usage:
+        .ban @Singularity#8953 He was rude
+
+        member: discord.Member
+            The member to ban.
+        reason: str
+            The reason for banning the member.
+        """
+        await self.ban(ctx=ctx, member=member, reason=reason)
+
+    @commands.command(name="tempban")
+    @commands.has_permissions(ban_members=True)
+    async def temp_ban_member(
+        self, ctx, member: discord.Member, duration=None, *, reason=None
+    ):
+        """Temporarily bans a member.
+
+        Usage:
+        .ban @Singularity#8953 "3d 5h 10m" He was rude
+
+        You need the quotes for the duration or it will only get the first argument
+
+        member: discord.Member
+            The member to ban.
+        duration: str
+            How long to ban the member for.
+        reason: str
+            The reason for banning the member.
+        """
+        await self.ban(ctx=ctx, member=member, duration=duration, reason=reason)
 
     @commands.command(name="kick")
     @commands.has_permissions(kick_members=True)

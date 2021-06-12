@@ -22,7 +22,7 @@ class stocks(commands.Cog):
         self.bot = bot
 
     @commands.command(name="stocks")
-    async def _stocks(self, ctx):
+    async def get_stocks(self, ctx):
         """Shows the price of stocks from yahoo finance."""
         data = []
         for i, (stock, price) in enumerate(DB.stocks, start=1):
@@ -40,8 +40,8 @@ class stocks(commands.Cog):
         )
         await pages.start(ctx)
 
-    @commands.command()
-    async def stockbal(self, ctx, symbol):
+    @commands.command(name="stockbal")
+    async def stock_balance(self, ctx, symbol):
         """Shows the amount of stocks you have bought in a stock.
 
         symbol: str
@@ -84,8 +84,8 @@ class stocks(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["stockp"])
-    async def stockprofile(self, ctx, member: discord.Member = None):
+    @commands.command(name="stockprofile", aliases=["stockp"])
+    async def stock_profile(self, ctx, member: discord.Member = None):
         """Gets someone's stock profile.
 
         member: discord.Member
@@ -131,8 +131,8 @@ class stocks(commands.Cog):
         embed.description = f"```diff\n{msg}\nNet Value: ${net_value:.2f}```"
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["price", "stock"])
-    async def stockprice(self, ctx, symbol):
+    @commands.command(name="stockprice", aliases=["price", "stock"])
+    async def stock_price(self, ctx, symbol):
         """Gets the current price of a stock.
 
         symbol: str
@@ -167,8 +167,8 @@ class stocks(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["sell"])
-    async def sellstock(self, ctx, symbol, amount: float):
+    @commands.command(name="sellstock", aliases=["sell"])
+    async def sell_stock(self, ctx, symbol, amount: float):
         """Sells stock.
 
         symbol: str
@@ -279,9 +279,13 @@ class stocks(commands.Cog):
         await DB.put_bal(member_id, bal)
         await DB.put_stockbal(member_id, stockbal)
 
-    @commands.command()
-    async def nettop(self, ctx, amount: int = 10):
-        """Gets members with the highest net worth"""
+    @commands.command(name="nettop")
+    async def top_net_worths(self, ctx, amount: int = 10):
+        """Gets members with the highest net worth
+
+        amount: int
+            The amount of members to get
+        """
 
         def get_value(values, db):
             if values:
@@ -316,8 +320,8 @@ class stocks(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["networth"])
-    async def net(self, ctx, member: discord.Member = None):
+    @commands.command(name="net", aliases=["networth"])
+    async def net_worth(self, ctx, member: discord.Member = None):
         """Gets a members net worth.
 
         members: discord.Member
@@ -358,18 +362,19 @@ class stocks(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.group(name="crypto", aliases=["coin"])
-    async def _crypto(self, ctx):
+    @commands.group(aliases=["coin"])
+    async def crypto(self, ctx):
         """Gets some information about crypto currencies."""
-        if ctx.invoked_subcommand is not None:
+        if ctx.invoked_subcommand:
             return
 
         embed = discord.Embed(colour=discord.Colour.blurple())
 
         if not ctx.subcommand_passed:
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```Usage: {ctx.prefix}coin [symbol]```",
+            embed = discord.Embed(color=discord.Color.blurple())
+            embed.description = (
+                f"```Usage: {ctx.prefix}coin [buy/sell/bal/profile/list/history]"
+                f" or {ctx.prefix}coin [token]```"
             )
             return await ctx.send(embed=embed)
 
@@ -412,7 +417,7 @@ class stocks(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @_crypto.command(aliases=["b"])
+    @crypto.command(aliases=["b"])
     async def buy(self, ctx, symbol: str, cash: float):
         """Buys an amount of crypto.
 
@@ -465,7 +470,7 @@ class stocks(commands.Cog):
         await DB.put_bal(member_id, bal)
         await DB.put_cryptobal(member_id, cryptobal)
 
-    @_crypto.command(aliases=["s"])
+    @crypto.command(aliases=["s"])
     async def sell(self, ctx, symbol, amount: float):
         """Sells crypto.
 
@@ -525,7 +530,7 @@ class stocks(commands.Cog):
         await DB.put_bal(member_id, bal)
         await DB.put_cryptobal(member_id, cryptobal)
 
-    @_crypto.command(aliases=["p"])
+    @crypto.command(aliases=["p"])
     async def profile(self, ctx, member: discord.Member = None):
         """Gets someone's crypto profile.
 
@@ -567,7 +572,7 @@ class stocks(commands.Cog):
         embed.description = f"```diff\n{msg}\nNet Value: ${net_value:.2f}```"
         await ctx.send(embed=embed)
 
-    @_crypto.command()
+    @crypto.command()
     async def bal(self, ctx, symbol: str):
         """Shows how much of a crypto you have.
 
@@ -624,7 +629,7 @@ class stocks(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @_crypto.command()
+    @crypto.command()
     async def list(self, ctx):
         """Shows the prices of crypto with pagination."""
         data = []
@@ -643,8 +648,14 @@ class stocks(commands.Cog):
         )
         await pages.start(ctx)
 
-    @_crypto.command()
+    @crypto.command()
     async def history(self, ctx, member: discord.Member = None, amount=10):
+        """Gets a members crypto transaction history.
+
+        member: discord.Member
+        amount: int
+            How many transactions to get
+        """
         member = member or ctx.author
 
         embed = discord.Embed(color=discord.Color.blurple())

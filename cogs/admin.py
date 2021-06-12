@@ -21,6 +21,26 @@ class admin(commands.Cog):
             return ctx.author.id in self.bot.owner_ids
         return ctx.author.guild_permissions.administrator
 
+    @commands.command(name="removereact")
+    async def remove_reaction(self, ctx, message: discord.Message, reaction):
+        """Removes a reaction from a message.
+
+        message: discord.Message
+            The id of the message you want to remove the reaction from.
+        reaction: Union[discord.Emoji, str]
+            The reaction to remove.
+        """
+        await message.clear_reaction(reaction)
+
+    @commands.command(name="removereacts")
+    async def remove_reactions(self, ctx, message: discord.Message):
+        """Removes all reactions from a message.
+
+        message: discord.Message
+            The id of the message you want to remove the reaction from.
+        """
+        await message.clear_reactions()
+
     @commands.command()
     async def togglelog(self, ctx):
         """Toggles logging to the logs channel."""
@@ -36,8 +56,8 @@ class admin(commands.Cog):
         embed.description = f"```{tenary} logging```"
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def removerule(self, ctx, number: int):
+    @commands.command(name="removerule")
+    async def remove_rule(self, ctx, number: int):
         """Removes a rule from the server rules.
 
         number: int
@@ -62,8 +82,8 @@ class admin(commands.Cog):
         embed.description = f"```Removed rule {rule}.```"
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def addrule(self, ctx, *, rule):
+    @commands.command(name="addrule")
+    async def add_rule(self, ctx, *, rule):
         """Adds a rule to the server rules.
 
         rule: str
@@ -269,8 +289,8 @@ class admin(commands.Cog):
         """
         await message.edit(content=content)
 
-    @commands.command()
-    async def embededit(self, ctx, message: discord.Message, description, title=None):
+    @commands.command(name="embededit")
+    async def embed_edit(self, ctx, message: discord.Message, description, title=None):
         """Edits the embed of a bot message.
 
         message: discord.Message
@@ -389,7 +409,7 @@ class admin(commands.Cog):
         embed.description = f"***{member}*** has been added from the downvote list"
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(name="wipedownvote")
     async def wipe_downvote(self, ctx):
         """Wipes everyone from the downvote list."""
         for member, value in DB.blacklist:

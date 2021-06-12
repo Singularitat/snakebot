@@ -17,9 +17,10 @@ class information(commands.Cog):
         self.bot = bot
         self.process = psutil.Process()
 
-    @commands.command(aliases=["accdate", "newest"])
-    async def oldest(self, ctx, amount: int = 10):
+    @commands.command(name="oldest", aliases=["accdate", "newest"])
+    async def oldest_members(self, ctx, amount: int = 10):
         """Gets the oldest accounts in a server.
+        Call with 'newest' to get the newest members
 
         amount: int
         """
@@ -144,7 +145,7 @@ class information(commands.Cog):
         embed.add_field(name="Denied", value=f"```diff\n{''.join(denied)}```")
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, aliases=["botperms"])
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def botpermissions(self, ctx, *, channel: discord.TextChannel = None):
@@ -157,7 +158,7 @@ class information(commands.Cog):
         member = ctx.guild.me
         await self.say_permissions(ctx, member, channel)
 
-    @commands.command()
+    @commands.command(aliases=["perms"])
     @commands.guild_only()
     async def permissions(
         self, ctx, member: discord.Member = None, channel: discord.TextChannel = None
@@ -362,7 +363,7 @@ class information(commands.Cog):
             return f"{amount} {unit}{'s' if amount else ''}"
 
         if not days and not months and not years:
-            h, m, s = ("",) * 3
+            h, m, s = "", "", ""
             if hours:
                 h = f"{fmt_time(hours, 'hour')} {'and' if not seconds else ''}"
 
@@ -373,7 +374,7 @@ class information(commands.Cog):
                 s = f"{seconds} second{'s' if seconds > 1 else ''}"
             return f"{h}{m}{s}"
 
-        y, m, d = ("",) * 3
+        y, m, d = "", "", ""
 
         if years:
             y = f"{fmt_time(years, 'year')} {'and' if not days else ''} "

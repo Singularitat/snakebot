@@ -78,8 +78,8 @@ class misc(commands.Cog):
 
         return img
 
-    @commands.command()
-    async def vision(self, ctx):
+    @commands.command(name="vision")
+    async def machine_vision(self, ctx):
         """Machine vision via openvisionapi.com"""
         embed = discord.Embed(color=discord.Color.blurple())
         if not ctx.message.attachments:

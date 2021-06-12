@@ -23,8 +23,6 @@ class RoboPages(menus.MenuPages):
 
 class BotHelpPageSource(menus.ListPageSource):
     def __init__(self, help_command, commands):
-        # entries = [(cog, len(sub)) for cog, sub in commands.items()]
-        # entries.sort(key=lambda t: (t[0].qualified_name, t[1]), reverse=True)
         super().__init__(
             entries=sorted(commands.keys(), key=lambda c: c.qualified_name), per_page=6
         )
@@ -34,10 +32,6 @@ class BotHelpPageSource(menus.ListPageSource):
 
     @staticmethod
     def format_commands(cog, commands):
-        # A field can only have 1024 characters so we need to paginate a bit
-        # just in case it doesn't fit perfectly
-        # However, we have 6 per page so I'll try cutting it off at around 800 instead
-        # Since there's a 6000 character limit overall in the embed
         if cog.description:
             short_doc = cog.description.split("\n", 1)[0] + "\n"
         else:
@@ -55,16 +49,12 @@ class BotHelpPageSource(menus.ListPageSource):
                 current_count += count
                 page.append(value)
             else:
-                # If we're maxed out then see if we can add the ending note
                 if current_count + ending_length + 1 > 800:
-                    # If we are, pop out the last element to make room
                     page.pop()
 
-                # Done paginating so just exit
                 break
 
         if len(page) == len(commands):
-            # We're not hiding anything so just return it as-is
             return short_doc + " ".join(page)
 
         hidden = len(commands) - len(page)
@@ -186,7 +176,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
         matches = difflib.get_close_matches(command, all_commands, cutoff=0)
 
         return discord.Embed(
-            color=discord.Color.red(),
+            color=discord.Color.dark_red(),
             title=f"Command {command} not found.",
             description="```Did you mean:\n\n{}```".format("\n".join(matches)),
         )
@@ -196,10 +186,6 @@ class PaginatedHelpCommand(commands.HelpCommand):
             await self.context.channel.send(embed=error)
         else:
             await self.context.channel.send(error)
-
-    async def on_help_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandInvokeError):
-            await ctx.send(str(error.original))
 
     @staticmethod
     def get_command_signature(command):
@@ -222,9 +208,10 @@ class PaginatedHelpCommand(commands.HelpCommand):
         for command in entries:
             if not command.cog:
                 continue
-            try:
+
+            if command.cog in all_commands:
                 all_commands[command.cog].append(command)
-            except KeyError:
+            else:
                 all_commands[command.cog] = [command]
 
         menu = HelpMenu(BotHelpPageSource(self, all_commands))
@@ -243,7 +230,6 @@ class PaginatedHelpCommand(commands.HelpCommand):
             embed_like.description = f"```{command.help}```" or "```No help found...```"
 
     async def send_command_help(self, command):
-        # No pagination necessary for a single command.
         embed = discord.Embed(colour=discord.Colour.blurple())
         self.common_command_formatting(embed, command)
         await self.context.send(embed=embed)
