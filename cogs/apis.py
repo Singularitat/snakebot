@@ -36,6 +36,81 @@ class apis(commands.Cog):
         ):
             return None
 
+    @commands.group()
+    async def apis(self, ctx):
+        """Command group for the public apis api."""
+        if not ctx.invoked_subcommand:
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}apis [categories/random/search]```",
+            )
+            await ctx.send(embed=embed)
+
+    @apis.command()
+    async def categories(self, ctx):
+        """Gets all the categories of the public apis api."""
+        url = "https://api.publicapis.org/categories"
+
+        async with ctx.typing():
+            categories = await self.get_json(url)
+
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="All categories of the public apis api",
+                    description="```{}```".format("\n".join(categories)),
+                )
+            )
+
+    @apis.command()
+    async def random(self, ctx, category=None):
+        """Gets a random api.
+
+        category: str
+        """
+        url = f"https://api.publicapis.org/random?category={category}"
+
+        async with ctx.typing():
+            data = (await self.get_json(url))["entries"][0]
+
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                title=data["API"],
+                description=f"{data['Description']}\n[Link]({data['Link']})",
+            )
+            embed.add_field(
+                name="Auth", value="None" if not data["Auth"] else data["Auth"]
+            )
+            embed.add_field(name="HTTPS", value=data["HTTPS"])
+            embed.add_field(name="Cors", value=data["Cors"])
+            embed.add_field(name="Category", value=data["Category"])
+
+            await ctx.send(embed=embed)
+
+    @apis.command()
+    async def search(self, ctx, *, search):
+        """Searchs for an match via substring matching.
+
+        search: str
+        """
+        url = f"https://api.publicapis.org/entries?title={search}"
+
+        async with ctx.typing():
+            entries = (await self.get_json(url))["entries"]
+
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+            )
+            for index, entry in enumerate(entries):
+                if index == 12:
+                    break
+                embed.add_field(
+                    name=entry["API"],
+                    value=f"{entry['Description']}\n[Link]({entry['Link']})",
+                )
+
+            await ctx.send(embed=embed)
+
     @commands.command()
     async def nationalize(self, ctx, first_name):
         """Estimate the nationality of a first name.
@@ -95,8 +170,8 @@ class apis(commands.Cog):
             embed.set_image(url=apod["hdurl"])
             await ctx.send(embed=embed)
 
-    @commands.command(aliases=["githubt", "tgithub"])
-    async def githubtrending(self, ctx):
+    @commands.command(name="githubtrending", aliases=["githubt", "tgithub"])
+    async def github_trending(self, ctx):
         """Gets trending github repositories."""
         url = "https://api.trending-github.com/github/repositories?spokenLanguage=en"
 
@@ -166,8 +241,8 @@ class apis(commands.Cog):
             embed.description = "```{}```".format("\n".join(data[country]))
             await ctx.send(embed=embed)
 
-    @commands.command()
-    async def fakeuser(self, ctx):
+    @commands.command(name="fakeuser")
+    async def fake_user(self, ctx):
         """Gets a fake user with some random data."""
         url = "https://randomuser.me/api/?results=1"
 
@@ -200,8 +275,8 @@ class apis(commands.Cog):
 
             await ctx.send(embed=embed)
 
-    @commands.command()
-    async def dadjoke(self, ctx):
+    @commands.command(name="dadjoke")
+    async def dad_joke(self, ctx):
         """Gets a random dad joke."""
         url = "https://icanhazdadjoke.com/"
         headers = {"Accept": "application/json"}
@@ -576,8 +651,8 @@ class apis(commands.Cog):
 
         await ctx.send(image[0]["url"])
 
-    @commands.command()
-    async def catstatus(self, ctx, status):
+    @commands.command(name="catstatus")
+    async def cat_status(self, ctx, status):
         """Gets a cat image for a status e.g Error 404 not found."""
         await ctx.send(f"https://http.cat/{status}")
 
@@ -604,8 +679,8 @@ class apis(commands.Cog):
 
         await ctx.send(image["url"])
 
-    @commands.command()
-    async def dogstatus(self, ctx, status):
+    @commands.command(name="dogstatus")
+    async def dog_status(self, ctx, status):
         """Gets a dog image for a status e.g Error 404 not found."""
         await ctx.send(f"https://httpstatusdogs.com/img/{status}.jpg")
 
@@ -629,34 +704,6 @@ class apis(commands.Cog):
         await ctx.send(
             f"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={text}"
         )
-
-    @commands.command()
-    async def decode(self, ctx, qrcode):
-        """Decodes a qr code from a url.
-
-        qrcode: str
-            The url to the qrcode has to be image format e.g jpg/jpeg/png.
-        """
-        url = f"http://api.qrserver.com/v1/read-qr-code/?fileurl={qrcode}"
-
-        async with ctx.typing():
-            data = await self.get_json(url)
-
-        if not data:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description="```Invalid url```"
-                )
-            )
-
-        if not data[0]["symbol"][0]["data"]:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description="```Could not decode```"
-                )
-            )
-
-        await ctx.send(data[0]["symbol"][0]["data"])
 
     @commands.command()
     async def xkcd(self, ctx, num: int = None):
@@ -732,95 +779,37 @@ class apis(commands.Cog):
         self.loop.call_later(300, self.delete_cache, cache_search, cache)
         await ctx.send(embed=embed)
 
-    @staticmethod
-    def formatted_wiki_url(index: int, title: str) -> str:
-        """Formating wikipedia link with index and title.
-
-        index: int
-        title: str
-        """
-        return f'`{index}` [{title}](https://en.wikipedia.org/wiki/{title.replace(" ", "_")}))'
-
-    async def search_wikipedia(self, search_term: str):
-        """Search wikipedia and return the first 10 pages found.
-
-        search_term: str
-        """
-        pages = []
-        try:
-            data = await self.get_json(
-                f"https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={search_term}&format=json"
-            )
-            search_results = data["query"]["search"]
-            for search_result in search_results:
-                if "may refer to" not in search_result["snippet"]:
-                    pages.append(search_result["title"])
-        except KeyError:
-            pages = None
-        return pages
-
-    @commands.command(name="wikipedia", aliases=["wiki"])
-    async def wikipedia_search_command(
-        self, ctx: commands.Context, *, search: str
-    ) -> None:
+    @commands.command(aliases=["wiki"])
+    async def wikipedia(self, ctx: commands.Context, *, search: str):
         """Return list of results containing your search query from wikipedia.
 
         search: str
             The term to search wikipedia for.
         """
-        titles = await self.search_wikipedia(search)
-
-        def check(message: discord.Message) -> bool:
-            return message.author.id == ctx.author.id and message.channel == ctx.channel
-
-        if not titles:
-            await ctx.send("Could not find a wikipedia article using that search term")
-            return
-
         async with ctx.typing():
-            s_desc = "\n".join(
-                self.formatted_wiki_url(index, title)
-                for index, title in enumerate(titles, start=1)
+            titles = await self.get_json(
+                f"https://en.wikipedia.org/w/api.php?action=opensearch&search={search}"
             )
-            embed = discord.Embed(
-                colour=discord.Color.blurple(),
-                title=f"Wikipedia results for `{search}`",
-                description=s_desc,
-            )
+            embed = discord.Embed(color=discord.Color.blurple())
 
+            def check(message: discord.Message) -> bool:
+                return (
+                    message.author.id == ctx.author.id
+                    and message.channel == ctx.channel
+                )
+
+            if not titles:
+                embed.description = "```Couldn't find any results```"
+                return await ctx.send(embed=embed)
+
+            embed.title = f"Wikipedia results for `{search}`"
+            embed.description = "\n".join(
+                f"`{index}` [{title}]({url})"
+                for index, (title, url) in enumerate(zip(titles[1], titles[3]), start=1)
+            )
             embed.timestamp = datetime.utcnow()
-            embed.set_footer(text="Enter a number to choose")
 
             await ctx.send(embed=embed)
-
-        titles_len = len(titles)
-        try:
-            message = await ctx.bot.wait_for("message", timeout=60.0, check=check)
-            response_from_user = await self.bot.get_context(message)
-
-            if response_from_user.command:
-                return
-
-            try:
-                response = int(message.content)
-            except ValueError:
-                return await ctx.send(
-                    f"Please give an integer between `1` and `{titles_len}`"
-                )
-
-            if response <= 0:
-                return await ctx.send(
-                    f"Please give an integer between `1` and `{titles_len}`"
-                )
-
-            await ctx.send(
-                "https://en.wikipedia.org/wiki/{title}".format(
-                    title=titles[response - 1].replace(" ", "_")
-                )
-            )
-
-        except IndexError:
-            await ctx.send(f"Please give an integer between `1` and `{titles_len}`")
 
     @commands.command()
     async def covid(self, ctx, *, country="nz"):
@@ -828,41 +817,43 @@ class apis(commands.Cog):
 
         country: str - The country to search for
         """
-        try:
-            url = "https://corona.lmao.ninja/v3/covid-19/countries/" + country
-            if country.lower() == "all":
-                url = "https://corona.lmao.ninja/v3/covid-19/all"
+        url = "https://corona.lmao.ninja/v3/covid-19/countries/" + country
+        if country.lower() == "all":
+            url = "https://corona.lmao.ninja/v3/covid-19/all"
 
-            async with ctx.typing():
-                data = await self.get_json(url)
+        embed = discord.Embed(colour=discord.Color.red())
 
-            embed = discord.Embed(colour=discord.Color.red())
-            embed.set_author(
-                name=f"Cornavirus {data['country']}:",
-                icon_url=data["countryInfo"]["flag"],
+        async with ctx.typing():
+            data = await self.get_json(url)
+
+        if "country" not in data:
+            embed.description = (
+                "```Not a valid country\nExamples: NZ, New Zealand, all```"
             )
+            return await ctx.send(embed=embed)
 
-            embed.description = textwrap.dedent(
-                f"""
-                    ```
-                    Total Cases:   Total Deaths:
-                    {data['cases']:<15,}{data['deaths']:,}
+        embed.set_author(
+            name=f"Cornavirus {data['country']}:",
+            icon_url=data["countryInfo"]["flag"],
+        )
 
-                    Active Cases:  Cases Today:
-                    {data['active']:<15,}{data['todayCases']:,}
+        embed.description = textwrap.dedent(
+            f"""
+                ```
+                Total Cases:   Total Deaths:
+                {data['cases']:<15,}{data['deaths']:,}
 
-                    Deaths Today:  Recovered Total:
-                    {data['todayDeaths']:<15,}{data['recovered']:,}
-                    ```
-                """
-            )
+                Active Cases:  Cases Today:
+                {data['active']:<15,}{data['todayCases']:,}
 
-            await ctx.send(embed=embed)
+                Deaths Today:  Recovered Total:
+                {data['todayDeaths']:<15,}{data['recovered']:,}
+                ```
+            """
+        )
+        embed.timestamp = datetime.utcnow()
 
-        except KeyError:
-            await ctx.send(
-                "Not a valid country e.g NZ, New Zealand, US, USA, Canada, all"
-            )
+        await ctx.send(embed=embed)
 
     @commands.command(name="github", aliases=["gh"])
     async def get_github_info(self, ctx: commands.Context, username: str) -> None:
