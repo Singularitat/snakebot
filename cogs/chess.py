@@ -6,6 +6,8 @@ from itertools import count
 from collections import namedtuple
 import io
 from PIL import Image, ImageDraw, ImageFont
+import asyncio
+import cogs.utils.database as DB
 
 # Source
 # https://github.com/thomasahle/sunfish/blob/master/LICENSE.md
@@ -406,6 +408,9 @@ class chess(commands.Cog):
         self.bot = bot
         self.is_running = False
 
+    def cog_unload(self):
+        DB.db.delete(b"playing_chess")
+
     @commands.command(hidden=True)
     async def chess(self, ctx):
         """Starts a game of chess against an bot."""
@@ -418,11 +423,19 @@ class chess(commands.Cog):
             )
 
         self.is_running = True
+
+        # To stop logging of messages while playing chess cause it is spamy
+        DB.db.put(b"playing_chess", str(ctx.author.id).encode())
+
         embed = discord.Embed(color=discord.Color.blurple())
         chess_message = None
 
         hist = [Position(initial, 0, (True, True), (True, True), 0, 0)]
         searcher = Searcher()
+
+        def check(message: discord.Message) -> bool:
+            return message.author.id == ctx.author.id and message.channel == ctx.channel
+
         while True:
             if chess_message:
                 await chess_message.delete()
@@ -438,13 +451,15 @@ class chess(commands.Cog):
                     embed.title = "Enter a move like e2e4 or surrender"
                     await ctx.send(embed=embed)
 
-                def check(message: discord.Message) -> bool:
-                    return (
-                        message.author.id == ctx.author.id
-                        and message.channel == ctx.channel
+                try:
+                    message = await ctx.bot.wait_for(
+                        "message", timeout=300.0, check=check
                     )
-
-                message = await ctx.bot.wait_for("message", timeout=300.0, check=check)
+                except asyncio.TimeoutError:
+                    self.is_running = False
+                    DB.db.delete(b"playing_chess")
+                    embed.title = "Game timed out"
+                    await ctx.send(embed=embed)
 
                 if message.content.lower() == "surrender":
                     await message.delete()
@@ -474,8 +489,10 @@ class chess(commands.Cog):
 
             hist.append(hist[-1].move(move))
         self.is_running = False
+        DB.db.delete(b"playing_chess")
 
 
 def setup(bot: commands.Bot) -> None:
     """Starts the chess cog."""
+    DB.db.delete(b"playing_chess")
     bot.add_cog(chess(bot))
