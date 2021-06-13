@@ -36,6 +36,29 @@ class apis(commands.Cog):
         ):
             return None
 
+    @commands.command()
+    async def meaning(self, ctx, *, words):
+        """Gets words with similar meaning.
+        Example .meaning ringing in the ears
+
+        words: str
+            The words to get possible meanings of.
+        """
+        url = f"https://api.datamuse.com/words?ml={words}&max=6"
+
+        async with ctx.typing():
+            meanings = await self.get_json(url)
+
+            embed = discord.Embed(
+                color=discord.Color.blurple(), title="Possible meanings"
+            )
+            embed.set_footer(text="The numbers below are the scores")
+
+            for meaning in meanings:
+                embed.add_field(name=meaning["word"], value=meaning["score"])
+
+            await ctx.send(embed=embed)
+
     @commands.group()
     async def apis(self, ctx):
         """Command group for the public apis api."""
