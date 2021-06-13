@@ -37,6 +37,19 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
+    async def quote(self, ctx):
+        """Gets a random quote."""
+        url = "https://api.fisenko.net/quotes?l=en"
+
+        async with ctx.typing():
+            quote = await self.get_json(url)
+            embed = discord.Embed(
+                color=discord.Color.blurple(), description=quote["text"]
+            )
+            embed.set_footer(text=f"― {quote['author']}")
+            await ctx.send(embed=embed)
+
+    @commands.command()
     async def suntzu(self, ctx):
         """Gets fake Sun Tzu art of war quotes."""
         url = "http://api.fakeartofwar.gaborszathmari.me/v1/getquote"
@@ -46,7 +59,7 @@ class apis(commands.Cog):
             embed = discord.Embed(
                 color=discord.Color.blurple(), description=quote["quote"]
             )
-            embed.set_footer(text="― Sun Tzu Art Of War ")
+            embed.set_footer(text="― Sun Tzu, Art Of War")
             await ctx.send(embed=embed)
 
     @commands.command(name="sl")
@@ -547,6 +560,8 @@ class apis(commands.Cog):
 
         embed.description = (
             "```Hostname: {}\n"
+            "Ip: {}\n"
+            "Port: {}\n\n"
             "Online: {}\n\n"
             "Players:\n{}/{}\n{}\n"
             "Version(s):\n{}\n\n"
@@ -554,6 +569,8 @@ class apis(commands.Cog):
             "Motd:\n{}```"
         ).format(
             data["hostname"],
+            data["ip"],
+            data["port"],
             data["online"],
             data["players"]["online"],
             data["players"]["max"],
