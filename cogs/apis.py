@@ -71,17 +71,17 @@ class apis(commands.Cog):
         url = f"https://api.datamuse.com/words?sl={word}&max=9"
 
         async with ctx.typing():
-            words = await self.get_json(url)
+            matches = await self.get_json(url)
 
             embed = discord.Embed(color=discord.Color.blurple())
 
-            if not words:
+            if not matches:
                 embed.description = "```No results found```"
                 return await ctx.send(embed=embed)
 
             embed.set_footer(text="The numbers below are the scores")
 
-            for word in words:
+            for match in matches:
                 embed.add_field(name=word["word"], value=word["score"])
 
             await ctx.send(embed=embed)
