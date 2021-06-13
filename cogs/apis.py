@@ -36,9 +36,33 @@ class apis(commands.Cog):
         ):
             return None
 
+    @commands.command(name="sl")
+    async def sounds_like(self, ctx, word):
+        """Gets words that sound like [word].
+
+        words: str
+        """
+        url = f"https://api.datamuse.com/words?sl={word}&max=9"
+
+        async with ctx.typing():
+            words = await self.get_json(url)
+
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            if not words:
+                embed.description = "```No results found```"
+                return await ctx.send(embed=embed)
+
+            embed.set_footer(text="The numbers below are the scores")
+
+            for word in words:
+                embed.add_field(name=word["word"], value=word["score"])
+
+            await ctx.send(embed=embed)
+
     @commands.command()
     async def rhyme(self, ctx, word):
-        """Gets words that rhyme with a word.
+        """Gets words that rhyme with [word].
 
         words: str
         """
@@ -48,6 +72,11 @@ class apis(commands.Cog):
             rhymes = await self.get_json(url)
 
             embed = discord.Embed(color=discord.Color.blurple())
+
+            if not rhymes:
+                embed.description = "```No results found```"
+                return await ctx.send(embed=embed)
+
             embed.set_footer(text="The numbers below are the scores")
 
             for rhyme in rhymes:
@@ -57,7 +86,7 @@ class apis(commands.Cog):
 
     @commands.command()
     async def spelling(self, ctx, word):
-        """Gets possible spellings of words.
+        """Gets possible spellings of [word].
 
         words: str
             The words to get possible spellings of.
@@ -70,6 +99,11 @@ class apis(commands.Cog):
             embed = discord.Embed(
                 color=discord.Color.blurple(), title="Possible spellings"
             )
+
+            if not spellings:
+                embed.description = "```No results found```"
+                return await ctx.send(embed=embed)
+
             embed.set_footer(text="The numbers below are the scores")
 
             for spelling in spellings:
@@ -79,7 +113,7 @@ class apis(commands.Cog):
 
     @commands.command()
     async def meaning(self, ctx, *, words):
-        """Gets words with similar meaning.
+        """Gets words with similar meaning to [words].
         Example .meaning ringing in the ears
 
         words: str
@@ -93,6 +127,11 @@ class apis(commands.Cog):
             embed = discord.Embed(
                 color=discord.Color.blurple(), title="Possible meanings"
             )
+
+            if not meanings:
+                embed.description = "```No results found```"
+                return await ctx.send(embed=embed)
+
             embed.set_footer(text="The numbers below are the scores")
 
             for meaning in meanings:
