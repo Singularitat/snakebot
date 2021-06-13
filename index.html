@@ -2,56 +2,54 @@
 <html>
 
 <head>
-  <meta charset="UTF-8">
-  <title>README</title>
-  <link rel="stylesheet" href="./css/style.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
+	<meta charset="UTF-8">
+	<title>README</title>
+	<link rel="stylesheet" href="./css/style.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"> </head>
 
 <body>
-  <div class="markdown-container ltr">
-    <div class="markdown-content">
-      <h1 id="snakebot">snakebot</h1>
-      <p>A basic discord.py bot that tries to do everything</p>
-      <h2 id="running">Running</h2>
-      <ol>
-        <li><strong>Python 3.9 or higher</strong></li>
-      </ol>
-      <p>You should be able to run it on earlier versions but I haven't tried</p>
-      <ol>
-        <li><strong>Install dependencies</strong></li>
-      </ol>
-      <details>
-        <summary><span style="font-size:1.43em;">Windows</span></summary> <code>pip install -U -r requirements.txt</code> or <code>poetry install</code> On windows you will also need plyvel-win32 <code>pip install plyvel-win32</code>
-      </details>
-      <details>
-        <summary><span style="font-size:1.43em;">Linux</span></summary> <code>pip install -U -r requirements.txt</code> or <code>pip3 install -U -r requirements.txt</code> On linux you will need plyvel <code>pip install plyvel</code> If it fails to
-        install on Debian or Ubuntu try <code>apt-get install libleveldb1v5 libleveldb-dev</code>
-      </details>
-      <ol>
-        <li><strong>Setup configuration</strong></li>
-      </ol>
-      <p>The next step is just to create a <code>config.py</code> file in the root directory where the bot is with the following template:</p>
-      <pre><code class="lang-py hljs ">token = ''  <span class="hljs-comment"># your bot's token</span>
+	<div class="markdown-container ltr">
+		<div class="markdown-content">
+			<h1 id="snakebot">snakebot</h1>
+			<p>A basic discord.py bot that tries to do everything</p>
+			<h2 id="running">Running</h2>
+			<ol>
+				<li><strong>Python 3.9 or higher</strong></li>
+				<p>You should be able to run it on earlier versions but I haven't tried</p>
+				<li><strong>Install dependencies</strong></li>
+				<br>
+				<details>
+					<summary><span>Windows</span></summary> <code>pip install -U -r requirements.txt</code> or <code>poetry install</code>
+					<br> On windows you will also need plyvel-win32
+					<br> <code>pip install plyvel-win32</code> </details>
+				<details>
+					<summary><span>Linux</span></summary> <code>pip install -U -r requirements.txt</code> or <code>pip3 install -U -r requirements.txt</code>
+					<br> On linux you will need plyvel
+					<br> <code>pip install plyvel</code>
+					<br> If it fails to install on Debian or Ubuntu try
+					<br> <code>apt-get install libleveldb1v5 libleveldb-dev</code> </details>
+				<br>
+				<li><strong>Setup configuration</strong></li>
+			</ol>
+			<p>The next step is just to create a <code>config.py</code> file in the root directory where the bot is with the following template:</p> <pre><code class="lang-py hljs ">token = ''  <span class="hljs-comment"># your bot's token</span>
 </code></pre>
-      <p>&nbsp;</p>
-      <p><strong>Note:</strong></p>
-      <p>You will probably want to remove my discord id from the owner_ids in <a href="https://github.com/Singularitat/snakebot/blob/main/bot.py#L30">bot.py</a> and replace it with your own</p>
-      <p>&nbsp;</p>
-      <h2 id="requirements">Requirements</h2>
-      <ul>
-        <li>Python 3.9+</li>
-        <li><a href="https://github.com/Rapptz/discord-ext-menus">discord-ext-menus</a></li>
-        <li>discord.py[voice]</li>
-        <li>lxml</li>
-        <li>psutil</li>
-        <li>orjson</li>
-        <li>youtube_dl</li>
-        <li>plyvel</li>
-        <li>pillow</li>
-      </ul>
-    </div>
-  </div>
+			<br>
+			<p><strong>Note:</strong>
+				<br> You will probably want to remove my discord id from the owner_ids in <a href="https://github.com/Singularitat/snakebot/blob/main/bot.py#L30">bot.py</a> and replace it with your own</p>
+			<h2 id="requirements">Requirements</h2>
+			<ul>
+				<li>Python 3.9+</li>
+				<li><a href="https://github.com/Rapptz/discord-ext-menus">discord-ext-menus</a></li>
+				<li>discord.py[voice]</li>
+				<li>lxml</li>
+				<li>psutil</li>
+				<li>orjson</li>
+				<li>youtube_dl</li>
+				<li>plyvel</li>
+				<li>pillow</li>
+			</ul>
+		</div>
+	</div>
 </body>
 
 </html>
