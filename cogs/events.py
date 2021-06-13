@@ -569,9 +569,13 @@ class events(commands.Cog):
         if ctx.author.id in self.bot.owner_ids:
             return True
 
-        disabled = DB.db.get(b"disabled_channels")
+        disabled = DB.db.get(f"{ctx.guild.id}-disabled_channels".encode())
 
-        if disabled and str(ctx.guild.id) in (disabled := orjson.loads(disabled)):
+        if (
+            disabled
+            and ctx.command.name != "disable_channel"
+            and str(ctx.guild.id) in (disabled := orjson.loads(disabled))
+        ):
             if ctx.channel.id in disabled[str(ctx.guild.id)]:
                 return False
 

@@ -36,6 +36,135 @@ class apis(commands.Cog):
         ):
             return None
 
+    @commands.command()
+    async def quote(self, ctx):
+        """Gets a random quote."""
+        url = "https://api.fisenko.net/quotes?l=en"
+
+        async with ctx.typing():
+            quote = await self.get_json(url)
+            embed = discord.Embed(
+                color=discord.Color.blurple(), description=quote["text"]
+            )
+            embed.set_footer(text=f"― {quote['author']}")
+            await ctx.send(embed=embed)
+
+    @commands.command()
+    async def suntzu(self, ctx):
+        """Gets fake Sun Tzu art of war quotes."""
+        url = "http://api.fakeartofwar.gaborszathmari.me/v1/getquote"
+
+        async with ctx.typing():
+            quote = await self.get_json(url)
+            embed = discord.Embed(
+                color=discord.Color.blurple(), description=quote["quote"]
+            )
+            embed.set_footer(text="― Sun Tzu, Art Of War")
+            await ctx.send(embed=embed)
+
+    @commands.command(name="sl")
+    async def sounds_like(self, ctx, word):
+        """Gets words that sound like [word].
+
+        words: str
+        """
+        url = f"https://api.datamuse.com/words?sl={word}&max=9"
+
+        async with ctx.typing():
+            matches = await self.get_json(url)
+
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            if not matches:
+                embed.description = "```No results found```"
+                return await ctx.send(embed=embed)
+
+            embed.set_footer(text="The numbers below are the scores")
+
+            for match in matches:
+                embed.add_field(name=word["word"], value=word["score"])
+
+            await ctx.send(embed=embed)
+
+    @commands.command()
+    async def rhyme(self, ctx, word):
+        """Gets words that rhyme with [word].
+
+        words: str
+        """
+        url = f"https://api.datamuse.com/words?rel_rhy={word}&max=9"
+
+        async with ctx.typing():
+            rhymes = await self.get_json(url)
+
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            if not rhymes:
+                embed.description = "```No results found```"
+                return await ctx.send(embed=embed)
+
+            embed.set_footer(text="The numbers below are the scores")
+
+            for rhyme in rhymes:
+                embed.add_field(name=rhyme["word"], value=rhyme["score"])
+
+            await ctx.send(embed=embed)
+
+    @commands.command()
+    async def spelling(self, ctx, word):
+        """Gets possible spellings of [word].
+
+        words: str
+            The words to get possible spellings of.
+        """
+        url = f"https://api.datamuse.com/words?sp={word}"
+
+        async with ctx.typing():
+            spellings = await self.get_json(url)
+
+            embed = discord.Embed(
+                color=discord.Color.blurple(), title="Possible spellings"
+            )
+
+            if not spellings:
+                embed.description = "```No results found```"
+                return await ctx.send(embed=embed)
+
+            embed.set_footer(text="The numbers below are the scores")
+
+            for spelling in spellings:
+                embed.add_field(name=spelling["word"], value=spelling["score"])
+
+            await ctx.send(embed=embed)
+
+    @commands.command()
+    async def meaning(self, ctx, *, words):
+        """Gets words with similar meaning to [words].
+        Example .meaning ringing in the ears
+
+        words: str
+            The words to get possible meanings of.
+        """
+        url = f"https://api.datamuse.com/words?ml={words}&max=9"
+
+        async with ctx.typing():
+            meanings = await self.get_json(url)
+
+            embed = discord.Embed(
+                color=discord.Color.blurple(), title="Possible meanings"
+            )
+
+            if not meanings:
+                embed.description = "```No results found```"
+                return await ctx.send(embed=embed)
+
+            embed.set_footer(text="The numbers below are the scores")
+
+            for meaning in meanings:
+                embed.add_field(name=meaning["word"], value=meaning["score"])
+
+            await ctx.send(embed=embed)
+
     @commands.group()
     async def apis(self, ctx):
         """Command group for the public apis api."""
@@ -431,6 +560,8 @@ class apis(commands.Cog):
 
         embed.description = (
             "```Hostname: {}\n"
+            "Ip: {}\n"
+            "Port: {}\n\n"
             "Online: {}\n\n"
             "Players:\n{}/{}\n{}\n"
             "Version(s):\n{}\n\n"
@@ -438,6 +569,8 @@ class apis(commands.Cog):
             "Motd:\n{}```"
         ).format(
             data["hostname"],
+            data["ip"],
+            data["port"],
             data["online"],
             data["players"]["online"],
             data["players"]["max"],
