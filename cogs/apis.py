@@ -37,6 +37,28 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
+    async def spelling(self, ctx, word):
+        """Gets possible spellings of words.
+
+        words: str
+            The words to get possible spellings of.
+        """
+        url = f"https://api.datamuse.com/words?sp={word}"
+
+        async with ctx.typing():
+            spellings = await self.get_json(url)
+
+            embed = discord.Embed(
+                color=discord.Color.blurple(), title="Possible spellings"
+            )
+            embed.set_footer(text="The numbers below are the scores")
+
+            for spelling in spellings:
+                embed.add_field(name=spelling["word"], value=spelling["score"])
+
+            await ctx.send(embed=embed)
+
+    @commands.command()
     async def meaning(self, ctx, *, words):
         """Gets words with similar meaning.
         Example .meaning ringing in the ears
