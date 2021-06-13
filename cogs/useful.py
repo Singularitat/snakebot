@@ -457,7 +457,7 @@ class useful(commands.Cog):
             return await ctx.send(embed=embed)
 
         async with ctx.typing():
-            url = f"https://www.google.co.nz/search?q={search}&source=lnms&tbm=isch"
+            url = f"https://www.google.co.nz/search?q={search}&source=lnms&tbm=isch&safe=active"
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
             }
