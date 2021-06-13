@@ -36,6 +36,19 @@ class apis(commands.Cog):
         ):
             return None
 
+    @commands.command()
+    async def suntzu(self, ctx):
+        """Gets fake Sun Tzu art of war quotes."""
+        url = "http://api.fakeartofwar.gaborszathmari.me/v1/getquote"
+
+        async with ctx.typing():
+            quote = await self.get_json(url)
+            embed = discord.Embed(
+                color=discord.Color.blurple(), description=quote["quote"]
+            )
+            embed.set_footer(text="― Sun Tzu Art Of War ")
+            await ctx.send(embed=embed)
+
     @commands.command(name="sl")
     async def sounds_like(self, ctx, word):
         """Gets words that sound like [word].
