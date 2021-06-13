@@ -37,6 +37,25 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
+    async def rhyme(self, ctx, word):
+        """Gets words that rhyme with a word.
+
+        words: str
+        """
+        url = f"https://api.datamuse.com/words?rel_rhy={word}&max=9"
+
+        async with ctx.typing():
+            rhymes = await self.get_json(url)
+
+            embed = discord.Embed(color=discord.Color.blurple())
+            embed.set_footer(text="The numbers below are the scores")
+
+            for rhyme in rhymes:
+                embed.add_field(name=rhyme["word"], value=rhyme["score"])
+
+            await ctx.send(embed=embed)
+
+    @commands.command()
     async def spelling(self, ctx, word):
         """Gets possible spellings of words.
 
@@ -66,7 +85,7 @@ class apis(commands.Cog):
         words: str
             The words to get possible meanings of.
         """
-        url = f"https://api.datamuse.com/words?ml={words}&max=6"
+        url = f"https://api.datamuse.com/words?ml={words}&max=9"
 
         async with ctx.typing():
             meanings = await self.get_json(url)
