@@ -36,7 +36,6 @@ If it fails to install on Debian or Ubuntu try `apt-get install libleveldb1v5 li
 
 </details>
 
-
 3. **Setup configuration**
 
 The next step is just to create a `config.py` file in the root directory where
@@ -46,6 +45,14 @@ the bot is with the following template:
 token = ''  # your bot's token
 ```
 
+&nbsp;
+
+**Note:**
+
+You will probably want to remove my discord id from the owner_ids in [bot.py](/bot.py#L30) and replace it with your own
+
+&nbsp;
+
 ## Requirements
 
 - Python 3.9+
@@ -53,7 +60,7 @@ token = ''  # your bot's token
 - discord.py[voice]
 - lxml
 - psutil
-- ujson
+- orjson
 - youtube_dl
 - plyvel
 - pillow
