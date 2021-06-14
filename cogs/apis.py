@@ -257,7 +257,7 @@ class apis(commands.Cog):
                 embed.description = "```No results found```"
                 return await ctx.send(embed=embed)
 
-            embed.title = f"Estimates of the nationality of {data['name']}",
+            embed.title = f"Estimates of the nationality of {data['name']}"
 
             for country in data["country"]:
                 embed.add_field(
@@ -503,30 +503,6 @@ class apis(commands.Cog):
         ```"""
         )
         await ctx.send(embed=embed)
-
-    @commands.command()
-    async def lyrics(self, ctx, artist, *, song):
-        """Shows the lyrics of a song.
-
-        e.g .lyrics "sum 41" in too deep
-        .lyrics incubus drive
-
-        artist: str
-        song: str
-        """
-        url = f"https://api.lyrics.ovh/v1/{artist}/{song}"
-
-        async with ctx.typing():
-            lyrics = await self.get_json(url)
-
-            embed = discord.Embed(color=discord.Color.blurple())
-
-            if not lyrics or "error" in lyrics:
-                embed.description = "```No lyrics found```"
-                return await ctx.send(embed=embed)
-
-            embed.description = f"```{lyrics['lyrics'][:2000]}```"
-            await ctx.send(embed=embed)
 
     @commands.command()
     async def trivia(self, ctx, difficulty="easy"):
