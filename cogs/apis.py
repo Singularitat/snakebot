@@ -251,10 +251,14 @@ class apis(commands.Cog):
         async with ctx.typing():
             data = await self.get_json(url)
 
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                title=f"Estimates of the nationality of {data['name']}",
-            )
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            if not data["country"]:
+                embed.description = "```No results found```"
+                return await ctx.send(embed=embed)
+
+            embed.title = f"Estimates of the nationality of {data['name']}",
+
             for country in data["country"]:
                 embed.add_field(
                     name=country["country_id"],
@@ -1104,7 +1108,8 @@ class apis(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    def delete_cache(self, search, cache):
+    @staticmethod
+    def delete_cache(search, cache):
         """Deletes a search from the cache.
 
         search: str
