@@ -409,6 +409,17 @@ class useful(commands.Cog):
 
         await ctx.send(f"```{obj}\n\n{dir(obj)}```")
 
+    @staticmethod
+    async def wait_for_deletion(message: discord.Message, ctx):
+        def check(reaction: discord.Reaction, user: discord.User) -> bool:
+            return ctx.author.id == user.id and reaction.message.id == message.id
+
+        await message.add_reaction("❎")
+        reaction, user = await ctx.bot.wait_for(
+            "reaction_add", timeout=60.0, check=check
+        )
+        await message.delete()
+
     async def cache_check(self, search):
         """Checks the cache for an search if found randomly return a result.
 
@@ -454,7 +465,8 @@ class useful(commands.Cog):
             embed.set_image(url=url)
             embed.title = title
 
-            return await ctx.send(embed=embed)
+            message = await ctx.send(embed=embed)
+            return await self.wait_for_deletion(message, ctx)
 
         async with ctx.typing():
             url = f"https://www.google.co.nz/search?q={search}&source=lnms&tbm=isch&safe=active"
@@ -483,11 +495,13 @@ class useful(commands.Cog):
             embed.set_image(url=url)
             embed.title = title
 
-            await ctx.send(embed=embed)
+            message = await ctx.send(embed=embed)
 
             cache[cache_search] = images
             self.loop.call_later(300, self.delete_cache, cache_search, cache)
             DB.db.put(b"cache", orjson.dumps(cache))
+
+            await self.wait_for_deletion(message, ctx)
 
     @commands.command(aliases=["img"])
     async def image(self, ctx, *, search):
@@ -506,7 +520,8 @@ class useful(commands.Cog):
             embed.set_image(url=url)
             embed.title = title
 
-            return await ctx.send(embed=embed)
+            message = await ctx.send(embed=embed)
+            return await self.wait_for_deletion(message, ctx)
 
         async with ctx.typing():
             url = f"https://www.bing.com/images/search?q={search}&first=1"
@@ -533,11 +548,13 @@ class useful(commands.Cog):
             embed.set_image(url=url)
             embed.title = title
 
-            await ctx.send(embed=embed)
+            message = await ctx.send(embed=embed)
 
             cache[cache_search] = images
             self.loop.call_later(300, self.delete_cache, cache_search, cache)
             DB.db.put(b"cache", orjson.dumps(cache))
+
+            await self.wait_for_deletion(message, ctx)
 
     @commands.command()
     async def calc(self, ctx, num_base, *, args):
