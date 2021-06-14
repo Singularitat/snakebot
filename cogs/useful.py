@@ -440,7 +440,8 @@ class useful(commands.Cog):
             return url, title
         return cache
 
-    def delete_cache(self, search, cache):
+    @staticmethod
+    def delete_cache(search, cache):
         """Deletes a search from the cache.
 
         search: str
