@@ -117,7 +117,7 @@ class apis(commands.Cog):
         words: str
             The words to get possible spellings of.
         """
-        url = f"https://api.datamuse.com/words?sp={word}"
+        url = f"https://api.datamuse.com/words?sp={word}&max=9"
 
         async with ctx.typing():
             spellings = await self.get_json(url)
@@ -251,10 +251,14 @@ class apis(commands.Cog):
         async with ctx.typing():
             data = await self.get_json(url)
 
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                title=f"Estimates of the nationality of {data['name']}",
-            )
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            if not data["country"]:
+                embed.description = "```No results found```"
+                return await ctx.send(embed=embed)
+
+            embed.title = f"Estimates of the nationality of {data['name']}",
+
             for country in data["country"]:
                 embed.add_field(
                     name=country["country_id"],
@@ -262,10 +266,48 @@ class apis(commands.Cog):
                 )
             await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.group()
     async def game(self, ctx):
         """Gets a random game that is free"""
-        url = "https://www.freetogame.com/api/games?platform=pc"
+        if not ctx.invoked_subcommand:
+            url = "https://www.freetogame.com/api/games?platform=pc"
+
+            async with ctx.typing():
+                games = await self.get_json(url)
+                game = random.choice(games)
+
+                embed = discord.Embed(
+                    color=discord.Color.blurple(),
+                    title=game["title"],
+                    description=f"{game['short_description']}\n[Link]({game['game_url']})",
+                )
+                embed.add_field(name="Genre", value=game["genre"])
+                embed.add_field(name="Publisher", value=game["publisher"])
+                embed.add_field(name="Developer", value=game["developer"])
+                embed.set_image(url=game["thumbnail"])
+
+                await ctx.send(embed=embed)
+
+    @game.command()
+    async def category(self, ctx, category):
+        """Gets a random game that is free"""
+        if category.lower() == "list":
+            embed = discord.Embed(color=discord.Color.blurple())
+            embed.description = textwrap.dedent(
+                """
+                ```mmorpg, shooter, strategy, moba, racing, sports
+                social, sandbox, open-world, survival, pvp, pve, pixel
+                voxel, zombie, turn-based, first-person, third-Person
+                top-down, tank, space, sailing, side-scroller, superhero
+                permadeath, card, battle-royale, mmo, mmofps, mmotps, 3d
+                2d, anime, fantasy, sci-fi, fighting, action-rpg, action
+                military, martial-arts, flight, low-spec, tower-defense
+                horror, mmorts```
+                """
+            )
+            return await ctx.send(embed=embed)
+
+        url = f"https://www.freetogame.com/api/games?platform=pc?category={category}"
 
         async with ctx.typing():
             games = await self.get_json(url)
@@ -1066,7 +1108,8 @@ class apis(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    def delete_cache(self, search, cache):
+    @staticmethod
+    def delete_cache(search, cache):
         """Deletes a search from the cache.
 
         search: str

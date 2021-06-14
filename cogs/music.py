@@ -91,7 +91,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         data = await loop.run_in_executor(None, partial)
 
         if data is None:
-            raise YTDLError("Couldn't find anything that matches `{search}`")
+            raise YTDLError(f"Couldn't find anything that matches {search}")
 
         if "entries" not in data:
             process_info = data
@@ -103,14 +103,14 @@ class YTDLSource(discord.PCMVolumeTransformer):
                     break
 
             if process_info is None:
-                raise YTDLError(f"Couldn't find anything that matches `{search}`")
+                raise YTDLError(f"Couldn't find anything that matches {search}")
 
         webpage_url = process_info["webpage_url"]
         partial = functools.partial(cls.ytdl.extract_info, webpage_url, download=False)
         processed_info = await loop.run_in_executor(None, partial)
 
         if processed_info is None:
-            raise YTDLError(f"Couldn't fetch `{webpage_url}`")
+            raise YTDLError(f"Couldn't fetch {webpage_url}")
 
         if "entries" not in processed_info:
             info = processed_info
@@ -120,9 +120,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
                 try:
                     info = processed_info["entries"].pop(0)
                 except IndexError:
-                    raise YTDLError(
-                        f"Couldn't retrieve any matches for `{webpage_url}`"
-                    )
+                    raise YTDLError(f"Couldn't retrieve any matches for {webpage_url}")
 
         if info["duration"] > 1800:
             raise YTDLError("Video is longer than 30 minutes")
@@ -159,7 +157,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
         VIds = []
 
         for index, e in enumerate(info["entries"]):
-            # lst.append(f'`{info["entries"].index(e) + 1}.` {e.get("title")} **[{YTDLSource.parse_duration(int(e.get("duration")))}]**\n')
             VId = e.get("id")
             VUrl = f"https://www.youtube.com/watch?v={VId}"
             VIds.append(VId)
@@ -195,6 +192,8 @@ class YTDLSource(discord.PCMVolumeTransformer):
                             cls.ytdl.extract_info, VUrl, download=False
                         )
                         data = await loop.run_in_executor(None, partial)
+                        if data["duration"] > 1800:
+                            return "too_long"
                     rtrn = cls(
                         ctx,
                         discord.FFmpegPCMAudio(data["url"], **cls.FFMPEG_OPTIONS),
@@ -218,11 +217,11 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
             duration = []
             if days > 0:
-                duration.append(f"{days}")
+                duration.append(str(days))
             if hours > 0:
-                duration.append(f"{hours}")
+                duration.append(str(hours))
             if minutes > 0:
-                duration.append(f"{minutes}")
+                duration.append(str(minutes))
             if seconds >= 0:
                 duration.append(f"{seconds:0>2}")
 
@@ -333,12 +332,8 @@ class VoiceState:
             self.now = None
 
             if self.loop is False:
-                # Try to get the next song within 3 minutes.
-                # If no song will be added to the queue in time,
-                # the player will disconnect due to performance
-                # reasons.
                 try:
-                    async with async_timeout.timeout(180):  # 3 minutes
+                    async with async_timeout.timeout(120):
                         self.current = await self.songs.get()
                 except asyncio.TimeoutError:
                     self.bot.loop.create_task(self.stop())
@@ -351,7 +346,6 @@ class VoiceState:
                     embed=self.current.create_embed()
                 )
 
-            # If the song is looped
             elif self.loop is True:
                 self.now = discord.FFmpegPCMAudio(
                     self.current.source.stream_url, **YTDLSource.FFMPEG_OPTIONS
@@ -363,6 +357,9 @@ class VoiceState:
     def play_next_song(self, error=None):
         if error:
             raise VoiceError(str(error))
+
+        if self.is_playing and len(self.voice.channel.members) <= 1:
+            self.bot.loop.create_task(self.stop())
 
         self.next.set()
 
@@ -611,25 +608,37 @@ class music(commands.Cog):
         Then the member can choose one of the titles by typing a number
         in chat or they can cancel by typing "cancel" in chat.
         """
+        embed = discord.Embed(color=discord.Color.blurple())
         async with ctx.typing():
             try:
                 source = await YTDLSource.search_source(ctx, search, loop=self.bot.loop)
             except YTDLError as e:
-                await ctx.send(f"An error occurred while processing this request: {e}")
-            else:
-                if source == "sel_invalid":
-                    await ctx.send("Invalid selection")
-                elif source == "cancel":
-                    await ctx.send(":white_check_mark:")
-                elif source == "timeout":
-                    await ctx.send(":alarm_clock: **Time's up bud**")
-                else:
-                    if not ctx.voice_state.voice:
-                        await ctx.invoke(self._join)
+                embed.description = (
+                    f"```An error occurred while processing this request: {e}```"
+                )
+                return await ctx.send(embed=embed)
 
-                    song = Song(source)
-                    await ctx.voice_state.songs.put(song)
-                    await ctx.send(f"Enqueued {source}")
+            if source == "too_long":
+                embed.description = "```Video is too long```"
+                return await ctx.send(embed=embed)
+
+            if source == "sel_invalid":
+                embed.description = "```Invalid selection```"
+                return await ctx.send(embed=embed)
+
+            if source == "cancel":
+                return
+
+            if source == "timeout":
+                embed.description = "```Timed out```"
+                return await ctx.send(embed=embed)
+
+            if not ctx.voice_state.voice:
+                await ctx.invoke(self._join)
+
+            song = Song(source)
+            await ctx.voice_state.songs.put(song)
+            await ctx.send(f"Enqueued {source}")
 
     @_join.before_invoke
     @_play.before_invoke

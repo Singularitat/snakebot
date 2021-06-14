@@ -4,8 +4,6 @@ import random
 import aiohttp
 import lxml.html
 import orjson
-import hashlib
-from urllib.parse import quote
 import re
 import cogs.utils.database as DB
 import config
@@ -18,6 +16,13 @@ class misc(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    @commands.command()
+    async def markdown(self, ctx):
+        """Sends a link to a guide on markdown"""
+        await ctx.send(
+            "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51"
+        )
 
     @commands.command()
     async def person(self, ctx):
@@ -360,102 +365,6 @@ class misc(commands.Cog):
 
         await ctx.send(f"https://discord.gg/{data['code']}")
         DB.db.put(b"fishington", data["code"].encode())
-
-    @staticmethod
-    def unquote_unreserved(uri):
-        UNRESERVED_SET = frozenset(
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" + "0123456789-._~"
-        )
-        parts = uri.split("%")
-        for i in range(1, len(parts)):
-            h = parts[i][0:2]
-            if len(h) == 2 and h.isalnum():
-                try:
-                    c = chr(int(h, 16))
-                except ValueError:
-                    raise ValueError("Invalid percent-escape sequence: '%s'" % h)
-
-                if c in UNRESERVED_SET:
-                    parts[i] = c + parts[i][2:]
-                else:
-                    parts[i] = "%" + parts[i]
-            else:
-                parts[i] = "%" + parts[i]
-        return "".join(parts)
-
-    def requote_uri(self, uri):
-        safe_with_percent = "!#$%&'()*+,/:;=?@[]~"
-        safe_without_percent = "!#$&'()*+,/:;=?@[]~"
-        try:
-            return quote(self.unquote_unreserved(uri), safe=safe_with_percent)
-        except ValueError:
-            return quote(uri, safe=safe_without_percent)
-
-    @commands.command()
-    async def chat(self, ctx, *, message):
-        """Chats with an 'ai'.
-
-        message: str
-            The message you want to send.
-        """
-        async with ctx.typing():
-            timestamp = ctx.message.created_at.timestamp()
-            cookies = DB.db.get(b"chatcookies")
-            if not cookies or (cookies := orjson.loads(cookies))["expiry"] < timestamp:
-                async with aiohttp.ClientSession() as session, session.get(
-                    "https://www.cleverbot.com/"
-                ) as response:
-                    cookies = {
-                        "XVIS": re.search(
-                            r"\w+(?=;)", response.headers["Set-cookie"]
-                        ).group(),
-                        "expiry": timestamp + 86400,
-                    }
-                    DB.db.put(b"chatcookies", orjson.dumps(cookies))
-
-            history = DB.db.get(b"chatbot-history")
-
-            if history:
-                history = orjson.loads(history)
-            else:
-                history = {}
-
-            payload = f"stimulus={self.requote_uri(message)}&"
-
-            if str(ctx.author.id) not in history:
-                history[str(ctx.author.id)] = []
-
-            for i, context in enumerate(history[str(ctx.author.id)][::-1]):
-                payload += f"vText{i + 2}={self.requote_uri(context)}&"
-
-            payload += "cb_settings_scripting=no&islearning=1&icognoid=wsf&icognocheck="
-            payload += hashlib.md5(payload[7:33].encode()).hexdigest()
-
-            url = "https://www.cleverbot.com/webservicemin?uc=UseOfficialCleverbotAPI"
-
-            async with aiohttp.ClientSession(cookies=cookies) as session, session.post(
-                url, data=payload
-            ) as response:
-                res = await response.read()
-                if res == b"Hello from Cleverbot\n":
-                    DB.db.delete(b"chatcookies")
-                    return await ctx.reply(
-                        "```Didn't get a response try again later.```"
-                    )
-                if b"503 Service Temporarily Unavailable" in res:
-                    return await ctx.reply(
-                        "```Didn't get a response try again later.```"
-                    )
-                response = re.split(r"\\r", str(res))[0][2:-1]
-
-            history[str(ctx.author.id)].extend([message, response])
-
-            if len(history[str(ctx.author.id)]) >= 40:
-                del history[str(ctx.author.id)][:2]
-
-            DB.db.put(b"chatbot-history", orjson.dumps(history))
-
-            await ctx.reply(response)
 
     @commands.command()
     async def rps(self, ctx, choice: str):

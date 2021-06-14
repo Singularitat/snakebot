@@ -259,11 +259,23 @@ class events(commands.Cog):
         if (
             DB.db.get(f"{message.guild.id}-logging".encode())
             or DB.db.get(b"playing_chess")
-            or not message.content
             or message.author == self.bot.user
             or not message.guild
+            or not message.content
+            and not message.attachments
         ):
             return
+
+        image_urls = [
+            attachment.url
+            for attachment in message.attachments
+            if attachment.content_type.startswith("image/")
+        ]
+
+        content = "{}\n{}".format(
+            (message.content.replace("`", "`​") if message.content else ""),
+            "\n".join(image_urls),
+        )
 
         member_id = str(message.author.id).encode()
         deleted = DB.deleted.get(member_id)
@@ -279,26 +291,25 @@ class events(commands.Cog):
         DB.deleted.put(member_id, orjson.dumps(deleted))
         DB.db.put(
             b"snipe_message",
-            orjson.dumps([message.content, message.author.display_name]),
+            orjson.dumps([content, message.author.display_name]),
         )
 
-        if discord.utils.escape_mentions(message.content) != message.content:
+        if message.raw_mentions:
             timesince = datetime.utcnow() - message.created_at
 
             if timesince.total_seconds() < 30:
-                DB.blacklist.put(f"{message.guild}-{message.author.id}".encode(), b"1")
+                DB.blacklist.put(
+                    f"{message.guild.id}-{message.author.id}".encode(), b"1"
+                )
 
         channel = discord.utils.get(message.guild.channels, name="logs")
 
         if not channel:
             return
 
-        # Replaces backticks with a backtick and a zero width space
-        msg = message.content.replace("`", "`​")
-
         embed = discord.Embed(
             title=f"{message.author.display_name} deleted:",
-            description=f"```{msg}```",
+            description=f"```\n{content}```",
             color=discord.Color.blurple(),
         )
         embed.set_footer(text=f"Member ID: {message.author.id}")
@@ -569,23 +580,24 @@ class events(commands.Cog):
         if ctx.author.id in self.bot.owner_ids:
             return True
 
-        disabled = DB.db.get(f"{ctx.guild.id}-disabled_channels".encode())
+        if ctx.guild:
+            disabled = DB.db.get(f"{ctx.guild.id}-disabled_channels".encode())
 
-        if (
-            disabled
-            and ctx.command.name != "disable_channel"
-            and str(ctx.guild.id) in (disabled := orjson.loads(disabled))
-        ):
-            if ctx.channel.id in disabled[str(ctx.guild.id)]:
-                return False
+            if (
+                disabled
+                and ctx.command.name != "disable_channel"
+                and str(ctx.guild.id) in (disabled := orjson.loads(disabled))
+            ):
+                if ctx.channel.id in disabled[str(ctx.guild.id)]:
+                    return False
 
-        if ctx.guild and DB.db.get(f"{ctx.guild.id}-{ctx.command}".encode()):
-            await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.red(), description="```Command disabled```"
+            if ctx.guild and DB.db.get(f"{ctx.guild.id}-{ctx.command}".encode()):
+                await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.red(), description="```Command disabled```"
+                    )
                 )
-            )
-            return False
+                return False
 
         if await DB.get_blacklist(ctx.author.id, ctx.guild.id if ctx.guild else None):
             await ctx.send(
