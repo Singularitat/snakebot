@@ -45,7 +45,8 @@ class Deck:
         self.member_cards = [self.get_card(), self.get_card()]
         self.dealer_cards = [self.get_card(), self.get_card()]
 
-    def get_score(self, cards):
+    @staticmethod
+    def get_score(cards):
         score = sum(card.value for card in cards)
         if score > 21:
             for card in cards:
