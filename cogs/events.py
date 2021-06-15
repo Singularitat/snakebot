@@ -19,10 +19,8 @@ class events(commands.Cog):
     async def emoji_submission_check(self, payload):
         """Checks if an emoji submission has passed 8 votes.
 
-        reaction: discord.Reaction
-        user: Union[discord.User, discord.Member]
-        remove: bool
-            If the reaction was removed or added.
+        payload: discord.RawReactionActionEvent
+            A payload of raw data about the reaction and member.
         """
         emojis = DB.db.get(b"emoji_submissions")
 
@@ -205,7 +203,8 @@ class events(commands.Cog):
             The new message.
         """
         if (
-            DB.db.get(f"{after.guild.id}-logging".encode())
+            not before.guild
+            or DB.db.get(f"{after.guild.id}-logging".encode())
             or not after.content
             or before.content == after.content
             or after.author == self.bot.user
@@ -257,10 +256,10 @@ class events(commands.Cog):
         message: discord.Message
         """
         if (
-            DB.db.get(f"{message.guild.id}-logging".encode())
+            not message.guild
+            or DB.db.get(f"{message.guild.id}-logging".encode())
             or DB.db.get(b"playing_chess")
             or message.author == self.bot.user
-            or not message.guild
             or not message.content
             and not message.attachments
         ):
