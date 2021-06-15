@@ -408,7 +408,8 @@ class chess(commands.Cog):
         self.bot = bot
         self.is_running = False
 
-    def cog_unload(self):
+    @staticmethod
+    def cog_unload():
         DB.db.delete(b"playing_chess")
 
     @commands.command(hidden=True)

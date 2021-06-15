@@ -502,7 +502,7 @@ class useful(commands.Cog):
             self.loop.call_later(300, self.delete_cache, cache_search, cache)
             DB.db.put(b"cache", orjson.dumps(cache))
 
-            await self.wait_for_deletion(message, ctx)
+        await self.wait_for_deletion(message, ctx)
 
     @commands.command(aliases=["img"])
     async def image(self, ctx, *, search):
@@ -555,7 +555,7 @@ class useful(commands.Cog):
             self.loop.call_later(300, self.delete_cache, cache_search, cache)
             DB.db.put(b"cache", orjson.dumps(cache))
 
-            await self.wait_for_deletion(message, ctx)
+        await self.wait_for_deletion(message, ctx)
 
     @commands.command()
     async def calc(self, ctx, num_base, *, args):
@@ -568,6 +568,9 @@ class useful(commands.Cog):
         """
         num_bases = {"h": (16, hex), "o": (8, oct), "b": (2, bin)}
         base, method = num_bases.get(num_base.lower()[:1], (10, int))
+
+        if base == 8:
+            args = args.replace("0o", "")
 
         regex = r"0[xX][0-9a-fA-F]+" if base == 16 else r"\d+"
         numbers = [str(int(num, base)) for num in re.findall(regex, args)]
