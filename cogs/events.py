@@ -16,6 +16,40 @@ class events(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    async def poll_check(self, payload):
+        """Keeps track of poll results.
+
+        payload: discord.RawReactionActionEvent
+            A payload of raw data about the reaction and member.
+        """
+        if not payload.guild_id or payload.emoji.is_custom_emoji():
+            return
+
+        polls = DB.db.get(b"polls")
+
+        if not polls:
+            return
+
+        polls = orjson.loads(polls)
+        guild = str(payload.guild_id)
+
+        if guild not in polls:
+            return
+
+        message = str(payload.message_id)
+
+        print(polls[guild], payload.message_id)
+
+        if message not in polls[guild]:
+            return
+
+        if payload.emoji.name not in polls[guild][message]:
+            return
+
+        polls[guild][message][payload.emoji.name]["count"] += 1
+
+        DB.db.put(b"polls", orjson.dumps(polls))
+
     async def emoji_submission_check(self, payload):
         """Checks if an emoji submission has passed 8 votes.
 
@@ -95,10 +129,11 @@ class events(commands.Cog):
         payload: discord.RawReactionActionEvent
             A payload of raw data about the reaction and member.
         """
-        await self.emoji_submission_check(payload)
-
         if payload.member == self.bot.user:
             return
+
+        await self.emoji_submission_check(payload)
+        await self.poll_check(payload)
 
         role = await self.reaction_role_check(payload)
         if role is not None:
@@ -223,7 +258,7 @@ class events(commands.Cog):
         edited[date] = [before.content, after.content]
         DB.edited.put(member_id, orjson.dumps(edited))
         DB.db.put(
-            b"editsnipe_message",
+            f"{before.guild.id}-editsnipe_message".encode(),
             orjson.dumps([before.content, after.content, before.author.display_name]),
         )
 
@@ -289,7 +324,7 @@ class events(commands.Cog):
 
         DB.deleted.put(member_id, orjson.dumps(deleted))
         DB.db.put(
-            b"snipe_message",
+            f"{message.guild.id}-snipe_message".encode(),
             orjson.dumps([content, message.author.display_name]),
         )
 
@@ -562,8 +597,9 @@ class events(commands.Cog):
             boot_times.append(round(boot_time, 5))
             DB.db.put(b"boot_times", orjson.dumps(boot_times))
 
-            # Wipe the cache as we have no way of knowing if it has expired
+            # Wipe the cache and polls as we have no way of knowing if it has expired
             DB.db.put(b"cache", b"{}")
+            DB.db.delete(b"polls")
 
             print(
                 f"Logged in as {self.bot.user.name}\n"
