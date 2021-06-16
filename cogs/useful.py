@@ -325,7 +325,7 @@ class useful(commands.Cog):
     @commands.command()
     async def snipe(self, ctx):
         """Snipes the last deleted message."""
-        message = DB.db.get(b"snipe_message")
+        message = DB.db.get(f"{ctx.guild.id}-snipe_message".encode())
 
         if message:
             message = orjson.loads(message)
@@ -341,7 +341,7 @@ class useful(commands.Cog):
     @commands.command()
     async def editsnipe(self, ctx):
         """Snipes the last edited message."""
-        message = DB.db.get(b"editsnipe_message")
+        message = DB.db.get(f"{ctx.guild.id}-editsnipe_message".encode())
 
         if message:
             message = orjson.loads(message)
@@ -440,15 +440,6 @@ class useful(commands.Cog):
             return url, title
         return cache
 
-    @staticmethod
-    def delete_cache(search, cache):
-        """Deletes a search from the cache.
-
-        search: str
-        """
-        cache.pop(search)
-        DB.db.put(b"cache", orjson.dumps(cache))
-
     @commands.command()
     async def google(self, ctx, *, search):
         """Searchs and finds a random image from google.
@@ -499,7 +490,7 @@ class useful(commands.Cog):
             message = await ctx.send(embed=embed)
 
             cache[cache_search] = images
-            self.loop.call_later(300, self.delete_cache, cache_search, cache)
+            self.loop.call_later(300, DB.delete_cache, cache_search, cache)
             DB.db.put(b"cache", orjson.dumps(cache))
 
         await self.wait_for_deletion(message, ctx)
@@ -552,7 +543,7 @@ class useful(commands.Cog):
             message = await ctx.send(embed=embed)
 
             cache[cache_search] = images
-            self.loop.call_later(300, self.delete_cache, cache_search, cache)
+            self.loop.call_later(300, DB.delete_cache, cache_search, cache)
             DB.db.put(b"cache", orjson.dumps(cache))
 
         await self.wait_for_deletion(message, ctx)

@@ -23,6 +23,19 @@ wins = db.prefixed_db(b"wins-")
 message_count = db.prefixed_db(b"message_count-")
 
 
+@staticmethod
+def delete_cache(search, cache):
+    """Deletes a search from the cache.
+
+    search: str
+    """
+    try:
+        cache.pop(search)
+    except KeyError:
+        return
+    db.put(b"cache", orjson.dumps(cache))
+
+
 async def add_karma(member_id, amount):
     """Adds or removes an amount from a members karma.
 
