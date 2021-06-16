@@ -307,7 +307,7 @@ class apis(commands.Cog):
             )
             return await ctx.send(embed=embed)
 
-        url = f"https://www.freetogame.com/api/games?platform=pc?category={category}"
+        url = f"https://www.freetogame.com/api/games?platform=pc&category={category}"
 
         async with ctx.typing():
             games = await self.get_json(url)
@@ -927,7 +927,7 @@ class apis(commands.Cog):
         )
 
         DB.db.put(b"cache", orjson.dumps(cache))
-        self.loop.call_later(300, self.delete_cache, cache_search, cache)
+        self.loop.call_later(300, DB.delete_cache, cache_search, cache)
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["wiki"])
@@ -1084,18 +1084,6 @@ class apis(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @staticmethod
-    def delete_cache(search, cache):
-        """Deletes a search from the cache.
-
-        search: str
-        """
-        try:
-            cache.pop(search)
-        except KeyError:
-            return
-        DB.db.put(b"cache", orjson.dumps(cache))
-
     @commands.command()
     async def tenor(self, ctx, *, search):
         """Gets a random gif from tenor based off a search.
@@ -1128,7 +1116,7 @@ class apis(commands.Cog):
         cache[cache_search] = tenor
 
         DB.db.put(b"cache", orjson.dumps(cache))
-        self.loop.call_later(300, self.delete_cache, cache_search, cache)
+        self.loop.call_later(300, DB.delete_cache, cache_search, cache)
         await ctx.send(image)
 
 
