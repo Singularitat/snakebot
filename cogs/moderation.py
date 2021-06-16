@@ -22,6 +22,89 @@ class moderation(commands.Cog):
         self.bot = bot
         self.loop = asyncio.get_event_loop()
 
+    @staticmethod
+    async def end_poll(guild, message):
+        """Ends a poll and sends the results."""
+        polls = DB.db.get(b"polls")
+
+        if not polls:
+            return
+
+        polls = orjson.loads(polls)
+
+        message_id = str(message.id)
+        winner = max(
+            polls[guild][message_id], key=lambda x: polls[guild][message_id][x]["count"]
+        )
+
+        await message.reply(f"Winner of the poll was {winner}")
+
+        polls[guild].pop(message_id)
+        DB.db.put(b"polls", orjson.dumps(polls))
+
+    @commands.command()
+    async def poll(self, ctx, name, *options):
+        """Starts a poll.
+
+        name: str
+        options: tuple
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if len(options) > 10:
+            embed.description = "```You can only have 11 options```"
+            return await ctx.send(embed=embed)
+
+        if len(options) < 2:
+            embed.description = "```You need at least 2 options```"
+            return await ctx.send(embed=embed)
+
+        polls = DB.db.get(b"polls")
+
+        if not polls:
+            polls = {}
+        else:
+            polls = orjson.loads(polls)
+
+        guild = str(ctx.guild.id)
+
+        if guild not in polls:
+            polls[guild] = {}
+
+        polls[guild]["temp"] = {}
+
+        emojis = [
+            "0️⃣",
+            "1️⃣",
+            "2️⃣",
+            "3️⃣",
+            "4️⃣",
+            "5️⃣",
+            "6️⃣",
+            "7️⃣",
+            "8️⃣",
+            "9️⃣",
+            "🔟",
+        ]
+
+        for number, option in enumerate(options):
+            polls[guild]["temp"][emojis[number]] = {
+                "name": option,
+                "count": 0,
+            }
+            embed.add_field(name=number, value=option, inline=False)
+
+        message = await ctx.send(embed=embed)
+
+        polls[guild][str(message.id)] = polls[guild].pop("temp")
+
+        for i in range(len(options)):
+            await message.add_reaction(emojis[i])
+
+        DB.db.put(b"polls", orjson.dumps(polls))
+
+        self.loop.call_later(21600, asyncio.create_task, self.end_poll(guild, message))
+
     @commands.command(name="mute")
     @commands.has_permissions(kick_members=True)
     async def mute_member(self, ctx, member: discord.Member, *, reason=None):
