@@ -33,7 +33,7 @@ def delete_cache(search, cache):
         cache.pop(search)
     except KeyError:
         return
-    DB.db.put(b"cache", orjson.dumps(cache))
+    db.put(b"cache", orjson.dumps(cache))
 
 
 async def add_karma(member_id, amount):
