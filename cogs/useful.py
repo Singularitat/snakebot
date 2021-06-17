@@ -568,11 +568,11 @@ class useful(commands.Cog):
             op = OPERATIONS[node.op.__class__]
             left = self.safe_eval(node.left)
             right = self.safe_eval(node.right)
-            if isinstance(node.op, ast.Pow):
-                assert len(str(left)) * right < 1000
+            if isinstance(node.op, ast.Pow) and len(str(left)) * right > 1000:
+                raise ValueError("Too large to calculate")
             return op(left, right)
 
-        assert False, "Unsafe operation"
+        raise ValueError("Calculation failed")
 
     @commands.command()
     async def calc(self, ctx, num_base, *, args):
@@ -604,16 +604,6 @@ class useful(commands.Cog):
         embed.description = f"```{msg}```"
 
         await ctx.send(embed=embed)
-
-    @calc.error
-    async def calc_error_handler(self, ctx, error):
-        if isinstance(error, commands.errors.CommandInvokeError):
-            await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description=f"```Failed to calculate```",
-                )
-            )
 
     @commands.command(aliases=["ch", "cht"])
     async def cheatsheet(self, ctx, *search):
