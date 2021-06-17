@@ -501,10 +501,9 @@ class moderation(commands.Cog):
     @commands.has_permissions(manage_channels=True)
     @commands.guild_only()
     async def channel(self, ctx, channel: discord.TextChannel = None):
-        """Purges a channel by cloning and deleting it.
+        """Purges a channel by cloning and then deleting it.
 
         channel: discord.TextChannel
-            The channel to clone and delete.
         """
         channel = channel or ctx.channel
         await channel.clone()
@@ -523,7 +522,7 @@ class moderation(commands.Cog):
 
     @history.command(aliases=["d"])
     @commands.has_permissions(manage_messages=True)
-    async def deleted(self, ctx, user: discord.User = None):
+    async def deleted(self, ctx, user: discord.Member = None):
         """Shows a members most recent deleted message history.
 
         user: discord.User
@@ -557,7 +556,7 @@ class moderation(commands.Cog):
 
     @history.command(aliases=["e"])
     @commands.has_permissions(manage_messages=True)
-    async def edited(self, ctx, user: discord.User = None, amount: int = 10):
+    async def edited(self, ctx, user: discord.Member = None, amount: int = 10):
         """Shows a users most recent edit message history.
 
         member: discord.User
@@ -572,7 +571,7 @@ class moderation(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not edited:
-            embed.description = ("```No edited messages found```",)
+            embed.description = "```No edited messages found```"
             return await ctx.send(embed=embed)
 
         edited = orjson.loads(edited)
@@ -597,5 +596,5 @@ class moderation(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    """Starts logger cog."""
+    """Starts moderation cog."""
     bot.add_cog(moderation(bot))
