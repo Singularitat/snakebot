@@ -183,15 +183,29 @@ class admin(commands.Cog):
         toggle: bool
             Use False to let @everyone send messages again.
         """
-        for category in ctx.guild.categories:
-            await category.set_permissions(
-                ctx.guild.default_role, send_messages=not toggle if toggle else None
-            )
+        state = not toggle if toggle else None
+
+        for channel in ctx.guild.text_channels:
+            perms = channel.overwrites_for(ctx.guild.default_role).send_messages
+            key = f"{ctx.guild.id}-{channel.id}-lock".encode()
+
+            if perms is False and state is False:
+                DB.db.put(key, b"1")
+            elif perms is True and state is False:
+                DB.db.put(key, b"0")
+            elif (data := DB.db.get(key)) == b"0":
+                await channel.set_permissions(ctx.guild.default_role, send_messages=True)
+                DB.db.delete(key)
+            elif not data:
+                await channel.set_permissions(ctx.guild.default_role, send_messages=state)
+            else:
+                DB.db.delete(key)
+
         embed = discord.Embed(color=discord.Color.blurple())
         if toggle:
-            embed.description = "```Set all categories to read only.```"
+            embed.description = "```Set all channels to read only.```"
         else:
-            embed.description = "```Reset categories read permissions to default.```"
+            embed.description = "```Reset channel read permissions to default.```"
         await ctx.send(embed=embed)
 
     @commands.command()
