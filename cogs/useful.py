@@ -563,7 +563,8 @@ class useful(commands.Cog):
     def safe_eval(self, node):
         if isinstance(node, ast.Num):
             return node.n
-        elif isinstance(node, ast.BinOp):
+
+        if isinstance(node, ast.BinOp):
             op = OPERATIONS[node.op.__class__]
             left = self.safe_eval(node.left)
             right = self.safe_eval(node.right)
