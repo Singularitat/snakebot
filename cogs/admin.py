@@ -194,10 +194,14 @@ class admin(commands.Cog):
             elif perms is True and state is False:
                 DB.db.put(key, b"0")
             elif (data := DB.db.get(key)) == b"0":
-                await channel.set_permissions(ctx.guild.default_role, send_messages=True)
+                await channel.set_permissions(
+                    ctx.guild.default_role, send_messages=True
+                )
                 DB.db.delete(key)
             elif not data:
-                await channel.set_permissions(ctx.guild.default_role, send_messages=state)
+                await channel.set_permissions(
+                    ctx.guild.default_role, send_messages=state
+                )
             else:
                 DB.db.delete(key)
 
