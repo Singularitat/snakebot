@@ -8,6 +8,18 @@ import lxml.html
 import re
 import asyncio
 import cogs.utils.database as DB
+import ast
+import operator
+
+
+OPERATIONS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.FloorDiv: operator.floordiv,
+    ast.Pow: operator.pow,
+}
 
 
 class InviteMenu(menus.ListPageSource):
@@ -548,6 +560,19 @@ class useful(commands.Cog):
 
         await self.wait_for_deletion(message, ctx)
 
+    def safe_eval(self, node):
+        if isinstance(node, ast.Num):
+            return node.n
+        elif isinstance(node, ast.BinOp):
+            op = OPERATIONS[node.op.__class__]
+            left = self.safe_eval(node.left)
+            right = self.safe_eval(node.right)
+            if isinstance(node.op, ast.Pow):
+                assert len(str(left)) * right < 1000
+            return op(left, right)
+
+        assert False, "Unsafe operation"
+
     @commands.command()
     async def calc(self, ctx, num_base, *, args):
         """Does math.
@@ -563,32 +588,31 @@ class useful(commands.Cog):
         if base == 8:
             args = args.replace("0o", "")
 
-        regex = r"0[xX][0-9a-fA-F]+" if base == 16 else r"\d+"
+        regex = r"(?:0[xX])?[0-9a-fA-F]+" if base == 16 else r"\d+"
         numbers = [str(int(num, base)) for num in re.findall(regex, args)]
-        code = re.sub(regex, "%s", args) % tuple(numbers)
 
-        data = {
-            "language": "python",
-            "source": f"print(round({code}))",
-            "args": "",
-            "stdin": "",
-            "log": 0,
-        }
-
-        async with aiohttp.ClientSession() as session, session.post(
-            "https://emkc.org/api/v1/piston/execute", data=orjson.dumps(data)
-        ) as response:
-            r = await response.json()
+        expr = re.sub(regex, "%s", args) % tuple(numbers)
+        result = self.safe_eval(ast.parse(expr, "<string>", "eval").body)
 
         embed = discord.Embed(color=discord.Color.blurple())
+        msg = f"ml\n{expr}\n\n{method(int(result))}\n\nDecimal: {result}"
 
-        if r["stderr"]:
-            embed.description = "Calculation failed"
-            return await ctx.send(embed=embed)
+        if int(result) != result:
+            msg += f"\n\nResult rounded when converting back to {method.__name__}"
 
-        result = method(int(r["output"]))
-        embed.description = f"```\n{code}\n\n{result}\n\nDecimal: {r['output']}```"
+        embed.description = f"```{msg}```"
+
         await ctx.send(embed=embed)
+
+    @calc.error
+    async def calc_error_handler(self, ctx, error):
+        if isinstance(error, commands.errors.CommandInvokeError):
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"```Failed to calculate```",
+                )
+            )
 
     @commands.command(aliases=["ch", "cht"])
     async def cheatsheet(self, ctx, *search):
