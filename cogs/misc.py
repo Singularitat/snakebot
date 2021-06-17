@@ -18,6 +18,16 @@ class misc(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    async def dashboard(self, ctx):
+        """Sends a link to Bryns dashboard."""
+        await ctx.send("https://web.tukib.org/uoa")
+
+    @commands.command()
+    async def notes(self, ctx):
+        """Sends a link to Joes notes."""
+        await ctx.send("https://notes.joewuthrich.com")
+
+    @commands.command()
     async def markdown(self, ctx):
         """Sends a link to a guide on markdown"""
         await ctx.send(
@@ -215,6 +225,7 @@ class misc(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
+    @commands.guild_only()
     async def youtube(self, ctx):
         """Starts a YouTube Together."""
         if (code := DB.db.get(b"youtube_together")) and discord.utils.get(
@@ -253,6 +264,7 @@ class misc(commands.Cog):
         DB.db.put(b"youtube_together", data["code"].encode())
 
     @commands.command()
+    @commands.guild_only()
     async def poker(self, ctx):
         """Starts a Discord Poke Night."""
         if (code := DB.db.get(b"poker_night")) and discord.utils.get(
@@ -291,6 +303,7 @@ class misc(commands.Cog):
         DB.db.put(b"poker_night", data["code"].encode())
 
     @commands.command()
+    @commands.guild_only()
     async def betrayal(self, ctx):
         """Starts a Betrayal.io game."""
         if (code := DB.db.get(b"betrayal_io")) and discord.utils.get(
@@ -329,6 +342,7 @@ class misc(commands.Cog):
         DB.db.put(b"betrayal_io", data["code"].encode())
 
     @commands.command()
+    @commands.guild_only()
     async def fishing(self, ctx):
         """Starts a Fishington.io game."""
         if (code := DB.db.get(b"fishington")) and discord.utils.get(
