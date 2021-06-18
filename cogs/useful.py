@@ -19,6 +19,7 @@ OPERATIONS = {
     ast.Div: operator.truediv,
     ast.FloorDiv: operator.floordiv,
     ast.Pow: operator.pow,
+    ast.Mod: operator.mod,
 }
 
 
@@ -580,6 +581,7 @@ class useful(commands.Cog):
 
         num_base: str
             The base you want to calculate in.
+            Can be hex, oct, bin or decimal
         args: str
             A str of arguments to calculate.
         """
