@@ -73,36 +73,22 @@ class moderation(commands.Cog):
 
         polls[guild]["temp"] = {}
 
-        emojis = [
-            "0️⃣",
-            "1️⃣",
-            "2️⃣",
-            "3️⃣",
-            "4️⃣",
-            "5️⃣",
-            "6️⃣",
-            "7️⃣",
-            "8️⃣",
-            "9️⃣",
-            "🔟",
-        ]
-
         for number, option in enumerate(options):
-            polls[guild]["temp"][emojis[number]] = {
+            polls[guild]["temp"][f"{number}️⃣"] = {
                 "name": option,
                 "count": 0,
             }
             embed.add_field(name=number, value=option, inline=False)
 
+        embed.title = name
         message = await ctx.send(embed=embed)
 
         polls[guild][str(message.id)] = polls[guild].pop("temp")
 
         for i in range(len(options)):
-            await message.add_reaction(emojis[i])
+            await message.add_reaction(f"{i}️⃣")
 
         DB.db.put(b"polls", orjson.dumps(polls))
-
         self.loop.call_later(21600, asyncio.create_task, self.end_poll(guild, message))
 
     @commands.command(name="mute")
