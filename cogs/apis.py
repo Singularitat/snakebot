@@ -734,6 +734,16 @@ class apis(commands.Cog):
         await ctx.send(image["link"])
 
     @commands.command()
+    async def bird2(self, ctx):
+        """Gets a random bird image."""
+        url = "http://shibe.online/api/birds"
+
+        async with ctx.typing():
+            image = await self.get_json(url)
+
+        await ctx.send(image[0])
+
+    @commands.command()
     async def redpanda(self, ctx):
         """Gets a random red panda image."""
         url = "https://some-random-api.ml/img/red_panda"
