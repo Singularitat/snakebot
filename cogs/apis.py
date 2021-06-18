@@ -822,6 +822,16 @@ class apis(commands.Cog):
 
         await ctx.send(image["webpurl"])
 
+    @commands.command()
+    async def cat5(self, ctx):
+        """Gets a random cat image."""
+        url = "http://shibe.online/api/cats"
+
+        async with ctx.typing():
+            image = await self.get_json(url)
+
+        await ctx.send(image[0])
+
     @commands.command(name="catstatus")
     async def cat_status(self, ctx, status):
         """Gets a cat image for a status e.g Error 404 not found."""
