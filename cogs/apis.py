@@ -802,6 +802,16 @@ class apis(commands.Cog):
 
         await ctx.send(image[0]["url"])
 
+    @commands.command()
+    async def cat3(self, ctx):
+        """Gets a random cat image."""
+        url = "https://cataas.com/cat?json=true"
+
+        async with ctx.typing():
+            image = await self.get_json(url)
+
+        await ctx.send(f"https://cataas.com{image['url']}")
+
     @commands.command(name="catstatus")
     async def cat_status(self, ctx, status):
         """Gets a cat image for a status e.g Error 404 not found."""
@@ -838,7 +848,7 @@ class apis(commands.Cog):
     @commands.command()
     async def shibe(self, ctx):
         """Gets a random dog image."""
-        url = "http://shibe.online/api/shibes?count=1&urls=true&httpsUrls=true"
+        url = "http://shibe.online/api/shibes"
 
         async with ctx.typing():
             image = await self.get_json(url)
@@ -1121,5 +1131,5 @@ class apis(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    """Starts logger cog."""
+    """Starts apis cog."""
     bot.add_cog(apis(bot))
