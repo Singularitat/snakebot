@@ -38,8 +38,6 @@ class events(commands.Cog):
 
         message = str(payload.message_id)
 
-        print(polls[guild], payload.message_id)
-
         if message not in polls[guild]:
             return
 
@@ -552,9 +550,6 @@ class events(commands.Cog):
                 f"{error}\n\nUsage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}"
             )
 
-        elif isinstance(error, commands.errors.ExtensionNotFound):
-            message = f"Extension '{error.name}' was not found."
-
         elif isinstance(error, commands.errors.BotMissingAnyRole):
             message = (
                 f"{self.bot.user.name} is missing required roles: {error.missing_roles}"
@@ -569,7 +564,7 @@ class events(commands.Cog):
             )
             message = error
 
-        if len(str(message)) == 0:
+        if not str(message):
             logging.getLogger("discord").warning(
                 f"{ctx.command.qualified_name}, Error: {error}"
             )
