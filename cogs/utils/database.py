@@ -23,7 +23,6 @@ wins = db.prefixed_db(b"wins-")
 message_count = db.prefixed_db(b"message_count-")
 
 
-@staticmethod
 def delete_cache(search, cache):
     """Deletes a search from the cache.
 
