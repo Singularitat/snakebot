@@ -21,7 +21,9 @@ class background_tasks(commands.Cog):
             self.tasks[task].cancel()
 
     def start_tasks(self):
-        """Finds all the tasks in the cog and starts them."""
+        """Finds all the tasks in the cog and starts them.
+        This also builds a dictionary of the tasks so we can access them later.
+        """
         task_dict = {}
 
         for task in dir(background_tasks):
@@ -256,10 +258,7 @@ class background_tasks(commands.Cog):
         else:
             number = int(number.decode())
 
-        number += 1
-
-        if number == 11:
-            number = 0
+        number = (number + 1) % 11
 
         DB.db.put(b"backup_number", str(number).encode())
 
@@ -323,4 +322,5 @@ class background_tasks(commands.Cog):
 
 
 def setup(bot):
+    """Starts the backgroud tasks cog"""
     bot.add_cog(background_tasks(bot))

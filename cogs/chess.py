@@ -460,9 +460,9 @@ class chess(commands.Cog):
                     self.is_running = False
                     DB.db.delete(b"playing_chess")
                     embed.title = "Game timed out"
-                    await ctx.send(embed=embed)
+                    return await ctx.send(embed=embed)
 
-                if message.content.lower() == "surrender":
+                if "surrender" in message.content.lower():
                     await message.delete()
                     return await chess_message.add_reaction("❌")
 

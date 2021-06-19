@@ -4,7 +4,6 @@ import random
 import aiohttp
 import lxml.html
 import orjson
-import re
 import cogs.utils.database as DB
 import config
 from PIL import Image, ImageDraw, ImageFont
@@ -25,7 +24,21 @@ class misc(commands.Cog):
     @commands.command()
     async def notes(self, ctx):
         """Sends a link to Joes notes."""
-        await ctx.send("https://notes.joewuthrich.com")
+        embed = discord.Embed(color=discord.Color.blurple(), title="Joes Notes")
+
+        embed.description = """
+        [Home Page](https://notes.joewuthrich.com)
+
+        [Compsci 101](https://notes.joewuthrich.com/compsci101)
+        Introduction to programming using the python programming language.
+        [Compsci 110](https://notes.joewuthrich.com/compsci110)
+        This course explains how computers work and some of the things we can use them for.
+        [Compsci 120](https://notes.joewuthrich.com/compsci120)
+        Introduces basic mathematical tools and methods needed for computer science.
+        [Compsci 130](https://notes.joewuthrich.com/compsci130)
+        Entry course to Computer Science for students with prior programming knowledge.
+        """
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def markdown(self, ctx):
