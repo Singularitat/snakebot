@@ -886,24 +886,13 @@ class apis(commands.Cog):
         await ctx.send(image[0])
 
     @commands.command()
-    async def qr(self, ctx, *, text):
-        """Encodes a qr code with text.
-
-        text: str
-            The text you want to encode.
-        """
-        await ctx.send(
-            f"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={text}"
-        )
-
-    @commands.command()
     async def xkcd(self, ctx, num: int = None):
         """Gets a random xkcd comic.
 
         num: int
             The xkcd to get has to be between 0 and 2438"""
-        if not num or num > 2438 or num < 0:
-            num = random.randint(0, 2438)
+        if not num or num > 2478 or num < 0:
+            num = random.randint(0, 2478)
 
         url = f"https://xkcd.com/{num}/info.0.json"
 
@@ -929,6 +918,8 @@ class apis(commands.Cog):
         cache_search = f"urban-{search}"
         cache = orjson.loads(DB.db.get(b"cache"))
 
+        embed = discord.Embed(colour=discord.Color.blurple())
+
         if cache_search in cache:
             defin = cache[cache_search].pop()
 
@@ -940,19 +931,18 @@ class apis(commands.Cog):
             async with ctx.typing():
                 urban = await self.get_json(url)
 
+            if not urban:
+                embed.title = "Timed out try again later"
+                return await ctx.send(embed=embed)
+
             if not urban["list"]:
-                return await ctx.send(
-                    embed=discord.Embed(
-                        title="No results found", color=discord.Color.red()
-                    )
-                )
+                embed.title = "No results found"
+                return await ctx.send(embed=embed)
 
             urban["list"].sort(key=lambda defin: defin["thumbs_up"])
 
             defin = urban["list"].pop()
             cache[cache_search] = urban["list"]
-
-        embed = discord.Embed(colour=discord.Color.blurple())
 
         embed.description = (
             "```diff\nDefinition of {}:\n"
