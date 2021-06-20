@@ -396,29 +396,32 @@ class apis(commands.Cog):
         async with ctx.typing():
             data = await self.get_json(url)
             data = data["results"][0]
-            embed = discord.Embed(color=discord.Color.blurple())
-
-            embed.set_author(
-                name="{} {} {}".format(
-                    data["name"]["title"], data["name"]["first"], data["name"]["last"]
-                ),
-                icon_url=data["picture"]["large"],
+            embed = (
+                discord.Embed(color=discord.Color.blurple())
+                .set_author(
+                    name="{} {} {}".format(
+                        data["name"]["title"],
+                        data["name"]["first"],
+                        data["name"]["last"],
+                    ),
+                    icon_url=data["picture"]["large"],
+                )
+                .add_field(name="Gender", value=data["gender"])
+                .add_field(name="Username", value=data["login"]["username"])
+                .add_field(name="Password", value=data["login"]["password"])
+                .add_field(
+                    name="Location",
+                    value="{}, {}, {}, {}".format(
+                        data["location"]["street"]["name"],
+                        data["location"]["city"],
+                        data["location"]["state"],
+                        data["location"]["country"],
+                    ),
+                )
+                .add_field(name="Email", value=data["email"])
+                .add_field(name="Date of birth", value=data["dob"]["date"])
+                .add_field(name="Phone", value=data["phone"])
             )
-            embed.add_field(name="Gender", value=data["gender"])
-            embed.add_field(
-                name="Location",
-                value="{}, {}, {}, {}".format(
-                    data["location"]["street"]["name"],
-                    data["location"]["city"],
-                    data["location"]["state"],
-                    data["location"]["country"],
-                ),
-            )
-            embed.add_field(name="Email", value=data["email"])
-            embed.add_field(name="Username", value=data["login"]["username"])
-            embed.add_field(name="Password", value=data["login"]["sha256"])
-            embed.add_field(name="Date of birth", value=data["dob"]["date"])
-            embed.add_field(name="Phone", value=data["phone"])
 
             await ctx.send(embed=embed)
 
