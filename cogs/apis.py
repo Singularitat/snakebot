@@ -62,30 +62,6 @@ class apis(commands.Cog):
             embed.set_footer(text="― Sun Tzu, Art Of War")
             await ctx.send(embed=embed)
 
-    @commands.command(name="sl")
-    async def sounds_like(self, ctx, word):
-        """Gets words that sound like [word].
-
-        words: str
-        """
-        url = f"https://api.datamuse.com/words?sl={word}&max=9"
-
-        async with ctx.typing():
-            matches = await self.get_json(url)
-
-            embed = discord.Embed(color=discord.Color.blurple())
-
-            if not matches:
-                embed.description = "```No results found```"
-                return await ctx.send(embed=embed)
-
-            embed.set_footer(text="The numbers below are the scores")
-
-            for match in matches:
-                embed.add_field(name=word["word"], value=word["score"])
-
-            await ctx.send(embed=embed)
-
     @commands.command()
     async def rhyme(self, ctx, word):
         """Gets words that rhyme with [word].
