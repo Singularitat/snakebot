@@ -320,7 +320,7 @@ class apis(commands.Cog):
     @commands.command(name="githubtrending", aliases=["githubt", "tgithub"])
     async def github_trending(self, ctx):
         """Gets trending github repositories."""
-        url = "https://api.trending-github.com/github/repositories?spokenLanguage=en"
+        url = "https://api.trending-github.com/github/repositories"
 
         async with ctx.typing():
             repositories = await self.get_json(url)
