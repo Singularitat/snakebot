@@ -694,6 +694,16 @@ class apis(commands.Cog):
         await ctx.send(image)
 
     @commands.command()
+    async def monkey(self, ctx):
+        """Gets a random monkey."""
+        url = "https://ntgc.ddns.net/mAPI/api"
+
+        async with ctx.typing():
+            json = await self.get_json(url)
+
+        await ctx.send(json["image"])
+
+    @commands.command()
     async def racoon(self, ctx):
         """Gets a random racoon image."""
         url = "https://some-random-api.ml/img/racoon"
@@ -762,15 +772,6 @@ class apis(commands.Cog):
             image = await self.get_json(url)
 
         await ctx.send(image["link"])
-
-    @commands.command()
-    async def avatar(self, ctx, *, seed=""):
-        """Creates a avatar based off a seed.
-
-        seed: str
-            The seed it can be any alphanumeric characters.
-        """
-        await ctx.send(f"https://avatars.dicebear.com/api/avataaars/{seed}.png")
 
     @commands.command()
     async def fox(self, ctx):
