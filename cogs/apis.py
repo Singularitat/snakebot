@@ -62,30 +62,6 @@ class apis(commands.Cog):
             embed.set_footer(text="― Sun Tzu, Art Of War")
             await ctx.send(embed=embed)
 
-    @commands.command(name="sl")
-    async def sounds_like(self, ctx, word):
-        """Gets words that sound like [word].
-
-        words: str
-        """
-        url = f"https://api.datamuse.com/words?sl={word}&max=9"
-
-        async with ctx.typing():
-            matches = await self.get_json(url)
-
-            embed = discord.Embed(color=discord.Color.blurple())
-
-            if not matches:
-                embed.description = "```No results found```"
-                return await ctx.send(embed=embed)
-
-            embed.set_footer(text="The numbers below are the scores")
-
-            for match in matches:
-                embed.add_field(name=word["word"], value=word["score"])
-
-            await ctx.send(embed=embed)
-
     @commands.command()
     async def rhyme(self, ctx, word):
         """Gets words that rhyme with [word].
@@ -344,7 +320,7 @@ class apis(commands.Cog):
     @commands.command(name="githubtrending", aliases=["githubt", "tgithub"])
     async def github_trending(self, ctx):
         """Gets trending github repositories."""
-        url = "https://api.trending-github.com/github/repositories?spokenLanguage=en"
+        url = "https://api.trending-github.com/github/repositories"
 
         async with ctx.typing():
             repositories = await self.get_json(url)
@@ -420,29 +396,32 @@ class apis(commands.Cog):
         async with ctx.typing():
             data = await self.get_json(url)
             data = data["results"][0]
-            embed = discord.Embed(color=discord.Color.blurple())
-
-            embed.set_author(
-                name="{} {} {}".format(
-                    data["name"]["title"], data["name"]["first"], data["name"]["last"]
-                ),
-                icon_url=data["picture"]["large"],
+            embed = (
+                discord.Embed(color=discord.Color.blurple())
+                .set_author(
+                    name="{} {} {}".format(
+                        data["name"]["title"],
+                        data["name"]["first"],
+                        data["name"]["last"],
+                    ),
+                    icon_url=data["picture"]["large"],
+                )
+                .add_field(name="Gender", value=data["gender"])
+                .add_field(name="Username", value=data["login"]["username"])
+                .add_field(name="Password", value=data["login"]["password"])
+                .add_field(
+                    name="Location",
+                    value="{}, {}, {}, {}".format(
+                        data["location"]["street"]["name"],
+                        data["location"]["city"],
+                        data["location"]["state"],
+                        data["location"]["country"],
+                    ),
+                )
+                .add_field(name="Email", value=data["email"])
+                .add_field(name="Date of birth", value=data["dob"]["date"])
+                .add_field(name="Phone", value=data["phone"])
             )
-            embed.add_field(name="Gender", value=data["gender"])
-            embed.add_field(
-                name="Location",
-                value="{}, {}, {}, {}".format(
-                    data["location"]["street"]["name"],
-                    data["location"]["city"],
-                    data["location"]["state"],
-                    data["location"]["country"],
-                ),
-            )
-            embed.add_field(name="Email", value=data["email"])
-            embed.add_field(name="Username", value=data["login"]["username"])
-            embed.add_field(name="Password", value=data["login"]["sha256"])
-            embed.add_field(name="Date of birth", value=data["dob"]["date"])
-            embed.add_field(name="Phone", value=data["phone"])
 
             await ctx.send(embed=embed)
 
@@ -694,6 +673,16 @@ class apis(commands.Cog):
         await ctx.send(image)
 
     @commands.command()
+    async def monkey(self, ctx):
+        """Gets a random monkey."""
+        url = "https://ntgc.ddns.net/mAPI/api"
+
+        async with ctx.typing():
+            json = await self.get_json(url)
+
+        await ctx.send(json["image"])
+
+    @commands.command()
     async def racoon(self, ctx):
         """Gets a random racoon image."""
         url = "https://some-random-api.ml/img/racoon"
@@ -762,15 +751,6 @@ class apis(commands.Cog):
             image = await self.get_json(url)
 
         await ctx.send(image["link"])
-
-    @commands.command()
-    async def avatar(self, ctx, *, seed=""):
-        """Creates a avatar based off a seed.
-
-        seed: str
-            The seed it can be any alphanumeric characters.
-        """
-        await ctx.send(f"https://avatars.dicebear.com/api/avataaars/{seed}.png")
 
     @commands.command()
     async def fox(self, ctx):
