@@ -35,6 +35,7 @@ class apis(commands.Cog):
             aiohttp.client_exceptions.ContentTypeError,
         ):
             return None
+        
     @commands.command()
     async def kanye(self, ctx):
         """Gets a random Kanye West quote."""
