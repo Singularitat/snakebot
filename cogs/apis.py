@@ -608,14 +608,15 @@ class apis(commands.Cog):
                 embed.description = "```No definition found```"
                 return await ctx.send(embed=embed)
 
-            meanings = []
+            definition = definition[0]
 
-            for meaning in definition[0]["meanings"]:
-                meanings.append(
-                    f'{meaning["partOfSpeech"]}:\n{meaning["definitions"][0]["definition"]}\n\n'
-                )
+            if "phonetics" in definition:
+                embed.title = definition['phonetics'][0]['text']
+                embed.description = f"[pronunciation]({definition['phonetics'][0]['audio']})"
 
-            embed.description = f"```{''.join(meanings)}```"
+            for meaning in definition["meanings"]:
+                embed.add_field(name=meaning["partOfSpeech"], value=f"```{meaning['definitions'][0]['definition']}```")
+
             await ctx.send(embed=embed)
 
     @commands.command()
