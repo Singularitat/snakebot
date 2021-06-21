@@ -21,7 +21,7 @@ class stocks(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.command(name="stocks")
+    @commands.command(name="stocks", aliases=["stonks"])
     async def get_stocks(self, ctx):
         """Shows the price of stocks from yahoo finance."""
         data = []
