@@ -144,10 +144,9 @@ class events(commands.Cog):
         payload: discord.RawReactionActionEvent
             A payload of raw data about the reaction and member.
         """
-        try:
-            role, guild = await self.reaction_role_check(payload)
-        except TypeError:
+        if not (response := await self.reaction_role_check(payload)):
             return
+        role, guild = response
         if role is not None:
             member = guild.get_member(payload.user_id)
             await member.remove_roles(role)
