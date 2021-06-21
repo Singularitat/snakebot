@@ -23,7 +23,7 @@ class stocks(commands.Cog):
 
     @commands.command(name="stocks", aliases=["stonks"])
     async def get_stocks(self, ctx):
-        """Shows the price of stocks from yahoo finance."""
+        """Shows the prices of stocks from the nasdaq api."""
         data = []
         for i, (stock, price) in enumerate(DB.stocks, start=1):
             price = orjson.loads(price)["price"]
