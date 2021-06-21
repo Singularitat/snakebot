@@ -44,7 +44,7 @@ class apis(commands.Cog):
         async with ctx.typing():
             quote = await self.get_json(url)
             embed = discord.Embed(
-                color=discord.Color.blurple(), description=quote["text"]
+                color=discord.Color.blurple(), description=quote["quote"]
             )
             embed.set_footer(text="― Kayne West")
             await ctx.send(embed=embed)
