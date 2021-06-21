@@ -611,11 +611,16 @@ class apis(commands.Cog):
             definition = definition[0]
 
             if "phonetics" in definition:
-                embed.title = definition['phonetics'][0]['text']
-                embed.description = f"[pronunciation]({definition['phonetics'][0]['audio']})"
+                embed.title = definition["phonetics"][0]["text"]
+                embed.description = (
+                    f"[pronunciation]({definition['phonetics'][0]['audio']})"
+                )
 
             for meaning in definition["meanings"]:
-                embed.add_field(name=meaning["partOfSpeech"], value=f"```{meaning['definitions'][0]['definition']}```")
+                embed.add_field(
+                    name=meaning["partOfSpeech"],
+                    value=f"```{meaning['definitions'][0]['definition']}```",
+                )
 
             await ctx.send(embed=embed)
 
