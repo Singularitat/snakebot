@@ -37,6 +37,19 @@ class apis(commands.Cog):
             return None
 
     @commands.command()
+    async def kanye(self, ctx):
+        """Gets a random Kanye West quote."""
+        url = "https://api.kanye.rest"
+
+        async with ctx.typing():
+            quote = await self.get_json(url)
+            embed = discord.Embed(
+                color=discord.Color.blurple(), description=quote["text"]
+            )
+            embed.set_footer(text="― Kayne West")
+            await ctx.send(embed=embed)
+
+    @commands.command()
     async def quote(self, ctx):
         """Gets a random quote."""
         url = "https://api.fisenko.net/quotes?l=en"
