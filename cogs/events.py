@@ -290,7 +290,6 @@ class events(commands.Cog):
         if (
             not message.guild
             or DB.db.get(f"{message.guild.id}-logging".encode())
-            or DB.db.get(b"playing_chess")
             or message.author == self.bot.user
             or not message.content
             and not message.attachments
