@@ -230,7 +230,7 @@ class misc(commands.Cog):
         results = ""
 
         for block in A:
-            results += f"{[chr((sum(self.starmap(zip(block, col))) % 26) + 97) for col in zip(*B)]}\n"
+            results += f"{[sum(self.starmap(zip(block, col))) for col in zip(*B)]}\n"
 
         embed = discord.Embed(
             color=discord.Color.blurple(), description=f"```{results}```"
