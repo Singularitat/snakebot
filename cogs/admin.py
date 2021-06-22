@@ -186,22 +186,22 @@ class admin(commands.Cog):
         state = not toggle if toggle else None
 
         for channel in ctx.guild.text_channels:
-            perms = channel.overwrites_for(ctx.guild.default_role).send_messages
+            perms = channel.overwrites_for(ctx.guild.default_role)
             key = f"{ctx.guild.id}-{channel.id}-lock".encode()
 
-            if perms is False and state is False:
+            if perms.send_messages is False and state is False:
                 DB.db.put(key, b"1")
-            elif perms is True and state is False:
+            elif perms.send_messages is True and state is False:
                 DB.db.put(key, b"0")
+                perms.send_messages = False
+                await channel.set_permissions(ctx.guild.default_role, overwrite=perms)
             elif (data := DB.db.get(key)) == b"0":
-                await channel.set_permissions(
-                    ctx.guild.default_role, send_messages=True
-                )
+                perms.send_messages = True
+                await channel.set_permissions(ctx.guild.default_role, overwrite=perms)
                 DB.db.delete(key)
             elif not data:
-                await channel.set_permissions(
-                    ctx.guild.default_role, send_messages=state
-                )
+                perms.send_messages = state
+                await channel.set_permissions(ctx.guild.default_role, overwrite=perms)
             else:
                 DB.db.delete(key)
 

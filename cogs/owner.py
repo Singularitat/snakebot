@@ -63,6 +63,14 @@ class owner(commands.Cog):
         """
         return ctx.author.id in self.bot.owner_ids
 
+    @commands.command()
+    async def dbdelete(self, ctx, key):
+        """Deletes an item from the database.
+
+        key: str
+        """
+        DB.db.delete(key.encode())
+
     @commands.command(aliases=["clearinf"])
     async def clear_infractions(self, ctx, member: discord.Member):
         """Removes all infractions of a member.
