@@ -6,8 +6,6 @@ import lxml.html
 import orjson
 import cogs.utils.database as DB
 import config
-from PIL import Image, ImageDraw, ImageFont
-from io import BytesIO
 
 
 class misc(commands.Cog):
@@ -46,99 +44,6 @@ class misc(commands.Cog):
         await ctx.send(
             "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51"
         )
-
-    @staticmethod
-    async def visualize_predictions(image, predictions):
-        img = Image.open(BytesIO(await image.read()))
-        img = img.convert("RGBA")
-
-        labels = {prediction["label"] for prediction in predictions}
-        colors = {
-            label: (
-                random.randint(0, 200),
-                random.randint(0, 200),
-                random.randint(0, 200),
-            )
-            for label in labels
-        }
-
-        for prediction in predictions:
-            bounding_boxes = (
-                prediction["bbox"]["x1"],
-                prediction["bbox"]["y1"],
-                prediction["bbox"]["x2"],
-                prediction["bbox"]["y2"],
-            )
-            label = prediction["label"]
-            color = colors[label]
-
-            x1, y1, x2, y2 = bounding_boxes
-            mask = Image.new("RGBA", img.size, color + (0,))
-            draw = ImageDraw.Draw(mask)
-
-            font = ImageFont.truetype(r"fonts\DejaVuSans.ttf", round(img.width / 25))
-            text_x, text_y = font.getsize(label)
-
-            draw.rectangle(((x1, y1), (x2, y2)), fill=color + (96,))
-            if (y1 - text_y) > 0 and x1 > 0 and x2 > 0:
-                draw.rectangle(
-                    ((x1, y1), (x1 + text_x, y1 - text_y)), fill=color + (96,)
-                )
-            else:
-                text_y = 0
-
-            draw.text((x1, y1 - text_y), text=label, fill="white", font=font)
-            img = Image.alpha_composite(img, mask)
-
-        img = img.convert("RGB")
-
-        return img
-
-    @commands.command(name="vision")
-    async def machine_vision(self, ctx):
-        """Machine vision via openvisionapi.com"""
-        embed = discord.Embed(color=discord.Color.blurple())
-        if not ctx.message.attachments:
-            embed.description = "```You need to attach an image.```"
-            return await ctx.send(embed=embed)
-
-        image = ctx.message.attachments[0]
-
-        if image.content_type not in ["image/png", "image/jpg", "image/jpeg"]:
-            embed.description = "```Invalid file type.```"
-            return await ctx.send(embed=embed)
-
-        form = aiohttp.FormData({"model": "yolov4"})
-        form.add_field(
-            name="image", value=await image.read(), content_type=image.content_type
-        )
-
-        async with ctx.typing():
-            async with aiohttp.ClientSession() as session, session.post(
-                "https://api.openvisionapi.com/api/v1/detection",
-                data=form,
-            ) as response:
-                if 200 < response.status < 300:
-                    embed.description = (
-                        "```Couldn't process image might be too large```"
-                    )
-                    return await ctx.send(embed=embed)
-                data = await response.json()
-
-            if "predictions" not in data:
-                embed.description = "```Couldn't process image.```"
-                return await ctx.send(embed=embed)
-
-            if not data["predictions"]:
-                embed.description = "```No predictions.```"
-                return await ctx.send(embed=embed)
-
-            img = await self.visualize_predictions(image, data["predictions"])
-
-            with BytesIO() as image_binary:
-                img.save(image_binary, "PNG")
-                image_binary.seek(0)
-                await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
 
     @commands.command()
     async def cipher(self, ctx, *, message):
