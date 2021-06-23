@@ -176,6 +176,12 @@ class information(commands.Cog):
         await self.say_permissions(ctx, member, channel)
 
     @commands.command()
+    async def invite(self, ctx):
+        """Sends the invite link of the bot."""
+        perms = discord.Permissions.all()
+        await ctx.send(f"<{discord.utils.oauth_url(self.bot.user.id, perms)}>")
+
+    @commands.command()
     async def ping(self, ctx):
         """Check how the bot is doing."""
         pinger = await ctx.send(

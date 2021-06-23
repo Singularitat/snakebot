@@ -692,6 +692,15 @@ class apis(commands.Cog):
         await ctx.send(image)
 
     @commands.command()
+    async def snake(self, ctx):
+        """Gets a random snake image."""
+        await ctx.send(
+            "https://raw.githubusercontent.com/Singularitat/snake-api/master/images/{}.jpg".format(
+                random.randint(1, 769)
+            )
+        )
+
+    @commands.command()
     async def monkey(self, ctx):
         """Gets a random monkey."""
         url = "https://ntgc.ddns.net/mAPI/api"

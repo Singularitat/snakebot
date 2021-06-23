@@ -238,14 +238,15 @@ class admin(commands.Cog):
         """Shows a list of the current emojis being voted on."""
         emojis = DB.db.get(b"emoji_submissions")
 
-        if not emojis:
-            emojis = {}
-        else:
-            emojis = orjson.loads(emojis)
-
         embed = discord.Embed(color=discord.Color.blurple())
 
-        if len(emojis) == 0:
+        if not emojis:
+            embed.description = "```No emojis found```"
+            return await ctx.send(embed=embed)
+
+        emojis = orjson.loads(emojis)
+
+        if not emojis:
             embed.description = "```No emojis found```"
             return await ctx.send(embed=embed)
 
