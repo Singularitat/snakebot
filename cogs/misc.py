@@ -47,18 +47,6 @@ class misc(commands.Cog):
             "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51"
         )
 
-    @commands.command()
-    async def person(self, ctx):
-        """This person doesn't exist."""
-        url = "https://thispersondoesnotexist.com/image"
-
-        async with ctx.typing(), aiohttp.ClientSession() as session, session.get(
-            url
-        ) as response:
-            with BytesIO((await response.read())) as image_binary:
-                image_binary.seek(0)
-                await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
-
     @staticmethod
     async def visualize_predictions(image, predictions):
         img = Image.open(BytesIO(await image.read()))
