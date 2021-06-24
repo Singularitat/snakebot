@@ -8,6 +8,7 @@ from datetime import datetime
 from .utils.relativedelta import relativedelta
 import cogs.utils.database as DB
 import orjson
+from io import StringIO
 
 
 class information(commands.Cog):
@@ -223,8 +224,7 @@ class information(commands.Cog):
             return await ctx.send("https://github.com/Singularitat/snakebot")
 
         if command == "help":
-            src = type(self.bot.help_command)
-            filename = inspect.getsourcefile(src)
+            filename = inspect.getsourcefile(type(self.bot.help_command))
         else:
             obj = self.bot.get_command(command)
             if not obj:
@@ -240,14 +240,16 @@ class information(commands.Cog):
         lines, lineno = inspect.getsourcelines(src)
         cog = os.path.relpath(filename).replace("\\", "/")
 
-        msg = f"<https://github.com/Singularitat/snakebot/blob/main/{cog}#L{lineno}-L{lineno + len(lines) - 1}>"
+        link = f"<https://github.com/Singularitat/snakebot/blob/main/{cog}#L{lineno}-L{lineno + len(lines) - 1}>"
         # The replace replaces the backticks with a backtick and a zero width space
-        code = f'\n```py\n{textwrap.dedent("".join(lines)).replace("`", "`​")}```'
+        code = textwrap.dedent("".join(lines)).replace("`", "`​")
 
-        if len(code) <= 2000:
-            msg += code
+        if len(code) >= 1990 - len(link):
+            return await ctx.send(
+                link, file=discord.File(StringIO(code), f"{command}.py")
+            )
 
-        await ctx.send(msg)
+        await ctx.send(f"{link}\n```py\n{code}```")
 
     @commands.command()
     async def cog(self, ctx, cog_name):
@@ -256,16 +258,15 @@ class information(commands.Cog):
         cog_name: str
             The name of the cog.
         """
-        if f"{cog_name}.py" in os.listdir("cogs"):
-            with open(f"cogs/{cog_name}.py", "rb") as file:
-                await ctx.send(file=discord.File(file, f"{cog_name}.py"))
-        else:
-            await ctx.send(
+        if f"{cog_name}.py" not in os.listdir("cogs"):
+            return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
                     description=f"```No cog named {cog_name} found```",
                 )
             )
+        with open(f"cogs/{cog_name}.py", "rb") as file:
+            await ctx.send(file=discord.File(file, f"{cog_name}.py"))
 
     @commands.command()
     async def uptime(self, ctx):
