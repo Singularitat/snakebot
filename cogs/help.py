@@ -92,8 +92,8 @@ class GroupHelpPageSource(menus.ListPageSource):
 
     async def format_page(self, menu, commands):
         embed = discord.Embed(
-            title=self.title,
-            description=self.description,
+            title=self.title.title(),
+            description=f"{self.description}",
             colour=discord.Colour.blurple(),
         )
 
@@ -101,7 +101,9 @@ class GroupHelpPageSource(menus.ListPageSource):
             signature = f"{command.qualified_name} {command.signature}"
             embed.add_field(
                 name=signature,
-                value=command.short_doc or "No help given...",
+                value=f"```{command.short_doc}```"
+                if command.short_doc
+                else "```No help given...```",
                 inline=False,
             )
 
@@ -227,7 +229,9 @@ class PaginatedHelpCommand(commands.HelpCommand):
         if command.description:
             embed_like.description = f"```{command.description}\n\n{command.help}```"
         else:
-            embed_like.description = f"```{command.help}```" or "```No help found...```"
+            embed_like.description = (
+                f"```{command.help}```" if command.help else "```No help found...```"
+            )
 
     async def send_command_help(self, command):
         embed = discord.Embed(colour=discord.Colour.blurple())
