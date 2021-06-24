@@ -8,6 +8,7 @@ from datetime import datetime
 from .utils.relativedelta import relativedelta
 import cogs.utils.database as DB
 import orjson
+from io import StringIO
 
 
 class information(commands.Cog):
@@ -223,8 +224,7 @@ class information(commands.Cog):
             return await ctx.send("https://github.com/Singularitat/snakebot")
 
         if command == "help":
-            src = type(self.bot.help_command)
-            filename = inspect.getsourcefile(src)
+            filename = inspect.getsourcefile(type(self.bot.help_command))
         else:
             obj = self.bot.get_command(command)
             if not obj:
@@ -240,14 +240,16 @@ class information(commands.Cog):
         lines, lineno = inspect.getsourcelines(src)
         cog = os.path.relpath(filename).replace("\\", "/")
 
-        msg = f"<https://github.com/Singularitat/snakebot/blob/main/{cog}#L{lineno}-L{lineno + len(lines) - 1}>"
+        link = f"<https://github.com/Singularitat/snakebot/blob/main/{cog}#L{lineno}-L{lineno + len(lines) - 1}>"
         # The replace replaces the backticks with a backtick and a zero width space
-        code = f'\n```py\n{textwrap.dedent("".join(lines)).replace("`", "`​")}```'
+        code = textwrap.dedent("".join(lines)).replace("`", "`​")
 
-        if len(code) <= 2000:
-            msg += code
+        if len(code) >= 1990 - len(link):
+            return await ctx.send(
+                link, file=discord.File(StringIO(code), f"{command}.py")
+            )
 
-        await ctx.send(msg)
+        await ctx.send(f"{link}\n```py\n{code}```")
 
     @commands.command()
     async def cog(self, ctx, cog_name):
@@ -256,16 +258,15 @@ class information(commands.Cog):
         cog_name: str
             The name of the cog.
         """
-        if f"{cog_name}.py" in os.listdir("cogs"):
-            with open(f"cogs/{cog_name}.py", "rb") as file:
-                await ctx.send(file=discord.File(file, f"{cog_name}.py"))
-        else:
-            await ctx.send(
+        if f"{cog_name}.py" not in os.listdir("cogs"):
+            return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
                     description=f"```No cog named {cog_name} found```",
                 )
             )
+        with open(f"cogs/{cog_name}.py", "rb") as file:
+            await ctx.send(file=discord.File(file, f"{cog_name}.py"))
 
     @commands.command()
     async def uptime(self, ctx):
@@ -310,41 +311,41 @@ class information(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="user", aliases=["member"])
-    async def user_info(self, ctx, member: discord.Member = None) -> None:
+    async def user_info(self, ctx, user: discord.User = None) -> None:
         """Sends info about a member.
 
         member: discord.Member
             The member to get info of defulting to the invoker.
         """
-        member = member or ctx.author
-        embed = await self.create_user_embed(ctx, member)
-        await ctx.send(embed=embed)
-
-    async def create_user_embed(self, ctx, member: discord.Member) -> discord.Embed:
-        """Creates an embed containing information on the `user`."""
-        created = f"{self.time_since(member.created_at)} ago"
-        joined = f"{self.time_since(member.joined_at)} ago"
-        roles = ", ".join(role.mention for role in member.roles[1:])
+        user = user or ctx.author
+        created = f"{self.time_since(user.created_at)} ago"
 
         embed = discord.Embed(
-            title=f"{member.nick} ({member})" if member.nick else str(member),
-            color=member.top_role.colour if roles else discord.Colour.blurple(),
+            title=str(user),
+            color=discord.Color.blurple(),
         )
 
         embed.add_field(
             name="User information",
-            value=f"Created: {created}\nProfile: {member.mention}\nID: {member.id}",
-            inline=False,
-        )
-        embed.add_field(
-            name="Member information",
-            value=f"Joined: {joined}\nRoles: {roles or None}",
+            value=f"Created: {created}\nProfile: {user.mention}\nID: {user.id}",
             inline=False,
         )
 
-        embed.set_thumbnail(url=member.avatar_url_as(static_format="png"))
-        embed.colour = member.top_role.colour if roles else discord.Colour.blurple()
-        return embed
+        if hasattr(user, "guild"):
+            roles = ", ".join(role.mention for role in user.roles[1:])
+            joined = f"{self.time_since(user.joined_at)} ago"
+            embed.color = user.top_role.colour if roles else embed.color
+            embed.title = f"{user.nick} ({user})" if user.nick else embed.title
+
+            embed.add_field(
+                name="Member information",
+                value=f"Joined: {joined}\nRoles: {roles or None}",
+                inline=False,
+            )
+
+        embed.set_thumbnail(url=user.avatar_url_as(static_format="png"))
+
+        await ctx.send(embed=embed)
 
     @staticmethod
     def time_since(past_time=False):
