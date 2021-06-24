@@ -367,7 +367,11 @@ class events(commands.Cog):
             guild = None
 
         if await DB.get_blacklist(message.author.id, guild) == b"1":
-            await message.add_reaction("<:downvote:766414744730206228>")
+            try:
+                await message.add_reaction("<:downvote:766414744730206228>")
+            except:
+                await message.add_reaction("⬇️")
+                print('Couldn\'t add downvote emoji to message.')
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
