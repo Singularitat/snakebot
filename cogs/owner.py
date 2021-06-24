@@ -10,6 +10,7 @@ import subprocess
 import re
 import logging
 import cogs.utils.database as DB
+from io import StringIO
 
 
 class PerformanceMocker:
@@ -70,6 +71,23 @@ class owner(commands.Cog):
         key: str
         """
         DB.db.delete(key.encode())
+
+        await ctx.send(
+            embed=discord.Embed(color=discord.Color.blurple),
+            description=f"```Deleted {key} from database```",
+        )
+
+    @commands.command()
+    async def dbshow(self, ctx, key):
+        """Shows an item from the database.
+
+        key: str
+        """
+        item = DB.db.get(key.encode()).decode()
+
+        file = StringIO(item)
+
+        await ctx.send(file=discord.File(file, "data.txt"))
 
     @commands.command(aliases=["clearinf"])
     async def clear_infractions(self, ctx, member: discord.Member):
