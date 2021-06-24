@@ -366,7 +366,7 @@ class events(commands.Cog):
         else:
             guild = None
 
-        if await DB.get_blacklist(message.author.id, guild) == b"1":
+        if await DB.get_blacklist(message.author.id, guild) == b"1" and not message.author.bot:
             try:
                 await message.add_reaction("<:downvote:766414744730206228>")
             except:
