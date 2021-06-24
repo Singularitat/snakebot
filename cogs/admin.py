@@ -374,6 +374,7 @@ class admin(commands.Cog):
             How long to downvote the user for e.g 5d 10h 25m 5s
         """
         embed = discord.Embed(color=discord.Color.blurple())
+
         if not member:
             if list(DB.blacklist) == []:
                 embed.title = "No downvoted users"
@@ -395,6 +396,10 @@ class admin(commands.Cog):
                 )
 
             return await ctx.send(embed=embed)
+        
+        if member.bot:
+            embed.description = "Bots cannot be added to the downvote list"
+            return await ctx.send(embed=embed)
 
         member_id = f"{ctx.guild.id}-{str(member.id)}".encode()
 
@@ -410,13 +415,9 @@ class admin(commands.Cog):
         await member.edit(voice_channel=None)
 
         if not duration:
-            if member.bot:
-                embed.title = "Cannot Downvote"
-                embed.description = "Bots cannot be added to the downvote list"
-            else:
-                DB.blacklist.put(member_id, b"1")
-                embed.title = "User Downvoted"
-                embed.description = f"**{member}** has been added to the downvote list"
+            DB.blacklist.put(member_id, b"1")
+            embed.title = "User Downvoted"
+            embed.description = f"**{member}** has been added to the downvote list"
             return await ctx.send(embed=embed)
 
         seconds = await self.end_date(duration)
