@@ -396,7 +396,7 @@ class admin(commands.Cog):
                 )
 
             return await ctx.send(embed=embed)
-        
+
         if member.bot:
             embed.description = "Bots cannot be added to the downvote list"
             return await ctx.send(embed=embed)
