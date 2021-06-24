@@ -57,9 +57,11 @@ token = ''  # your bot's token
 
 &nbsp;
 
-**Note:**
+**Notes:**
 
 You will probably want to remove my discord id from the owner_ids in [bot.py](/bot.py#L30) and replace it with your own
+
+If you want the downvote command to work you should change the downvote emoji in [events.py](/cogs/events.py) and you might want to disable auto downvoting on ghost pings in the on_message_delete event
 
 &nbsp;
 
