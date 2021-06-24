@@ -205,7 +205,10 @@ class events(commands.Cog):
         reactions: List[discord.Reaction]
         """
         if await DB.get_blacklist(message.author.id, message.guild.id) == b"1":
-            await message.add_reaction("<:downvote:766414744730206228>")
+            try:
+                await message.add_reaction("<:downvote:766414744730206228>")
+            except discord.errors.HTTPException:
+                pass
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -367,7 +370,10 @@ class events(commands.Cog):
             guild = None
 
         if await DB.get_blacklist(message.author.id, guild) == b"1":
-            await message.add_reaction("<:downvote:766414744730206228>")
+            try:
+                await message.add_reaction("<:downvote:766414744730206228>")
+            except discord.errors.HTTPException:
+                pass
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
