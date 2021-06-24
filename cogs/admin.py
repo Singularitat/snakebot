@@ -410,9 +410,13 @@ class admin(commands.Cog):
         await member.edit(voice_channel=None)
 
         if not duration:
-            DB.blacklist.put(member_id, b"1")
-            embed.title = "User Downvoted"
-            embed.description = f"**{member}** has been added to the downvote list"
+            if member.bot:
+                embed.title = "Cannot Downvote"
+                embed.description = "Bots cannot be added to the downvote list"
+            else:
+                DB.blacklist.put(member_id, b"1")
+                embed.title = "User Downvoted"
+                embed.description = f"**{member}** has been added to the downvote list"
             return await ctx.send(embed=embed)
 
         seconds = await self.end_date(duration)
