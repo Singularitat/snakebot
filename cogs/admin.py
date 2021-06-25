@@ -433,12 +433,6 @@ class admin(commands.Cog):
         embed.description = f"***{member}*** has been added from the downvote list"
         await ctx.send(embed=embed)
 
-    @commands.command(name="wipedownvote")
-    async def wipe_downvote(self, ctx):
-        """Wipes everyone from the downvote list."""
-        for member, value in DB.blacklist:
-            DB.blacklist.delete(member)
-
     @commands.command()
     async def blacklist(self, ctx, user: discord.User = None):
         """Blacklists someone from using the bot.

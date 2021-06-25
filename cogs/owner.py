@@ -64,6 +64,12 @@ class owner(commands.Cog):
         """
         return ctx.author.id in self.bot.owner_ids
 
+    @commands.command(name="wipedownvote")
+    async def wipe_downvote(self, ctx):
+        """Wipes everyone from the downvote list."""
+        for member, value in DB.blacklist:
+            DB.blacklist.delete(member)
+
     @commands.group()
     async def db(self, ctx):
         if not ctx.invoked_subcommand:
