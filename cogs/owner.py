@@ -64,8 +64,18 @@ class owner(commands.Cog):
         """
         return ctx.author.id in self.bot.owner_ids
 
-    @commands.command()
-    async def dbdelete(self, ctx, key):
+    @commands.group()
+    async def db(self, ctx):
+        if not ctx.invoked_subcommand:
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"```Usage: {ctx.prefix}db [delete/show]```",
+                )
+            )
+
+    @db.command(name="delete")
+    async def db_delete(self, ctx, key):
         """Deletes an item from the database.
 
         key: str
@@ -73,21 +83,49 @@ class owner(commands.Cog):
         DB.db.delete(key.encode())
 
         await ctx.send(
-            embed=discord.Embed(color=discord.Color.blurple),
-            description=f"```Deleted {key} from database```",
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Deleted {key} from database```",
+            )
         )
 
-    @commands.command()
-    async def dbshow(self, ctx, key):
+    @db.command()
+    async def get(self, ctx, key):
         """Shows an item from the database.
 
         key: str
         """
-        item = DB.db.get(key.encode()).decode()
+        item = DB.db.get(key.encode())
 
-        file = StringIO(item)
+        if not item:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```Key not found in database```",
+                )
+            )
+
+        file = StringIO(item.decode())
 
         await ctx.send(file=discord.File(file, "data.txt"))
+
+    @db.command()
+    async def show(self, ctx, exclude=True):
+        """Sends a json of the entire database."""
+        if exclude:
+            excluded = [b"crypto", b"stocks", b"message_count", b"invites", b"karma"]
+
+            database = {
+                key.decode(): value.decode()
+                for key, value in DB.db
+                if key.split(b"-")[0] not in excluded
+            }
+        else:
+            database = {key.decode(): value.decode() for key, value in DB.db}
+
+        file = StringIO(str(database))
+
+        await ctx.send(file=discord.File(file, "data.json"))
 
     @commands.command(aliases=["clearinf"])
     async def clear_infractions(self, ctx, member: discord.Member):
@@ -628,8 +666,8 @@ class owner(commands.Cog):
             msg += f"\n\n{message_id.decode()}: {orjson.loads(roles)}"
         await ctx.send(f"```{msg}```")
 
-    @rrole.command()
-    async def delete(self, ctx, message_id: int):
+    @rrole.command(name="delete")
+    async def rrole_delete(self, ctx, message_id: int):
         """Deletes a reaction role message and removes it from the db.
 
         message: int
