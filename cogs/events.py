@@ -327,14 +327,6 @@ class events(commands.Cog):
             orjson.dumps([content, message.author.display_name]),
         )
 
-        if message.raw_mentions:
-            timesince = datetime.utcnow() - message.created_at
-
-            if timesince.total_seconds() < 30:
-                DB.blacklist.put(
-                    f"{message.guild.id}-{message.author.id}".encode(), b"1"
-                )
-
         channel = discord.utils.get(message.guild.channels, name="logs")
 
         if not channel:

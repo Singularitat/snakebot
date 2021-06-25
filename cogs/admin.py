@@ -349,16 +349,10 @@ class admin(commands.Cog):
             How much to add onto the current date e.g 5d 10h 25m 5s
         """
         seconds = 0
+        times = {"s": 1, "m": 60, "h": 3600, "d": 86400}
         try:
             for time in duration.split():
-                if time[-1] == "s":
-                    seconds += int(time[:-1])
-                elif time[-1] == "m":
-                    seconds += int(time[:-1]) * 60
-                elif time[-1] == "h":
-                    seconds += int(time[:-1]) * 3600
-                elif time[-1] == "d":
-                    seconds += int(time[:-1]) * 86400
+                seconds += int(time[:-1]) * times[time[-1]]
         except ValueError:
             return None
 
@@ -432,12 +426,6 @@ class admin(commands.Cog):
         embed.title = "User Undownvoted"
         embed.description = f"***{member}*** has been added from the downvote list"
         await ctx.send(embed=embed)
-
-    @commands.command(name="wipedownvote")
-    async def wipe_downvote(self, ctx):
-        """Wipes everyone from the downvote list."""
-        for member, value in DB.blacklist:
-            DB.blacklist.delete(member)
 
     @commands.command()
     async def blacklist(self, ctx, user: discord.User = None):
