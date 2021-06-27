@@ -80,6 +80,22 @@ class owner(commands.Cog):
                 )
             )
 
+    @db.command()
+    async def put(self, ctx, key, value):
+        """Puts a value in the database
+
+        key: str
+        value: str
+        """
+        DB.db.put(key.encode(), value.encode())
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Put {value} at {key}```",
+            )
+        )
+
     @db.command(name="delete")
     async def db_delete(self, ctx, key):
         """Deletes an item from the database.
