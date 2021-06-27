@@ -76,7 +76,7 @@ class owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
-                    description=f"```Usage: {ctx.prefix}db [delete/show]```",
+                    description=f"```Usage: {ctx.prefix}db [delete/show/get]```",
                 )
             )
 
@@ -128,6 +128,24 @@ class owner(commands.Cog):
             }
         else:
             database = {key.decode(): value.decode() for key, value in DB.db}
+
+        file = StringIO(str(database))
+
+        await ctx.send(file=discord.File(file, "data.json"))
+
+    @db.command(aliases=["showpre"])
+    async def show_prefixed(self, ctx, prefixed):
+        """Sends a json of the entire database."""
+        if not hasattr(DB):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple, description="```DB not found```"
+                )
+            )
+
+        database = {
+            key.decode(): value.decode() for key, value in getattr(DB, prefixed)
+        }
 
         file = StringIO(str(database))
 
