@@ -123,8 +123,6 @@ class admin(commands.Cog):
         else:
             disabled = orjson.loads(disabled)
 
-        tenary = "disabled"
-
         if guild not in disabled:
             disabled[guild] = []
 
@@ -133,6 +131,7 @@ class admin(commands.Cog):
             tenary = "enabled"
         else:
             disabled[guild].append(channel.id)
+            tenary = "disabled"
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.description = f"```Commands {tenary} in {channel}```"
@@ -210,6 +209,21 @@ class admin(commands.Cog):
             embed.description = "```Set all channels to read only.```"
         else:
             embed.description = "```Reset channel read permissions to default.```"
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def lockall_catagories(self, ctx, toggle: bool = True):
+        for category in ctx.guild.categories:
+            await category.set_permissions(
+                ctx.guild.default_role, send_messages=not toggle if toggle else None
+            )
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if toggle:
+            embed.description = "```Set all categories to read only.```"
+        else:
+            embed.description = "```Reset categories read permissions to default.```"
         await ctx.send(embed=embed)
 
     @commands.command()
