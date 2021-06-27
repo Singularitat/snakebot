@@ -506,7 +506,7 @@ class music(commands.Cog):
             ctx.voice_state.skip_votes.add(voter.id)
             total_votes = len(ctx.voice_state.skip_votes)
 
-            if total_votes >= 1:
+            if total_votes >= len(ctx.author.voice.channel.members) // 2:
                 await ctx.message.add_reaction("⏭")
                 ctx.voice_state.loop = False
                 ctx.voice_state.skip()
