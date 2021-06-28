@@ -535,7 +535,9 @@ class music(commands.Cog):
         start = (page - 1) * items_per_page
         end = start + items_per_page
 
-        queue = "`Playing` [**{0.title}**]({0.url})\n".format(ctx.voice_state.current.source)
+        queue = "`Playing` [**{0.title}**]({0.url})\n".format(
+            ctx.voice_state.current.source
+        )
         for i, song in enumerate(ctx.voice_state.songs[start:end], start=start + 1):
             queue += f"`{i}.` [**{song.source.title}**]({song.source.url})\n"
 
