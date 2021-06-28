@@ -464,8 +464,7 @@ class music(commands.Cog):
     @commands.command(name="now", aliases=["current", "playing", "n"])
     async def _now(self, ctx: commands.Context):
         """Displays the currently playing song."""
-        embed = ctx.voice_state.current.create_embed()
-        await ctx.send(embed=embed)
+        await ctx.send(embed=ctx.voice_state.current.create_embed())
 
     @commands.command(name="pause", aliases=["pa"])
     async def _pause(self, ctx: commands.Context):
@@ -526,22 +525,22 @@ class music(commands.Cog):
         page: int
             The page to display defaulting to the first page.
         """
-        if len(ctx.voice_state.songs) == 0:
+        if len(ctx.voice_state.songs) == 0 and not ctx.voice_state.current:
             return await ctx.send("Empty queue.")
 
         items_per_page = 10
         # -(-3//2) == 2, just gets the ceil
-        pages = -(-len(ctx.voice_state.songs) // items_per_page)
+        pages = -(-(len(ctx.voice_state.songs) + 1) // items_per_page)
 
         start = (page - 1) * items_per_page
         end = start + items_per_page
 
-        queue = ""
-        for i, song in enumerate(ctx.voice_state.songs[start:end], start=start):
-            queue += f"`{i + 1}.` [**{song.source.title}**]({song.source.url})\n"
+        queue = "`Playing` [**{0.title}**]({0.url})\n".format(ctx.voice_state.current.source)
+        for i, song in enumerate(ctx.voice_state.songs[start:end], start=start + 1):
+            queue += f"`{i}.` [**{song.source.title}**]({song.source.url})\n"
 
         embed = discord.Embed(
-            description=f"**{len(ctx.voice_state.songs)} tracks:**\n\n{queue}"
+            description=f"**{len(ctx.voice_state.songs) + 1} tracks:**\n\n{queue}"
         ).set_footer(text=f"Viewing page {page}/{pages}")
         await ctx.send(embed=embed)
 
