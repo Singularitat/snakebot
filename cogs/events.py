@@ -100,25 +100,34 @@ class events(commands.Cog):
             A payload of raw data about the reaction and member.
         """
         message_id = str(payload.message_id).encode()
-        reaction = DB.rrole.get(message_id)
+        reaction_roles = DB.rrole.get(message_id)
 
-        if not reaction:
+        if not reaction_roles:
             return
 
-        reaction = orjson.loads(reaction)
+        reaction_roles = orjson.loads(reaction_roles)
 
-        if str(payload.emoji) in reaction:
-            role_id = int(reaction[str(payload.emoji)])
-        elif payload.emoji.name in reaction:
-            role_id = int(reaction[payload.emoji.name])
+        if str(payload.emoji) in reaction_roles:
+            role_id = int(reaction_roles[str(payload.emoji)])
+        elif payload.emoji.name in reaction_roles:
+            role_id = int(reaction_roles[payload.emoji.name])
         else:
             return
 
         guild = self.bot.get_guild(payload.guild_id)
         role = guild.get_role(role_id)
+
+        if not role:
+            return
+
         if payload.event_type == "REACTION_REMOVE":
-            return (role, guild)
-        return role
+            member = guild.get_member(payload.user_id)
+            await member.remove_roles(role)
+
+        if not payload.member:
+            return
+
+        await payload.member.add_roles(role)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -132,10 +141,7 @@ class events(commands.Cog):
 
         await self.emoji_submission_check(payload)
         await self.poll_check(payload)
-
-        role = await self.reaction_role_check(payload)
-        if role is not None:
-            await payload.member.add_roles(role)
+        await self.reaction_role_check(payload)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -144,12 +150,7 @@ class events(commands.Cog):
         payload: discord.RawReactionActionEvent
             A payload of raw data about the reaction and member.
         """
-        if not (response := await self.reaction_role_check(payload)):
-            return
-        role, guild = response
-        if role is not None:
-            member = guild.get_member(payload.user_id)
-            await member.remove_roles(role)
+        await self.reaction_role_check(payload)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
