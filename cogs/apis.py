@@ -9,7 +9,7 @@ import textwrap
 import orjson
 import html
 import cogs.utils.database as DB
-from urllib.parse import quote
+import urllib.parse
 import json
 
 
@@ -39,11 +39,11 @@ class apis(commands.Cog):
             return None
 
     @staticmethod
-    def _package_rpc(self, text):
+    def _package_rpc(text):
         parameter = f'[["{text.strip().encode("unicode-escape").decode()}", "auto", "auto", True], [1]]'
         rpc = [[["MkEWBc", parameter, None, "generic"]]]
         espaced_rpc = json.dumps(rpc, separators=(",", ":"))
-        return "f.req={}&".format(quote(espaced_rpc))
+        return "f.req={}&".format(urllib.parse.quote(espaced_rpc))
 
     @commands.command()
     async def translate(self, ctx, *, text):
@@ -763,9 +763,9 @@ class apis(commands.Cog):
         url = "https://ntgc.ddns.net/mAPI/api"
 
         async with ctx.typing():
-            json = await self.get_json(url)
+            monkey = await self.get_json(url)
 
-        await ctx.send(json["image"])
+        await ctx.send(monkey["image"])
 
     @commands.command()
     async def racoon(self, ctx):
