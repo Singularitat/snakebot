@@ -38,6 +38,7 @@ class apis(commands.Cog):
         ):
             return None
 
+    @staticmethod
     def _package_rpc(self, text):
         parameter = f'[["{text.strip().encode("unicode-escape").decode()}", "auto", "auto", True], [1]]'
         rpc = [[["MkEWBc", parameter, None, "generic"]]]
@@ -82,10 +83,10 @@ class apis(commands.Cog):
                 for sentence in sentences:
                     sentence = sentence[0]
                     translate_text += sentence.strip() + " "
-                translate_text = translate_text
 
                 return await ctx.send(translate_text)
-            elif len(response) == 2:
+
+            if len(response) == 2:
                 sentences = []
                 for i in response:
                     sentences.append(i[0])
