@@ -63,35 +63,33 @@ class apis(commands.Cog):
         async for line in response.content:
             decoded_line = line.decode("utf-8")
 
-            if "MkEWBc" not in decoded_line:
-                return
+            if "MkEWBc" in decoded_line:
+                response = decoded_line + "]"
+                response = json.loads(response)
+                response = list(response)
+                response = json.loads(response[0][2])
+                response_ = list(response)
+                response = response_[1][0]
 
-            response = decoded_line + "]"
-            response = json.loads(response)
-            response = list(response)
-            response = json.loads(response[0][2])
-            response_ = list(response)
-            response = response_[1][0]
+                if len(response) == 1:
+                    if len(response[0]) <= 5:
+                        return await ctx.send(response[0][0])
 
-            if len(response) == 1:
-                if len(response[0]) <= 5:
-                    return await ctx.send(response[0][0])
+                    sentences = response[0][5]
 
-                sentences = response[0][5]
+                    translate_text = ""
+                    for sentence in sentences:
+                        sentence = sentence[0]
+                        translate_text += sentence.strip() + " "
 
-                translate_text = ""
-                for sentence in sentences:
-                    sentence = sentence[0]
-                    translate_text += sentence.strip() + " "
+                    return await ctx.send(translate_text)
 
-                return await ctx.send(translate_text)
+                if len(response) == 2:
+                    sentences = []
+                    for i in response:
+                        sentences.append(i[0])
 
-            if len(response) == 2:
-                sentences = []
-                for i in response:
-                    sentences.append(i[0])
-
-                return await ctx.send(sentences)
+                    return await ctx.send(sentences)
 
     @commands.command()
     async def kanye(self, ctx):
