@@ -9,6 +9,8 @@ import textwrap
 import orjson
 import html
 import cogs.utils.database as DB
+import urllib.parse
+import json
 
 
 class apis(commands.Cog):
@@ -35,6 +37,59 @@ class apis(commands.Cog):
             aiohttp.client_exceptions.ContentTypeError,
         ):
             return None
+
+    @staticmethod
+    def _package_rpc(text):
+        parameter = f'[["{text.strip().encode("unicode-escape").decode()}", "auto", "auto", True], [1]]'
+        rpc = [[["MkEWBc", parameter, None, "generic"]]]
+        espaced_rpc = json.dumps(rpc, separators=(",", ":"))
+        return "f.req={}&".format(urllib.parse.quote(espaced_rpc))
+
+    @commands.command()
+    async def translate(self, ctx, *, text):
+        """Translates text to english."""
+        headers = {
+            "Referer": "http://translate.google.com/",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/47.0.2526.106 Safari/537.36",
+            "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+        }
+        url = "https://translate.google.com/_/TranslateWebserverUi/data/batchexecute"
+        freq = self._package_rpc(text)
+        async with aiohttp.ClientSession() as session:
+            response = await session.post(url, data=freq, headers=headers)
+
+        async for line in response.content:
+            decoded_line = line.decode("utf-8")
+
+            if "MkEWBc" in decoded_line:
+                response = decoded_line + "]"
+                response = json.loads(response)
+                response = list(response)
+                response = json.loads(response[0][2])
+                response_ = list(response)
+                response = response_[1][0]
+
+                if len(response) == 1:
+                    if len(response[0]) <= 5:
+                        return await ctx.send(response[0][0])
+
+                    sentences = response[0][5]
+
+                    translate_text = ""
+                    for sentence in sentences:
+                        sentence = sentence[0]
+                        translate_text += sentence.strip() + " "
+
+                    return await ctx.send(translate_text)
+
+                if len(response) == 2:
+                    sentences = []
+                    for i in response:
+                        sentences.append(i[0])
+
+                    return await ctx.send(sentences)
 
     @commands.command()
     async def kanye(self, ctx):
@@ -706,9 +761,9 @@ class apis(commands.Cog):
         url = "https://ntgc.ddns.net/mAPI/api"
 
         async with ctx.typing():
-            json = await self.get_json(url)
+            monkey = await self.get_json(url)
 
-        await ctx.send(json["image"])
+        await ctx.send(monkey["image"])
 
     @commands.command()
     async def racoon(self, ctx):
