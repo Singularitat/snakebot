@@ -61,19 +61,16 @@ class useful(commands.Cog):
         }
         url = "https://translate.google.com/_/TranslateWebserverUi/data/batchexecute"
         freq = self._package_rpc(text)
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=6)) as session:
+        async with aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=2)
+        ) as session:
             response = await session.post(url, data=freq, headers=headers)
 
         async for line in response.content:
             decoded_line = line.decode("utf-8")
 
             if "MkEWBc" in decoded_line:
-                response = decoded_line + "]"
-                response = json.loads(response)
-                response = list(response)
-                response = json.loads(response[0][2])
-                response_ = list(response)
-                response = response_[1][0]
+                response = json.loads(json.loads(decoded_line)[0][2])[1][0]
 
                 if len(response) == 1:
                     if len(response[0]) <= 5:
