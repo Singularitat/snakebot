@@ -10,7 +10,6 @@ import asyncio
 import cogs.utils.database as DB
 import ast
 import operator
-import json
 import urllib
 
 
@@ -42,13 +41,6 @@ class useful(commands.Cog):
         self.bot = bot
         self.loop = asyncio.get_event_loop()
 
-    @staticmethod
-    def _package_rpc(text):
-        parameter = f'[["{text.strip().encode("unicode-escape").decode()}", "auto", "auto", True], [1]]'
-        rpc = [[["MkEWBc", parameter, None, "generic"]]]
-        espaced_rpc = json.dumps(rpc, separators=(",", ":"))
-        return "f.req={}&".format(urllib.parse.quote(espaced_rpc))
-
     @commands.command()
     async def translate(self, ctx, *, text):
         """Translates text to english."""
@@ -60,37 +52,38 @@ class useful(commands.Cog):
             "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
         }
         url = "https://translate.google.com/_/TranslateWebserverUi/data/batchexecute"
-        freq = self._package_rpc(text)
+
+        data = "f.req={}&".format(
+            urllib.parse.quote(
+                (
+                    '[[["MkEWBc","[[\\"{}\\", \\"auto\\", \\"auto\\", True]'
+                    ', [1]]",null,"generic"]]]'
+                ).format(
+                    text.strip()
+                    .encode("unicode-escape")
+                    .decode()
+                    .encode("unicode-escape")
+                    .decode()
+                )
+            )
+        )
+
         async with aiohttp.ClientSession(
             timeout=aiohttp.ClientTimeout(total=2)
         ) as session:
-            response = await session.post(url, data=freq, headers=headers)
+            response = await session.post(url, data=data, headers=headers)
 
         async for line in response.content:
             decoded_line = line.decode("utf-8")
 
             if "MkEWBc" in decoded_line:
-                response = json.loads(json.loads(decoded_line)[0][2])[1][0]
+                response = orjson.loads(orjson.loads(decoded_line)[0][2])[1][0][0][5]
 
-                if len(response) == 1:
-                    if len(response[0]) <= 5:
-                        return await ctx.send(response[0][0])
+                translate_text = ""
+                for sentence in response:
+                    translate_text += sentence[0].strip() + " "
 
-                    sentences = response[0][5]
-
-                    translate_text = ""
-                    for sentence in sentences:
-                        sentence = sentence[0]
-                        translate_text += sentence.strip() + " "
-
-                    return await ctx.send(translate_text)
-
-                if len(response) == 2:
-                    sentences = []
-                    for i in response:
-                        sentences.append(i[0])
-
-                    return await ctx.send(sentences)
+                return await ctx.send(translate_text)
 
     @commands.command()
     async def weather(self, ctx, *, location):
