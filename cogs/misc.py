@@ -74,7 +74,7 @@ class misc(commands.Cog):
             message = message.lower()
             chars = "abcdefghijklmnopqrstuvwxyz"
 
-        table = str.maketrans(chars, chars[shift:]+chars[:shift])
+        table = str.maketrans(chars, chars[shift:] + chars[:shift])
 
         await ctx.send(message.translate(table))
 
