@@ -45,8 +45,41 @@ class misc(commands.Cog):
             "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51"
         )
 
-    @commands.command()
-    async def cipher(self, ctx, *, message):
+    @staticmethod
+    def starmap(iterable):
+        for num1, num2 in iterable:
+            yield num1 * num2
+
+    @commands.group()
+    async def cipher(self, ctx):
+        """Solves or encodes a caesar cipher."""
+        if not ctx.invoked_subcommand:
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}cipher [decode/encode]```",
+            )
+            await ctx.send(embed=embed)
+
+    @cipher.command()
+    async def encode(self, ctx, shift: int, *, message):
+        """Encodes a message using the ceasar cipher.
+
+        shift: int
+            How much you want to shift the message.
+        message: str
+        """
+        if message.isupper():
+            chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        else:
+            message = message.lower()
+            chars = "abcdefghijklmnopqrstuvwxyz"
+
+        table = str.maketrans(chars, chars[shift:]+chars[:shift])
+
+        await ctx.send(message.translate(table))
+
+    @cipher.command(aliases=["solve", "brute"])
+    async def decode(self, ctx, *, message):
         """Solves a caesar cipher via brute force.
         Shows results sorted by the chi-square of letter frequencies
 
@@ -83,7 +116,6 @@ class misc(commands.Cog):
 
         for i in range(25, 0, -1):
             message = message.translate(rotate1)
-            # Chi-square
             chi = sum(
                 [
                     (((message.count(char) / msg_len) - freq[char]) ** 2) / freq[char]
@@ -93,14 +125,11 @@ class misc(commands.Cog):
             results.append((chi, (i, message)))
 
         for chi, result in sorted(results, reverse=True):
-            embed.add_field(name=f"{result[0]}, {chi:.2f}%", value=result[1])
+            embed.add_field(name=result[0], value=result[1])
+
+        embed.set_footer(text="Sorted by the chi-square of their letter frequencies")
 
         await ctx.send(embed=embed)
-
-    @staticmethod
-    def starmap(iterable):
-        for num1, num2 in iterable:
-            yield num1 * num2
 
     @commands.command()
     async def block(self, ctx, A, B):
