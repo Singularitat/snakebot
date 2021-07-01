@@ -244,16 +244,10 @@ class moderation(commands.Cog):
             How much to add onto the current date e.g 5d 10h 25m 5s
         """
         seconds = 0
+        times = {"s": 1, "m": 60, "h": 3600, "d": 86400}
         try:
             for time in duration.split():
-                if time[-1] == "s":
-                    seconds += int(time[:-1])
-                elif time[-1] == "m":
-                    seconds += int(time[:-1]) * 60
-                elif time[-1] == "h":
-                    seconds += int(time[:-1]) * 3600
-                elif time[-1] == "d":
-                    seconds += int(time[:-1]) * 86400
+                seconds += int(time[:-1]) * times[time[-1]]
         except ValueError:
             return None
 
