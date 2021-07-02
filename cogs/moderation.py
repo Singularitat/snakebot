@@ -23,16 +23,22 @@ class moderation(commands.Cog):
         self.loop = asyncio.get_event_loop()
 
     @staticmethod
-    async def end_poll(guild, message):
+    async def _end_poll(guild, message):
         """Ends a poll and sends the results."""
         polls = DB.db.get(b"polls")
 
         if not polls:
             return
 
+        message_id = str(message.id)
         polls = orjson.loads(polls)
 
-        message_id = str(message.id)
+        if guild not in polls:
+            return
+
+        if message_id not in polls[guild]:
+            return
+
         winner = max(
             polls[guild][message_id], key=lambda x: polls[guild][message_id][x]["count"]
         )
@@ -90,6 +96,40 @@ class moderation(commands.Cog):
 
         DB.db.put(b"polls", orjson.dumps(polls))
         self.loop.call_later(21600, asyncio.create_task, self.end_poll(guild, message))
+
+    @commands.command()
+    async def end_poll(self, ctx, message_id):
+        """Ends a poll based off its message id."""
+        polls = DB.db.get(b"polls")
+
+        if not polls:
+            return
+
+        polls = orjson.loads(polls)
+
+        if str(ctx.guild.id) not in polls:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Colo.blurple(), description="No polls found"
+                )
+            )
+
+        if message_id not in polls[str(ctx.guild.id)]:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Colo.blurple(), description="Poll not found"
+                )
+            )
+
+        winner = max(
+            polls[str(ctx.guild.id)][message_id],
+            key=lambda x: polls[str(ctx.guild.id)][message_id][x]["count"],
+        )
+
+        await ctx.reply(f"Winner of the poll was {winner}")
+
+        polls[str(ctx.guild.id)].pop(message_id)
+        DB.db.put(b"polls", orjson.dumps(polls))
 
     @commands.command(name="mute")
     @commands.has_permissions(kick_members=True)
