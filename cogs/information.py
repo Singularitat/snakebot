@@ -321,7 +321,7 @@ class information(commands.Cog):
         created = f"{self.time_since(user.created_at)} ago"
 
         embed = discord.Embed(
-            title=str(user),
+            title=(str(user) + (" `[BOT]`" if user.bot else "")),
             color=discord.Color.blurple(),
         )
 
