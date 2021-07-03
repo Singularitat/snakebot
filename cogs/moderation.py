@@ -49,6 +49,7 @@ class moderation(commands.Cog):
         DB.db.put(b"polls", orjson.dumps(polls))
 
     @commands.command()
+    @commands.has_permissions(kick_members=True)
     async def poll(self, ctx, name, *options):
         """Starts a poll.
 
@@ -98,6 +99,7 @@ class moderation(commands.Cog):
         self.loop.call_later(21600, asyncio.create_task, self.end_poll(guild, message))
 
     @commands.command()
+    @commands.has_permissions(kick_members=True)
     async def end_poll(self, ctx, message_id):
         """Ends a poll based off its message id."""
         polls = DB.db.get(b"polls")
