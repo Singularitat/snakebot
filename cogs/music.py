@@ -129,85 +129,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
             ctx, discord.FFmpegPCMAudio(info["url"], **cls.FFMPEG_OPTIONS), data=info
         )
 
-    @classmethod
-    async def search_source(
-        cls, ctx: commands.Context, search: str, *, loop: asyncio.BaseEventLoop = None
-    ):
-        channel = ctx.channel
-        loop = loop or asyncio.get_event_loop()
-
-        cls.search_query = f"ytsearch10:{''.join(search)}"
-
-        partial = functools.partial(
-            cls.ytdl.extract_info, cls.search_query, download=False, process=False
-        )
-        info = await loop.run_in_executor(None, partial)
-
-        cls.search = {}
-        cls.search["title"] = f"Search results for:\n**{search}**"
-        cls.search["type"] = "rich"
-        cls.search["color"] = 7506394
-        cls.search["author"] = {
-            "name": f"{ctx.author.name}",
-            "url": f"{ctx.author.avatar_url}",
-            "icon_url": f"{ctx.author.avatar_url}",
-        }
-
-        lst = []
-        VIds = []
-
-        for index, e in enumerate(info["entries"]):
-            VId = e.get("id")
-            VUrl = f"https://www.youtube.com/watch?v={VId}"
-            VIds.append(VId)
-            lst.append(f'`{index + 1}.` [{e.get("title")}]({VUrl})\n')
-
-        lst.append("\n**Type a number to make a choice, Type `cancel` to exit**")
-        cls.search["description"] = "\n".join(lst)
-
-        em = discord.Embed.from_dict(cls.search)
-        await ctx.send(embed=em, delete_after=45.0)
-
-        def check(msg):
-            return (
-                msg.content.isdigit() is True
-                and msg.channel == channel
-                or msg.content.lower() == "cancel"
-            )
-
-        try:
-            m = await ctx.bot.wait_for("message", check=check, timeout=45.0)
-
-        except asyncio.TimeoutError:
-            rtrn = "timeout"
-
-        else:
-            if m.content.isdigit() is True:
-                sel = int(m.content)
-                if 0 < sel <= 10:
-                    if info.get("entries"):
-                        VId = VIds[sel - 1]
-                        VUrl = f"https://www.youtube.com/watch?v={VId}"
-                        partial = functools.partial(
-                            cls.ytdl.extract_info, VUrl, download=False
-                        )
-                        data = await loop.run_in_executor(None, partial)
-                        if data["duration"] > 1800:
-                            return "too_long"
-                    rtrn = cls(
-                        ctx,
-                        discord.FFmpegPCMAudio(data["url"], **cls.FFMPEG_OPTIONS),
-                        data=data,
-                    )
-                else:
-                    rtrn = "sel_invalid"
-            elif m.content.lower() == "cancel":
-                rtrn = "cancel"
-            else:
-                rtrn = "sel_invalid"
-
-        return rtrn
-
     @staticmethod
     def parse_duration(duration: int):
         if duration > 0:
@@ -593,49 +514,6 @@ class music(commands.Cog):
                         color=discord.Color.blurple(), description=f"```{e}```"
                     )
                 )
-
-            if not ctx.voice_state.voice:
-                await ctx.invoke(self._join)
-
-            song = Song(source)
-            await ctx.voice_state.songs.put(song)
-            await ctx.send(f"Enqueued {source}")
-
-    @commands.command(name="search")
-    async def _search(self, ctx: commands.Context, *, search: str):
-        """Searches youtube.
-
-        search: str
-            The song to search youtube for.
-
-        It returns an imbed of the first 10 results collected from youtube.
-        Then the member can choose one of the titles by typing a number
-        in chat or they can cancel by typing "cancel" in chat.
-        """
-        embed = discord.Embed(color=discord.Color.blurple())
-        async with ctx.typing():
-            try:
-                source = await YTDLSource.search_source(ctx, search, loop=self.bot.loop)
-            except YTDLError as e:
-                embed.description = (
-                    f"```An error occurred while processing this request: {e}```"
-                )
-                return await ctx.send(embed=embed)
-
-            if source == "too_long":
-                embed.description = "```Video is too long```"
-                return await ctx.send(embed=embed)
-
-            if source == "sel_invalid":
-                embed.description = "```Invalid selection```"
-                return await ctx.send(embed=embed)
-
-            if source == "cancel":
-                return
-
-            if source == "timeout":
-                embed.description = "```Timed out```"
-                return await ctx.send(embed=embed)
 
             if not ctx.voice_state.voice:
                 await ctx.invoke(self._join)
