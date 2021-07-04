@@ -14,6 +14,37 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @commands.group()
+    async def binary(self, ctx):
+        """Encoded or decodes binary as ascii text."""
+        if not ctx.invoked_subcommand:
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}binary [decode/encode]```",
+            )
+            await ctx.send(embed=embed)
+
+    @binary.command(name="encode")
+    async def binary_encode(self, ctx, *, text):
+        """Encodes ascii text as binary.
+
+        text: str
+        """
+        await ctx.send(" ".join([f"{bin(ord(letter))[2:]:0>8}" for letter in text]))
+
+    @binary.command(name="decode")
+    async def binary_decode(self, ctx, *, binary):
+        """Decodes binary as ascii text.
+
+        binary: str
+        """
+        binary = binary.replace(" ", "")
+        # fmt: off
+        await ctx.send(
+            "".join([chr(int(binary[i: i + 8], 2)) for i in range(0, len(binary), 8)])
+        )
+        # fmt: on
+
     @commands.command()
     async def dashboard(self, ctx):
         """Sends a link to Bryns dashboard."""
