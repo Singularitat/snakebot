@@ -231,43 +231,6 @@ class relativedelta:
             and self.microsecond is None
         )
 
-    def __mul__(self, other):
-        try:
-            f = float(other)
-        except TypeError:
-            return NotImplemented
-
-        return self.__class__(
-            years=int(self.years * f),
-            months=int(self.months * f),
-            days=int(self.days * f),
-            hours=int(self.hours * f),
-            minutes=int(self.minutes * f),
-            seconds=int(self.seconds * f),
-            microseconds=int(self.microseconds * f),
-            leapdays=self.leapdays,
-            year=self.year,
-            month=self.month,
-            day=self.day,
-            weekday=self.weekday,
-            hour=self.hour,
-            minute=self.minute,
-            second=self.second,
-            microsecond=self.microsecond,
-        )
-
-    __rmul__ = __mul__
-
-    def __div__(self, other):
-        try:
-            reciprocal = 1 / float(other)
-        except TypeError:
-            return NotImplemented
-
-        return self.__mul__(reciprocal)
-
-    __truediv__ = __div__
-
 
 def _sign(x):
     return int(copysign(1, x))
