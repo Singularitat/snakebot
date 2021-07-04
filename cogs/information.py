@@ -348,16 +348,14 @@ class information(commands.Cog):
         await ctx.send(embed=embed)
 
     @staticmethod
-    def time_since(past_time=False):
+    def time_since(past_time):
         """Get a datetime object or a int() Epoch timestamp and return a pretty time string."""
         now = datetime.utcnow()
 
         if isinstance(past_time, int):
             diff = relativedelta(now, datetime.fromtimestamp(past_time))
-        elif isinstance(past_time, datetime):
+        else:
             diff = relativedelta(now, past_time)
-        elif not past_time:
-            diff = relativedelta(now, now)
 
         years = diff.years
         months = diff.months
