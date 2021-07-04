@@ -26,22 +26,24 @@ class misc(commands.Cog):
 
     @binary.command(name="encode")
     async def binary_encode(self, ctx, *, text):
-        """Encodes ascii text as binary."""
+        """Encodes ascii text as binary.
+
+        text: str
+        """
         await ctx.send(" ".join([f"{bin(ord(letter))[2:]:0>8}" for letter in text]))
 
     @binary.command(name="decode")
     async def binary_decode(self, ctx, *, binary):
-        """Decodes binary as ascii text."""
+        """Decodes binary as ascii text.
+
+        binary: str
+        """
         binary = binary.replace(" ", "")
         # fmt: off
         await ctx.send(
             "".join([chr(int(binary[i: i + 8], 2)) for i in range(0, len(binary), 8)])
         )
         # fmt: on
-
-    @commands.command(name="btext")
-    async def binary_text(self, ctx):
-        """Converts text to binary"""
 
     @commands.command()
     async def dashboard(self, ctx):
