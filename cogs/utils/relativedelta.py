@@ -271,3 +271,48 @@ class relativedelta:
 
 def _sign(x):
     return int(copysign(1, x))
+
+
+def time_since(past_time):
+    """Get a datetime object or a int() Epoch timestamp and return a pretty time string."""
+    now = datetime.datetime.utcnow()
+
+    if isinstance(past_time, int):
+        diff = relativedelta(now, datetime.fromtimestamp(past_time))
+    else:
+        diff = relativedelta(now, past_time)
+
+    years = diff.years
+    months = diff.months
+    days = diff.days
+    hours = diff.hours
+    minutes = diff.minutes
+    seconds = diff.seconds
+
+    def fmt_time(amount: int, unit: str):
+        return f"{amount} {unit}{'s' if amount else ''}"
+
+    if not days and not months and not years:
+        h, m, s = "", "", ""
+        if hours:
+            h = f"{fmt_time(hours, 'hour')} {'and' if not seconds else ''}"
+
+        if minutes:
+            m = f"{fmt_time(minutes, 'minute')} {'and' if hours else ''} "
+
+        if seconds:
+            s = f"{seconds} second{'s' if seconds > 1 else ''}"
+        return f"{h}{m}{s}"
+
+    y, m, d = "", "", ""
+
+    if years:
+        y = f"{fmt_time(years, 'year')} {'and' if not days else ''} "
+
+    if months:
+        m = f"{fmt_time(months, 'month')} {'and' if days else ''} "
+
+    if days:
+        d = f"{days} day{'s' if days > 1 else ''}"
+
+    return f"{y}{m}{d}"

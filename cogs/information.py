@@ -4,8 +4,7 @@ import textwrap
 import psutil
 import inspect
 import os
-from datetime import datetime
-from .utils.relativedelta import relativedelta
+from .utils.relativedelta import time_since
 import cogs.utils.database as DB
 import orjson
 from io import StringIO
@@ -271,7 +270,7 @@ class information(commands.Cog):
     @commands.command()
     async def uptime(self, ctx):
         """Shows the bots uptime."""
-        await ctx.send(f"**{self.time_since(self.bot.uptime)}**")
+        await ctx.send(f"**{time_since(self.bot.uptime)}**")
 
     @commands.command(name="server")
     async def server_info(self, ctx):
@@ -296,7 +295,7 @@ class information(commands.Cog):
         embed.description = textwrap.dedent(
             f"""
                 **Server Information**
-                Created: {self.time_since(ctx.guild.created_at)} ago
+                Created: {time_since(ctx.guild.created_at)} ago
                 Region: {ctx.guild.region.name.title()}
                 Owner: {ctx.guild.owner}
 
@@ -318,7 +317,7 @@ class information(commands.Cog):
             The member to get info of defulting to the invoker.
         """
         user = user or ctx.author
-        created = f"{self.time_since(user.created_at)} ago"
+        created = f"{time_since(user.created_at)} ago"
 
         embed = discord.Embed(
             title=(str(user) + (" `[BOT]`" if user.bot else "")),
@@ -333,7 +332,7 @@ class information(commands.Cog):
 
         if hasattr(user, "guild"):
             roles = ", ".join(role.mention for role in user.roles[1:])
-            joined = f"{self.time_since(user.joined_at)} ago"
+            joined = f"{time_since(user.joined_at)} ago"
             embed.color = user.top_role.colour if roles else embed.color
             embed.title = f"{user.nick} ({user})" if user.nick else embed.title
 
@@ -346,51 +345,6 @@ class information(commands.Cog):
         embed.set_thumbnail(url=user.avatar_url_as(static_format="png"))
 
         await ctx.send(embed=embed)
-
-    @staticmethod
-    def time_since(past_time):
-        """Get a datetime object or a int() Epoch timestamp and return a pretty time string."""
-        now = datetime.utcnow()
-
-        if isinstance(past_time, int):
-            diff = relativedelta(now, datetime.fromtimestamp(past_time))
-        else:
-            diff = relativedelta(now, past_time)
-
-        years = diff.years
-        months = diff.months
-        days = diff.days
-        hours = diff.hours
-        minutes = diff.minutes
-        seconds = diff.seconds
-
-        def fmt_time(amount: int, unit: str):
-            return f"{amount} {unit}{'s' if amount else ''}"
-
-        if not days and not months and not years:
-            h, m, s = "", "", ""
-            if hours:
-                h = f"{fmt_time(hours, 'hour')} {'and' if not seconds else ''}"
-
-            if minutes:
-                m = f"{fmt_time(minutes, 'minute')} {'and' if hours else ''} "
-
-            if seconds:
-                s = f"{seconds} second{'s' if seconds > 1 else ''}"
-            return f"{h}{m}{s}"
-
-        y, m, d = "", "", ""
-
-        if years:
-            y = f"{fmt_time(years, 'year')} {'and' if not days else ''} "
-
-        if months:
-            m = f"{fmt_time(months, 'month')} {'and' if days else ''} "
-
-        if days:
-            d = f"{days} day{'s' if days > 1 else ''}"
-
-        return f"{y}{m}{d}"
 
 
 def setup(bot: commands.Bot) -> None:
