@@ -76,7 +76,20 @@ class owner(commands.Cog):
             return await ctx.send(embed=embed)
 
         code_obj = obj.callback.__code__
-        await ctx.send(f"```fix\n{code_obj.co_code}```")
+
+        argcount = code_obj.co_argcount
+        posonlyargcount = code_obj.co_posonlyargcount
+        kwonlyargcount = code_obj.co_kwonlyargcount
+        nlocals = code_obj.co_nlocals
+        stacksize = code_obj.co_stacksize
+        flags = code_obj.co_flags
+
+        msg = (
+            f"{argcount=}, {posonlyargcount=}, {kwonlyargcount=}, "
+            f"{nlocals=}, {stacksize=}, {flags=}"
+        ).replace("`", "`​")
+
+        await ctx.send(f"```py\n{msg}\n\n``````fix\n{code_obj.co_code}```")
 
     @commands.command(name="wipedownvote")
     async def wipe_downvote(self, ctx):
