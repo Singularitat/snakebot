@@ -64,6 +64,20 @@ class owner(commands.Cog):
         """
         return ctx.author.id in self.bot.owner_ids
 
+    @commands.command()
+    async def bytecode(self, ctx, *, command):
+        """Gets the bytecode of a command."""
+        obj = self.bot.get_command(command)
+        if not obj:
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                description="```Couldn't find command.```",
+            )
+            return await ctx.send(embed=embed)
+
+        code_obj = obj.callback.__code__
+        await ctx.send(f"```fix\n{code_obj.co_code}```")
+
     @commands.command(name="wipedownvote")
     async def wipe_downvote(self, ctx):
         """Wipes everyone from the downvote list."""
