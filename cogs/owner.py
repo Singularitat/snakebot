@@ -66,7 +66,10 @@ class owner(commands.Cog):
 
     @commands.command()
     async def bytecode(self, ctx, *, command):
-        """Gets the bytecode of a command."""
+        """Gets the bytecode of a command.
+
+        command: str
+        """
         obj = self.bot.get_command(command)
         if not obj:
             embed = discord.Embed(
@@ -339,6 +342,7 @@ class owner(commands.Cog):
             f"\n\nAverage: {(sum(boot_times) / len(boot_times)):.5f}s"
             f"\nSlowest: {max(boot_times):.5f}s"
             f"\nFastest: {min(boot_times):.5f}s"
+            f"\nLast Three: {boot_times[-3:]}"
         )
 
         embed.description = f"```{msg}```"
@@ -787,11 +791,10 @@ class owner(commands.Cog):
 
         try:
             channel = ctx.guild.get_channel(int(channel_id))
-        except ValueError:
-            channel = ctx.channel
-        else:
             if not channel:
                 channel = ctx.channel
+        except ValueError:
+            channel = ctx.channel
 
         message = await channel.send(msg)
 
