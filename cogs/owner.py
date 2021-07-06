@@ -66,16 +66,19 @@ class owner(commands.Cog):
 
     @commands.command()
     async def bytecode(self, ctx, *, command):
-        """Gets the bytecode of a command."""
-        obj = self.bot.get_command(command)
-        if not obj:
+        """Gets the bytecode of a command.
+
+        command: str
+        """
+        command = self.bot.get_command(command)
+        if not command:
             embed = discord.Embed(
                 color=discord.Color.blurple(),
                 description="```Couldn't find command.```",
             )
             return await ctx.send(embed=embed)
 
-        code_obj = obj.callback.__code__
+        code_obj = command.callback.__code__
 
         argcount = code_obj.co_argcount
         posonlyargcount = code_obj.co_posonlyargcount
@@ -91,9 +94,9 @@ class owner(commands.Cog):
 
         await ctx.send(f"```py\n{msg}\n\n``````fix\n{code_obj.co_code}```")
 
-    @commands.command(name="wipedownvote")
-    async def wipe_downvote(self, ctx):
-        """Wipes everyone from the downvote list."""
+    @commands.command(name="wipeblacklist")
+    async def wipe_blacklist(self, ctx):
+        """Wipes everyone from the blacklist list includes downvoted members."""
         for member, value in DB.blacklist:
             DB.blacklist.delete(member)
 
@@ -123,7 +126,7 @@ class owner(commands.Cog):
             )
         )
 
-    @db.command(name="delete")
+    @db.command(name="delete", aliases=["del"])
     async def db_delete(self, ctx, key):
         """Deletes an item from the database.
 
@@ -176,10 +179,10 @@ class owner(commands.Cog):
 
         await ctx.send(file=discord.File(file, "data.json"))
 
-    @db.command(aliases=["showpre"])
+    @db.command(aliases=["pre"])
     async def show_prefixed(self, ctx, prefixed):
         """Sends a json of the entire database."""
-        if not hasattr(DB):
+        if not hasattr(DB, prefixed):
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple, description="```DB not found```"
@@ -339,6 +342,7 @@ class owner(commands.Cog):
             f"\n\nAverage: {(sum(boot_times) / len(boot_times)):.5f}s"
             f"\nSlowest: {max(boot_times):.5f}s"
             f"\nFastest: {min(boot_times):.5f}s"
+            f"\nLast Three: {boot_times[-3:]}"
         )
 
         embed.description = f"```{msg}```"
@@ -787,11 +791,10 @@ class owner(commands.Cog):
 
         try:
             channel = ctx.guild.get_channel(int(channel_id))
-        except ValueError:
-            channel = ctx.channel
-        else:
             if not channel:
                 channel = ctx.channel
+        except ValueError:
+            channel = ctx.channel
 
         message = await channel.send(msg)
 

@@ -140,6 +140,7 @@ class admin(commands.Cog):
         DB.db.put(key, orjson.dumps(disabled))
 
     @commands.command()
+    @commands.cooldown(1, 86400, commands.BucketType.user)
     async def color_roles(self, ctx):
         """Creates basiic color roles if they don't exist."""
         roles = {
@@ -151,7 +152,7 @@ class admin(commands.Cog):
             "Blue": (discord.Color.blue(), "🔵"),
             "Blurple": (discord.Color.blurple(), "💙"),
         }
-        rrole = {}
+        rrole = {"guild": ctx.guild.id}
 
         msg = (
             "**Color Role Menu:**\nReact for a color role.\n"
