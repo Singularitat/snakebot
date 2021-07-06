@@ -99,8 +99,7 @@ class events(commands.Cog):
         payload: discord.RawReactionActionEvent
             A payload of raw data about the reaction and member.
         """
-        message_id = str(payload.message_id).encode()
-        reaction_roles = DB.rrole.get(message_id)
+        reaction_roles = DB.rrole.get(str(payload.message_id).encode())
 
         if not reaction_roles:
             return
@@ -115,6 +114,10 @@ class events(commands.Cog):
             return
 
         guild = self.bot.get_guild(payload.guild_id)
+
+        if not guild:
+            return
+
         role = guild.get_role(role_id)
 
         if not role:
@@ -122,7 +125,7 @@ class events(commands.Cog):
 
         if payload.event_type == "REACTION_REMOVE":
             member = guild.get_member(payload.user_id)
-            await member.remove_roles(role)
+            return await member.remove_roles(role)
 
         if not payload.member:
             return
