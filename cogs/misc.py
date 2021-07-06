@@ -6,6 +6,11 @@ import lxml.html
 import orjson
 import cogs.utils.database as DB
 import config
+import opcode
+import difflib
+
+
+opcodes = opcode.opmap
 
 
 class misc(commands.Cog):
@@ -13,6 +18,13 @@ class misc(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    @commands.command()
+    async def opcode(self, ctx, search):
+        """Gets closest matches for an opcode"""
+        matches = difflib.get_close_matches(search.upper(), list(opcodes), cutoff=0)
+        msg = "\n".join([f"{opcodes[match]:<3}: {match}" for match in matches])
+        await ctx.send(f"```py\nNum: Name:\n\n{msg}```")
 
     @commands.group()
     async def binary(self, ctx):
