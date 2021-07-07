@@ -7,6 +7,7 @@ import cogs.utils.database as DB
 import config
 import opcode
 import difflib
+from io import StringIO
 
 
 opcodes = opcode.opmap
@@ -596,11 +597,8 @@ class misc(commands.Cog):
         """
         max_val = max(graph_data)
 
-        char_length = len(graph_data) * 6 * (max_val + 2) + max_val + 7
-        if char_length > 2000:
-            return await ctx.send(
-                f"```Bar graph is greater than 2000 characters [{char_length}]```"
-            )
+        if len(graph_data) * 6 * (max_val + 2) + max_val + 7 > 10000:
+            return
 
         bar_graph = ""
 
@@ -615,7 +613,10 @@ class misc(commands.Cog):
             bar_graph += "\n"
         bar_graph += "------" * len(graph_data)
 
-        await ctx.send(f"```{bar_graph}```")
+        if len(graph_data) * 6 * (max_val + 2) + max_val + 7 > 2000:
+            return await ctx.send(file=discord.File(StringIO(bar_graph), "bar.txt"))
+
+        await ctx.send(f"```\n{bar_graph}```")
 
 
 def setup(bot: commands.Bot) -> None:
