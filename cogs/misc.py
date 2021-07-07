@@ -25,7 +25,10 @@ class misc(commands.Cog):
 
     @commands.command()
     async def opcode(self, ctx, search):
-        """Gets closest matches for an opcode"""
+        """Gets closest matches for an opcode.
+
+        search: str
+        """
         matches = difflib.get_close_matches(
             search.upper(), list(opcodes), cutoff=0, n=5
         )
@@ -363,35 +366,6 @@ class misc(commands.Cog):
 
         await ctx.send(f"https://discord.gg/{data['code']}")
         DB.db.put(b"fishington", data["code"].encode())
-
-    @commands.command()
-    async def rps(self, ctx, choice: str):
-        """Plays a game of rock paper scissors against an ai.
-
-        choice: str
-            Can be Rock, Paper, or Scissors.
-        """
-        embed = discord.Embed(color=discord.Color.blurple())
-        choice = choice[0].upper()
-
-        rps = {"R": 0, "P": 1, "S": 2}
-
-        if choice not in rps:
-            embed.description = "```Invalid choice.```"
-            await ctx.send(embed=embed)
-
-        history = DB.db.get(b"rps")
-        DB.db.put(b"rps", history if history else b"" + choice.encode())
-
-        url = f"https://smartplay.afiniti.com/v1/play/{str(history)}"
-        async with aiohttp.ClientSession() as session, session.get(url) as page:
-            result = await page.json()
-
-        result = ("tied", "won", "lost")[
-            (3 + rps[choice] - rps[result["nextBestMove"]]) % 3
-        ]
-        embed.description = f"```You {result}```"
-        await ctx.reply(embed=embed)
 
     @commands.command(name="8ball")
     async def eightball(self, ctx):
