@@ -19,12 +19,18 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @staticmethod
+    def format_op(op):
+        return f"{hex(opcodes[op])[2:]:<5}{opcodes[op]:<5}{op}"
+
     @commands.command()
     async def opcode(self, ctx, search):
         """Gets closest matches for an opcode"""
-        matches = difflib.get_close_matches(search.upper(), list(opcodes), cutoff=0)
-        msg = "\n".join([f"{opcodes[match]:<3}: {match}" for match in matches])
-        await ctx.send(f"```py\nNum: Name:\n\n{msg}```")
+        matches = difflib.get_close_matches(
+            search.upper(), list(opcodes), cutoff=0, n=5
+        )
+        msg = "\n".join([self.format_op(match) for match in matches])
+        await ctx.send(f"```py\nHex: Num: Name:\n\n{msg}```")
 
     @commands.group()
     async def binary(self, ctx):
