@@ -533,26 +533,6 @@ class misc(commands.Cog):
         await ctx.send(user.avatar_url)
 
     @commands.command()
-    async def send(self, ctx, user: discord.User, *, message):
-        """Gets Snakebot to send a DM to member.
-
-        user: discord.User
-            The user to DM.
-        message: str
-            The message to be sent.
-        """
-        embed = discord.Embed(color=discord.Color.blurple)
-        try:
-            await user.send(message)
-            embed.description = f"```Sent message to {user.display_name}```"
-            await ctx.send(embed=embed)
-        except discord.errors.Forbidden:
-            embed.description = (
-                f"```{user.display_name} has DMs disabled for non-friends```"
-            )
-            await ctx.send(embed=embed)
-
-    @commands.command()
     async def roll(self, ctx, dice: str):
         """Rolls dice in AdX format. A is number of dice, X is number of faces.
 
