@@ -87,12 +87,12 @@ class owner(commands.Cog):
         stacksize = code_obj.co_stacksize
         flags = code_obj.co_flags
 
-        msg = (
+        args = (
             f"{argcount=}, {posonlyargcount=}, {kwonlyargcount=}, "
             f"{nlocals=}, {stacksize=}, {flags=}"
         ).replace("`", "`​")
 
-        await ctx.send(f"```py\n{msg}\n\n``````fix\n{code_obj.co_code}```")
+        await ctx.send(f"```py\n{args}\n\n``````fix\n{code_obj.co_code.hex()}```")
 
     @commands.command(name="wipeblacklist")
     async def wipe_blacklist(self, ctx):

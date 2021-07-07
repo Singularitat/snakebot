@@ -507,9 +507,8 @@ class events(commands.Cog):
         error = getattr(error, "original", error)
         embed = discord.Embed(color=discord.Color.dark_red())
 
-        if (
-            str(error)[:19] == "The check functions"
-            or str(error)[:16] == "The global check"
+        if str(error).startswith("The check functions") or str(error).startswith(
+            "The global check"
         ):
             return
 
