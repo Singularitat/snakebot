@@ -41,6 +41,67 @@ class useful(commands.Cog):
         self.bot = bot
         self.loop = asyncio.get_event_loop()
 
+    @commands.command(name="float")
+    async def _float(self, ctx, number: float):
+        """Converts a float a half-precision floating-point format.
+
+        number: float
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        sign = str(int(number < 0))
+        num = abs(number)
+
+        if num < 0.001:
+            embed.description = "```Number is too small```"
+            return await ctx.send(embed=embed)
+
+        exponent = 0
+        shifted_num = number
+        max_exponent = 10 - (len(bin(int(number))) - 2)
+
+        while shifted_num != int(shifted_num) and exponent != max_exponent:
+            shifted_num *= 2
+            exponent += 1
+
+        binary = f"{int(shifted_num):0{exponent + 1}b}"
+
+        if index := binary.find("1"):
+            binary_exponent = f"{index-1:0>5b}"
+        elif not exponent:
+            binary_exponent = f"{len(binary):0>5b}"
+        else:
+            binary_exponent = f"{exponent:0>5b}"
+
+        exponent_sign = str(int(not not index))
+        mantissa = f"{binary.lstrip('0'):0<9}"[:9]
+
+        binary_float = sign + mantissa + exponent_sign + binary_exponent
+
+        # fmt: off
+        hex_float = "".join(
+            [
+                hex(int(binary_float[i: i + 4], 2))[2:]
+                for i in range(0, len(binary_float), 4)
+            ]
+        ).upper()
+        # fmt: on
+
+        embed.add_field(name="Decimal", value=number)
+        embed.add_field(
+            name="Binary",
+            value=f"{binary[:-exponent]}.{binary[-exponent:].rstrip('0')}",
+        )
+        embed.add_field(
+            name="Standard Form", value=f"{binary} x 2^{int(binary_exponent, 2)}"
+        )
+        embed.add_field(
+            name="Sign of Mantissa  Mantissa  Sign of Exponent  Exponent",
+            value=f"`{sign:^15s}{mantissa:^10s}{exponent_sign:^18s}{binary_exponent:^6s}`",
+        )
+        embed.add_field(name="Result", value=hex_float)
+        return await ctx.send(embed=embed)
+
     @commands.command()
     async def translate(self, ctx, *, text):
         """Translates text to english."""
@@ -674,7 +735,11 @@ class useful(commands.Cog):
         args: str
             A str of arguments to calculate.
         """
-        num_bases = {"h": (16, self.hex_float), "o": (8, self.oct_float), "b": (2, self.bin_float)}
+        num_bases = {
+            "h": (16, self.hex_float),
+            "o": (8, self.oct_float),
+            "b": (2, self.bin_float),
+        }
         base, method = num_bases.get(num_base.lower()[:1], ("unknown", int))
 
         if base == "unknown":
