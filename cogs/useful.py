@@ -92,8 +92,7 @@ class useful(commands.Cog):
         location: str
             The name of the location to get the weather of.
         """
-        location = location.capitalize()
-        url = f"https://www.google.co.nz/search?q={location}+weather"
+        url = f"https://www.google.co.nz/search?q=weather:{location}"
 
         async with ctx.typing():
             headers = {
@@ -606,6 +605,51 @@ class useful(commands.Cog):
 
         await self.wait_for_deletion(message, ctx)
 
+    @staticmethod
+    def bin_float(number: float):
+        exponent = 0
+        shifted_num = number
+
+        while shifted_num != int(shifted_num):
+            shifted_num *= 2
+            exponent += 1
+
+        if not exponent:
+            return bin(number).removeprefix("0b")
+
+        binary = f"{int(shifted_num):0{exponent + 1}b}"
+        return f"{binary[:-exponent]}.{binary[-exponent:].rstrip('0')}"
+
+    @staticmethod
+    def hex_float(number: float):
+        exponent = 0
+        shifted_num = number
+
+        while shifted_num != int(shifted_num):
+            shifted_num *= 16
+            exponent += 1
+
+        if not exponent:
+            return hex(number).removeprefix("0x")
+
+        hexadecimal = f"{int(shifted_num):0{exponent + 1}x}"
+        return f"{hexadecimal[:-exponent]}.{hexadecimal[-exponent:]}"
+
+    @staticmethod
+    def oct_float(number: float):
+        exponent = 0
+        shifted_num = number
+
+        while shifted_num != int(shifted_num):
+            shifted_num *= 8
+            exponent += 1
+
+        if not exponent:
+            return oct(number).removeprefix("0o")
+
+        octal = f"{int(shifted_num):0{exponent + 1}o}"
+        return f"{octal[:-exponent]}.{octal[-exponent:]}"
+
     def safe_eval(self, node):
         if isinstance(node, ast.Num):
             return node.n
@@ -626,31 +670,34 @@ class useful(commands.Cog):
 
         num_base: str
             The base you want to calculate in.
-            Can be hex, oct, bin or decimal
+            Can be hex, oct, bin and for decimal ignore this argument
         args: str
             A str of arguments to calculate.
         """
-        num_bases = {"h": (16, hex), "o": (8, oct), "b": (2, bin)}
-        base, method = num_bases.get(num_base.lower()[:1], (10, int))
+        num_bases = {"h": (16, self.hex_float), "o": (8, self.oct_float), "b": (2, self.bin_float)}
+        base, method = num_bases.get(num_base.lower()[:1], ("unknown", int))
+
+        if base == "unknown":
+            base = 10
+            args = f"{num_base} {args}"
 
         if base == 8:
             args = args.replace("0o", "")
+        elif base == 2:
+            args = args.replace("0b", "")
 
         regex = r"(?:0[xX])?[0-9a-fA-F]+" if base == 16 else r"\d+"
-        numbers = [str(int(num, base)) for num in re.findall(regex, args)]
+        numbers = [int(num, base) for num in re.findall(regex, args)]
 
         expr = re.sub(regex, "%s", args) % tuple(numbers)
         result = self.safe_eval(ast.parse(expr, "<string>", "eval").body)
 
-        embed = discord.Embed(color=discord.Color.blurple())
-        msg = f"ml\n{expr}\n\n{method(int(result))}\n\nDecimal: {result}"
-
-        if int(result) != result:
-            msg += f"\n\nResult rounded when converting back to {method.__name__}"
-
-        embed.description = f"```{msg}```"
-
-        await ctx.send(embed=embed)
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```ml\n{expr}\n\n{method(result)}\n\nDecimal: {result}```",
+            )
+        )
 
     @commands.command(aliases=["ch", "cht"])
     async def cheatsheet(self, ctx, *search):
