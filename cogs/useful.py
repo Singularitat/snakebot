@@ -73,7 +73,7 @@ class useful(commands.Cog):
         else:
             binary_exponent = f"{exponent:0>5b}"
 
-        exponent_sign = str(int(not not index))
+        exponent_sign = str(int(bool(index)))
         mantissa = f"{binary.lstrip('0'):0<9}"[:9]
 
         binary_float = sign + mantissa + exponent_sign + binary_exponent
