@@ -19,6 +19,69 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    @commands.command()
+    async def hangman(self, ctx):
+        """Starts a game of hangman with a random word."""
+        url = "https://random-word-api.herokuapp.com/word?number=1"
+        image_base = "https://upload.wikimedia.org/wikipedia/commons/thumb/"
+        images = {
+            0: f"{image_base}8/8b/Hangman-0.png/60px-Hangman-0.png",
+            1: f"{image_base}3/30/Hangman-1.png/60px-Hangman-1.png",
+            2: f"{image_base}7/70/Hangman-2.png/60px-Hangman-2.png",
+            3: f"{image_base}9/97/Hangman-3.png/60px-Hangman-3.png",
+            4: f"{image_base}2/27/Hangman-4.png/60px-Hangman-4.png",
+            5: f"{image_base}6/6b/Hangman-5.png/60px-Hangman-5.png",
+            6: f"{image_base}d/d6/Hangman-6.png/60px-Hangman-6.png",
+        }
+
+        async with aiohttp.ClientSession() as session, session.get(url) as response:
+            word = (await response.json())[0]
+
+        letter_indexs = {}
+
+        for index, letter in enumerate(word):
+            if letter not in letter_indexs:
+                letter_indexs[letter] = [index]
+            else:
+                letter_indexs[letter].append(index)
+
+        guessed = ["\\_ "] * len(word)
+        missed_letters = set()
+        misses = 0
+
+        def check(message: discord.Message) -> bool:
+            return message.author == ctx.author and message.channel == ctx.channel
+
+        while True and misses < 7:
+            embed = discord.Embed(color=discord.Color.blurple(), title="".join(guessed))
+            embed.set_image(url=images[misses])
+
+            footer = "Send a letter to make a guess\n"
+            if missed_letters:
+                footer += f"Missed letters: {', '.join(missed_letters)}"
+            embed.set_footer(text=footer)
+
+            embed_message = await ctx.send(embed=embed)
+
+            message = await self.bot.wait_for("message", timeout=60.0, check=check)
+
+            if message.content == word:
+                return await embed_message.add_reaction("✅")
+
+            guess = message.content[0]
+
+            if guess in letter_indexs:
+                for index in letter_indexs[guess]:
+                    guessed[index] = guess + " "
+            else:
+                missed_letters.add(guess)
+                misses += 1
+
+            if "\\_ " not in guessed:
+                return await embed_message.add_reaction("✅")
+
+        await embed_message.add_reaction("❎")
+
     @staticmethod
     def format_op(op):
         return f"{hex(opcodes[op])[2:]:<5}{opcodes[op]:<5}{op}"
@@ -547,10 +610,14 @@ class misc(commands.Cog):
             embed.description = "```Format has to be AdX```"
             return await ctx.send(embed=embed)
 
-        nums = [str(random.randint(1, limit)) for r in range(rolls)]
-        result = ", ".join(nums)
-        total = sum([int(num) for num in nums])
-        embed.description = f"```Results: {result} Total: {total}```"
+        if rolls > 1000:
+            embed.description = "```You can't do more than 1000 rolls at once.```"
+            return await ctx.send(embed=embed)
+
+        nums = random.choices(range(1, limit + 1), k=rolls)
+        embed.description = "```Results: {} Total: {}```".format(
+            ", ".join(map(str, nums)), sum(nums)
+        )
         await ctx.reply(embed=embed)
 
     @commands.command()
