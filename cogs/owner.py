@@ -90,7 +90,7 @@ class owner(commands.Cog):
             await new_ctx.command.invoke(new_ctx)
 
         file = StringIO()
-        ps = pstats.Stats(pr, stream=file).strip_dirs().sort_stats('cumulative')
+        ps = pstats.Stats(pr, stream=file).strip_dirs().sort_stats("cumulative")
         ps.print_stats()
 
         await ctx.send(file=discord.File(StringIO(file.getvalue()), "profile.txt"))
