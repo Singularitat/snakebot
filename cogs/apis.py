@@ -894,27 +894,9 @@ class apis(commands.Cog):
         await ctx.send(image[0])
 
     @commands.command()
-    async def xkcd(self, ctx, num: int = None):
-        """Gets a random xkcd comic.
-
-        num: int
-            The xkcd to get has to be between 0 and 2438"""
-        if not num or num > 2478 or num < 0:
-            num = random.randint(0, 2478)
-
-        url = f"https://xkcd.com/{num}/info.0.json"
-
-        async with ctx.typing():
-            data = await self.get_json(url)
-
-        if not data:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description="```xkcd timed out.```"
-                )
-            )
-
-        await ctx.send(data["img"])
+    async def xkcd(self, ctx):
+        """Gets a random xkcd comic."""
+        await ctx.send(f"https://xkcd.com/{random.randint(0, 2486)}")
 
     @commands.command(aliases=["urbandictionary"])
     async def urban(self, ctx, *, search):
