@@ -298,18 +298,22 @@ class economy(commands.Cog):
             The amount of money you are betting.
         """
         embed = discord.Embed(color=discord.Color.red())
-        try:
-            bet = float(bet.replace(",", ""))
-        except ValueError:
-            embed.description = f"```Invalid bet. e.g {ctx.prefix}slot 1000```"
-            return await ctx.send(embed=embed)
+
+        member = str(ctx.author.id).encode()
+        bal = await DB.get_bal(member)
+
+        if bet[-1] == "%":
+            bet = bal * ((float(bet[:-1])) / 100)
+        else:
+            try:
+                bet = float(bet.replace(",", ""))
+            except ValueError:
+                embed.description = f"```Invalid bet. e.g {ctx.prefix}slot 1000```"
+                return await ctx.send(embed=embed)
 
         if bet < 0:
             embed.title = "Bet must be positive"
             return await ctx.send(embed=embed)
-
-        member = str(ctx.author.id).encode()
-        bal = await DB.get_bal(member)
 
         if bal <= 1:
             bal += 1
@@ -358,7 +362,7 @@ class economy(commands.Cog):
         embed.description = f"You {result} ${bet*(abs(winnings)):,.2f}"
         embed.set_footer(text=f"Balance: ${bal:,}")
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed, mention_author=False)
         await self.streak_update(member, result)
 
     @commands.command(aliases=["streaks"])
