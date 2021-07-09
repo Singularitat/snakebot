@@ -11,6 +11,8 @@ import re
 import logging
 import cogs.utils.database as DB
 from io import StringIO
+import cProfile
+import pstats
 
 
 class PerformanceMocker:
@@ -65,6 +67,35 @@ class owner(commands.Cog):
         return ctx.author.id in self.bot.owner_ids
 
     @commands.command()
+    async def profile(self, ctx, *, command):
+        """Profiles a comamnd.
+
+        command: str
+        """
+        msg = copy.copy(ctx.message)
+        msg.content = f"{ctx.prefix}{command}"
+
+        new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+
+        new_ctx._state = PerformanceMocker()
+        new_ctx.channel = PerformanceMocker()
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not new_ctx.command:
+            embed.description = "```No command found```"
+            return await ctx.send(embed=embed)
+
+        with cProfile.Profile() as pr:
+            await new_ctx.command.invoke(new_ctx)
+
+        file = StringIO()
+        ps = pstats.Stats(pr, stream=file).strip_dirs().sort_stats('cumulative')
+        ps.print_stats()
+
+        await ctx.send(file=discord.File(StringIO(file.getvalue()), "profile.txt"))
+
+    @commands.command()
     async def bytecode(self, ctx, *, command):
         """Gets the bytecode of a command.
 
@@ -106,7 +137,7 @@ class owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
-                    description=f"```Usage: {ctx.prefix}db [delete/show/get]```",
+                    description=f"```Usage: {ctx.prefix}db [del/show/get/put/pre]```",
                 )
             )
 
@@ -501,7 +532,6 @@ class owner(commands.Cog):
 
         try:
             await new_ctx.command.invoke(new_ctx)
-            new_ctx.command.reset_cooldown(new_ctx)
         except commands.CommandError:
             end = time.perf_counter()
             result = "Failed"
