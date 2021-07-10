@@ -405,7 +405,8 @@ class useful(commands.Cog):
                     " and code or attach a file```",
                 )
             )
-        elif ctx.message.attachments:
+
+        if ctx.message.attachments:
             file = ctx.message.attachments[0]
             lang = file.filename.split(".")[-1]
             code = (await file.read()).decode()
