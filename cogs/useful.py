@@ -11,6 +11,7 @@ import cogs.utils.database as DB
 import ast
 import operator
 import urllib
+from io import StringIO
 
 
 OPERATIONS = {
@@ -396,10 +397,13 @@ class useful(commands.Cog):
         code: str
             The code to run.
         """
-        embed = discord.Embed(color=discord.Color.blurple())
         if lang not in orjson.loads(DB.db.get(b"languages")):
-            embed.description = f"```No support for language {lang}```"
-            return await ctx.reply(embed=embed)
+            return await ctx.reply(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"```No support for language {lang}```",
+                )
+            )
 
         code = re.sub(r"```\w+\n|```", "", code)
 
@@ -411,12 +415,16 @@ class useful(commands.Cog):
             r = await response.json()
 
         if not r["output"]:
-            embed.description = "```No output```"
-            return await ctx.reply(embed=embed)
+            return await ctx.reply(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```No output```"
+                )
+            )
 
-        if len("```\n{r['output']}```") > 2048:
-            embed.description = f"```\n{r['output'][:2023]}\nTruncated Output```"
-            return await ctx.reply(embed=embed)
+        if len(f"```\n{r['output']}```") > 2000:
+            return await ctx.reply(
+                file=discord.File(StringIO(r["output"]), "output.txt")
+            )
 
         await ctx.reply(f"```\n{r['output']}```")
 
@@ -443,35 +451,39 @@ class useful(commands.Cog):
     @commands.command()
     async def snipe(self, ctx):
         """Snipes the last deleted message."""
-        message = DB.db.get(f"{ctx.guild.id}-snipe_message".encode())
+        data = DB.db.get(f"{ctx.guild.id}-snipe_message".encode())
 
-        if message:
-            message = orjson.loads(message)
+        embed = discord.Embed(color=discord.Color.blurple())
 
-            # Example, ["Yeah I deleted this", "Singulaity"]
-            embed = discord.Embed(
-                title=f"{message[1]} deleted:",
-                description=f"```{message[0]}```",
-                color=discord.Color.blurple(),
-            )
-            await ctx.send(embed=embed)
+        if not data:
+            embed.description = "```No message to snipe```"
+            return await ctx.send(embed=embed)
+
+        message, author = orjson.loads(data)
+
+        embed.title = f"{author} deleted:"
+        embed.description = f"```{message}```"
+
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def editsnipe(self, ctx):
         """Snipes the last edited message."""
-        message = DB.db.get(f"{ctx.guild.id}-editsnipe_message".encode())
+        data = DB.db.get(f"{ctx.guild.id}-editsnipe_message".encode())
 
-        if message:
-            message = orjson.loads(message)
+        embed = discord.Embed(color=discord.Color.blurple())
 
-            # Example, ["Yeah I deleted this", "Yeah I edited this", "Singulaity"]
-            embed = discord.Embed(
-                title=f"{message[2]} edited:",
-                color=discord.Color.blurple(),
-            )
-            embed.add_field(name="From:", value=f"```{message[0]}```")
-            embed.add_field(name="To:", value=f"```{message[1]}```")
-            await ctx.send(embed=embed)
+        if not data:
+            embed.description = "```No message to snipe```"
+            return await ctx.send(embed=embed)
+
+        original, edited, author = orjson.loads(data)
+
+        embed.title = f"{author} edited:"
+        embed.add_field(name="From:", value=f"```{original}```")
+        embed.add_field(name="To:", value=f"```{edited}```")
+
+        await ctx.send(embed=embed)
 
     @commands.command(name="dir")
     async def get_object(self, ctx, obj, arg, *, attr=None):
