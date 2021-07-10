@@ -604,8 +604,8 @@ class moderation(commands.Cog):
                 break
 
             # Replaces backticks with a backtick and a zero width space
-            before = edited[date][0].replace("`", "`​")
-            after = edited[date][1].replace("`", "`​")
+            before = edited[date][0].replace("`", "`\u200b")
+            after = edited[date][1].replace("`", "`\u200b")
 
             messages.append(f"{date}: {before} >>> {after}\n")
 

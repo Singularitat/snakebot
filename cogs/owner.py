@@ -121,7 +121,7 @@ class owner(commands.Cog):
         args = (
             f"{argcount=}, {posonlyargcount=}, {kwonlyargcount=}, "
             f"{nlocals=}, {stacksize=}, {flags=}"
-        ).replace("`", "`​")
+        ).replace("`", "`\u200b")
 
         await ctx.send(f"```py\n{args}\n\n``````fix\n{code_obj.co_code.hex()}```")
 
@@ -196,7 +196,14 @@ class owner(commands.Cog):
     async def show(self, ctx, exclude=True):
         """Sends a json of the entire database."""
         if exclude:
-            excluded = [b"crypto", b"stocks", b"message_count", b"invites", b"karma"]
+            excluded = (
+                b"crypto",
+                b"stocks",
+                b"message_count",
+                b"invites",
+                b"karma",
+                b"boot_times",
+            )
 
             database = {
                 key.decode(): value.decode()
