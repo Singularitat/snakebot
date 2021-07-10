@@ -286,15 +286,15 @@ class background_tasks(commands.Cog):
     @tasks.loop(count=1)
     async def update_languages(self):
         """Updates pistons supported languages for the run command."""
-        url = "https://emkc.org/api/v1/piston/versions"
+        url = "https://emkc.org/api/v2/piston/runtimes"
         async with aiohttp.ClientSession() as session, session.get(url) as page:
             data = await page.json()
 
         languages = set()
 
         for language in data:
-            languages.update(set(language["aliases"]))
-            languages.add(language["name"])
+            languages.update(language["aliases"])
+            languages.add(language["language"])
 
         DB.db.put(b"languages", orjson.dumps(list(languages)))
 
