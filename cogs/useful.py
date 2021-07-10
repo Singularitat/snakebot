@@ -389,7 +389,7 @@ class useful(commands.Cog):
         await pages.start(ctx)
 
     @commands.command()
-    async def run(self, ctx, lang, *, code):
+    async def run(self, ctx, lang=None, *, code=None):
         """Runs code.
 
         lang: str
@@ -397,6 +397,21 @@ class useful(commands.Cog):
         code: str
             The code to run.
         """
+        if not lang and not ctx.message.attachments:
+            return await ctx.reply(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You need to supply a language"
+                    " and code or attach a file```",
+                )
+            )
+        elif ctx.message.attachments:
+            file = ctx.message.attachments[0]
+            lang = file.filename.split(".")[-1]
+            code = (await file.read()).decode()
+        else:
+            code = re.sub(r"```\w+\n|```", "", code)
+
         if lang not in orjson.loads(DB.db.get(b"languages")):
             return await ctx.reply(
                 embed=discord.Embed(
@@ -405,28 +420,33 @@ class useful(commands.Cog):
                 )
             )
 
-        code = re.sub(r"```\w+\n|```", "", code)
-
-        data = {"language": lang, "source": code, "args": "", "stdin": "", "log": 0}
+        data = {
+            "language": lang,
+            "version": "*",
+            "files": [{"content": code}],
+            "args": "",
+            "stdin": "",
+            "log": 0,
+        }
 
         async with ctx.typing(), aiohttp.ClientSession() as session, session.post(
-            "https://emkc.org/api/v1/piston/execute", data=orjson.dumps(data)
+            "https://emkc.org/api/v2/piston/execute", data=orjson.dumps(data)
         ) as response:
-            r = await response.json()
+            data = await response.json()
 
-        if not r["output"]:
+        output = data["run"]["output"]
+
+        if not output:
             return await ctx.reply(
                 embed=discord.Embed(
                     color=discord.Color.blurple(), description="```No output```"
                 )
             )
 
-        if len(f"```\n{r['output']}```") > 2000:
-            return await ctx.reply(
-                file=discord.File(StringIO(r["output"]), "output.txt")
-            )
+        if len(f"```\n{output}```") > 2000:
+            return await ctx.reply(file=discord.File(StringIO(output), "output.txt"))
 
-        await ctx.reply(f"```\n{r['output']}```")
+        await ctx.reply(f"```\n{output}```")
 
     @commands.command()
     async def time(self, ctx, *, command):
