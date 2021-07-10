@@ -485,60 +485,6 @@ class useful(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(name="dir")
-    async def get_object(self, ctx, obj, arg, *, attr=None):
-        """Converts arguments to a chosen discord object.
-
-        arg: str
-            The argument to be converted.
-        object: str
-            The object to attempt to convert to.
-        """
-        obj = obj.replace(" ", "").lower()
-        objects = {
-            "member": commands.MemberConverter(),
-            "user": commands.UserConverter(),
-            "message": commands.MessageConverter(),
-            "text": commands.TextChannelConverter(),
-            "voice": commands.VoiceChannelConverter(),
-            "category": commands.CategoryChannelConverter(),
-            "invite": commands.InviteConverter(),
-            "role": commands.RoleConverter(),
-            "game": commands.GameConverter(),
-            "colour": commands.ColourConverter(),
-            "color": commands.ColorConverter(),
-            "emoji": commands.EmojiConverter(),
-            "partial": commands.PartialEmojiConverter(),
-        }
-
-        if obj not in objects:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```Could not find object```",
-                )
-            )
-
-        try:
-            obj = await objects[obj].convert(ctx, arg)
-        except commands.BadArgument:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description="```Conversion failed```"
-                )
-            )
-
-        if attr:
-            attributes = attr.split(".")
-            try:
-                for attribute in attributes:
-                    obj = getattr(obj, attribute)
-            except AttributeError:
-                return await ctx.send(f"{obj} has no attribute {attribute}")
-            return await ctx.send(f"```{obj}\n\n{dir(obj)}```")
-
-        await ctx.send(f"```{obj}\n\n{dir(obj)}```")
-
     @staticmethod
     async def wait_for_deletion(message: discord.Message, ctx):
         def check(reaction: discord.Reaction, user: discord.User) -> bool:
