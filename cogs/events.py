@@ -275,8 +275,8 @@ class events(commands.Cog):
             return
 
         # Replaces backticks with a backtick and a zero width space
-        before.content = before.content.replace("`", "`​")
-        after.content = after.content.replace("`", "`​")
+        before.content = before.content.replace("`", "`\u200b")
+        after.content = after.content.replace("`", "`\u200b")
 
         embed = discord.Embed(
             title=f"{before.author.display_name} edited:",
@@ -310,7 +310,7 @@ class events(commands.Cog):
         ]
 
         content = "{}\n{}".format(
-            (message.content.replace("`", "`​") if message.content else ""),
+            (message.content.replace("`", "`\u200b") if message.content else ""),
             "\n".join(image_urls),
         )
 

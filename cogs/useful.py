@@ -11,6 +11,7 @@ import cogs.utils.database as DB
 import ast
 import operator
 import urllib
+from io import StringIO
 
 
 OPERATIONS = {
@@ -388,7 +389,7 @@ class useful(commands.Cog):
         await pages.start(ctx)
 
     @commands.command()
-    async def run(self, ctx, lang, *, code):
+    async def run(self, ctx, lang=None, *, code=None):
         """Runs code.
 
         lang: str
@@ -396,29 +397,57 @@ class useful(commands.Cog):
         code: str
             The code to run.
         """
-        embed = discord.Embed(color=discord.Color.blurple())
+        if not lang and not ctx.message.attachments:
+            return await ctx.reply(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You need to supply a language"
+                    " and code or attach a file```",
+                )
+            )
+
+        if ctx.message.attachments:
+            file = ctx.message.attachments[0]
+            lang = file.filename.split(".")[-1]
+            code = (await file.read()).decode()
+        else:
+            code = re.sub(r"```\w+\n|```", "", code)
+
         if lang not in orjson.loads(DB.db.get(b"languages")):
-            embed.description = f"```No support for language {lang}```"
-            return await ctx.reply(embed=embed)
+            return await ctx.reply(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"```No support for language {lang}```",
+                )
+            )
 
-        code = re.sub(r"```\w+\n|```", "", code)
-
-        data = {"language": lang, "source": code, "args": "", "stdin": "", "log": 0}
+        data = {
+            "language": lang,
+            "version": "*",
+            "files": [{"content": code}],
+            "args": "",
+            "stdin": "",
+            "log": 0,
+        }
 
         async with ctx.typing(), aiohttp.ClientSession() as session, session.post(
-            "https://emkc.org/api/v1/piston/execute", data=orjson.dumps(data)
+            "https://emkc.org/api/v2/piston/execute", data=orjson.dumps(data)
         ) as response:
-            r = await response.json()
+            data = await response.json()
 
-        if not r["output"]:
-            embed.description = "```No output```"
-            return await ctx.reply(embed=embed)
+        output = data["run"]["output"]
 
-        if len("```\n{r['output']}```") > 2048:
-            embed.description = f"```\n{r['output'][:2023]}\nTruncated Output```"
-            return await ctx.reply(embed=embed)
+        if not output:
+            return await ctx.reply(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```No output```"
+                )
+            )
 
-        await ctx.reply(f"```\n{r['output']}```")
+        if len(f"```\n{output}```") > 2000:
+            return await ctx.reply(file=discord.File(StringIO(output), "output.txt"))
+
+        await ctx.reply(f"```\n{output}```")
 
     @commands.command()
     async def time(self, ctx, *, command):
@@ -443,89 +472,39 @@ class useful(commands.Cog):
     @commands.command()
     async def snipe(self, ctx):
         """Snipes the last deleted message."""
-        message = DB.db.get(f"{ctx.guild.id}-snipe_message".encode())
+        data = DB.db.get(f"{ctx.guild.id}-snipe_message".encode())
 
-        if message:
-            message = orjson.loads(message)
+        embed = discord.Embed(color=discord.Color.blurple())
 
-            # Example, ["Yeah I deleted this", "Singulaity"]
-            embed = discord.Embed(
-                title=f"{message[1]} deleted:",
-                description=f"```{message[0]}```",
-                color=discord.Color.blurple(),
-            )
-            await ctx.send(embed=embed)
+        if not data:
+            embed.description = "```No message to snipe```"
+            return await ctx.send(embed=embed)
+
+        message, author = orjson.loads(data)
+
+        embed.title = f"{author} deleted:"
+        embed.description = f"```{message}```"
+
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def editsnipe(self, ctx):
         """Snipes the last edited message."""
-        message = DB.db.get(f"{ctx.guild.id}-editsnipe_message".encode())
+        data = DB.db.get(f"{ctx.guild.id}-editsnipe_message".encode())
 
-        if message:
-            message = orjson.loads(message)
+        embed = discord.Embed(color=discord.Color.blurple())
 
-            # Example, ["Yeah I deleted this", "Yeah I edited this", "Singulaity"]
-            embed = discord.Embed(
-                title=f"{message[2]} edited:",
-                color=discord.Color.blurple(),
-            )
-            embed.add_field(name="From:", value=f"```{message[0]}```")
-            embed.add_field(name="To:", value=f"```{message[1]}```")
-            await ctx.send(embed=embed)
+        if not data:
+            embed.description = "```No message to snipe```"
+            return await ctx.send(embed=embed)
 
-    @commands.command(name="dir")
-    async def get_object(self, ctx, obj, arg, *, attr=None):
-        """Converts arguments to a chosen discord object.
+        original, edited, author = orjson.loads(data)
 
-        arg: str
-            The argument to be converted.
-        object: str
-            The object to attempt to convert to.
-        """
-        obj = obj.replace(" ", "").lower()
-        objects = {
-            "member": commands.MemberConverter(),
-            "user": commands.UserConverter(),
-            "message": commands.MessageConverter(),
-            "text": commands.TextChannelConverter(),
-            "voice": commands.VoiceChannelConverter(),
-            "category": commands.CategoryChannelConverter(),
-            "invite": commands.InviteConverter(),
-            "role": commands.RoleConverter(),
-            "game": commands.GameConverter(),
-            "colour": commands.ColourConverter(),
-            "color": commands.ColorConverter(),
-            "emoji": commands.EmojiConverter(),
-            "partial": commands.PartialEmojiConverter(),
-        }
+        embed.title = f"{author} edited:"
+        embed.add_field(name="From:", value=f"```{original}```")
+        embed.add_field(name="To:", value=f"```{edited}```")
 
-        if obj not in objects:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```Could not find object```",
-                )
-            )
-
-        try:
-            obj = await objects[obj].convert(ctx, arg)
-        except commands.BadArgument:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description="```Conversion failed```"
-                )
-            )
-
-        if attr:
-            attributes = attr.split(".")
-            try:
-                for attribute in attributes:
-                    obj = getattr(obj, attribute)
-            except AttributeError:
-                return await ctx.send(f"{obj} has no attribute {attribute}")
-            return await ctx.send(f"```{obj}\n\n{dir(obj)}```")
-
-        await ctx.send(f"```{obj}\n\n{dir(obj)}```")
+        await ctx.send(embed=embed)
 
     @staticmethod
     async def wait_for_deletion(message: discord.Message, ctx):

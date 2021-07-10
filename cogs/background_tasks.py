@@ -20,6 +20,13 @@ class background_tasks(commands.Cog):
         for task in self.tasks:
             self.tasks[task].cancel()
 
+    async def cog_check(self, ctx):
+        """Checks if the member is an owner.
+
+        ctx: commands.Context
+        """
+        return ctx.author.id in self.bot.owner_ids
+
     def start_tasks(self):
         """Finds all the tasks in the cog and starts them.
         This also builds a dictionary of the tasks so we can access them later.
@@ -36,7 +43,6 @@ class background_tasks(commands.Cog):
         self.tasks = task_dict
 
     @commands.group(hidden=True)
-    @commands.is_owner()
     async def task(self, ctx):
         """The task command group."""
         if not ctx.invoked_subcommand:
@@ -235,8 +241,8 @@ class background_tasks(commands.Cog):
 
         diff = await self.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
 
-        if "poetry.lock" in diff:
-            await self.run_process("poetry install")
+        if "requirements.txt" in diff:
+            await self.run_process("pip install -r ./requirements.txt")
 
         for ext in [f[:-3] for f in os.listdir("cogs") if f.endswith(".py")]:
             try:
@@ -280,15 +286,15 @@ class background_tasks(commands.Cog):
     @tasks.loop(count=1)
     async def update_languages(self):
         """Updates pistons supported languages for the run command."""
-        url = "https://emkc.org/api/v1/piston/versions"
+        url = "https://emkc.org/api/v2/piston/runtimes"
         async with aiohttp.ClientSession() as session, session.get(url) as page:
             data = await page.json()
 
         languages = set()
 
         for language in data:
-            languages.update(set(language["aliases"]))
-            languages.add(language["name"])
+            languages.update(language["aliases"])
+            languages.add(language["language"])
 
         DB.db.put(b"languages", orjson.dumps(list(languages)))
 

@@ -241,7 +241,7 @@ class information(commands.Cog):
 
         link = f"<https://github.com/Singularitat/snakebot/blob/main/{cog}#L{lineno}-L{lineno + len(lines) - 1}>"
         # The replace replaces the backticks with a backtick and a zero width space
-        code = textwrap.dedent("".join(lines)).replace("`", "`​")
+        code = textwrap.dedent("".join(lines)).replace("`", "`\u200b")
 
         if len(code) >= 1990 - len(link):
             return await ctx.send(
