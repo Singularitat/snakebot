@@ -435,7 +435,10 @@ class useful(commands.Cog):
         ) as response:
             data = await response.json()
 
-        output = data["run"]["output"]
+        if "compile" in data and data["compile"]["stderr"]:
+            output = data["compile"]["stderr"]
+        else:
+            output = data["run"]["output"]
 
         if not output:
             return await ctx.reply(
