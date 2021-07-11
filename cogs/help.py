@@ -92,7 +92,7 @@ class GroupHelpPageSource(menus.ListPageSource):
 
     async def format_page(self, menu, commands):
         embed = discord.Embed(
-            title=self.title.title(),
+            title=self.title,
             description=f"{self.description}",
             colour=discord.Colour.blurple(),
         )
