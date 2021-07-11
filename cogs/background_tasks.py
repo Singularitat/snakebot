@@ -158,13 +158,13 @@ class background_tasks(commands.Cog):
 
         Example
 
-        Name:               Interval:      Running/Failed/Count
+        Name:               Interval:      Running/Failed/Count:
 
-        backup_bot          2h 0m 0s       True/False/10
-        check_end_dates     0h 0m 10s      True/False/7200
-        update_bot          0h 5m 0s       True/False/240
-        update_languages    0h 0m 0s       False/False/1
-        update_stocks       0h 30m 0s      True/False/40
+        backup_bot          6h 0m 0s       True/False/4
+        crypto_update       0h 10m 0s      True/False/133
+        update_bot          0h 5m 0s       True/False/265
+        update_languages    0h 0m 0s       False/False/0
+        update_stocks       0h 10m 0s      True/False/133
         """
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -244,7 +244,11 @@ class background_tasks(commands.Cog):
         if "requirements.txt" in diff:
             await self.run_process("pip install -r ./requirements.txt")
 
-        for ext in [f[:-3] for f in os.listdir("cogs") if f.endswith(".py")]:
+        for ext in (
+            file.removesuffix(".py")
+            for file in os.listdir("cogs")
+            if file.endswith(".py") and f"cogs/{file}" in diff
+        ):
             try:
                 self.bot.reload_extension(f"cogs.{ext}")
             except Exception as e:
