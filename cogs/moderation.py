@@ -10,9 +10,12 @@ class HistoryMenu(menus.ListPageSource):
         super().__init__(data, per_page=10)
 
     async def format_page(self, menu, entries):
-        return discord.Embed(
-            color=discord.Color.blurple(), description=f"```{''.join(entries)}```"
-        )
+        embed = discord.Embed(color=discord.Color.blurple())
+        for date, message in entries:
+            if not message:
+                continue
+            embed.add_field(name=f"<t:{date}:R>", value=message)
+        return embed
 
 
 class moderation(commands.Cog):
@@ -544,18 +547,18 @@ class moderation(commands.Cog):
 
     @history.command(aliases=["d"])
     @commands.has_permissions(manage_messages=True)
-    async def deleted(self, ctx, user: discord.Member = None):
+    async def deleted(self, ctx, member: discord.Member = None):
         """Shows a members most recent deleted message history.
 
-        user: discord.User
+        member: discord.Member
             The user to get the history of.
         amount: int
             The amount of messages to get.
         """
-        user = user or ctx.author
+        member = member or ctx.author
 
-        user_id = str(user.id).encode()
-        deleted = DB.deleted.get(user_id)
+        member_id = f"{ctx.guild.id}-{member.id}".encode()
+        deleted = DB.deleted.get(member_id)
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not deleted:
@@ -566,8 +569,7 @@ class moderation(commands.Cog):
         messages = []
 
         for index, date in enumerate(reversed(deleted)):
-            # Replaces backticks with a backtick and a zero width space
-            messages.append(f"{date}: {deleted[date].replace('`', '`​')}\n")
+            messages.append((date, deleted[date].replace('`', '`​')))
 
         pages = menus.MenuPages(
             source=HistoryMenu(messages),
@@ -578,18 +580,18 @@ class moderation(commands.Cog):
 
     @history.command(aliases=["e"])
     @commands.has_permissions(manage_messages=True)
-    async def edited(self, ctx, user: discord.Member = None, amount: int = 10):
+    async def edited(self, ctx, member: discord.Member = None, amount: int = 10):
         """Shows a users most recent edit message history.
 
-        member: discord.User
+        member: discord.Member
             The user to get the edit history of.
         amount: int
             The amount of messages to get.
         """
-        user = user or ctx.author
+        member = member or ctx.author
 
-        user_id = str(user.id).encode()
-        edited = DB.edited.get(user_id)
+        member_id = f"{ctx.guild.id}-{member.id}".encode()
+        edited = DB.edited.get(member_id)
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not edited:
@@ -603,11 +605,10 @@ class moderation(commands.Cog):
             if index == amount:
                 break
 
-            # Replaces backticks with a backtick and a zero width space
             before = edited[date][0].replace("`", "`\u200b")
             after = edited[date][1].replace("`", "`\u200b")
 
-            messages.append(f"{date}: {before} >>> {after}\n")
+            messages.append((date, f"{before} >>> {after}"))
 
         pages = menus.MenuPages(
             source=HistoryMenu(messages),
