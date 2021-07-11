@@ -569,7 +569,7 @@ class moderation(commands.Cog):
         messages = []
 
         for index, date in enumerate(reversed(deleted)):
-            messages.append((date, deleted[date].replace('`', '`​')))
+            messages.append((date, deleted[date].replace("`", "`​")))
 
         pages = menus.MenuPages(
             source=HistoryMenu(messages),
