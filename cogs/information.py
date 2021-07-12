@@ -8,6 +8,7 @@ from .utils.relativedelta import time_since
 import cogs.utils.database as DB
 import orjson
 from io import StringIO
+from datetime import datetime
 
 
 class information(commands.Cog):
@@ -184,22 +185,20 @@ class information(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         """Check how the bot is doing."""
-        pinger = await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(), description="```Pinging...```"
-            )
-        )
+        latency = (datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
+
+        if latency <= 0.05:
+            latency = "Clock is out of sync"
+        else:
+            latency = f"`{latency:.2f} ms`"
 
         embed = discord.Embed(color=discord.Color.blurple())
+        embed.add_field(name="Command Latency", value=latency, inline=False)
         embed.add_field(
-            name="Ping",
-            value="`{} ms`".format(
-                (pinger.created_at - ctx.message.created_at).total_seconds() * 1000
-            ),
+            name="Discord API Latency", value=f"`{self.bot.latency*1000:.2f} ms`"
         )
-        embed.add_field(name="Latency", value=f"`{self.bot.latency*1000:.2f} ms`")
 
-        await pinger.edit(content=None, embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def usage(self, ctx):
