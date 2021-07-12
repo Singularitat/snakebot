@@ -13,7 +13,6 @@ import cogs.utils.database as DB
 from io import StringIO
 import cProfile
 import pstats
-from datetime import datetime
 
 
 class PerformanceMocker:
@@ -66,33 +65,6 @@ class owner(commands.Cog):
         ctx: commands.Context
         """
         return ctx.author.id in self.bot.owner_ids
-
-    @commands.command()
-    async def migrate_history(self, ctx):
-        """Migrates the deleted and edited message history to new format."""
-        for member, history in DB.deleted:
-            if not member.startswith(b"815732601302155275-"):
-                DB.deleted.delete(member)
-                member = b"815732601302155275-" + member
-            history = orjson.loads(history)
-            for date in [*history]:
-                if not date.isnumeric():
-                    message = history.pop(date)
-                    date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S").timestamp()
-                    history[str(date)] = message
-            DB.deleted.put(member, orjson.dumps(history))
-
-        for member, history in DB.edited:
-            if not member.startswith(b"815732601302155275-"):
-                DB.edited.delete(member)
-                member = b"815732601302155275-" + member
-            history = orjson.loads(history)
-            for date in [*history]:
-                if not date.isnumeric():
-                    message = history.pop(date)
-                    date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S").timestamp()
-                    history[str(date)] = message
-            DB.edited.put(member, orjson.dumps(history))
 
     @commands.command()
     async def profile(self, ctx, *, command):
