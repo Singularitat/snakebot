@@ -698,17 +698,16 @@ class useful(commands.Cog):
             return node.n
 
         if isinstance(node, ast.BinOp):
-            op = OPERATIONS[node.op.__class__]
             left = self.safe_eval(node.left)
             right = self.safe_eval(node.right)
             if isinstance(node.op, ast.Pow) and len(str(left)) * right > 1000:
                 raise ValueError("Too large to calculate")
-            return op(left, right)
+            return OPERATIONS[node.op.__class__](left, right)
 
         raise ValueError("Calculation failed")
 
     @commands.command()
-    async def calc(self, ctx, num_base, *, args):
+    async def calc(self, ctx, num_base, *, args=""):
         """Does math.
 
         num_base: str
