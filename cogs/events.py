@@ -258,7 +258,7 @@ class events(commands.Cog):
         else:
             edited = orjson.loads(edited)
 
-        date = str(datetime.now().timestamp())
+        date = str(int(datetime.now().timestamp()))
         edited[date] = [before.content, after.content]
         DB.edited.put(member_id, orjson.dumps(edited))
         DB.db.put(
@@ -322,7 +322,7 @@ class events(commands.Cog):
         else:
             deleted = orjson.loads(deleted)
 
-        date = str(datetime.now().timestamp())
+        date = str(int(datetime.now().timestamp()))
         deleted[date] = message.content
 
         DB.deleted.put(member_id, orjson.dumps(deleted))
