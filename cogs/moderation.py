@@ -98,7 +98,7 @@ class moderation(commands.Cog):
         polls[guild][str(message.id)] = polls[guild].pop("temp")
 
         for i in range(len(options)):
-            await message.add_reaction(chr(127462 + number))
+            await message.add_reaction(chr(127462 + i))
 
         DB.db.put(b"polls", orjson.dumps(polls))
         self.loop.call_later(21600, asyncio.create_task, self.end_poll(guild, message))
