@@ -53,16 +53,16 @@ class moderation(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
-    async def poll(self, ctx, name, *options):
+    async def poll(self, ctx, title, *options):
         """Starts a poll.
 
-        name: str
+        title: str
         options: tuple
         """
         embed = discord.Embed(color=discord.Color.blurple())
 
-        if len(options) > 10:
-            embed.description = "```You can only have 11 options```"
+        if len(options) > 20:
+            embed.description = "```You can have a maximum of 20 options```"
             return await ctx.send(embed=embed)
 
         if len(options) < 2:
@@ -82,21 +82,23 @@ class moderation(commands.Cog):
             polls[guild] = {}
 
         polls[guild]["temp"] = {}
+        embed.description = ""
 
         for number, option in enumerate(options):
-            polls[guild]["temp"][f"{number}️⃣"] = {
+            emoji = chr(127462 + number)
+            polls[guild]["temp"][emoji] = {
                 "name": option,
                 "count": 0,
             }
-            embed.add_field(name=number, value=option, inline=False)
+            embed.description += f"{emoji}: {option}\n"
 
-        embed.title = name
+        embed.title = title
         message = await ctx.send(embed=embed)
 
         polls[guild][str(message.id)] = polls[guild].pop("temp")
 
         for i in range(len(options)):
-            await message.add_reaction(f"{i}️⃣")
+            await message.add_reaction(chr(127462 + i))
 
         DB.db.put(b"polls", orjson.dumps(polls))
         self.loop.call_later(21600, asyncio.create_task, self.end_poll(guild, message))
