@@ -85,7 +85,7 @@ class moderation(commands.Cog):
         embed.description = ""
 
         for number, option in enumerate(options):
-            emoji = chr(127462+number)
+            emoji = chr(127462 + number)
             polls[guild]["temp"][emoji] = {
                 "name": option,
                 "count": 0,
@@ -98,7 +98,7 @@ class moderation(commands.Cog):
         polls[guild][str(message.id)] = polls[guild].pop("temp")
 
         for i in range(len(options)):
-            await message.add_reaction(chr(127462+number))
+            await message.add_reaction(chr(127462 + number))
 
         DB.db.put(b"polls", orjson.dumps(polls))
         self.loop.call_later(21600, asyncio.create_task, self.end_poll(guild, message))
