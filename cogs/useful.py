@@ -14,6 +14,17 @@ import urllib
 from io import StringIO
 
 
+CODE_REGEX = re.compile(
+    r"(?:(?P<lang>^[a-z]+\ )?)(?P<delim>(?P<block>```)|``?)(?(block)"
+    r"(?:(?P<alang>[a-z]+)\n)?)(?:[ \t]*\n)*(?P<code>.*?)\s*(?P=delim)",
+    re.DOTALL | re.IGNORECASE,
+)
+
+RAW_CODE_REGEX = re.compile(
+    r"(?:(?P<lang>^[a-z]+\ )?)(?P<code>(?s).*)", re.DOTALL | re.IGNORECASE
+)
+
+
 OPERATIONS = {
     ast.Add: operator.add,
     ast.Sub: operator.sub,
@@ -389,7 +400,7 @@ class useful(commands.Cog):
         await pages.start(ctx)
 
     @commands.command()
-    async def run(self, ctx, lang=None, *, code=None):
+    async def run(self, ctx, *, code=None):
         """Runs code.
 
         lang: str
@@ -397,21 +408,26 @@ class useful(commands.Cog):
         code: str
             The code to run.
         """
-        if not lang and not ctx.message.attachments:
-            return await ctx.reply(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```You need to supply a language"
-                    " and code or attach a file```",
-                )
-            )
-
         if ctx.message.attachments:
             file = ctx.message.attachments[0]
             lang = file.filename.split(".")[-1]
             code = (await file.read()).decode()
-        else:
-            code = re.sub(r"```\w+\n|```", "", code)
+        elif match := list(CODE_REGEX.finditer(code)):
+            code, lang, alang = match[0].group("code", "lang", "alang")
+            lang = lang or alang
+        elif match := list(RAW_CODE_REGEX.finditer(code)):
+            code, lang = match[0].group("code", "lang")
+
+        if not lang:
+            return await ctx.reply(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You need to supply a language"
+                    " either as an arg or inside a codeblock```",
+                )
+            )
+
+        lang = lang.strip()
 
         if lang not in orjson.loads(DB.db.get(b"languages")):
             return await ctx.reply(
