@@ -20,6 +20,11 @@ class misc(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    async def rand(self, ctx, a: int, b: int):
+        """Gets a random number such that a <= N <= b"""
+        await ctx.reply(random.randint(a, b))
+
+    @commands.command()
     async def hangman(self, ctx):
         """Starts a game of hangman with a random word."""
         url = "https://random-word-api.herokuapp.com/word?number=1"

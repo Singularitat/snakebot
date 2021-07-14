@@ -692,6 +692,16 @@ class apis(commands.Cog):
         await ctx.send(image)
 
     @commands.command()
+    async def whale(self, ctx):
+        """Gets a random whale image."""
+        url = "https://some-random-api.ml/img/whale"
+
+        async with ctx.typing():
+            whale = await self.get_json(url)
+
+        await ctx.send(whale["link"])
+
+    @commands.command()
     async def snake(self, ctx):
         """Gets a random snake image."""
         await ctx.send(
