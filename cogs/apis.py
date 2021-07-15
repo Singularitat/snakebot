@@ -692,6 +692,16 @@ class apis(commands.Cog):
         await ctx.send(image)
 
     @commands.command()
+    async def duck(self, ctx):
+        """Gets a random duck image."""
+        url = "https://random-d.uk/api/v1/random?type=png"
+
+        async with ctx.typing():
+            duck = await self.get_json(url)
+
+        await ctx.send(duck["url"])
+
+    @commands.command()
     async def bunny(self, ctx):
         """Gets a random bunny image."""
         url = "https://api.bunnies.io/v2/loop/random/?media=webm"
