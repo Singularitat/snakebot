@@ -811,6 +811,16 @@ class apis(commands.Cog):
         await ctx.send(image[0])
 
     @commands.command()
+    async def bird3(self, ctx):
+        """Gets a rnadom bird image."""
+        url = "https://api.monkedev.com/attachments/bird"
+
+        async with ctx.typing():
+            bird = await self.get_json(url)
+
+        await ctx.send(bird["url"])
+
+    @commands.command()
     async def redpanda(self, ctx):
         """Gets a random red panda image."""
         url = "https://some-random-api.ml/img/red_panda"
