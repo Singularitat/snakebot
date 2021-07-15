@@ -692,6 +692,36 @@ class apis(commands.Cog):
         await ctx.send(image)
 
     @commands.command()
+    async def lizard(self, ctx):
+        """Gets a random lizard image."""
+        url = "https://nekos.life/api/v2/img/lizard"
+
+        async with ctx.typing():
+            lizard = await self.get_json(url)
+
+        await ctx.send(lizard["url"])
+
+    @commands.command()
+    async def duck(self, ctx):
+        """Gets a random duck image."""
+        url = "https://random-d.uk/api/v1/random?type=png"
+
+        async with ctx.typing():
+            duck = await self.get_json(url)
+
+        await ctx.send(duck["url"])
+
+    @commands.command()
+    async def bunny(self, ctx):
+        """Gets a random bunny image."""
+        url = "https://api.bunnies.io/v2/loop/random/?media=webm"
+
+        async with ctx.typing():
+            bunny = await self.get_json(url)
+
+        await ctx.send(bunny["media"]["webm"])
+
+    @commands.command()
     async def whale(self, ctx):
         """Gets a random whale image."""
         url = "https://some-random-api.ml/img/whale"
@@ -719,6 +749,16 @@ class apis(commands.Cog):
             monkey = await self.get_json(url)
 
         await ctx.send(monkey["image"])
+
+    @commands.command()
+    async def monkey2(self, ctx):
+        """Gets a random monkey"""
+        url = "https://api.monkedev.com/attachments/monkey"
+
+        async with ctx.typing():
+            monkey = await self.get_json(url)
+
+        await ctx.send(monkey["url"])
 
     @commands.command()
     async def racoon(self, ctx):
@@ -769,6 +809,16 @@ class apis(commands.Cog):
             image = await self.get_json(url)
 
         await ctx.send(image[0])
+
+    @commands.command()
+    async def bird3(self, ctx):
+        """Gets a rnadom bird image."""
+        url = "https://api.monkedev.com/attachments/bird"
+
+        async with ctx.typing():
+            bird = await self.get_json(url)
+
+        await ctx.send(bird["url"])
 
     @commands.command()
     async def redpanda(self, ctx):
