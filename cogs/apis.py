@@ -692,6 +692,16 @@ class apis(commands.Cog):
         await ctx.send(image)
 
     @commands.command()
+    async def lizard(self, ctx):
+        """Gets a random lizard image."""
+        url = "https://nekos.life/api/v2/img/lizard"
+
+        async with ctx.typing():
+            lizard = await self.get_json(url)
+
+        await ctx.send(lizard["url"])
+
+    @commands.command()
     async def duck(self, ctx):
         """Gets a random duck image."""
         url = "https://random-d.uk/api/v1/random?type=png"
