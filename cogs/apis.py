@@ -751,6 +751,16 @@ class apis(commands.Cog):
         await ctx.send(monkey["image"])
 
     @commands.command()
+    async def monkey2(self, ctx):
+        """Gets a random monkey"""
+        url = "https://api.monkedev.com/attachments/monkey"
+
+        async with ctx.typing():
+            monkey = await self.get_json(url)
+
+        await ctx.send(monkey["url"])
+
+    @commands.command()
     async def racoon(self, ctx):
         """Gets a random racoon image."""
         url = "https://some-random-api.ml/img/racoon"
