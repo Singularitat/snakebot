@@ -387,6 +387,22 @@ class moderation(commands.Cog):
         """
         await self.ban(ctx=ctx, member=member, duration=duration, reason=reason)
 
+    @commands.command()
+    @commands.has_permissions(ban_members=True)
+    async def unban(self, ctx, name):
+        """Unbans a member based off their name.
+
+        name: str
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+        for entry in await ctx.guild.bans():
+            if name == entry.user.name:
+                embed.description = "```User Unbanned.```"
+                await ctx.guild.unban(entry.user)
+                return await ctx.send(embed=embed)
+        embed.description = f"```User {name} Not Found.```"
+        await ctx.send(embed=embed)
+
     @commands.command(name="kick")
     @commands.has_permissions(kick_members=True)
     async def kick_member(self, ctx, member: discord.Member, *, reason=None):
