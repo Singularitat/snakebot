@@ -20,6 +20,20 @@ class misc(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    async def unsplash(self, ctx, *, search):
+        """Gets an image from unsplash based off a search.
+
+        search: str
+        """
+        url = f"https://source.unsplash.com/random?{search}"
+        async with ctx.typing(), aiohttp.ClientSession() as session, session.get(
+            url, allow_redirects=False
+        ) as page:
+            soup = lxml.html.fromstring(await page.text())
+
+        await ctx.send(soup.xpath(".//a")[0].attrib["href"])
+
+    @commands.command()
     async def rand(self, ctx, a: int, b: int):
         """Gets a random number such that a <= N <= b"""
         await ctx.reply(random.randint(a, b))
@@ -130,7 +144,8 @@ class misc(commands.Cog):
         binary = binary.replace(" ", "")
         # fmt: off
         await ctx.send(
-            "".join([chr(int(binary[i: i + 8], 2)) for i in range(0, len(binary), 8)])
+            "".join([chr(int(binary[i: i + 8], 2))
+                    for i in range(0, len(binary), 8)])
         )
         # fmt: on
 
