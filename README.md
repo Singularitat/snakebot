@@ -10,7 +10,7 @@ You should be able to run it on earlier versions but I haven't tried
 2. **Install dependencies**
 
 <details>
-<summary><span style="font-size:1.43em;">Windows</span></summary>
+<summary><span>Windows</span></summary>
 
 ```bash
 pip install -U -r requirements.txt
@@ -26,7 +26,7 @@ pip install plyvel-win32
 
 <details>
 
-<summary><span style="font-size:1.43em;">Linux</span></summary>
+<summary><span>Linux</span></summary>
 
 Note: you might need to use pip3 rather than pip
 ```bash
@@ -48,8 +48,8 @@ apt-get install libleveldb1v5 libleveldb-dev
 
 3. **Setup configuration**
 
-The next step is just to create a `config.py` file in the root directory where
-the bot is with the following template:
+The next step is just to create a file named `config.py` in the root directory where
+the [bot.py](/bot.py) file is with the following template:
 
 ```py
 token = ''  # your bot's token
@@ -67,12 +67,12 @@ If you want the downvote command to work you should change the downvote emoji in
 
 ## Requirements
 
-- Python 3.9+
-- discord-ext-menus @ git+https://github.com/Rapptz/discord-ext-menus@master
-- discord.py[voice]
-- lxml
-- psutil
-- orjson
-- youtube_dl
-- plyvel
-- pillow
+- [Python 3.9+](https://www.python.org/downloads/)
+- [discord-ext-menus](https://github.com/Rapptz/discord-ext-menus)
+- [discord.py](https://github.com/Rapptz/discord.py/)
+- [lxml](https://github.com/lxml/lxml)
+- [psutil](https://github.com/giampaolo/psutil)
+- [orjson](https://github.com/ijl/orjson)
+- [youtube_dl](https://github.com/ytdl-org/youtube-dl)
+- [plyvel](https://github.com/wbolster/plyvel)
+- [pillow](https://github.com/python-pillow/Pillow)
