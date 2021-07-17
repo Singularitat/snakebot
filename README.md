@@ -18,7 +18,7 @@ pip install -U -r requirements.txt
 
 On windows you will also need plyvel-win32
 
-```bash
+```shell
 pip install plyvel-win32
 ```
 
@@ -29,18 +29,18 @@ pip install plyvel-win32
 <summary><span>Linux</span></summary>
 
 Note: you might need to use pip3 rather than pip
-```bash
+```shell
 pip install -U -r requirements.txt
 ```
 
 On linux you will need plyvel
 
-```bash
+```shell
 pip install plyvel
 ```
 
 If it fails to install on Debian or Ubuntu try
-```bash
+```shell
 apt-get install libleveldb1v5 libleveldb-dev
 ```
 
@@ -62,6 +62,9 @@ token = ''  # your bot's token
 You will probably want to remove my discord id from the owner_ids in [bot.py](/bot.py#L30) and replace it with your own
 
 If you want the downvote command to work you should change the downvote emoji in [events.py](/cogs/events.py) and you might want to disable auto downvoting on ghost pings in the on_message_delete event
+
+If you want the music cog to work you will need [ffmpeg](https://ffmpeg.org/download.html) either on your PATH or in the root directory where
+the [bot.py](/bot.py) file is
 
 &nbsp;
 
