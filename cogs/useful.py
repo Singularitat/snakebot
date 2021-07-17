@@ -33,6 +33,11 @@ OPERATIONS = {
     ast.FloorDiv: operator.floordiv,
     ast.Pow: operator.pow,
     ast.Mod: operator.mod,
+    ast.LShift: operator.lshift,
+    ast.RShift: operator.rshift,
+    ast.BitOr: operator.or_,
+    ast.BitAnd: operator.and_,
+    ast.BitXor: operator.xor,
 }
 
 
