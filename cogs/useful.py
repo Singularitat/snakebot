@@ -15,13 +15,13 @@ from io import StringIO
 
 
 CODE_REGEX = re.compile(
-    r"(?:(?P<lang>^[a-z]+\ )?)(?P<delim>(?P<block>```)|``?)(?(block)"
+    r"(?:(?P<lang>^[a-z]+[\ \n])?)(?P<delim>(?P<block>```)|``?)(?(block)"
     r"(?:(?P<alang>[a-z]+)\n)?)(?:[ \t]*\n)*(?P<code>.*?)\s*(?P=delim)",
     re.DOTALL | re.IGNORECASE,
 )
 
 RAW_CODE_REGEX = re.compile(
-    r"(?:(?P<lang>^[a-z]+\ )?)(?P<code>(?s).*)", re.DOTALL | re.IGNORECASE
+    r"(?:(?P<lang>^[a-z]+[\ \n])?)(?P<code>(?s).*)", re.DOTALL | re.IGNORECASE
 )
 
 
