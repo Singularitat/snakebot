@@ -341,20 +341,34 @@ class admin(commands.Cog):
         await message.edit(embed=embed)
 
     @commands.command()
-    async def embed(self, ctx, description, title=None):
+    async def embed(self, ctx, *, json):
         """Sends an embed.
 
-        message: discord.Message
-            The message you want to edit.
-        description: str
-            Description of the embed.
-        title: str
-            Title of the embed.
+        example:
+        .embed {
+            "description": "description",
+            "title": "title",
+            "fields": {"name": "value"}
+        }
+
+        You only need either the title or description
+        and fields are alaways optional
+
+        json: str
         """
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = description
-        if title:
-            embed.title = title
+        json = orjson.loads(json)
+
+        embed.description = json.get("description")
+        embed.title = json.get("title")
+
+        if "fields" in json:
+            for field in json["fields"]:
+                embed.add_field(
+                    name=field,
+                    value=json["fields"][field],
+                )
+
         await ctx.send(embed=embed)
 
     async def end_date(self, duration):
