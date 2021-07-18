@@ -236,14 +236,18 @@ def _sign(x):
     return int(copysign(1, x))
 
 
-def time_since(past_time):
+def pretty_time(time_object, past_time=True):
     """Get a datetime object or a int() Epoch timestamp and return a pretty time string."""
     now = datetime.datetime.utcnow()
 
-    if isinstance(past_time, int):
-        diff = relativedelta(now, datetime.fromtimestamp(past_time))
+    if not past_time:
+        # If we are wanting a future time just swap them
+        now, time_object = time_object, now
+
+    if isinstance(time_object, int):
+        diff = relativedelta(now, datetime.fromtimestamp(time_object))
     else:
-        diff = relativedelta(now, past_time)
+        diff = relativedelta(now, time_object)
 
     years = diff.years
     months = diff.months
