@@ -4,7 +4,7 @@ import textwrap
 import psutil
 import inspect
 import os
-from .utils.relativedelta import time_since
+from .utils.relativedelta import pretty_time
 import cogs.utils.database as DB
 import orjson
 from io import StringIO
@@ -269,7 +269,7 @@ class information(commands.Cog):
     @commands.command()
     async def uptime(self, ctx):
         """Shows the bots uptime."""
-        await ctx.send(f"**{time_since(self.bot.uptime)}**")
+        await ctx.send(f"**{pretty_time(self.bot.uptime)}**")
 
     @commands.command(name="server")
     async def server_info(self, ctx):
@@ -294,7 +294,7 @@ class information(commands.Cog):
         embed.description = textwrap.dedent(
             f"""
                 **Server Information**
-                Created: {time_since(ctx.guild.created_at)} ago
+                Created: {pretty_time(ctx.guild.created_at)} ago
                 Region: {ctx.guild.region.name.title()}
                 Owner: {ctx.guild.owner}
 
@@ -316,7 +316,7 @@ class information(commands.Cog):
             The member to get info of defulting to the invoker.
         """
         user = user or ctx.author
-        created = f"{time_since(user.created_at)} ago"
+        created = f"{pretty_time(user.created_at)} ago"
 
         embed = discord.Embed(
             title=(str(user) + (" `[BOT]`" if user.bot else "")),
@@ -331,7 +331,7 @@ class information(commands.Cog):
 
         if hasattr(user, "guild"):
             roles = ", ".join(role.mention for role in user.roles[1:])
-            joined = f"{time_since(user.joined_at)} ago"
+            joined = f"{pretty_time(user.joined_at)} ago"
             embed.color = user.top_role.colour if roles else embed.color
             embed.title = f"{user.nick} ({user})" if user.nick else embed.title
 

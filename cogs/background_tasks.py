@@ -6,6 +6,7 @@ import orjson
 from discord.ext import commands, tasks
 import discord
 import cogs.utils.database as DB
+from cogs.utils.relativedelta import pretty_time
 
 
 class background_tasks(commands.Cog):
@@ -33,12 +34,11 @@ class background_tasks(commands.Cog):
         """
         task_dict = {}
 
-        for task in dir(background_tasks):
-            task_obj = getattr(self, task)
-
+        for name, task_obj in vars(background_tasks).items():
             if isinstance(task_obj, tasks.Loop):
-                task_obj.start()
-                task_dict[task] = task_obj
+                task = getattr(self, name)
+                task.start()
+                task_dict[name] = task
 
         self.tasks = task_dict
 
@@ -46,9 +46,26 @@ class background_tasks(commands.Cog):
     async def task(self, ctx):
         """The task command group."""
         if not ctx.invoked_subcommand:
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```Usage: {ctx.prefix}task [restart/start/stop/list]```",
+            embed = discord.Embed(color=discord.Color.blurple())
+            task_name = ctx.subcommand_passed
+
+            if task_name in self.tasks:
+                task = self.tasks[task_name]
+                embed.title = f"{task_name.replace('_', ' ').title()} Task"
+                embed.description = (
+                    "```Running: {}\nFailed: {}\nCount: {}"
+                    "\n\nNext Loop:\n{}\n\nInterval:\n{}```"
+                ).format(
+                    task.is_running(),
+                    task.failed(),
+                    task.current_loop,
+                    pretty_time(task.next_iteration.replace(tzinfo=None), False),
+                    f"{task.hours}h {task.minutes}m {task.seconds}s",
+                )
+                return await ctx.send(embed=embed)
+
+            embed.description = (
+                f"```Usage: {ctx.prefix}task [restart/start/stop/list]```"
             )
             await ctx.send(embed=embed)
 
@@ -256,7 +273,7 @@ class background_tasks(commands.Cog):
                     self.bot.load_extension(f"cogs.{ext}")
 
     @tasks.loop(hours=6)
-    async def backup_bot(self):
+    async def backup(self):
         """Makes a backup of the db every 6 hours."""
         if DB.db.get(b"restart") == b"1":
             DB.db.delete(b"restart")
@@ -303,7 +320,7 @@ class background_tasks(commands.Cog):
         DB.db.put(b"languages", orjson.dumps(list(languages)))
 
     @tasks.loop(minutes=10)
-    async def crypto_update(self):
+    async def update_crypto(self):
         """Updates crypto currency data every 10 minutes."""
         url = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing?limit=50000&convert=NZD&cryptoType=coins"
         async with aiohttp.ClientSession() as session, session.get(url) as response:
