@@ -34,8 +34,8 @@ class background_tasks(commands.Cog):
         """
         task_dict = {}
 
-        for name, object in vars(background_tasks).items():
-            if isinstance(object, tasks.Loop):
+        for name, task_obj in vars(background_tasks).items():
+            if isinstance(task_obj, tasks.Loop):
                 task = getattr(self, name)
                 task.start()
                 task_dict[name] = task
