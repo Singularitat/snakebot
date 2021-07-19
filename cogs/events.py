@@ -505,12 +505,13 @@ class events(commands.Cog):
                 return
 
         error = getattr(error, "original", error)
-        embed = discord.Embed(color=discord.Color.dark_red())
 
         if str(error).startswith("The check functions") or str(error).startswith(
             "The global check"
         ):
             return
+
+        embed = discord.Embed(color=discord.Color.dark_red())
 
         if isinstance(error, commands.errors.CommandNotFound):
             if ctx.message.content.startswith(ctx.prefix * 2):
@@ -547,11 +548,6 @@ class events(commands.Cog):
             ctx.command.reset_cooldown(ctx)
             message = (
                 f"{error}\n\nUsage:\n{ctx.prefix}{ctx.command} {ctx.command.signature}"
-            )
-
-        elif isinstance(error, commands.errors.BotMissingAnyRole):
-            message = (
-                f"{self.bot.user.name} is missing required roles: {error.missing_roles}"
             )
 
         elif isinstance(error, commands.errors.BotMissingPermissions):
@@ -591,7 +587,7 @@ class events(commands.Cog):
             boot_times.append(round(boot_time, 5))
             DB.db.put(b"boot_times", orjson.dumps(boot_times))
 
-            # Wipe the cache and polls as we have no way of knowing if it has expired
+            # Wipe the cache and polls as we have no way of knowing if they have expired
             DB.db.put(b"cache", b"{}")
             DB.db.delete(b"polls")
 

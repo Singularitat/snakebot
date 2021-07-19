@@ -301,11 +301,14 @@ class owner(commands.Cog):
     async def log_level(self, ctx, level):
         """Changes logging level.
 
+        Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+
         level: str
             The new logging level.
         """
+        level = level.upper()
         if level.upper() in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
-            logging.getLogger("discord").setLevel(getattr(logging, level.upper()))
+            logging.getLogger("discord").setLevel(getattr(logging, level))
 
     @commands.command(name="gblacklist")
     async def global_blacklist(self, ctx, user: discord.User):
@@ -352,12 +355,18 @@ class owner(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def backup(self, ctx, number: int):
+    async def backup(self, ctx, number: int = None):
         """Sends the bot database backup as a json file.
 
         number: int
             Which backup to get.
         """
+        if not number:
+            number = int(DB.db.get(b"backup_number").decode())
+
+            with open(f"backup/{number}backup.json", "rb") as file:
+                return await ctx.send(file=discord.File(file, "backup.json"))
+
         number = min(10, max(number, 0))
 
         with open(f"backup/{number}backup.json", "rb") as file:
