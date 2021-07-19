@@ -204,11 +204,11 @@ class information(commands.Cog):
     @commands.command()
     async def usage(self, ctx):
         """Shows the bot's memory and cpu usage."""
-        memory_usage = self.process.memory_full_info().uss / 1024 ** 2
+        memory_usage = self.process.memory_full_info().vms / 1024 ** 2
         cpu_usage = self.process.cpu_percent()
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.add_field(name="Memory Usage: ", value=f"**{memory_usage:.2f} MiB**")
+        embed.add_field(name="Memory Usage: ", value=f"**{memory_usage:.2f} MB**")
         embed.add_field(name="CPU Usage:", value=f"**{cpu_usage}%**")
         await ctx.send(embed=embed)
 
