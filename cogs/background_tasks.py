@@ -32,15 +32,13 @@ class background_tasks(commands.Cog):
         """Finds all the tasks in the cog and starts them.
         This also builds a dictionary of the tasks so we can access them later.
         """
-        task_dict = {}
+        self.tasks = {}
 
         for name, task_obj in vars(background_tasks).items():
             if isinstance(task_obj, tasks.Loop):
                 task = getattr(self, name)
                 task.start()
-                task_dict[name] = task
-
-        self.tasks = task_dict
+                self.tasks[name] = task
 
     @commands.group(hidden=True)
     async def task(self, ctx):
@@ -177,11 +175,11 @@ class background_tasks(commands.Cog):
 
         Name:               Interval:      Running/Failed/Count:
 
-        backup_bot          6h 0m 0s       True/False/4
-        crypto_update       0h 10m 0s      True/False/133
-        update_bot          0h 5m 0s       True/False/265
+        update_stocks       0h 10m 0s      True/False/146
+        update_bot          0h 5m 0s       True/False/291
+        backup              6h 0m 0s       True/False/5
         update_languages    0h 0m 0s       False/False/0
-        update_stocks       0h 10m 0s      True/False/133
+        update_crypto       0h 10m 0s      True/False/146
         """
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -276,8 +274,8 @@ class background_tasks(commands.Cog):
     async def backup(self):
         """Makes a backup of the db every 6 hours."""
         if DB.db.get(b"restart") == b"1":
-            DB.db.delete(b"restart")
-            return
+            return DB.db.delete(b"restart")
+
         number = DB.db.get(b"backup_number")
 
         if not number:
