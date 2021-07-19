@@ -62,14 +62,15 @@ class information(commands.Cog):
         )[:amount]
 
         embed = discord.Embed(color=discord.Color.blurple())
-        result = []
+        members = []
 
         for count, member in msgtop:
             user = self.bot.get_user(int(member.split("-")[1]))
-            result.append((count, user.display_name if user else member))
+            if user:
+                members.append((count, user.display_name))
 
         description = "\n".join(
-            [f"**{member}:** {count} messages" for count, member in result]
+            [f"**{member}:** {count} messages" for count, member in members]
         )
 
         if len(description) > 2048:
