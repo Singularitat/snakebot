@@ -75,7 +75,7 @@ class useful(commands.Cog):
 
         exponent = 0
         shifted_num = number
-        max_exponent = 10 - (len(bin(int(number))) - 2)
+        max_exponent = 9 - (len(bin(int(number))) - 2)
 
         while shifted_num != int(shifted_num) and exponent != max_exponent:
             shifted_num *= 2
@@ -86,9 +86,9 @@ class useful(commands.Cog):
         if index := binary.find("1"):
             binary_exponent = f"{index-1:0>5b}"
         elif not exponent:
-            binary_exponent = f"{len(binary):0>5b}"
+            binary_exponent = f"{len(binary)-1:0>5b}"
         else:
-            binary_exponent = f"{exponent:0>5b}"
+            binary_exponent = f"{exponent-1:0>5b}"
 
         exponent_sign = str(int(bool(index)))
         mantissa = f"{binary.lstrip('0'):0<9}"[:9]
@@ -328,8 +328,8 @@ class useful(commands.Cog):
         languages = orjson.loads(languages)
         msg = ""
 
-        for count, language in enumerate(languages):
-            if (count + 1) % 4 == 0:
+        for count, language in enumerate(languages, start=1):
+            if count % 4 == 0:
                 msg += f"{language}\n"
             else:
                 msg += f"{language:<13}"
