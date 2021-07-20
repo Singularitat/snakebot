@@ -434,7 +434,7 @@ class useful(commands.Cog):
 
         lang = lang.strip()
 
-        if lang not in orjson.loads(DB.db.get(b"languages")):
+        if lang not in orjson.loads(DB.db.get(b"aliases")):
             return await ctx.reply(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),

@@ -309,13 +309,16 @@ class background_tasks(commands.Cog):
         async with aiohttp.ClientSession() as session, session.get(url) as page:
             data = await page.json()
 
-        languages = set()
+        aliases = set()
+        languages = []
 
         for language in data:
-            languages.update(language["aliases"])
-            languages.add(language["language"])
+            aliases.update(language["aliases"])
+            aliases.add(language["language"])
+            languages.append(language["language"])
 
-        DB.db.put(b"languages", orjson.dumps(list(languages)))
+        DB.db.put(b"languages", orjson.dumps(languages))
+        DB.db.put(b"aliases", orjson.dumps(list(aliases)))
 
     @tasks.loop(minutes=10)
     async def update_crypto(self):
