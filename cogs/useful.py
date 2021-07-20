@@ -15,13 +15,13 @@ from io import StringIO
 
 
 CODE_REGEX = re.compile(
-    r"(?:(?P<lang>^[a-z]+[\ \n])?)(?P<delim>(?P<block>```)|``?)(?(block)"
-    r"(?:(?P<alang>[a-z]+)\n)?)(?:[ \t]*\n)*(?P<code>.*?)\s*(?P=delim)",
+    r"(?:(?P<lang>^[a-z0-9]+[\ \n])?)(?P<delim>(?P<block>```)|``?)(?(block)"
+    r"(?:(?P<alang>[a-z0-9]+)\n)?)(?:[ \t]*\n)*(?P<code>.*?)\s*(?P=delim)",
     re.DOTALL | re.IGNORECASE,
 )
 
 RAW_CODE_REGEX = re.compile(
-    r"(?:(?P<lang>^[a-z]+[\ \n])?)(?P<code>(?s).*)", re.DOTALL | re.IGNORECASE
+    r"(?:(?P<lang>^[a-z0-9]+[\ \n])?)(?P<code>(?s).*)", re.DOTALL | re.IGNORECASE
 )
 
 
@@ -75,7 +75,7 @@ class useful(commands.Cog):
 
         exponent = 0
         shifted_num = number
-        max_exponent = 10 - (len(bin(int(number))) - 2)
+        max_exponent = 9 - (len(bin(int(number))) - 2)
 
         while shifted_num != int(shifted_num) and exponent != max_exponent:
             shifted_num *= 2
@@ -86,9 +86,9 @@ class useful(commands.Cog):
         if index := binary.find("1"):
             binary_exponent = f"{index-1:0>5b}"
         elif not exponent:
-            binary_exponent = f"{len(binary):0>5b}"
+            binary_exponent = f"{len(binary)-1:0>5b}"
         else:
-            binary_exponent = f"{exponent:0>5b}"
+            binary_exponent = f"{exponent-1:0>5b}"
 
         exponent_sign = str(int(bool(index)))
         mantissa = f"{binary.lstrip('0'):0<9}"[:9]
@@ -328,8 +328,8 @@ class useful(commands.Cog):
         languages = orjson.loads(languages)
         msg = ""
 
-        for count, language in enumerate(languages):
-            if (count + 1) % 4 == 0:
+        for count, language in enumerate(languages, start=1):
+            if count % 4 == 0:
                 msg += f"{language}\n"
             else:
                 msg += f"{language:<13}"
@@ -434,7 +434,7 @@ class useful(commands.Cog):
 
         lang = lang.strip()
 
-        if lang not in orjson.loads(DB.db.get(b"languages")):
+        if lang not in orjson.loads(DB.db.get(b"aliases")):
             return await ctx.reply(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
