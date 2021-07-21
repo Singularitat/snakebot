@@ -1,11 +1,12 @@
-import discord
-from discord.ext import commands
 import asyncio
 import functools
 import itertools
 import random
-import youtube_dl
+
+from discord.ext import commands
 import async_timeout
+import discord
+import youtube_dl
 
 try:
     import uvloop

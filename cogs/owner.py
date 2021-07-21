@@ -1,18 +1,20 @@
-import discord
-from discord.ext import commands
-import orjson
-import os
-import copy
-import asyncio
-import traceback
-import time
-import subprocess
-import re
-import logging
-import cogs.utils.database as DB
 from io import StringIO
+import asyncio
 import cProfile
+import copy
+import logging
+import os
 import pstats
+import re
+import subprocess
+import time
+import traceback
+
+from discord.ext import commands
+import discord
+import orjson
+
+import cogs.utils.database as DB
 
 
 class PerformanceMocker:

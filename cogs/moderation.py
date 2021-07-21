@@ -1,8 +1,10 @@
+import asyncio
+
 from discord.ext import commands, menus
 import discord
-import asyncio
-import cogs.utils.database as DB
 import orjson
+
+import cogs.utils.database as DB
 
 
 class HistoryMenu(menus.ListPageSource):

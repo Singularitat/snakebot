@@ -1,8 +1,8 @@
-import discord
-from discord.ext import commands, menus
 import asyncio
 import difflib
 
+from discord.ext import commands, menus
+import discord
 
 # Taken From https://github.com/Rapptz/RoboDanny
 
