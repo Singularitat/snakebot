@@ -23,124 +23,27 @@ class stocks(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.command(name="stocks", aliases=["stonks"])
-    async def get_stocks(self, ctx):
-        """Shows the prices of stocks from the nasdaq api."""
-        data = []
-        for i, (stock, price) in enumerate(DB.stocks, start=1):
-            price = orjson.loads(price)["price"]
-
-            if not i % 3:
-                data.append(f"{stock.decode():}: ${float(price):.2f}\n")
-            else:
-                data.append(f"{stock.decode():}: ${float(price):.2f}\t".expandtabs())
-
-        pages = menus.MenuPages(
-            source=StockMenu(data),
-            clear_reactions_after=True,
-            delete_message_after=True,
-        )
-        await pages.start(ctx)
-
-    @commands.command(name="stockbal")
-    async def stock_balance(self, ctx, symbol):
-        """Shows the amount of stocks you have bought in a stock.
-
-        symbol: str
-            The symbol of the stock to find.
-        """
-        symbol = symbol.upper()
-        member_id = str(ctx.author.id).encode()
-        stockbal = await DB.get_stockbal(member_id)
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if not stockbal:
-            embed.description = "```You have never invested```"
-            return await ctx.send(embed=embed)
-
-        if symbol not in stockbal:
-            embed.description = f"```You have never invested in {symbol}```"
-            return await ctx.send(embed=embed)
-
-        stock = await DB.get_stock(symbol)
-
-        trades = [
-            trade[1] / trade[0] for trade in stockbal[symbol]["history"] if trade[0] > 0
-        ]
-        change = ((float(stock["price"]) / (sum(trades) / len(trades))) - 1) * 100
-
-        embed.description = textwrap.dedent(
-            f"""
-                ```diff
-                You have {stockbal[symbol]['total']:.2f} stocks in {symbol}
-
-                Price: {stock['price']}
-
-                Percent Gain/Loss:
-                {"" if str(change)[0] == "-" else "+"}{change:.2f}%
-
-                Market Cap: {stock['cap']}
-                ```
-            """
-        )
-
-        await ctx.send(embed=embed)
-
-    @commands.command(name="stockprofile", aliases=["stockp"])
-    async def stock_profile(self, ctx, member: discord.Member = None):
-        """Gets someone's stock profile.
-
-        member: discord.Member
-            The member whos stockprofile will be shown
-        """
-        member = member or ctx.author
-
-        member_id = str(member.id).encode()
-        stockbal = await DB.get_stockbal(member_id)
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if not stockbal:
-            embed.description = "```You have never invested```"
-            return await ctx.send(embed=embed)
-
-        if len(stockbal) == 0:
-            embed.description = "```You have sold all your stocks.```"
-            return await ctx.send(embed=embed)
-
-        net_value = 0
-        msg = (
-            f"{member.display_name}'s stock profile:\n\n"
-            " Name:  Amount:        Price:             Percent Gain:\n"
-        )
-
-        for stock in stockbal:
-            data = await DB.get_stock(stock)
-            price = float(data["price"])
-
-            trades = [
-                trade[1] / trade[0]
-                for trade in stockbal[stock]["history"]
-                if trade[0] > 0
-            ]
-            change = ((price / (sum(trades) / len(trades))) - 1) * 100
-            sign = "-" if str(change)[0] == "-" else "+"
-
-            msg += f"{sign} {stock:>4}: {stockbal[stock]['total']:<14.2f}"
-            msg += f" Price: ${price:<10.2f} {change:.2f}%\n"
-
-            net_value += stockbal[stock]["total"] * price
-
-        embed.description = f"```diff\n{msg}\nNet Value: ${net_value:.2f}```"
-        await ctx.send(embed=embed)
-
-    @commands.command(name="stockprice", aliases=["price", "stock"])
-    async def stock_price(self, ctx, symbol):
+    @commands.group()
+    async def stock(self, ctx):
         """Gets the current price of a stock.
 
         symbol: str
             The symbol of the stock to find.
         """
-        symbol = symbol.upper()
+        if ctx.invoked_subcommand:
+            return
+
+        embed = discord.Embed(colour=discord.Colour.blurple())
+
+        if not ctx.subcommand_passed:
+            embed = discord.Embed(color=discord.Color.blurple())
+            embed.description = (
+                f"```Usage: {ctx.prefix}stock [buy/sell/bal/profile/list/history]"
+                f" or {ctx.prefix}stock [ticker]```"
+            )
+            return await ctx.send(embed=embed)
+
+        symbol = ctx.subcommand_passed.upper()
         stock = await DB.get_stock(symbol)
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -169,8 +72,8 @@ class stocks(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(name="sellstock", aliases=["sell"])
-    async def sell_stock(self, ctx, symbol, amount: float):
+    @stock.command()
+    async def sell(self, ctx, symbol, amount: float):
         """Sells stock.
 
         symbol: str
@@ -229,7 +132,7 @@ class stocks(commands.Cog):
         await DB.put_bal(member_id, bal)
         await DB.put_stockbal(member_id, stockbal)
 
-    @commands.command(aliases=["buy"])
+    @stock.command(aliases=["buy"])
     async def invest(self, ctx, symbol, cash: float):
         """Buys stock or if nothing is passed in it shows the price of some stocks.
         symbol: str
@@ -280,6 +183,116 @@ class stocks(commands.Cog):
 
         await DB.put_bal(member_id, bal)
         await DB.put_stockbal(member_id, stockbal)
+
+    @stock.command(aliases=["balance"])
+    async def bal(self, ctx, symbol):
+        """Shows the amount of stocks you have bought in a stock.
+
+        symbol: str
+            The symbol of the stock to find.
+        """
+        symbol = symbol.upper()
+        member_id = str(ctx.author.id).encode()
+        stockbal = await DB.get_stockbal(member_id)
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not stockbal:
+            embed.description = "```You have never invested```"
+            return await ctx.send(embed=embed)
+
+        if symbol not in stockbal:
+            embed.description = f"```You have never invested in {symbol}```"
+            return await ctx.send(embed=embed)
+
+        stock = await DB.get_stock(symbol)
+
+        trades = [
+            trade[1] / trade[0] for trade in stockbal[symbol]["history"] if trade[0] > 0
+        ]
+        change = ((float(stock["price"]) / (sum(trades) / len(trades))) - 1) * 100
+
+        embed.description = textwrap.dedent(
+            f"""
+                ```diff
+                You have {stockbal[symbol]['total']:.2f} stocks in {symbol}
+
+                Price: {stock['price']}
+
+                Percent Gain/Loss:
+                {"" if str(change)[0] == "-" else "+"}{change:.2f}%
+
+                Market Cap: {stock['cap']}
+                ```
+            """
+        )
+
+        await ctx.send(embed=embed)
+
+    @stock.command()
+    async def profile(self, ctx, member: discord.Member = None):
+        """Gets someone's stock profile.
+
+        member: discord.Member
+            The member whos stockprofile will be shown
+        """
+        member = member or ctx.author
+
+        member_id = str(member.id).encode()
+        stockbal = await DB.get_stockbal(member_id)
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not stockbal:
+            embed.description = "```You have never invested```"
+            return await ctx.send(embed=embed)
+
+        if len(stockbal) == 0:
+            embed.description = "```You have sold all your stocks.```"
+            return await ctx.send(embed=embed)
+
+        net_value = 0
+        msg = (
+            f"{member.display_name}'s stock profile:\n\n"
+            " Name:  Amount:        Price:             Percent Gain:\n"
+        )
+
+        for stock in stockbal:
+            data = await DB.get_stock(stock)
+            price = float(data["price"])
+
+            trades = [
+                trade[1] / trade[0]
+                for trade in stockbal[stock]["history"]
+                if trade[0] > 0
+            ]
+            change = ((price / (sum(trades) / len(trades))) - 1) * 100
+            sign = "-" if str(change)[0] == "-" else "+"
+
+            msg += f"{sign} {stock:>4}: {stockbal[stock]['total']:<14.2f}"
+            msg += f" Price: ${price:<10.2f} {change:.2f}%\n"
+
+            net_value += stockbal[stock]["total"] * price
+
+        embed.description = f"```diff\n{msg}\nNet Value: ${net_value:.2f}```"
+        await ctx.send(embed=embed)
+
+    @stock.command()
+    async def list(self, ctx):
+        """Shows the prices of stocks from the nasdaq api."""
+        data = []
+        for i, (stock, price) in enumerate(DB.stocks, start=1):
+            price = orjson.loads(price)["price"]
+
+            if not i % 3:
+                data.append(f"{stock.decode():}: ${float(price):.2f}\n")
+            else:
+                data.append(f"{stock.decode():}: ${float(price):.2f}\t".expandtabs())
+
+        pages = menus.MenuPages(
+            source=StockMenu(data),
+            clear_reactions_after=True,
+            delete_message_after=True,
+        )
+        await pages.start(ctx)
 
     @commands.command(name="nettop")
     async def top_net_worths(self, ctx, amount: int = 10):
