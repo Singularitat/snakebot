@@ -1,13 +1,15 @@
-import discord
-from discord.ext import commands
+from io import StringIO
+import difflib
+import opcode
 import random
+
+from discord.ext import commands
 import aiohttp
+import discord
 import lxml.html
+
 import cogs.utils.database as DB
 import config
-import opcode
-import difflib
-from io import StringIO
 
 
 opcodes = opcode.opmap

@@ -1,17 +1,19 @@
-import discord
-from discord.ext import commands, menus
-import orjson
-import random
-import aiohttp
-import time
-import lxml.html
-import re
-import asyncio
-import cogs.utils.database as DB
-import ast
-import operator
-import urllib
 from io import StringIO
+import ast
+import asyncio
+import operator
+import random
+import re
+import time
+import urllib
+
+from discord.ext import commands, menus
+import aiohttp
+import discord
+import lxml.html
+import orjson
+
+import cogs.utils.database as DB
 
 
 CODE_REGEX = re.compile(
@@ -328,7 +330,7 @@ class useful(commands.Cog):
         languages = orjson.loads(languages)
         msg = ""
 
-        for count, language in enumerate(languages, start=1):
+        for count, language in enumerate(sorted(languages), start=1):
             if count % 4 == 0:
                 msg += f"{language}\n"
             else:

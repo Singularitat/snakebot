@@ -1,7 +1,9 @@
-import discord
-from discord.ext import commands, menus
-import orjson
 import textwrap
+
+from discord.ext import commands, menus
+import discord
+import orjson
+
 import cogs.utils.database as DB
 
 

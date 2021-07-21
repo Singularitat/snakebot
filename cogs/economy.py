@@ -1,7 +1,9 @@
-import discord
-from discord.ext import commands
-import orjson
 import random
+
+from discord.ext import commands
+import discord
+import orjson
+
 import cogs.utils.database as DB
 
 

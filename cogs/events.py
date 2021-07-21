@@ -1,14 +1,16 @@
-import discord
-from discord.ext import commands
-import orjson
-import platform
-import os
 from datetime import datetime
-import psutil
-import logging
-from PIL import Image
 from io import BytesIO
 import difflib
+import logging
+import os
+import platform
+
+from PIL import Image
+from discord.ext import commands
+import discord
+import orjson
+import psutil
+
 import cogs.utils.database as DB
 
 
