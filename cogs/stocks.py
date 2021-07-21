@@ -73,7 +73,7 @@ class stocks(commands.Cog):
         await ctx.send(embed=embed)
 
     @stock.command()
-    async def sell(self, ctx, symbol, amount: float):
+    async def sell(self, ctx, symbol, amount):
         """Sells stock.
 
         symbol: str
@@ -82,10 +82,6 @@ class stocks(commands.Cog):
             The amount of stock to sell.
         """
         embed = discord.Embed(color=discord.Color.blurple())
-
-        if amount < 0:
-            embed.description = "```You can't sell a negative amount of stocks```"
-            return await ctx.send(embed=embed)
 
         symbol = symbol.upper()
         price = await DB.get_stock(symbol)
@@ -100,6 +96,15 @@ class stocks(commands.Cog):
 
         if not stockbal:
             embed.description = f"```You have never invested in {symbol}```"
+            return await ctx.send(embed=embed)
+
+        if amount[-1] == "%":
+            amount = stockbal[symbol]["total"] * ((float(amount[:-1])) / 100)
+        else:
+            amount = float(amount)
+
+        if amount < 0:
+            embed.description = "```You can't sell a negative amount of stocks```"
             return await ctx.send(embed=embed)
 
         if stockbal[symbol]["total"] < amount:

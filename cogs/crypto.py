@@ -132,7 +132,7 @@ class crypto(commands.Cog):
         await DB.put_cryptobal(member_id, cryptobal)
 
     @crypto.command(aliases=["s"])
-    async def sell(self, ctx, symbol, amount: float):
+    async def sell(self, ctx, symbol, amount):
         """Sells crypto.
 
         symbol: str
@@ -141,10 +141,6 @@ class crypto(commands.Cog):
             The amount to sell.
         """
         embed = discord.Embed(color=discord.Color.blurple())
-
-        if amount < 0:
-            embed.description = "```You can't sell a negative amount of crypto```"
-            return await ctx.send(embed=embed)
 
         symbol = symbol.upper()
         price = await DB.get_crypto(symbol)
@@ -163,6 +159,15 @@ class crypto(commands.Cog):
 
         if symbol not in cryptobal:
             embed.description = f"```You haven't invested in {symbol}.```"
+            return await ctx.send(embed=embed)
+
+        if amount[-1] == "%":
+            amount = cryptobal[symbol]["total"] * ((float(amount[:-1])) / 100)
+        else:
+            amount = float(amount)
+
+        if amount < 0:
+            embed.description = "```You can't sell a negative amount of crypto```"
             return await ctx.send(embed=embed)
 
         if cryptobal[symbol]["total"] < amount:
