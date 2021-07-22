@@ -291,18 +291,23 @@ class background_tasks(commands.Cog):
 
         os.makedirs("backup/", exist_ok=True)
         with open(f"backup/{number}backup.json", "w", encoding="utf-8") as file:
-            # I don't know why I did this as a jumbled mess but I did
-            # Basically it just formats the db to json
-            json = "".join(
-                [
-                    f'"{key.decode()}": "{value.decode()}", '
-                    if '"' not in value.decode()
-                    else f'"{key.decode()}": {value.decode()}, '
-                    for key, value in DB.db
-                    if not key.startswith(b"crypto-") and not key.startswith(b"stocks-")
-                ]
+            database = {}
+
+            excluded = (
+                b"crypto",
+                b"stocks",
+                b"boot_times",
             )
-            file.write(f"{{{json[:-3]}}}")
+
+            for key, value in DB.db:
+                if key.split(b"-")[0] not in excluded:
+                    if value[:1] in [b"{", b"["]:
+                        value = orjson.loads(value)
+                    else:
+                        value = value.decode()
+                    database[key.decode()] = value
+
+            file.write(str(database))
 
     @tasks.loop(count=1)
     async def update_languages(self):
