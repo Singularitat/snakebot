@@ -197,6 +197,8 @@ class owner(commands.Cog):
     @db.command()
     async def show(self, ctx, exclude=True):
         """Sends a json of the entire database."""
+        database = {}
+
         if exclude:
             excluded = (
                 b"crypto",
@@ -207,16 +209,22 @@ class owner(commands.Cog):
                 b"boot_times",
             )
 
-            database = {
-                key.decode(): value.decode()
-                for key, value in DB.db
-                if key.split(b"-")[0] not in excluded
-            }
+            for key, value in DB.db:
+                if key.split(b"-")[0] not in excluded:
+                    if value[:1] in [b"{", b"["]:
+                        value = orjson.loads(value)
+                    else:
+                        value = value.decode()
+                    database[key.decode()] = value
         else:
-            database = {key.decode(): value.decode() for key, value in DB.db}
+            for key, value in DB.db:
+                if value[:1] in [b"{", b"["]:
+                    value = orjson.loads(value)
+                else:
+                    value = value.decode()
+                database[key.decode()] = value
 
         file = StringIO(str(database))
-
         await ctx.send(file=discord.File(file, "data.json"))
 
     @db.command(aliases=["pre"])
