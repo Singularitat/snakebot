@@ -848,16 +848,6 @@ class apis(commands.Cog):
     @commands.command()
     async def cat(self, ctx):
         """Gets a random cat image."""
-        url = "https://aws.random.cat/meow"
-
-        async with ctx.typing():
-            image = await get_json(url)
-
-        await ctx.send(image["file"])
-
-    @commands.command()
-    async def cat2(self, ctx):
-        """Gets a random cat image."""
         url = "https://api.thecatapi.com/v1/images/search"
 
         async with ctx.typing():
@@ -866,7 +856,7 @@ class apis(commands.Cog):
         await ctx.send(image[0]["url"])
 
     @commands.command()
-    async def cat3(self, ctx):
+    async def cat2(self, ctx):
         """Gets a random cat image."""
         url = "https://cataas.com/cat?json=true"
 
@@ -876,7 +866,7 @@ class apis(commands.Cog):
         await ctx.send(f"https://cataas.com{image['url']}")
 
     @commands.command()
-    async def cat4(self, ctx):
+    async def cat3(self, ctx):
         """Gets a random cat image."""
         url = "https://thatcopy.pw/catapi/rest"
 
@@ -886,7 +876,7 @@ class apis(commands.Cog):
         await ctx.send(image["webpurl"])
 
     @commands.command()
-    async def cat5(self, ctx):
+    async def cat4(self, ctx):
         """Gets a random cat image."""
         url = "http://shibe.online/api/cats"
 
