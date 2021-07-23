@@ -9,6 +9,7 @@ import orjson
 
 from cogs.utils.relativedelta import pretty_time
 import cogs.utils.database as DB
+from cogs.utils.useful import run_process
 
 
 class background_tasks(commands.Cog):
@@ -229,37 +230,18 @@ class background_tasks(commands.Cog):
                     orjson.dumps(stock_data),
                 )
 
-    async def run_process(self, command):
-        """Runs a shell command and returns the output.
-
-        command: str
-            The command to run.
-        """
-        try:
-            process = await asyncio.create_subprocess_shell(
-                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-            result = await process.communicate()
-        except NotImplementedError:
-            process = subprocess.Popen(
-                command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-            result = await self.bot.loop.run_in_executor(None, process.communicate)
-
-        return "".join([output.decode() for output in result]).split()
-
     @tasks.loop(minutes=5)
     async def update_bot(self):
         """Tries to update every 5 minutes and then reloads if needed."""
-        pull = await self.run_process("git pull")
+        pull = await run_process("git pull")
 
         if pull[:4] == ["Already", "up", "to", "date."]:
             return
 
-        diff = await self.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
+        diff = await run_process("git diff --name-only HEAD@{0} HEAD@{1}")
 
         if "requirements.txt" in diff:
-            await self.run_process("pip install -r ./requirements.txt")
+            await run_process("pip install -r ./requirements.txt")
 
         for ext in (
             file.removesuffix(".py")
