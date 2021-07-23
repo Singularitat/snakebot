@@ -15,6 +15,7 @@ import discord
 import orjson
 
 import cogs.utils.database as DB
+from cogs.utils.useful import run_process
 
 
 class PerformanceMocker:
@@ -607,34 +608,10 @@ class owner(commands.Cog):
         new_ctx = await self.bot.get_context(msg, cls=type(ctx))
         await self.bot.invoke(new_ctx)
 
-    async def run_process(self, command, raw=False):
-        """Runs a shell command and returns the output.
-
-        command: str
-            The command to run.
-        raw: bool
-            If True returns the result just decoded.
-        """
-        try:
-            process = await asyncio.create_subprocess_shell(
-                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-            result = await process.communicate()
-        except NotImplementedError:
-            process = subprocess.Popen(
-                command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-            result = await self.bot.loop.run_in_executor(None, process.communicate)
-
-        if raw:
-            return [output.decode() for output in result]
-
-        return "".join([output.decode() for output in result]).split()
-
     @commands.command(aliases=["pull"])
     async def update(self, ctx):
         """Gets latest commits and applies them through git."""
-        pull = await self.run_process("git pull")
+        pull = await run_process("git pull")
 
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -642,10 +619,10 @@ class owner(commands.Cog):
             embed.title = "Bot Is Already Up To Date"
             return await ctx.send(embed=embed)
 
-        diff = await self.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
+        diff = await run_process("git diff --name-only HEAD@{0} HEAD@{1}")
 
         if "poetry.lock" in diff:
-            await self.run_process("poetry install")
+            await run_process("poetry install")
 
         embed.title = "Pulled latests commits, restarting."
         await ctx.send(embed=embed)
@@ -654,9 +631,9 @@ class owner(commands.Cog):
             await self.bot.logout()
 
             if os.name == "nt":
-                await self.run_process("python ./bot.py")
+                await run_process("python ./bot.py")
             else:
-                await self.run_process("nohup python3 bot.py &")
+                await run_process("nohup python3 bot.py &")
             return
 
         diff = [ext[5:] for ext in diff if ext.startswith("/cogs")]
@@ -672,8 +649,8 @@ class owner(commands.Cog):
 
     @commands.command()
     async def status(self, ctx):
-        await self.run_process("git fetch")
-        status = await self.run_process("git status", True)
+        await run_process("git fetch")
+        status = await run_process("git status", True)
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.description = f"```ahk\n{' '.join(status)}```"
