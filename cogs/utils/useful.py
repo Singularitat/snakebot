@@ -1,6 +1,8 @@
 import asyncio
 import subprocess
 
+import aiohttp
+
 loop = asyncio.get_event_loop()
 
 
@@ -27,3 +29,21 @@ async def run_process(command, raw=False):
         return [output.decode() for output in result]
 
     return "".join([output.decode() for output in result]).split()
+
+
+async def get_json(url):
+    """Gets and loads json from a url.
+
+    url: str
+        The url to fetch the json from.
+    """
+    try:
+        async with aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=6)
+        ) as session, session.get(url) as response:
+            return await response.json()
+    except (
+        asyncio.exceptions.TimeoutError,
+        aiohttp.client_exceptions.ContentTypeError,
+    ):
+        return None

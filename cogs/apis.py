@@ -11,6 +11,7 @@ import discord
 import orjson
 
 import cogs.utils.database as DB
+from cogs.utils.useful import get_json
 
 
 class apis(commands.Cog):
@@ -20,31 +21,13 @@ class apis(commands.Cog):
         self.bot = bot
         self.loop = asyncio.get_event_loop()
 
-    @staticmethod
-    async def get_json(url):
-        """Gets and loads json from a url.
-
-        url: str
-            The url to fetch the json from.
-        """
-        try:
-            async with aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=6)
-            ) as session, session.get(url) as response:
-                return await response.json()
-        except (
-            asyncio.exceptions.TimeoutError,
-            aiohttp.client_exceptions.ContentTypeError,
-        ):
-            return None
-
     @commands.command()
     async def kanye(self, ctx):
         """Gets a random Kanye West quote."""
         url = "https://api.kanye.rest"
 
         async with ctx.typing():
-            quote = await self.get_json(url)
+            quote = await get_json(url)
             embed = discord.Embed(
                 color=discord.Color.blurple(), description=quote["quote"]
             )
@@ -57,7 +40,7 @@ class apis(commands.Cog):
         url = "https://api.fisenko.net/quotes?l=en"
 
         async with ctx.typing():
-            quote = await self.get_json(url)
+            quote = await get_json(url)
             embed = discord.Embed(
                 color=discord.Color.blurple(), description=quote["text"]
             )
@@ -70,7 +53,7 @@ class apis(commands.Cog):
         url = "http://api.fakeartofwar.gaborszathmari.me/v1/getquote"
 
         async with ctx.typing():
-            quote = await self.get_json(url)
+            quote = await get_json(url)
             embed = discord.Embed(
                 color=discord.Color.blurple(), description=quote["quote"]
             )
@@ -86,7 +69,7 @@ class apis(commands.Cog):
         url = f"https://api.datamuse.com/words?rel_rhy={word}&max=9"
 
         async with ctx.typing():
-            rhymes = await self.get_json(url)
+            rhymes = await get_json(url)
 
             embed = discord.Embed(color=discord.Color.blurple())
 
@@ -111,7 +94,7 @@ class apis(commands.Cog):
         url = f"https://api.datamuse.com/words?sp={word}&max=9"
 
         async with ctx.typing():
-            spellings = await self.get_json(url)
+            spellings = await get_json(url)
 
             embed = discord.Embed(
                 color=discord.Color.blurple(), title="Possible spellings"
@@ -139,7 +122,7 @@ class apis(commands.Cog):
         url = f"https://api.datamuse.com/words?ml={words}&max=9"
 
         async with ctx.typing():
-            meanings = await self.get_json(url)
+            meanings = await get_json(url)
 
             embed = discord.Embed(
                 color=discord.Color.blurple(), title="Possible meanings"
@@ -172,7 +155,7 @@ class apis(commands.Cog):
         url = "https://api.publicapis.org/categories"
 
         async with ctx.typing():
-            categories = await self.get_json(url)
+            categories = await get_json(url)
 
             await ctx.send(
                 embed=discord.Embed(
@@ -191,7 +174,7 @@ class apis(commands.Cog):
         url = f"https://api.publicapis.org/random?category={category}"
 
         async with ctx.typing():
-            data = (await self.get_json(url))["entries"][0]
+            data = (await get_json(url))["entries"][0]
 
             embed = discord.Embed(
                 color=discord.Color.blurple(),
@@ -216,7 +199,7 @@ class apis(commands.Cog):
         url = f"https://api.publicapis.org/entries?title={search}"
 
         async with ctx.typing():
-            entries = (await self.get_json(url))["entries"]
+            entries = (await get_json(url))["entries"]
 
             embed = discord.Embed(
                 color=discord.Color.blurple(),
@@ -240,7 +223,7 @@ class apis(commands.Cog):
         url = f"https://api.nationalize.io/?name={first_name}"
 
         async with ctx.typing():
-            data = await self.get_json(url)
+            data = await get_json(url)
 
             embed = discord.Embed(color=discord.Color.blurple())
 
@@ -264,7 +247,7 @@ class apis(commands.Cog):
             url = "https://www.freetogame.com/api/games?platform=pc"
 
             async with ctx.typing():
-                games = await self.get_json(url)
+                games = await get_json(url)
                 game = random.choice(games)
 
                 embed = discord.Embed(
@@ -301,7 +284,7 @@ class apis(commands.Cog):
         url = f"https://www.freetogame.com/api/games?platform=pc&category={category}"
 
         async with ctx.typing():
-            games = await self.get_json(url)
+            games = await get_json(url)
             game = random.choice(games)
 
             embed = discord.Embed(
@@ -322,7 +305,7 @@ class apis(commands.Cog):
         url = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
 
         async with ctx.typing():
-            apod = await self.get_json(url)
+            apod = await get_json(url)
 
             embed = discord.Embed(
                 color=discord.Color.blurple(),
@@ -338,7 +321,7 @@ class apis(commands.Cog):
         url = "https://api.trending-github.com/github/repositories"
 
         async with ctx.typing():
-            repositories = await self.get_json(url)
+            repositories = await get_json(url)
             embed = discord.Embed(
                 color=discord.Color.blurple(), title="5 Trending Github Repositories"
             )
@@ -370,7 +353,7 @@ class apis(commands.Cog):
         url = f"https://api.genderize.io/?name={first_name}"
 
         async with ctx.typing():
-            data = await self.get_json(url)
+            data = await get_json(url)
             embed = discord.Embed(color=discord.Color.blurple())
             embed.description = textwrap.dedent(
                 f"""
@@ -392,7 +375,7 @@ class apis(commands.Cog):
         country = country.lower()
 
         async with ctx.typing():
-            data = await self.get_json(url)
+            data = await get_json(url)
             embed = discord.Embed(color=discord.Color.blurple())
 
             if country not in data:
@@ -409,7 +392,7 @@ class apis(commands.Cog):
         url = "https://randomuser.me/api/?results=1"
 
         async with ctx.typing():
-            data = await self.get_json(url)
+            data = await get_json(url)
             data = data["results"][0]
             embed = (
                 discord.Embed(color=discord.Color.blurple())
@@ -467,7 +450,7 @@ class apis(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         async with ctx.typing():
-            data = await self.get_json(url)
+            data = await get_json(url)
             if not data["drinks"]:
                 embed.description = "```No cocktails found.```"
                 embed.color = discord.Color.red()
@@ -508,7 +491,7 @@ class apis(commands.Cog):
         url = f"https://opentdb.com/api.php?amount=1&difficulty={difficulty}&type=multiple"
 
         async with ctx.typing():
-            data = await self.get_json(url)
+            data = await get_json(url)
 
         result = data["results"][0]
 
@@ -558,7 +541,7 @@ class apis(commands.Cog):
         url = f"https://api.mcsrvstat.us/2/{ip}"
 
         async with ctx.typing():
-            data = await self.get_json(url)
+            data = await get_json(url)
 
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -603,7 +586,7 @@ class apis(commands.Cog):
         url = f"https://api.dictionaryapi.dev/api/v2/entries/en_US/{word}"
 
         async with ctx.typing():
-            definition = await self.get_json(url)
+            definition = await get_json(url)
 
             embed = discord.Embed(color=discord.Color.blurple())
             if isinstance(definition, dict):
@@ -699,7 +682,7 @@ class apis(commands.Cog):
         url = "https://nekos.life/api/v2/img/lizard"
 
         async with ctx.typing():
-            lizard = await self.get_json(url)
+            lizard = await get_json(url)
 
         await ctx.send(lizard["url"])
 
@@ -709,7 +692,7 @@ class apis(commands.Cog):
         url = "https://random-d.uk/api/v1/random?type=png"
 
         async with ctx.typing():
-            duck = await self.get_json(url)
+            duck = await get_json(url)
 
         await ctx.send(duck["url"])
 
@@ -719,7 +702,7 @@ class apis(commands.Cog):
         url = "https://api.bunnies.io/v2/loop/random/?media=webm"
 
         async with ctx.typing():
-            bunny = await self.get_json(url)
+            bunny = await get_json(url)
 
         await ctx.send(bunny["media"]["webm"])
 
@@ -729,7 +712,7 @@ class apis(commands.Cog):
         url = "https://some-random-api.ml/img/whale"
 
         async with ctx.typing():
-            whale = await self.get_json(url)
+            whale = await get_json(url)
 
         await ctx.send(whale["link"])
 
@@ -748,7 +731,7 @@ class apis(commands.Cog):
         url = "https://ntgc.ddns.net/mAPI/api"
 
         async with ctx.typing():
-            monkey = await self.get_json(url)
+            monkey = await get_json(url)
 
         await ctx.send(monkey["image"])
 
@@ -758,7 +741,7 @@ class apis(commands.Cog):
         url = "https://api.monkedev.com/attachments/monkey"
 
         async with ctx.typing():
-            monkey = await self.get_json(url)
+            monkey = await get_json(url)
 
         await ctx.send(monkey["url"])
 
@@ -768,7 +751,7 @@ class apis(commands.Cog):
         url = "https://some-random-api.ml/img/racoon"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image["link"])
 
@@ -778,7 +761,7 @@ class apis(commands.Cog):
         url = "https://some-random-api.ml/img/kangaroo"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image["link"])
 
@@ -788,7 +771,7 @@ class apis(commands.Cog):
         url = "https://some-random-api.ml/img/koala"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image["link"])
 
@@ -798,7 +781,7 @@ class apis(commands.Cog):
         url = "https://some-random-api.ml/img/birb"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image["link"])
 
@@ -808,7 +791,7 @@ class apis(commands.Cog):
         url = "http://shibe.online/api/birds"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image[0])
 
@@ -818,7 +801,7 @@ class apis(commands.Cog):
         url = "https://api.monkedev.com/attachments/bird"
 
         async with ctx.typing():
-            bird = await self.get_json(url)
+            bird = await get_json(url)
 
         await ctx.send(bird["url"])
 
@@ -828,7 +811,7 @@ class apis(commands.Cog):
         url = "https://some-random-api.ml/img/red_panda"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image["link"])
 
@@ -838,7 +821,7 @@ class apis(commands.Cog):
         url = "https://some-random-api.ml/img/panda"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image["link"])
 
@@ -848,7 +831,7 @@ class apis(commands.Cog):
         url = "https://randomfox.ca/floof"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image["image"])
 
@@ -858,7 +841,7 @@ class apis(commands.Cog):
         url = "https://wohlsoft.ru/images/foxybot/randomfox.php"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image["file"])
 
@@ -868,7 +851,7 @@ class apis(commands.Cog):
         url = "https://aws.random.cat/meow"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image["file"])
 
@@ -878,7 +861,7 @@ class apis(commands.Cog):
         url = "https://api.thecatapi.com/v1/images/search"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image[0]["url"])
 
@@ -888,7 +871,7 @@ class apis(commands.Cog):
         url = "https://cataas.com/cat?json=true"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(f"https://cataas.com{image['url']}")
 
@@ -898,7 +881,7 @@ class apis(commands.Cog):
         url = "https://thatcopy.pw/catapi/rest"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image["webpurl"])
 
@@ -908,7 +891,7 @@ class apis(commands.Cog):
         url = "http://shibe.online/api/cats"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image[0])
 
@@ -926,7 +909,7 @@ class apis(commands.Cog):
             url = "https://dog.ceo/api/breeds/image/random"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image["message"])
 
@@ -936,7 +919,7 @@ class apis(commands.Cog):
         url = "https://random.dog/woof.json"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image["url"])
 
@@ -951,7 +934,7 @@ class apis(commands.Cog):
         url = "http://shibe.online/api/shibes"
 
         async with ctx.typing():
-            image = await self.get_json(url)
+            image = await get_json(url)
 
         await ctx.send(image[0])
 
@@ -981,7 +964,7 @@ class apis(commands.Cog):
             url = f"https://api.urbandictionary.com/v0/define?term={search}"
 
             async with ctx.typing():
-                urban = await self.get_json(url)
+                urban = await get_json(url)
 
             if not urban:
                 embed.title = "Timed out try again later"
@@ -1020,7 +1003,7 @@ class apis(commands.Cog):
             The term to search wikipedia for.
         """
         async with ctx.typing():
-            titles = await self.get_json(
+            titles = await get_json(
                 f"https://en.wikipedia.org/w/api.php?action=opensearch&search={search}"
             )
             embed = discord.Embed(color=discord.Color.blurple())
@@ -1057,7 +1040,7 @@ class apis(commands.Cog):
         embed = discord.Embed(colour=discord.Color.red())
 
         async with ctx.typing():
-            data = await self.get_json(url)
+            data = await get_json(url)
 
         if "country" not in data:
             embed.description = (
@@ -1092,7 +1075,7 @@ class apis(commands.Cog):
     async def get_github_info(self, ctx: commands.Context, username: str) -> None:
         """Fetches a members's GitHub information."""
         async with ctx.typing():
-            user_data = await self.get_json(f"https://api.github.com/users/{username}")
+            user_data = await get_json(f"https://api.github.com/users/{username}")
 
             if user_data.get("message") is not None:
                 await ctx.send(
@@ -1103,7 +1086,7 @@ class apis(commands.Cog):
                 )
                 return
 
-            org_data = await self.get_json(user_data["organizations_url"])
+            org_data = await get_json(user_data["organizations_url"])
 
             orgs = [
                 f"[{org['login']}](https://github.com/{org['login']})"
@@ -1190,7 +1173,7 @@ class apis(commands.Cog):
         url = f"https://api.tenor.com/v1/search?q={search}&limit=50"
 
         async with ctx.typing():
-            tenor = await self.get_json(url)
+            tenor = await get_json(url)
 
         tenor = [image["media"][0]["gif"]["url"] for image in tenor["results"]]
         image = random.choice(tenor)
