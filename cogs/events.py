@@ -170,7 +170,9 @@ class events(commands.Cog):
         if reaction.message.author == user:
             return
 
-        time_since = (datetime.utcnow() - reaction.message.created_at).total_seconds()
+        time_since = (
+            datetime.utcnow() - reaction.message.created_at.replace(tzinfo=None)
+        ).total_seconds()
 
         if time_since > 1800:
             return
@@ -193,7 +195,9 @@ class events(commands.Cog):
         if reaction.message.author == user:
             return
 
-        time_since = (datetime.utcnow() - reaction.message.created_at).total_seconds()
+        time_since = (
+            datetime.utcnow() - reaction.message.created_at.replace(tzinfo=None)
+        ).total_seconds()
 
         if time_since > 1800:
             return

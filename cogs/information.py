@@ -188,7 +188,9 @@ class information(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         """Check how the bot is doing."""
-        latency = (datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
+        latency = (
+            datetime.utcnow() - ctx.message.created_at.replace(tzinfo=None)
+        ).total_seconds() * 1000
 
         if latency <= 0.05:
             latency = "Clock is out of sync"
@@ -297,7 +299,7 @@ class information(commands.Cog):
         embed.description = textwrap.dedent(
             f"""
                 **Server Information**
-                Created: {pretty_time(ctx.guild.created_at)} ago
+                Created: {pretty_time(ctx.guild.created_at.replace(tzinfo=None))} ago
                 Region: {ctx.guild.region.name.title()}
                 Owner: {ctx.guild.owner}
 
@@ -319,7 +321,7 @@ class information(commands.Cog):
             The member to get info of defulting to the invoker.
         """
         user = user or ctx.author
-        created = f"{pretty_time(user.created_at)} ago"
+        created = f"{pretty_time(user.created_at.replace(tzinfo=None))} ago"
 
         embed = discord.Embed(
             title=(str(user) + (" `[BOT]`" if user.bot else "")),
