@@ -1,5 +1,5 @@
-discord-ext-menus @ git+https://github.com/Rapptz/discord-ext-menus@master
-discord.py[voice]
+git+https://github.com/Rapptz/discord-ext-menus@master
+git+https://github.com/Rapptz/discord.py@master
 aiohttp[speedups]
 lxml
 psutil

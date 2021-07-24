@@ -15,11 +15,100 @@ import config
 opcodes = opcode.opmap
 
 
+class TicTacToeButton(discord.ui.Button["TicTacToe"]):
+    def __init__(self, x: int, y: int):
+        super().__init__(style=discord.ButtonStyle.secondary, label="\u200b", row=y)
+        self.x = x
+        self.y = y
+
+    async def callback(self, interaction: discord.Interaction):
+        view = self.view
+        if not view.playing_against and interaction.user != view.author:
+            view.playing_against = interaction.user
+
+        if view.current_player == -1:
+            if interaction.user != view.author:
+                return await interaction.response.edit_message(
+                    content="It is X's turn", view=view
+                )
+            self.style = discord.ButtonStyle.danger
+            self.label = "X"
+            content = "It is now O's turn"
+        else:
+            if interaction.user != view.playing_against:
+                return await interaction.response.edit_message(
+                    content="It is O's turn", view=view
+                )
+            self.style = discord.ButtonStyle.success
+            self.label = "O"
+            content = "It is now X's turn"
+
+        self.disabled = True
+        view.board[self.y][self.x] = view.current_player
+        view.current_player = -view.current_player
+
+        if winner := view.check_for_win(self.label):
+            content = winner
+
+            for label in view.children:
+                label.disabled = True
+
+            view.stop()
+
+        await interaction.response.edit_message(content=content, view=view)
+
+
+class TicTacToe(discord.ui.View):
+    def __init__(self, author: discord.Member):
+        super().__init__()
+        self.author = author
+        self.playing_against = None
+        self.current_player = -1
+        self.board = [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+        ]
+
+        for x in range(3):
+            for y in range(3):
+                self.add_item(TicTacToeButton(x, y))
+
+    def check_for_win(self, label):
+        for across in self.board:
+            value = sum(across)
+            if value == -self.current_player * 3:
+                return f"{label} won!"
+
+        for line in range(3):
+            value = self.board[0][line] + self.board[1][line] + self.board[2][line]
+            if value == -self.current_player * 3:
+                return f"{label} won!"
+
+        diag = self.board[0][2] + self.board[1][1] + self.board[2][0]
+        if diag == -self.current_player * 3:
+            return f"{label} won!"
+
+        diag = self.board[0][0] + self.board[1][1] + self.board[2][2]
+        if diag == -self.current_player * 3:
+            return f"{label} won!"
+
+        if all(i != 0 for row in self.board for i in row):
+            return "It's a tie!"
+
+        return None
+
+
 class misc(commands.Cog):
     """Commands that don't fit into other cogs."""
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    @commands.command()
+    async def tictactoe(self, ctx):
+        """Starts a game of tic tac toe."""
+        await ctx.send("Tic Tac Toe: X goes first", view=TicTacToe(ctx.author))
 
     @commands.command()
     async def unsplash(self, ctx, *, search):

@@ -28,7 +28,6 @@ class BotHelpPageSource(menus.ListPageSource):
         )
         self.commands = commands
         self.help_command = help_command
-        self.prefix = help_command.clean_prefix
 
     @staticmethod
     def format_commands(cog, commands):
@@ -163,7 +162,9 @@ class PaginatedHelpCommand(commands.HelpCommand):
     def __init__(self):
         super().__init__(
             command_attrs={
-                "cooldown": commands.Cooldown(1, 3.0, commands.BucketType.member),
+                "cooldown": commands.CooldownMapping(
+                    commands.Cooldown(1, 5.0), commands.BucketType.member
+                ),
                 "help": "Shows help about the bot, a command, or a category",
                 "hidden": True,
             }
@@ -221,7 +222,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
     async def send_cog_help(self, cog):
         entries = await self.filter_commands(cog.get_commands(), sort=True)
-        menu = HelpMenu(GroupHelpPageSource(cog, entries, prefix=self.clean_prefix))
+        menu = HelpMenu(GroupHelpPageSource(cog, entries, prefix=self.context.prefix))
         await menu.start(self.context)
 
     def common_command_formatting(self, embed_like, command):
@@ -247,7 +248,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
         if len(entries) == 0:
             return await self.send_command_help(group)
 
-        source = GroupHelpPageSource(group, entries, prefix=self.clean_prefix)
+        source = GroupHelpPageSource(group, entries, prefix=self.context.prefix)
         self.common_command_formatting(source, group)
         menu = HelpMenu(source)
         await menu.start(self.context)
