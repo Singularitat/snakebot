@@ -164,7 +164,7 @@ class events(commands.Cog):
         reaction: discord.Reaction
         user: Union[discord.User, discord.Member]
         """
-        if not reaction.custom_emoji:
+        if not reaction.is_custom_emoji():
             return
 
         if reaction.message.author == user:
@@ -187,7 +187,7 @@ class events(commands.Cog):
         reaction: discord.Reaction
         user: Union[discord.User, discord.Member]
         """
-        if not reaction.custom_emoji:
+        if not reaction.is_custom_emoji():
             return
 
         if reaction.message.author == user:
