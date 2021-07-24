@@ -6,7 +6,6 @@ import logging
 import os
 import pstats
 import re
-import subprocess
 import time
 import traceback
 
