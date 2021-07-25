@@ -21,6 +21,7 @@ stockbal = db.prefixed_db(b"stockbal-")
 bal = db.prefixed_db(b"bal-")
 wins = db.prefixed_db(b"wins-")
 message_count = db.prefixed_db(b"message_count-")
+cookies = db.prefixed_db(b"cookies-")
 
 
 def delete_cache(search, cache):
