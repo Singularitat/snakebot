@@ -2,6 +2,9 @@ from discord.ext import commands
 import aiohttp
 import discord
 
+import cogs.utils.database as DB
+import config
+
 
 IMAGE_BASE = "https://upload.wikimedia.org/wikipedia/commons/thumb/"
 HANGMAN_IMAGES = {
@@ -162,6 +165,123 @@ class games(commands.Cog):
                 return await embed_message.add_reaction("✅")
 
         await embed_message.add_reaction("❎")
+
+    @commands.command()
+    @commands.guild_only()
+    async def poker(self, ctx):
+        """Starts a Discord Poke Night."""
+        if (code := DB.db.get(b"poker_night")) and discord.utils.get(
+            await ctx.guild.invites(), code=code.decode()
+        ):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="There is another active Poker Night",
+                    description=f"https://discord.gg/{code.decode()}",
+                )
+            )
+
+        if not ctx.author.voice:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You aren't connected to a voice channel.```",
+                )
+            )
+
+        headers = {"Authorization": f"Bot {config.token}"}
+        json = {
+            "max_age": 300,
+            "target_type": 2,
+            "target_application_id": 755827207812677713,
+        }
+
+        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
+            json=json,
+        ) as response:
+            data = await response.json()
+
+        await ctx.send(f"https://discord.gg/{data['code']}")
+        DB.db.put(b"poker_night", data["code"].encode())
+
+    @commands.command()
+    @commands.guild_only()
+    async def betrayal(self, ctx):
+        """Starts a Betrayal.io game."""
+        if (code := DB.db.get(b"betrayal_io")) and discord.utils.get(
+            await ctx.guild.invites(), code=code.decode()
+        ):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="There is another active Betrayal.io game",
+                    description=f"https://discord.gg/{code.decode()}",
+                )
+            )
+
+        if not ctx.author.voice:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You aren't connected to a voice channel.```",
+                )
+            )
+
+        headers = {"Authorization": f"Bot {config.token}"}
+        json = {
+            "max_age": 300,
+            "target_type": 2,
+            "target_application_id": 773336526917861400,
+        }
+
+        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
+            json=json,
+        ) as response:
+            data = await response.json()
+
+        await ctx.send(f"https://discord.gg/{data['code']}")
+        DB.db.put(b"betrayal_io", data["code"].encode())
+
+    @commands.command()
+    @commands.guild_only()
+    async def fishing(self, ctx):
+        """Starts a Fishington.io game."""
+        if (code := DB.db.get(b"fishington")) and discord.utils.get(
+            await ctx.guild.invites(), code=code.decode()
+        ):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="There is another active Fishington.io game",
+                    description=f"https://discord.gg/{code.decode()}",
+                )
+            )
+
+        if not ctx.author.voice:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You aren't connected to a voice channel.```",
+                )
+            )
+
+        headers = {"Authorization": f"Bot {config.token}"}
+        json = {
+            "max_age": 300,
+            "target_type": 2,
+            "target_application_id": 814288819477020702,
+        }
+
+        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
+            json=json,
+        ) as response:
+            data = await response.json()
+
+        await ctx.send(f"https://discord.gg/{data['code']}")
+        DB.db.put(b"fishington", data["code"].encode())
 
 
 def setup(bot: commands.Bot) -> None:
