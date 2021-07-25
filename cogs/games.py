@@ -18,6 +18,21 @@ HANGMAN_IMAGES = {
 }
 
 
+class CookieClicker(discord.ui.View):
+    @discord.ui.button(label="🍪", style=discord.ButtonStyle.blurple)
+    async def click(self, button: discord.ui.Button, interaction: discord.Interaction):
+        user_id = str(interaction.user.id).encode()
+        cookies = DB.cookies.get(user_id)
+
+        if not cookies:
+            cookies = 1
+        else:
+            cookies = int(cookies) + 1
+
+        DB.cookies.put(user_id, str(cookies).encode())
+        await interaction.response.edit_message(content=f"You have {cookies} 🍪's")
+
+
 class TicTacToeButton(discord.ui.Button["TicTacToe"]):
     def __init__(self, x: int, y: int):
         super().__init__(style=discord.ButtonStyle.secondary, label="\u200b", row=y)
@@ -107,6 +122,36 @@ class games(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    @commands.cooldown(1, 30, commands.BucketType.user)
+    @commands.command()
+    async def cookie(self, ctx):
+        """Starts a simple game of cookie clicker."""
+        await ctx.send("Click for cookies", view=CookieClicker())
+
+    @commands.command()
+    async def cookies(self, ctx, user: discord.User = None):
+        """Gets a members cookies.
+
+        user: discord.User
+            The user whos cookies will be returned.
+        """
+        user = user or ctx.author
+
+        user_id = str(user.id).encode()
+        cookies = DB.cookies.get(user_id)
+
+        if not cookies:
+            cookies = 0
+        else:
+            cookies = int(cookies)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.add_field(
+            name=f"{user.display_name}'s cookies", value=f"**{cookies:,}** 🍪"
+        )
+
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def tictactoe(self, ctx):
