@@ -161,10 +161,13 @@ class games(commands.Cog):
     @commands.command()
     async def hangman(self, ctx):
         """Starts a game of hangman with a random word."""
-        url = "https://random-word-api.herokuapp.com/word?number=1"
+        url = "https://random-words-api.vercel.app/word"
 
         async with aiohttp.ClientSession() as session, session.get(url) as response:
-            word = (await response.json())[0]
+            data = await response.json()
+
+        word = data[0]["word"]
+        definition = data[0]["definition"]
 
         letter_indexs = {}
 
@@ -178,36 +181,46 @@ class games(commands.Cog):
         missed_letters = set()
         misses = 0
 
+        embed = discord.Embed(color=discord.Color.blurple(), title="".join(guessed))
+        embed.set_image(url=HANGMAN_IMAGES[misses])
+        embed.set_footer(text="Send a letter to make a guess")
+
+        embed_message = await ctx.send(embed=embed)
+
         def check(message: discord.Message) -> bool:
             return message.author == ctx.author and message.channel == ctx.channel
 
         while True and misses < 7:
-            embed = discord.Embed(color=discord.Color.blurple(), title="".join(guessed))
-            embed.set_image(url=HANGMAN_IMAGES[misses])
+            message = await self.bot.wait_for("message", timeout=60.0, check=check)
+
+            if message.content.lower() == word:
+                return await embed_message.add_reaction("✅")
+
+            guess = message.content[0].lower()
+
+            if guess in letter_indexs:
+                for index in letter_indexs[guess]:
+                    guessed[index] = guess + " "
+
+                if "\\_ " not in guessed:
+                    return await embed_message.add_reaction("✅")
+            else:
+                missed_letters.add(guess)
+                misses += 1
+
+            if misses == 7:
+                embed.title = word
+                embed.description = definition
+            else:
+                embed.title = "".join(guessed)
+                embed.set_image(url=HANGMAN_IMAGES[misses])
 
             footer = "Send a letter to make a guess\n"
             if missed_letters:
                 footer += f"Missed letters: {', '.join(missed_letters)}"
             embed.set_footer(text=footer)
 
-            embed_message = await ctx.send(embed=embed)
-
-            message = await self.bot.wait_for("message", timeout=60.0, check=check)
-
-            if message.content == word:
-                return await embed_message.add_reaction("✅")
-
-            guess = message.content[0]
-
-            if guess in letter_indexs:
-                for index in letter_indexs[guess]:
-                    guessed[index] = guess + " "
-            else:
-                missed_letters.add(guess)
-                misses += 1
-
-            if "\\_ " not in guessed:
-                return await embed_message.add_reaction("✅")
+            await embed_message.edit(embed=embed)
 
         await embed_message.add_reaction("❎")
 
