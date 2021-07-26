@@ -1,6 +1,7 @@
 from discord.ext import commands
 import aiohttp
 import discord
+import orjson
 
 import cogs.utils.database as DB
 import config
@@ -24,18 +25,46 @@ class CookieClicker(discord.ui.View):
         self.user = user
 
     @discord.ui.button(label="🍪", style=discord.ButtonStyle.blurple)
-    async def click(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def click(self, button, interaction):
         if interaction.user == self.user:
             user_id = str(interaction.user.id).encode()
             cookies = DB.cookies.get(user_id)
 
             if not cookies:
-                cookies = 1
+                cookies = {"cookies": 1, "upgrade": 1}
             else:
-                cookies = int(cookies) + 1
+                cookies = orjson.loads(cookies)
 
-            DB.cookies.put(user_id, str(cookies).encode())
-            await interaction.response.edit_message(content=f"You have {cookies} 🍪's")
+            cookies["cookies"] += 1 * cookies["upgrade"]
+
+            DB.cookies.put(user_id, orjson.dumps(cookies))
+            await interaction.response.edit_message(
+                content=f"You have {cookies['cookies']} 🍪's"
+            )
+
+    @discord.ui.button(label="🆙", style=discord.ButtonStyle.blurple)
+    async def upgrade(self, button, interaction):
+        if interaction.user == self.user:
+            user_id = str(interaction.user.id).encode()
+            cookies = DB.cookies.get(user_id)
+
+            if not cookies:
+                cookies = {"cookies": 1, "upgrade": 1}
+            else:
+                cookies = orjson.loads(cookies)
+
+            if cookies["cookies"] < 100 * cookies["upgrade"]:
+                return await interaction.response.edit_message(
+                    content=f"You need {100 * cookies['upgrade']} cookies to upgrade"
+                )
+
+            cookies["cookies"] -= 100 * cookies["upgrade"]
+            cookies["upgrade"] += 1
+
+            DB.cookies.put(user_id, orjson.dumps(cookies))
+            await interaction.response.edit_message(
+                content=f"You have {cookies['upgrade']} upgrades"
+            )
 
 
 class TicTacToeButton(discord.ui.Button["TicTacToe"]):
