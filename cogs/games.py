@@ -1,6 +1,7 @@
 from discord.ext import commands
 import aiohttp
 import discord
+import orjson
 
 import cogs.utils.database as DB
 import config
@@ -19,18 +20,51 @@ HANGMAN_IMAGES = {
 
 
 class CookieClicker(discord.ui.View):
+    def __init__(self, user: discord.User):
+        super().__init__(timeout=600.0)
+        self.user = user
+
     @discord.ui.button(label="🍪", style=discord.ButtonStyle.blurple)
-    async def click(self, button: discord.ui.Button, interaction: discord.Interaction):
-        user_id = str(interaction.user.id).encode()
-        cookies = DB.cookies.get(user_id)
+    async def click(self, button, interaction):
+        if interaction.user == self.user:
+            user_id = str(interaction.user.id).encode()
+            cookies = DB.cookies.get(user_id)
 
-        if not cookies:
-            cookies = 1
-        else:
-            cookies = int(cookies) + 1
+            if not cookies:
+                cookies = {"cookies": 1, "upgrade": 1}
+            else:
+                cookies = orjson.loads(cookies)
 
-        DB.cookies.put(user_id, str(cookies).encode())
-        await interaction.response.edit_message(content=f"You have {cookies} 🍪's")
+            cookies["cookies"] += 1 * cookies["upgrade"]
+
+            DB.cookies.put(user_id, orjson.dumps(cookies))
+            await interaction.response.edit_message(
+                content=f"You have {cookies['cookies']} 🍪's"
+            )
+
+    @discord.ui.button(label="🆙", style=discord.ButtonStyle.blurple)
+    async def upgrade(self, button, interaction):
+        if interaction.user == self.user:
+            user_id = str(interaction.user.id).encode()
+            cookies = DB.cookies.get(user_id)
+
+            if not cookies:
+                cookies = {"cookies": 1, "upgrade": 1}
+            else:
+                cookies = orjson.loads(cookies)
+
+            if cookies["cookies"] < 100 * cookies["upgrade"]:
+                return await interaction.response.edit_message(
+                    content=f"You need {100 * cookies['upgrade']} cookies to upgrade"
+                )
+
+            cookies["cookies"] -= 100 * cookies["upgrade"]
+            cookies["upgrade"] += 1
+
+            DB.cookies.put(user_id, orjson.dumps(cookies))
+            await interaction.response.edit_message(
+                content=f"You have {cookies['upgrade']} upgrades"
+            )
 
 
 class TicTacToeButton(discord.ui.Button["TicTacToe"]):
@@ -127,7 +161,7 @@ class games(commands.Cog):
     @commands.command()
     async def cookie(self, ctx):
         """Starts a simple game of cookie clicker."""
-        await ctx.send("Click for cookies", view=CookieClicker())
+        await ctx.send("Click for cookies", view=CookieClicker(ctx.author))
 
     @commands.command()
     async def cookies(self, ctx, user: discord.User = None):
@@ -161,10 +195,13 @@ class games(commands.Cog):
     @commands.command()
     async def hangman(self, ctx):
         """Starts a game of hangman with a random word."""
-        url = "https://random-word-api.herokuapp.com/word?number=1"
+        url = "https://random-words-api.vercel.app/word"
 
         async with aiohttp.ClientSession() as session, session.get(url) as response:
-            word = (await response.json())[0]
+            data = await response.json()
+
+        word = data[0]["word"]
+        definition = data[0]["definition"]
 
         letter_indexs = {}
 
@@ -178,36 +215,46 @@ class games(commands.Cog):
         missed_letters = set()
         misses = 0
 
+        embed = discord.Embed(color=discord.Color.blurple(), title="".join(guessed))
+        embed.set_image(url=HANGMAN_IMAGES[misses])
+        embed.set_footer(text="Send a letter to make a guess")
+
+        embed_message = await ctx.send(embed=embed)
+
         def check(message: discord.Message) -> bool:
             return message.author == ctx.author and message.channel == ctx.channel
 
         while True and misses < 7:
-            embed = discord.Embed(color=discord.Color.blurple(), title="".join(guessed))
-            embed.set_image(url=HANGMAN_IMAGES[misses])
+            message = await self.bot.wait_for("message", timeout=60.0, check=check)
+
+            if message.content.lower() == word:
+                return await embed_message.add_reaction("✅")
+
+            guess = message.content[0].lower()
+
+            if guess in letter_indexs:
+                for index in letter_indexs[guess]:
+                    guessed[index] = guess + " "
+
+                if "\\_ " not in guessed:
+                    return await embed_message.add_reaction("✅")
+            else:
+                missed_letters.add(guess)
+                misses += 1
+
+            if misses == 7:
+                embed.title = word
+                embed.description = definition
+            else:
+                embed.title = "".join(guessed)
+                embed.set_image(url=HANGMAN_IMAGES[misses])
 
             footer = "Send a letter to make a guess\n"
             if missed_letters:
                 footer += f"Missed letters: {', '.join(missed_letters)}"
             embed.set_footer(text=footer)
 
-            embed_message = await ctx.send(embed=embed)
-
-            message = await self.bot.wait_for("message", timeout=60.0, check=check)
-
-            if message.content == word:
-                return await embed_message.add_reaction("✅")
-
-            guess = message.content[0]
-
-            if guess in letter_indexs:
-                for index in letter_indexs[guess]:
-                    guessed[index] = guess + " "
-            else:
-                missed_letters.add(guess)
-                misses += 1
-
-            if "\\_ " not in guessed:
-                return await embed_message.add_reaction("✅")
+            await embed_message.edit(embed=embed)
 
         await embed_message.add_reaction("❎")
 

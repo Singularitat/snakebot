@@ -410,8 +410,16 @@ class useful(commands.Cog):
     async def run(self, ctx, *, code=None):
         """Runs code.
 
-        lang: str
-            The programming language.
+        Examples:
+        .run ```py
+        print("Example")```
+
+        .run py print("Example")
+
+        .run py `print("Example")`
+
+        .run py ```print("Example")```
+
         code: str
             The code to run.
         """
