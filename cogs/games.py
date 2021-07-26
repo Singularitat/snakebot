@@ -19,18 +19,23 @@ HANGMAN_IMAGES = {
 
 
 class CookieClicker(discord.ui.View):
+    def __init__(self, user: discord.User):
+        super().__init__(timeout=600.0)
+        self.user = user
+
     @discord.ui.button(label="🍪", style=discord.ButtonStyle.blurple)
     async def click(self, button: discord.ui.Button, interaction: discord.Interaction):
-        user_id = str(interaction.user.id).encode()
-        cookies = DB.cookies.get(user_id)
+        if interaction.user == self.user:
+            user_id = str(interaction.user.id).encode()
+            cookies = DB.cookies.get(user_id)
 
-        if not cookies:
-            cookies = 1
-        else:
-            cookies = int(cookies) + 1
+            if not cookies:
+                cookies = 1
+            else:
+                cookies = int(cookies) + 1
 
-        DB.cookies.put(user_id, str(cookies).encode())
-        await interaction.response.edit_message(content=f"You have {cookies} 🍪's")
+            DB.cookies.put(user_id, str(cookies).encode())
+            await interaction.response.edit_message(content=f"You have {cookies} 🍪's")
 
 
 class TicTacToeButton(discord.ui.Button["TicTacToe"]):
@@ -127,7 +132,7 @@ class games(commands.Cog):
     @commands.command()
     async def cookie(self, ctx):
         """Starts a simple game of cookie clicker."""
-        await ctx.send("Click for cookies", view=CookieClicker())
+        await ctx.send("Click for cookies", view=CookieClicker(ctx.author))
 
     @commands.command()
     async def cookies(self, ctx, user: discord.User = None):
