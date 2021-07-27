@@ -35,7 +35,7 @@ class CookieClicker(discord.ui.View):
             else:
                 cookies = orjson.loads(cookies)
 
-            cookies["cookies"] += 1 * cookies["upgrade"]
+            cookies["cookies"] += cookies["upgrade"]
 
             DB.cookies.put(user_id, orjson.dumps(cookies))
             await interaction.response.edit_message(
@@ -58,7 +58,7 @@ class CookieClicker(discord.ui.View):
                     content=f"You need {100 * cookies['upgrade']} cookies to upgrade"
                 )
 
-            cookies["cookies"] -= 100 * cookies["upgrade"]
+            cookies["cookies"] -= 100 * (cookies["upgrade"] / 2)
             cookies["upgrade"] += 1
 
             DB.cookies.put(user_id, orjson.dumps(cookies))
@@ -176,15 +176,32 @@ class games(commands.Cog):
         cookies = DB.cookies.get(user_id)
 
         if not cookies:
-            cookies = 0
+            cookies = {"cookies": 0, "upgrade": 1}
         else:
-            cookies = int(cookies)
+            cookies = orjson.loads(cookies)
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(
-            name=f"{user.display_name}'s cookies", value=f"**{cookies:,}** 🍪"
+            name=f"{user.display_name}'s cookies", value=f"**{cookies['cookies']:,}** 🍪"
         )
 
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def cookietop(self, ctx):
+        """Gets the users with the most cookies."""
+        cookietop = sorted(
+            [(orjson.loads(c)["cookies"], int(m)) for m, c in DB.cookies], reverse=True
+        )[:10]
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.title = f"Top {len(cookietop)} members"
+        embed.description = "\n".join(
+            [
+                f"**{self.bot.get_user(member).display_name}:** {bal:,} 🍪"
+                for bal, member in cookietop
+            ]
+        )
         await ctx.send(embed=embed)
 
     @commands.command()
