@@ -35,7 +35,7 @@ class CookieClicker(discord.ui.View):
             else:
                 cookies = orjson.loads(cookies)
 
-            cookies["cookies"] += 1 * cookies["upgrade"]
+            cookies["cookies"] += cookies["upgrade"]
 
             DB.cookies.put(user_id, orjson.dumps(cookies))
             await interaction.response.edit_message(
@@ -58,7 +58,7 @@ class CookieClicker(discord.ui.View):
                     content=f"You need {100 * cookies['upgrade']} cookies to upgrade"
                 )
 
-            cookies["cookies"] -= 100 * cookies["upgrade"]
+            cookies["cookies"] -= 100 * (cookies["upgrade"] / 2)
             cookies["upgrade"] += 1
 
             DB.cookies.put(user_id, orjson.dumps(cookies))
