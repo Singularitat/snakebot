@@ -58,7 +58,7 @@ class CookieClicker(discord.ui.View):
                     content=f"You need {100 * cookies['upgrade']} cookies to upgrade"
                 )
 
-            cookies["cookies"] -= 100 * (cookies["upgrade"] / 2)
+            cookies["cookies"] -= 100 * int(cookies["upgrade"] / 2)
             cookies["upgrade"] += 1
 
             DB.cookies.put(user_id, orjson.dumps(cookies))
@@ -202,6 +202,50 @@ class games(commands.Cog):
                 for bal, member in cookietop
             ]
         )
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def cookiegive(self, ctx, member: discord.Member, amount: int):
+        """Gives cookies to someone.
+
+        member: discord.Member
+        amount: int
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+        if amount < 0:
+            embed.description = "Can't send a negative amount of cookies"
+            return await ctx.send(embed=embed)
+
+        if ctx.author == member:
+            embed.description = "Can't send cookies to yourself"
+            return await ctx.send(embed=embed)
+
+        sender = str(ctx.author.id).encode()
+        receiver = str(member.id).encode()
+
+        sender_bal = DB.cookies.get(sender)
+
+        if not sender_bal:
+            embed.description = "You don't have any cookies"
+            return await ctx.send(embed=embed)
+
+        sender_bal = orjson.loads(sender_bal)
+
+        if sender_bal["cookies"] < amount:
+            embed.description = "You don't have enough cookies"
+            return await ctx.send(embed=embed)
+
+        receiver_bal = DB.cookies.get(receiver)
+
+        if not receiver_bal:
+            receiver_bal = {"cookies": amount, "upgrade": 1}
+        else:
+            receiver_bal["cookies"] += amount
+
+        sender_bal["cookies"] -= amount
+
+        embed.description = f"{sender_bal['cookies']} 🍪 left"
+        embed.title = f"You sent {amount} 🍪 to {member}"
         await ctx.send(embed=embed)
 
     @commands.command()
