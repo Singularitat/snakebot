@@ -166,7 +166,7 @@ class useful(commands.Cog):
                 return await ctx.send(translate_text)
 
     @commands.command()
-    async def weather(self, ctx, *, location):
+    async def weather(self, ctx, *, location="auckland"):
         """Gets the weather from google.
 
         location: str
@@ -200,8 +200,7 @@ class useful(commands.Cog):
             state = soup.xpath('//span[@id="wob_dc"]')[0].text_content()
             current_time = soup.xpath('//div[@id="wob_dts"]')[0].text_content()
 
-            embed.set_image(url=f"https:{image}")
-            embed.title = location
+            embed.set_author(name=location, icon_url=f"https:{image}")
             embed.description = state
 
             embed.add_field(name="Temp:", value=f"{temp}°C")

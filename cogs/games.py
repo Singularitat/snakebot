@@ -21,7 +21,7 @@ HANGMAN_IMAGES = {
 
 class CookieClicker(discord.ui.View):
     def __init__(self, user: discord.User):
-        super().__init__(timeout=600.0)
+        super().__init__(timeout=1200.0)
         self.user = user
 
     @discord.ui.button(label="🍪", style=discord.ButtonStyle.blurple)
@@ -39,7 +39,7 @@ class CookieClicker(discord.ui.View):
 
             DB.cookies.put(user_id, orjson.dumps(cookies))
             await interaction.response.edit_message(
-                content=f"You have {cookies['cookies']} 🍪's"
+                content=f"{self.user.display_name} has {cookies['cookies']} 🍪's"
             )
 
     @discord.ui.button(label="🆙", style=discord.ButtonStyle.blurple)
@@ -58,12 +58,12 @@ class CookieClicker(discord.ui.View):
                     content=f"You need {100 * cookies['upgrade']} cookies to upgrade"
                 )
 
-            cookies["cookies"] -= 100 * (cookies["upgrade"] / 2)
+            cookies["cookies"] -= 100 * int(cookies["upgrade"] / 2)
             cookies["upgrade"] += 1
 
             DB.cookies.put(user_id, orjson.dumps(cookies))
             await interaction.response.edit_message(
-                content=f"You have {cookies['upgrade']} upgrades"
+                content=f"{self.user.display_name} has {cookies['upgrade']} upgrades"
             )
 
 
@@ -190,19 +190,71 @@ class games(commands.Cog):
     @commands.command()
     async def cookietop(self, ctx):
         """Gets the users with the most cookies."""
-        cookietop = sorted(
-            [(orjson.loads(c)["cookies"], int(m)) for m, c in DB.cookies], reverse=True
-        )[:10]
+        cookietop = []
+        for member, data in DB.cookies:
+            data = orjson.loads(data)
+            cookietop.append(((data["cookies"], data["upgrade"]), int(member)))
+
+        cookietop = sorted(cookietop, reverse=True)[:10]
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.title = f"Top {len(cookietop)} members"
         embed.description = "\n".join(
             [
-                f"**{self.bot.get_user(member).display_name}:** {bal:,} 🍪"
+                f"**{self.bot.get_user(member).display_name}:**"
+                f" {bal[0]:,} 🍪 {bal[1]:,} 🆙"
                 for bal, member in cookietop
             ]
         )
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def cookiegive(self, ctx, member: discord.Member, amount: int):
+        """Gives cookies to someone.
+
+        member: discord.Member
+        amount: int
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+        if amount < 0:
+            embed.description = "```Can't send a negative amount of cookies```"
+            return await ctx.send(embed=embed)
+
+        if ctx.author == member:
+            embed.description = "```Can't send cookies to yourself```"
+            return await ctx.send(embed=embed)
+
+        sender = str(ctx.author.id).encode()
+        receiver = str(member.id).encode()
+
+        sender_bal = DB.cookies.get(sender)
+
+        if not sender_bal:
+            embed.description = "```You don't have any cookies```"
+            return await ctx.send(embed=embed)
+
+        sender_bal = orjson.loads(sender_bal)
+
+        if sender_bal["cookies"] < amount:
+            embed.description = "```You don't have enough cookies```"
+            return await ctx.send(embed=embed)
+
+        receiver_bal = DB.cookies.get(receiver)
+
+        if not receiver_bal:
+            receiver_bal = {"cookies": amount, "upgrade": 1}
+        else:
+            receiver_bal = orjson.loads(receiver_bal)
+            receiver_bal["cookies"] += amount
+
+        sender_bal["cookies"] -= amount
+
+        embed.description = f"{sender_bal['cookies']} 🍪 left"
+        embed.title = f"You sent {amount} 🍪 to {member}"
+        await ctx.send(embed=embed)
+
+        DB.cookies.put(sender, orjson.dumps(sender_bal))
+        DB.cookies.put(receiver, orjson.dumps(receiver_bal))
 
     @commands.command()
     async def tictactoe(self, ctx):
