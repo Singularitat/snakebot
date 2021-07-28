@@ -166,7 +166,7 @@ class useful(commands.Cog):
                 return await ctx.send(translate_text)
 
     @commands.command()
-    async def weather(self, ctx, *, location):
+    async def weather(self, ctx, *, location="auckland"):
         """Gets the weather from google.
 
         location: str
