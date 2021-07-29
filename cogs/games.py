@@ -329,6 +329,45 @@ class games(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
+    async def chess(self, ctx):
+        """Starts a Chess In The Park game."""
+        if (code := DB.db.get(b"chess")) and discord.utils.get(
+            await ctx.guild.invites(), code=code.decode()
+        ):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="There is another active Chess In The Park",
+                    description=f"https://discord.gg/{code.decode()}",
+                )
+            )
+
+        if not ctx.author.voice:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You aren't connected to a voice channel.```",
+                )
+            )
+
+        headers = {"Authorization": f"Bot {config.token}"}
+        json = {
+            "max_age": 300,
+            "target_type": 2,
+            "target_application_id": 832012774040141894,
+        }
+
+        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
+            json=json,
+        ) as response:
+            data = await response.json()
+
+        await ctx.send(f"https://discord.gg/{data['code']}")
+        DB.db.put(b"chess", data["code"].encode())
+
+    @commands.command()
+    @commands.guild_only()
     async def poker(self, ctx):
         """Starts a Discord Poke Night."""
         if (code := DB.db.get(b"poker_night")) and discord.utils.get(
