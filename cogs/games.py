@@ -37,10 +37,17 @@ class CookieClicker(discord.ui.View):
 
             cookies["cookies"] += cookies["upgrade"]
 
-            DB.cookies.put(user_id, orjson.dumps(cookies))
+            if "start" in cookies:
+                cookies["cookies"] += round(
+                    (cookies["start"] - interaction.message.edited_at.timestamp())
+                    * cookies["cps"]
+                )
+                cookies["start"] = interaction.message.edited_at.timestamp()
+
             await interaction.response.edit_message(
                 content=f"{self.user.display_name} has {cookies['cookies']} 🍪's"
             )
+            DB.cookies.put(user_id, orjson.dumps(cookies))
 
     @discord.ui.button(label="🆙", style=discord.ButtonStyle.blurple)
     async def upgrade(self, button, interaction):
@@ -64,6 +71,35 @@ class CookieClicker(discord.ui.View):
             DB.cookies.put(user_id, orjson.dumps(cookies))
             await interaction.response.edit_message(
                 content=f"{self.user.display_name} has {cookies['upgrade']} upgrades"
+            )
+
+    @discord.ui.button(label="🤖", style=discord.ButtonStyle.blurple)
+    async def autocookie(self, button, interaction):
+        if interaction.user == self.user:
+            user_id = str(interaction.user.id).encode()
+            cookies = DB.cookies.get(user_id)
+
+            if not cookies:
+                return
+
+            cookies = orjson.loads(cookies)
+
+            if cookies["cookies"] < 10000:
+                return await interaction.response.edit_message(
+                    content=f"You need 10000 cookies to upgrade"
+                )
+
+            cookies["cookies"] -= 10000
+            if "cps" not in cookies:
+                cookies["cps"] = 0
+                cookies["start"] = (
+                    interaction.message.edited_at or interaction.message.created_at
+                ).timestamp()
+            cookies["cps"] += 1
+
+            DB.cookies.put(user_id, orjson.dumps(cookies))
+            await interaction.response.edit_message(
+                content=f"{self.user.display_name} has {cookies['cps']} cookies per second"
             )
 
 
