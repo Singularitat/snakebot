@@ -293,11 +293,13 @@ class economy(commands.Cog):
         DB.wins.put(member, orjson.dumps(data))
 
     @commands.command(aliases=["slots"])
-    async def slot(self, ctx, bet):
+    async def slot(self, ctx, bet, silent: bool = False):
         """Rolls the slot machine.
 
         bet: str
             The amount of money you are betting.
+        silent: bool
+            If the final message should be sent
         """
         embed = discord.Embed(color=discord.Color.red())
 
@@ -360,11 +362,13 @@ class economy(commands.Cog):
         bal += bet * winnings
         await DB.put_bal(member, bal)
 
-        embed.title = f"[ {a} {b} {c} {d} ]"
-        embed.description = f"You {result} ${bet*(abs(winnings)):,.2f}"
-        embed.set_footer(text=f"Balance: ${bal:,}")
+        if not silent:
+            embed.title = f"[ {a} {b} {c} {d} ]"
+            embed.description = f"You {result} ${bet*(abs(winnings)):,.2f}"
+            embed.set_footer(text=f"Balance: ${bal:,}")
 
-        await ctx.reply(embed=embed, mention_author=False)
+            await ctx.reply(embed=embed, mention_author=False)
+
         await self.streak_update(member, result)
 
     @commands.command(aliases=["streaks"])

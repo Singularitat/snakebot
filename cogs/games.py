@@ -37,10 +37,17 @@ class CookieClicker(discord.ui.View):
 
             cookies["cookies"] += cookies["upgrade"]
 
-            DB.cookies.put(user_id, orjson.dumps(cookies))
+            if "start" in cookies:
+                cookies["cookies"] += round(
+                    (cookies["start"] - interaction.message.edited_at.timestamp())
+                    * cookies["cps"]
+                )
+                cookies["start"] = interaction.message.edited_at.timestamp()
+
             await interaction.response.edit_message(
                 content=f"{self.user.display_name} has {cookies['cookies']} 🍪's"
             )
+            DB.cookies.put(user_id, orjson.dumps(cookies))
 
     @discord.ui.button(label="🆙", style=discord.ButtonStyle.blurple)
     async def upgrade(self, button, interaction):
@@ -64,6 +71,35 @@ class CookieClicker(discord.ui.View):
             DB.cookies.put(user_id, orjson.dumps(cookies))
             await interaction.response.edit_message(
                 content=f"{self.user.display_name} has {cookies['upgrade']} upgrades"
+            )
+
+    @discord.ui.button(label="🤖", style=discord.ButtonStyle.blurple)
+    async def autocookie(self, button, interaction):
+        if interaction.user == self.user:
+            user_id = str(interaction.user.id).encode()
+            cookies = DB.cookies.get(user_id)
+
+            if not cookies:
+                return
+
+            cookies = orjson.loads(cookies)
+
+            if cookies["cookies"] < 10000:
+                return await interaction.response.edit_message(
+                    content=f"You need 10000 cookies to upgrade"
+                )
+
+            cookies["cookies"] -= 10000
+            if "cps" not in cookies:
+                cookies["cps"] = 0
+                cookies["start"] = (
+                    interaction.message.edited_at or interaction.message.created_at
+                ).timestamp()
+            cookies["cps"] += 1
+
+            DB.cookies.put(user_id, orjson.dumps(cookies))
+            await interaction.response.edit_message(
+                content=f"{self.user.display_name} has {cookies['cps']} cookies per second"
             )
 
 
@@ -326,6 +362,45 @@ class games(commands.Cog):
             await embed_message.edit(embed=embed)
 
         await embed_message.add_reaction("❎")
+
+    @commands.command()
+    @commands.guild_only()
+    async def chess(self, ctx):
+        """Starts a Chess In The Park game."""
+        if (code := DB.db.get(b"chess")) and discord.utils.get(
+            await ctx.guild.invites(), code=code.decode()
+        ):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="There is another active Chess In The Park",
+                    description=f"https://discord.gg/{code.decode()}",
+                )
+            )
+
+        if not ctx.author.voice:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You aren't connected to a voice channel.```",
+                )
+            )
+
+        headers = {"Authorization": f"Bot {config.token}"}
+        json = {
+            "max_age": 300,
+            "target_type": 2,
+            "target_application_id": 832012774040141894,
+        }
+
+        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
+            json=json,
+        ) as response:
+            data = await response.json()
+
+        await ctx.send(f"https://discord.gg/{data['code']}")
+        DB.db.put(b"chess", data["code"].encode())
 
     @commands.command()
     @commands.guild_only()
