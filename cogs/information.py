@@ -20,6 +20,15 @@ class information(commands.Cog):
         self.bot = bot
         self.process = psutil.Process()
 
+    @commands.command()
+    async def about(self, ctx):
+        """Shows information about the bot."""
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.add_field(name="Total Commands", value=len(self.bot.commands))
+        embed.add_field(name="Source", value="[github](https://github.com/Singularitat/snakebot)")
+        embed.add_field(name="discord.py version", value=discord.__version__)
+        await ctx.send(embed=embed)
+
     @commands.command(name="oldest", aliases=["accdate", "newest"])
     async def oldest_members(self, ctx, amount: int = 10):
         """Gets the oldest accounts in a server.
