@@ -59,7 +59,7 @@ class background_tasks(commands.Cog):
                     task.failed(),
                     task.current_loop,
                     pretty_time(task.next_iteration.replace(tzinfo=None), False),
-                    f"{task.hours}h {task.minutes}m {task.seconds}s",
+                    f"{task.hours:.0f}h {task.minutes:.0f}m {task.seconds:.0f}s",
                 )
                 return await ctx.send(embed=embed)
 
@@ -185,14 +185,13 @@ class background_tasks(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         msg = "Name:               Interval:      Running/Failed/Count:\n\n"
-        for task in self.tasks:
-            task_obj = self.tasks[task]
+        for task_name, task in self.tasks.items():
             msg += "{:<20}{:<15}{}/{}/{}\n".format(
-                task,
-                f"{task_obj.hours}h {task_obj.minutes}m {task_obj.seconds}s",
-                task_obj.is_running(),
-                task_obj.failed(),
-                task_obj.current_loop,
+                task_name,
+                f"{task.hours:.0f}h {task.minutes:.0f}m {task.seconds:.0f}s",
+                task.is_running(),
+                task.failed(),
+                task.current_loop,
             )
 
         embed.description = f"```\n{msg}```"
