@@ -25,7 +25,9 @@ class information(commands.Cog):
         """Shows information about the bot."""
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(name="Total Commands", value=len(self.bot.commands))
-        embed.add_field(name="Source", value="[github](https://github.com/Singularitat/snakebot)")
+        embed.add_field(
+            name="Source", value="[github](https://github.com/Singularitat/snakebot)"
+        )
         embed.add_field(name="discord.py version", value=discord.__version__)
         await ctx.send(embed=embed)
 

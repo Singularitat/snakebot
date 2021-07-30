@@ -221,8 +221,7 @@ class games(commands.Cog):
 
         if "cps" in cookies:
             cookies["cookies"] += round(
-                (ctx.message.created_at.timestamp() - cookies["start"])
-                * cookies["cps"]
+                (ctx.message.created_at.timestamp() - cookies["start"]) * cookies["cps"]
             )
 
         embed = discord.Embed(color=discord.Color.blurple())
