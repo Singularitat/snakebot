@@ -39,7 +39,7 @@ class CookieClicker(discord.ui.View):
 
             if "start" in cookies:
                 cookies["cookies"] += round(
-                    (cookies["start"] - interaction.message.edited_at.timestamp())
+                    (interaction.message.edited_at.timestamp() - cookies["start"])
                     * cookies["cps"]
                 )
                 cookies["start"] = interaction.message.edited_at.timestamp()
@@ -219,12 +219,19 @@ class games(commands.Cog):
         else:
             cookies = orjson.loads(cookies)
 
+        if "cps" in cookies:
+            cookies["cookies"] += round(
+                (ctx.message.created_at.timestamp() - cookies["start"])
+                * cookies["cps"]
+            )
+
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(
             name=f"{user.display_name}'s cookies", value=f"**{cookies['cookies']:,}** 🍪"
         )
 
         await ctx.send(embed=embed)
+        DB.cookies.put(user_id, orjson.dumps(cookies))
 
     @commands.command()
     async def cookietop(self, ctx):
