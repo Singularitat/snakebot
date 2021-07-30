@@ -39,7 +39,7 @@ class CookieClicker(discord.ui.View):
 
             if "start" in cookies:
                 cookies["cookies"] += round(
-                    (cookies["start"] - interaction.message.edited_at.timestamp())
+                    (interaction.message.edited_at.timestamp() - cookies["start"])
                     * cookies["cps"]
                 )
                 cookies["start"] = interaction.message.edited_at.timestamp()
@@ -60,12 +60,14 @@ class CookieClicker(discord.ui.View):
             else:
                 cookies = orjson.loads(cookies)
 
-            if cookies["cookies"] < 100 * cookies["upgrade"]:
+            cost = 100 * cookies["upgrade"]
+
+            if cookies["cookies"] < cost:
                 return await interaction.response.edit_message(
-                    content=f"You need {100 * cookies['upgrade']} cookies to upgrade"
+                    content=f"You need {cost} cookies to upgrade"
                 )
 
-            cookies["cookies"] -= 100 * int(cookies["upgrade"] / 2)
+            cookies["cookies"] -= cost
             cookies["upgrade"] += 1
 
             DB.cookies.put(user_id, orjson.dumps(cookies))
@@ -83,13 +85,14 @@ class CookieClicker(discord.ui.View):
                 return
 
             cookies = orjson.loads(cookies)
+            cost = 1000 * (cookies.get("cps", default=0) + 1)
 
-            if cookies["cookies"] < 10000:
+            if cookies["cookies"] < cost:
                 return await interaction.response.edit_message(
-                    content=f"You need 10000 cookies to upgrade"
+                    content=f"You need {cost} cookies to upgrade"
                 )
 
-            cookies["cookies"] -= 10000
+            cookies["cookies"] -= cost
             if "cps" not in cookies:
                 cookies["cps"] = 0
                 cookies["start"] = (
@@ -216,12 +219,18 @@ class games(commands.Cog):
         else:
             cookies = orjson.loads(cookies)
 
+        if "cps" in cookies:
+            cookies["cookies"] += round(
+                (ctx.message.created_at.timestamp() - cookies["start"]) * cookies["cps"]
+            )
+
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(
             name=f"{user.display_name}'s cookies", value=f"**{cookies['cookies']:,}** 🍪"
         )
 
         await ctx.send(embed=embed)
+        DB.cookies.put(user_id, orjson.dumps(cookies))
 
     @commands.command()
     async def cookietop(self, ctx):

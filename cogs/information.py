@@ -20,6 +20,17 @@ class information(commands.Cog):
         self.bot = bot
         self.process = psutil.Process()
 
+    @commands.command()
+    async def about(self, ctx):
+        """Shows information about the bot."""
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.add_field(name="Total Commands", value=len(self.bot.commands))
+        embed.add_field(
+            name="Source", value="[github](https://github.com/Singularitat/snakebot)"
+        )
+        embed.add_field(name="discord.py version", value=discord.__version__)
+        await ctx.send(embed=embed)
+
     @commands.command(name="oldest", aliases=["accdate", "newest"])
     async def oldest_members(self, ctx, amount: int = 10):
         """Gets the oldest accounts in a server.
@@ -134,8 +145,7 @@ class information(commands.Cog):
         """
         permissions = channel.permissions_for(member)
         embed = discord.Embed(colour=member.colour)
-        avatar = member.avatar_url_as(static_format="png")
-        embed.set_author(name=str(member), icon_url=avatar)
+        embed.set_author(name=str(member), icon_url=member.avatar)
 
         allowed, denied = [], []
         for name, value in permissions:
@@ -188,9 +198,7 @@ class information(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         """Check how the bot is doing."""
-        latency = (
-            datetime.utcnow() - ctx.message.created_at.replace(tzinfo=None)
-        ).total_seconds() * 1000
+        latency = (datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
 
         if latency <= 0.05:
             latency = "Clock is out of sync"
@@ -299,7 +307,7 @@ class information(commands.Cog):
         embed.description = textwrap.dedent(
             f"""
                 **Server Information**
-                Created: {pretty_time(ctx.guild.created_at.replace(tzinfo=None))} ago
+                Created: {pretty_time(ctx.guild.created_at)} ago
                 Region: {ctx.guild.region.name.title()}
                 Owner: {ctx.guild.owner}
 
@@ -321,7 +329,7 @@ class information(commands.Cog):
             The member to get info of defulting to the invoker.
         """
         user = user or ctx.author
-        created = f"{pretty_time(user.created_at.replace(tzinfo=None))} ago"
+        created = f"{pretty_time(user.created_at)} ago"
 
         embed = discord.Embed(
             title=(str(user) + (" `[BOT]`" if user.bot else "")),
@@ -346,7 +354,7 @@ class information(commands.Cog):
                 inline=False,
             )
 
-        embed.set_thumbnail(url=user.avatar_url_as(static_format="png"))
+        embed.set_thumbnail(url=user.avatar)
 
         await ctx.send(embed=embed)
 
