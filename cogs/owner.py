@@ -587,10 +587,10 @@ class owner(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def sudo(
+    async def suin(
         self, ctx, channel: discord.TextChannel, member: discord.Member, *, command: str
     ):
-        """Run a command as another user.
+        """Run a command as another user in another channel.
 
         channel: discord.TextChannel
             The channel to run the command.
@@ -602,6 +602,24 @@ class owner(commands.Cog):
         msg = copy.copy(ctx.message)
         channel = channel or ctx.channel
         msg.channel = channel
+        msg.author = member
+        msg.content = f"{ctx.prefix}{command}"
+        new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+        await self.bot.invoke(new_ctx)
+
+    @commands.command()
+    async def sudo(
+        self, ctx, member: discord.Member, *, command: str
+    ):
+        """Run a command as another user.
+
+        member: discord.Member
+            The member to run the command as.
+        command: str
+            The command name.
+        """
+        msg = copy.copy(ctx.message)
+
         msg.author = member
         msg.content = f"{ctx.prefix}{command}"
         new_ctx = await self.bot.get_context(msg, cls=type(ctx))
