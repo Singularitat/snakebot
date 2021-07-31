@@ -1,6 +1,8 @@
 ## snakebot
 A basic discord.py bot that tries to do everything
 
+<img src="https://img.shields.io/github/languages/code-size/Singularitat/snakebot.svg" alt="Code size"/> <img src="https://img.shields.io/github/repo-size/Singularitat/snakebot.svg" alt="GitHub repo size"/> <img src="https://tokei.rs/b1/github/Singularitat/snakebot?category=code" alt="Lines of Code"/>
+
 ## Running
 
 1. **Python 3.9 or higher**
