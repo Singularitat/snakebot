@@ -11,6 +11,7 @@ import psutil
 
 from .utils.relativedelta import pretty_time
 import cogs.utils.database as DB
+from cogs.utils.useful import get_json
 
 
 class information(commands.Cog):
@@ -19,6 +20,29 @@ class information(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.process = psutil.Process()
+
+    @commands.command()
+    async def changes(self, ctx):
+        """Gets the last 12 commits."""
+        url = "https://api.github.com/repos/Singularitat/snakebot/commits?per_page=12"
+
+        async with ctx.typing():
+            commits = await get_json(url)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        for commit in commits:
+            timestamp = int(
+                datetime.fromisoformat(
+                    commit["commit"]["author"]["date"][:-1]
+                ).timestamp()
+            )
+            embed.add_field(
+                name=f"<t:{timestamp}>",
+                value=f"[**{commit['commit']['message']}**]({commit['html_url']})",
+            )
+
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def about(self, ctx):
@@ -198,7 +222,9 @@ class information(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         """Check how the bot is doing."""
-        latency = (datetime.utcnow() - ctx.message.created_at).total_seconds() * 1000
+        latency = (
+            datetime.utcnow() - ctx.message.created_at.replace(tzinfo=None)
+        ).total_seconds() * 1000
 
         if latency <= 0.05:
             latency = "Clock is out of sync"
