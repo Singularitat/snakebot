@@ -22,6 +22,28 @@ class misc(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    async def snowflake(self, ctx, snowflake: int):
+        """Shows some information about a discord snowflake.
+
+        snowflake: int
+            A discord snowflake e.g 744747000293228684
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.add_field(
+            name="Internal Worker ID", value=(snowflake & 0x3E0000) >> 17, inline=False
+        )
+        embed.add_field(
+            name="Internal process ID", value=(snowflake & 0x1F000) >> 12, inline=False
+        )
+        embed.add_field(
+            name="Time",
+            value=f"<t:{((snowflake >> 22) + 1420070400000)//1000}>",
+            inline=False,
+        )
+        embed.add_field(name="Increment", value=snowflake & 0xFFF, inline=False)
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def unsplash(self, ctx, *, search):
         """Gets an image from unsplash based off a search.
 
