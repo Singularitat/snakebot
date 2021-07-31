@@ -608,9 +608,7 @@ class owner(commands.Cog):
         await self.bot.invoke(new_ctx)
 
     @commands.command()
-    async def sudo(
-        self, ctx, member: discord.Member, *, command: str
-    ):
+    async def sudo(self, ctx, member: discord.Member, *, command: str):
         """Run a command as another user.
 
         member: discord.Member
