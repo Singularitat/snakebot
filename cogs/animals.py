@@ -12,6 +12,16 @@ class animals(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    async def axolotl(self, ctx):
+        """Gets a random axolotl image."""
+        url = "https://axoltlapi.herokuapp.com/"
+
+        async with ctx.typing():
+            image = await get_json(url)
+
+        await ctx.send(image["url"])
+
+    @commands.command()
     async def lizard(self, ctx):
         """Gets a random lizard image."""
         url = "https://nekos.life/api/v2/img/lizard"
