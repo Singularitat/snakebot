@@ -24,6 +24,15 @@ class CookieClicker(discord.ui.View):
         super().__init__(timeout=1200.0)
         self.user = user
 
+    @staticmethod
+    def get_embed(name, data):
+        return (
+            discord.Embed(color=discord.Color.blurple(), title=name)
+            .add_field(name="Cookies", value=f"{data['cookies']} 🍪")
+            .add_field(name="Upgrades", value=data["upgrade"])
+            .add_field(name="Cookies per second", value=data.get("cps", 0))
+        )
+
     @discord.ui.button(label="🍪", style=discord.ButtonStyle.blurple)
     async def click(self, button, interaction):
         if interaction.user == self.user:
@@ -37,7 +46,7 @@ class CookieClicker(discord.ui.View):
 
             cookies["cookies"] += cookies["upgrade"]
 
-            if "start" in cookies:
+            if "start" in cookies and interaction.message.edited_at:
                 cookies["cookies"] += round(
                     (interaction.message.edited_at.timestamp() - cookies["start"])
                     * cookies["cps"]
@@ -45,7 +54,7 @@ class CookieClicker(discord.ui.View):
                 cookies["start"] = interaction.message.edited_at.timestamp()
 
             await interaction.response.edit_message(
-                content=f"{self.user.display_name} has {cookies['cookies']} 🍪's"
+                content=None, embed=self.get_embed(self.user.display_name, cookies)
             )
             DB.cookies.put(user_id, orjson.dumps(cookies))
 
@@ -72,7 +81,7 @@ class CookieClicker(discord.ui.View):
 
             DB.cookies.put(user_id, orjson.dumps(cookies))
             await interaction.response.edit_message(
-                content=f"{self.user.display_name} has {cookies['upgrade']} upgrades"
+                content=None, embed=self.get_embed(self.user.display_name, cookies)
             )
 
     @discord.ui.button(label="🤖", style=discord.ButtonStyle.blurple)
@@ -85,7 +94,7 @@ class CookieClicker(discord.ui.View):
                 return
 
             cookies = orjson.loads(cookies)
-            cost = 1000 * (cookies.get("cps", default=0) + 1)
+            cost = 1000 * (cookies.get("cps", 0) + 1)
 
             if cookies["cookies"] < cost:
                 return await interaction.response.edit_message(
@@ -102,7 +111,7 @@ class CookieClicker(discord.ui.View):
 
             DB.cookies.put(user_id, orjson.dumps(cookies))
             await interaction.response.edit_message(
-                content=f"{self.user.display_name} has {cookies['cps']} cookies per second"
+                content=None, embed=self.get_embed(self.user.display_name, cookies)
             )
 
 
@@ -223,6 +232,7 @@ class games(commands.Cog):
             cookies["cookies"] += round(
                 (ctx.message.created_at.timestamp() - cookies["start"]) * cookies["cps"]
             )
+            cookies["start"] = ctx.message.created_at.timestamp()
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(
