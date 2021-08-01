@@ -220,6 +220,16 @@ class animals(commands.Cog):
 
         await ctx.send(image[0])
 
+    @commands.command()
+    async def cat5(self, ctx):
+        """Gets a random cat image."""
+        url = "https://aws.random.cat/meow"
+
+        async with ctx.typing():
+            image = await get_json(url)
+
+        await ctx.send(image["file"])
+
     @commands.command(name="catstatus")
     async def cat_status(self, ctx, status):
         """Gets a cat image for a status e.g Error 404 not found."""
