@@ -6,3 +6,5 @@ psutil
 youtube_dl
 pillow
 orjson
+plyvel; sys_platform=="linux"
+plyvel-win32; platform_system=="Windows"
