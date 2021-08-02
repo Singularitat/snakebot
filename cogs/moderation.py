@@ -27,6 +27,20 @@ class moderation(commands.Cog):
         self.bot = bot
         self.loop = asyncio.get_event_loop()
 
+    @commands.command()
+    async def inactive(self, ctx, days: int = 7):
+        """Gets how many people can be pruned.
+
+        days: int
+        """
+        inactive = await ctx.guild.estimate_pruned_members(days=days)
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```{inactive} members inactive for {days} days```",
+            )
+        )
+
     @staticmethod
     async def _end_poll(guild, message):
         """Ends a poll and sends the results."""

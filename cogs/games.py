@@ -1,3 +1,5 @@
+import time
+
 from discord.ext import commands
 import aiohttp
 import discord
@@ -46,12 +48,11 @@ class CookieClicker(discord.ui.View):
 
             cookies["cookies"] += cookies["upgrade"]
 
-            if "start" in cookies and interaction.message.edited_at:
+            if "start" in cookies:
                 cookies["cookies"] += round(
-                    (interaction.message.edited_at.timestamp() - cookies["start"])
-                    * cookies["cps"]
+                    (time.time() - cookies["start"]) * cookies["cps"]
                 )
-                cookies["start"] = interaction.message.edited_at.timestamp()
+                cookies["start"] = time.time()
 
             await interaction.response.edit_message(
                 content=None, embed=self.get_embed(self.user.display_name, cookies)
@@ -68,6 +69,12 @@ class CookieClicker(discord.ui.View):
                 cookies = {"cookies": 1, "upgrade": 1}
             else:
                 cookies = orjson.loads(cookies)
+
+            if "start" in cookies:
+                cookies["cookies"] += round(
+                    (time.time() - cookies["start"]) * cookies["cps"]
+                )
+                cookies["start"] = time.time()
 
             cost = 100 * cookies["upgrade"]
 
@@ -104,9 +111,13 @@ class CookieClicker(discord.ui.View):
             cookies["cookies"] -= cost
             if "cps" not in cookies:
                 cookies["cps"] = 0
-                cookies["start"] = (
-                    interaction.message.edited_at or interaction.message.created_at
-                ).timestamp()
+                cookies["start"] = time.time()
+            else:
+                cookies["cookies"] += round(
+                    (time.time() - cookies["start"]) * cookies["cps"]
+                )
+                cookies["start"] = time.time()
+
             cookies["cps"] += 1
 
             DB.cookies.put(user_id, orjson.dumps(cookies))
@@ -230,9 +241,9 @@ class games(commands.Cog):
 
         if "cps" in cookies:
             cookies["cookies"] += round(
-                (ctx.message.created_at.timestamp() - cookies["start"]) * cookies["cps"]
+                (time.time() - cookies["start"]) * cookies["cps"]
             )
-            cookies["start"] = ctx.message.created_at.timestamp()
+            cookies["start"] = time.time()
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(
@@ -248,7 +259,11 @@ class games(commands.Cog):
         cookietop = []
         for member, data in DB.cookies:
             data = orjson.loads(data)
-            cookietop.append(((data["cookies"], data["upgrade"]), int(member)))
+            cps = data.get("cps", 0)
+            if cps:
+                data["cookies"] += round((time.time() - data["start"]) * cps)
+
+            cookietop.append(((data["cookies"], data["upgrade"], cps), int(member)))
 
         cookietop = sorted(cookietop, reverse=True)[:10]
 
@@ -257,7 +272,7 @@ class games(commands.Cog):
         embed.description = "\n".join(
             [
                 f"**{self.bot.get_user(member).display_name}:**"
-                f" {bal[0]:,} 🍪 {bal[1]:,} 🆙"
+                f" `{bal[0]:,}` 🍪 `{bal[1]:,}` 🆙 `{bal[2]:,}` 🤖"
                 for bal, member in cookietop
             ]
         )
