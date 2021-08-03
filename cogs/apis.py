@@ -6,7 +6,6 @@ import textwrap
 
 from datetime import datetime
 from discord.ext import commands
-import aiohttp
 import discord
 import orjson
 
@@ -429,9 +428,9 @@ class apis(commands.Cog):
         url = "https://icanhazdadjoke.com/"
         headers = {"Accept": "application/json"}
 
-        async with ctx.typing(), aiohttp.ClientSession(
-            headers=headers
-        ) as session, session.get(url) as reponse:
+        async with ctx.typing(), self.bot.client_session.get(
+            url, headers=headers
+        ) as reponse:
             data = await reponse.json()
 
             await ctx.reply(data["joke"])
@@ -651,7 +650,7 @@ class apis(commands.Cog):
             f"&remhost=quicklatex.com&preamble={preamble}"
         )
 
-        async with ctx.typing(), aiohttp.ClientSession() as session, session.post(
+        async with ctx.typing(), self.bot.client_session.post(
             url, data=data
         ) as response:
             res = await response.text()

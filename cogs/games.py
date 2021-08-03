@@ -1,7 +1,6 @@
 import time
 
 from discord.ext import commands
-import aiohttp
 import discord
 import orjson
 
@@ -336,7 +335,7 @@ class games(commands.Cog):
         """Starts a game of hangman with a random word."""
         url = "https://random-words-api.vercel.app/word"
 
-        async with aiohttp.ClientSession() as session, session.get(url) as response:
+        async with self.bot.client_session.get(url) as response:
             data = await response.json()
 
         word = data[0]["word"]
@@ -427,9 +426,10 @@ class games(commands.Cog):
             "target_application_id": 832012774040141894,
         }
 
-        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+        async with self.bot.client_session.post(
             f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
             json=json,
+            headers=headers,
         ) as response:
             data = await response.json()
 
@@ -466,9 +466,10 @@ class games(commands.Cog):
             "target_application_id": 755827207812677713,
         }
 
-        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+        async with self.bot.client_session.post(
             f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
             json=json,
+            headers=headers,
         ) as response:
             data = await response.json()
 
@@ -505,9 +506,10 @@ class games(commands.Cog):
             "target_application_id": 773336526917861400,
         }
 
-        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+        async with self.bot.client_session.post(
             f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
             json=json,
+            headers=headers,
         ) as response:
             data = await response.json()
 
@@ -544,9 +546,10 @@ class games(commands.Cog):
             "target_application_id": 814288819477020702,
         }
 
-        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+        async with self.bot.client_session.post(
             f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
             json=json,
+            headers=headers,
         ) as response:
             data = await response.json()
 

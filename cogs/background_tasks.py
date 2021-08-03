@@ -1,7 +1,6 @@
 import os
 
 from discord.ext import commands, tasks
-import aiohttp
 import discord
 import orjson
 
@@ -205,9 +204,7 @@ class background_tasks(commands.Cog):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36",
             "accept-language": "en-US,en;q=0.9",
         }
-        async with aiohttp.ClientSession(headers=headers) as session, session.get(
-            url
-        ) as response:
+        async with self.bot.client_session.get(url, headers=headers) as response:
             stocks = await response.json()
 
         with DB.stocks.write_batch() as wb:
@@ -292,7 +289,7 @@ class background_tasks(commands.Cog):
     async def update_languages(self):
         """Updates pistons supported languages for the run command."""
         url = "https://emkc.org/api/v2/piston/runtimes"
-        async with aiohttp.ClientSession() as session, session.get(url) as page:
+        async with self.bot.client_session.get(url) as page:
             data = await page.json()
 
         aliases = set()
@@ -310,7 +307,7 @@ class background_tasks(commands.Cog):
     async def update_crypto(self):
         """Updates crypto currency data every 10 minutes."""
         url = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing?limit=50000&convert=NZD&cryptoType=coins"
-        async with aiohttp.ClientSession() as session, session.get(url) as response:
+        async with self.bot.client_session.get(url) as response:
             crypto = await response.json()
 
         with DB.crypto.write_batch() as wb:

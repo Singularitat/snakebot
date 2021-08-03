@@ -50,7 +50,7 @@ class misc(commands.Cog):
         search: str
         """
         url = f"https://source.unsplash.com/random?{search}"
-        async with ctx.typing(), aiohttp.ClientSession() as session, session.get(
+        async with ctx.typing(), self.bot.client_session.get(
             url, allow_redirects=False
         ) as page:
             soup = lxml.html.fromstring(await page.text())
@@ -285,9 +285,10 @@ class misc(commands.Cog):
             "target_application_id": 755600276941176913,
         }
 
-        async with aiohttp.ClientSession(headers=headers) as session, session.post(
+        async with self.bot.client_session.post(
             f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
             json=json,
+            headers=headers,
         ) as response:
             data = await response.json()
 
@@ -422,9 +423,7 @@ class misc(commands.Cog):
 
         async with ctx.typing():
             try:
-                async with aiohttp.ClientSession(
-                    raise_for_status=True
-                ) as session, session.get(url) as page:
+                async with self.bot.client_session.get(url) as page:
                     text = lxml.html.fromstring(await page.text())
             except aiohttp.client_exceptions.ClientResponseError:
                 embed.description = f"```Could not find and element with the symbol {element.upper()}```"
