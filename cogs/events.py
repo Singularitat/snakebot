@@ -1,5 +1,6 @@
 from datetime import datetime
 from io import BytesIO
+import aiohttp
 import difflib
 import logging
 import os
@@ -580,6 +581,9 @@ class events(commands.Cog):
         if not hasattr(self.bot, "uptime"):
             boot_time = (
                 datetime.now().timestamp() - psutil.Process(os.getpid()).create_time()
+            )
+            self.bot.client_session = aiohttp.ClientSession(
+                timeout=aiohttp.ClientTimeout(total=2)
             )
 
             self.bot.uptime = datetime.utcnow()
