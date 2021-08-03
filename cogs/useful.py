@@ -8,7 +8,6 @@ import time
 import urllib
 
 from discord.ext import commands, menus
-import aiohttp
 import discord
 import lxml.html
 import orjson
@@ -148,9 +147,7 @@ class useful(commands.Cog):
             )
         )
 
-        async with aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=2)
-        ) as session:
+        async with self.bot.client_session as session:
             response = await session.post(url, data=data, headers=headers)
 
         async for line in response.content:
@@ -178,9 +175,7 @@ class useful(commands.Cog):
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
             }
-            async with aiohttp.ClientSession(headers=headers) as session, session.get(
-                url
-            ) as page:
+            async with self.bot.client_session.get(url, headers=headers) as page:
                 soup = lxml.html.fromstring(await page.text())
 
             embed = discord.Embed(color=discord.Color.blurple())
@@ -460,7 +455,7 @@ class useful(commands.Cog):
             "log": 0,
         }
 
-        async with ctx.typing(), aiohttp.ClientSession() as session, session.post(
+        async with ctx.typing(), self.bot.client_session.post(
             "https://emkc.org/api/v2/piston/execute", data=orjson.dumps(data)
         ) as response:
             data = await response.json()
@@ -595,9 +590,7 @@ class useful(commands.Cog):
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
             }
-            async with aiohttp.ClientSession(headers=headers) as session, session.get(
-                url
-            ) as page:
+            async with self.bot.client_session.get(url, headers=headers) as page:
                 soup = lxml.html.fromstring(await page.text())
 
             images = {}
@@ -650,9 +643,7 @@ class useful(commands.Cog):
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
             }
-            async with aiohttp.ClientSession(headers=headers) as session, session.get(
-                url
-            ) as page:
+            async with self.bot.client_session.get(url, headers=headers) as page:
                 soup = lxml.html.fromstring(await page.text())
 
             images = {}
@@ -790,9 +781,9 @@ class useful(commands.Cog):
         escape = str.maketrans({"`": "\\`"})
         ansi = re.compile(r"\x1b\[.*?m")
 
-        async with ctx.typing(), aiohttp.ClientSession(
-            headers=headers
-        ) as session, session.get(url) as page:
+        async with ctx.typing(), self.bot.client_session.get(
+            url, headers=headers
+        ) as page:
             result = ansi.sub("", await page.text()).translate(escape)
 
         embed = discord.Embed(

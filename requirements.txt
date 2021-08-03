@@ -6,3 +6,4 @@ psutil
 youtube_dl
 pillow
 orjson
+plyvel-wheels

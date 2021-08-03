@@ -11,42 +11,14 @@ You should be able to run it on earlier versions but I haven't tried
 
 2. **Install dependencies**
 
-<details>
-<summary><span>Windows</span></summary>
-
 ```bash
 pip install -U -r requirements.txt
 ```
 
-On windows you will also need plyvel-win32
-
-```shell
-pip install plyvel-win32
-```
-
-</details>
-
-<details>
-
-<summary><span>Linux</span></summary>
-
-Note: you might need to use pip3 rather than pip
-```shell
-pip install -U -r requirements.txt
-```
-
-On linux you will need plyvel
-
-```shell
-pip install plyvel
-```
-
-If it fails to install on Debian or Ubuntu try
-```shell
+If plyvel fails to install on Debian or Ubuntu try
+```bash
 apt-get install libleveldb1v5 libleveldb-dev
 ```
-
-</details>
 
 3. **Setup configuration**
 
