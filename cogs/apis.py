@@ -9,7 +9,6 @@ from discord.ext import commands
 import discord
 import orjson
 
-import cogs.utils.database as DB
 from cogs.utils.useful import get_json
 
 
@@ -18,6 +17,7 @@ class apis(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.DB = self.bot.DB
         self.loop = asyncio.get_event_loop()
 
     @commands.command()
@@ -688,7 +688,7 @@ class apis(commands.Cog):
             The term to search for.
         """
         cache_search = f"urban-{search}"
-        cache = orjson.loads(DB.db.get(b"cache"))
+        cache = orjson.loads(self.DB.main.get(b"cache"))
 
         embed = discord.Embed(colour=discord.Color.blurple())
 
@@ -728,8 +728,8 @@ class apis(commands.Cog):
             defin["thumbs_up"],
         )
 
-        DB.db.put(b"cache", orjson.dumps(cache))
-        self.loop.call_later(300, DB.delete_cache, cache_search, cache)
+        self.DB.main.put(b"cache", orjson.dumps(cache))
+        self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["wiki"])
@@ -894,7 +894,7 @@ class apis(commands.Cog):
             The gif search term.
         """
         cache_search = f"tenor-{search}"
-        cache = orjson.loads(DB.db.get(b"cache"))
+        cache = orjson.loads(self.DB.main.get(b"cache"))
 
         if cache_search in cache:
             url = random.choice(cache[cache_search])
@@ -903,7 +903,7 @@ class apis(commands.Cog):
             if len(cache[cache_search]) == 0:
                 cache.pop(cache_search)
 
-            DB.db.put(b"cache", orjson.dumps(cache))
+            self.DB.main.put(b"cache", orjson.dumps(cache))
 
             return await ctx.send(url)
 
@@ -917,8 +917,8 @@ class apis(commands.Cog):
         tenor.remove(image)
         cache[cache_search] = tenor
 
-        DB.db.put(b"cache", orjson.dumps(cache))
-        self.loop.call_later(300, DB.delete_cache, cache_search, cache)
+        self.DB.main.put(b"cache", orjson.dumps(cache))
+        self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
         await ctx.send(image)
 
 

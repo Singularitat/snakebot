@@ -12,8 +12,6 @@ import discord
 import lxml.html
 import orjson
 
-import cogs.utils.database as DB
-
 
 CODE_REGEX = re.compile(
     r"(?:(?P<lang>^[a-z0-9]+[\ \n])?)(?P<delim>(?P<block>```)|``?)(?(block)"
@@ -57,6 +55,7 @@ class useful(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.DB = self.bot.DB
         self.loop = asyncio.get_event_loop()
 
     @commands.command(name="float")
@@ -316,7 +315,7 @@ class useful(commands.Cog):
     @commands.command()
     async def languages(self, ctx):
         """Shows the languages that the run command can use."""
-        languages = DB.db.get(b"languages")
+        languages = self.DB.main.get(b"languages")
 
         if not languages:
             return await ctx.send("No languages found")
@@ -363,7 +362,7 @@ class useful(commands.Cog):
             return await ctx.send(
                 "```You need to attach the emoji image to the message```"
             )
-        emojis = DB.db.get(b"emoji_submissions")
+        emojis = self.DB.main.get(b"emoji_submissions")
 
         if not emojis:
             emojis = {}
@@ -372,13 +371,13 @@ class useful(commands.Cog):
 
         emojis[str(ctx.message.id)] = {"name": name, "users": []}
 
-        DB.db.put(b"emoji_submissions", orjson.dumps(emojis))
+        self.DB.main.put(b"emoji_submissions", orjson.dumps(emojis))
 
     @commands.command()
     async def invites(self, ctx):
         """Shows the invites that users joined from."""
         invite_list = []
-        for member, invite in DB.invites:
+        for member, invite in self.DB.invites:
             if len(member) <= 18:
                 member = self.bot.get_user(int(member))
                 # I don't fetch the invite cause it takes 300ms per invite
@@ -438,7 +437,7 @@ class useful(commands.Cog):
 
         lang = lang.strip()
 
-        if lang not in orjson.loads(DB.db.get(b"aliases")):
+        if lang not in orjson.loads(self.DB.main.get(b"aliases")):
             return await ctx.reply(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
@@ -500,7 +499,7 @@ class useful(commands.Cog):
     @commands.command()
     async def snipe(self, ctx):
         """Snipes the last deleted message."""
-        data = DB.db.get(f"{ctx.guild.id}-snipe_message".encode())
+        data = self.DB.main.get(f"{ctx.guild.id}-snipe_message".encode())
 
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -518,7 +517,7 @@ class useful(commands.Cog):
     @commands.command()
     async def editsnipe(self, ctx):
         """Snipes the last edited message."""
-        data = DB.db.get(f"{ctx.guild.id}-editsnipe_message".encode())
+        data = self.DB.main.get(f"{ctx.guild.id}-editsnipe_message".encode())
 
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -550,7 +549,7 @@ class useful(commands.Cog):
 
         search: str
         """
-        cache = orjson.loads(DB.db.get(b"cache"))
+        cache = orjson.loads(self.DB.main.get(b"cache"))
 
         if search in cache:
             if len(cache[search]) == 0:
@@ -560,7 +559,7 @@ class useful(commands.Cog):
 
             cache[search].pop(url)
 
-            DB.db.put(b"cache", orjson.dumps(cache))
+            self.DB.main.put(b"cache", orjson.dumps(cache))
 
             return url, title
         return cache
@@ -613,8 +612,8 @@ class useful(commands.Cog):
             message = await ctx.send(embed=embed)
 
             cache[cache_search] = images
-            self.loop.call_later(300, DB.delete_cache, cache_search, cache)
-            DB.db.put(b"cache", orjson.dumps(cache))
+            self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
+            self.DB.main.put(b"cache", orjson.dumps(cache))
 
         await self.wait_for_deletion(message, ctx)
 
@@ -664,8 +663,8 @@ class useful(commands.Cog):
             message = await ctx.send(embed=embed)
 
             cache[cache_search] = images
-            self.loop.call_later(300, DB.delete_cache, cache_search, cache)
-            DB.db.put(b"cache", orjson.dumps(cache))
+            self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
+            self.DB.main.put(b"cache", orjson.dumps(cache))
 
         await self.wait_for_deletion(message, ctx)
 
@@ -756,7 +755,7 @@ class useful(commands.Cog):
         regex = r"(?:0[xX])?[0-9a-fA-F]+" if base == 16 else r"\d+"
         numbers = [int(num, base) for num in re.findall(regex, args)]
 
-        expr = re.sub(regex, "%s", args) % tuple(numbers)
+        expr = re.sub(regex, "{}", args).format(*numbers)
         result = self.safe_eval(ast.parse(expr, "<string>", "eval").body)
 
         await ctx.send(

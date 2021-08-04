@@ -1,11 +1,8 @@
 import asyncio
 
 from discord.ext import commands
-import aiohttp
 import discord
 import orjson
-
-import cogs.utils.database as DB
 
 
 class admin(commands.Cog):
@@ -13,6 +10,7 @@ class admin(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.DB = self.bot.DB
         self.loop = asyncio.get_event_loop()
 
     async def cog_check(self, ctx):
@@ -48,11 +46,11 @@ class admin(commands.Cog):
     async def togglelog(self, ctx):
         """Toggles logging to the logs channel."""
         key = f"{ctx.guild.id}-logging".encode()
-        if DB.db.get(key):
-            DB.db.delete(key)
+        if self.DB.main.get(key):
+            self.DB.main.delete(key)
             tenary = "Enabled"
         else:
-            DB.db.put(key, b"1")
+            self.DB.main.put(key, b"1")
             tenary = "Disabled"
 
         embed = discord.Embed(color=discord.Color.blurple())
@@ -67,7 +65,7 @@ class admin(commands.Cog):
             The number of the rule to delete starting from 1.
         """
         key = f"{ctx.guild.id}-rules".encode()
-        rules = DB.db.get(key)
+        rules = self.DB.main.get(key)
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not rules:
@@ -81,7 +79,7 @@ class admin(commands.Cog):
             return await ctx.send(embed=embed)
 
         rule = rules.pop(number - 1)
-        DB.db.put(key, orjson.dumps(rules))
+        self.DB.main.put(key, orjson.dumps(rules))
         embed.description = f"```Removed rule {rule}.```"
         await ctx.send(embed=embed)
 
@@ -93,7 +91,7 @@ class admin(commands.Cog):
             The rule to add.
         """
         key = f"{ctx.guild.id}-rules".encode()
-        rules = DB.db.get(key)
+        rules = self.DB.main.get(key)
 
         if not rules:
             rules = []
@@ -107,7 +105,7 @@ class admin(commands.Cog):
                 description=f"```Added rule {len(rules)}\n{rule}```",
             )
         )
-        DB.db.put(key, orjson.dumps(rules))
+        self.DB.main.put(key, orjson.dumps(rules))
 
     @commands.command(aliases=["disablech"])
     async def disable_channel(self, ctx, channel: discord.TextChannel = None):
@@ -119,7 +117,7 @@ class admin(commands.Cog):
         guild = str(ctx.guild.id)
         key = f"{guild}-disabled_channels".encode()
 
-        disabled = DB.db.get(key)
+        disabled = self.DB.main.get(key)
 
         if not disabled:
             disabled = {}
@@ -140,7 +138,7 @@ class admin(commands.Cog):
         embed.description = f"```Commands {tenary} in {channel}```"
 
         await ctx.send(embed=embed)
-        DB.db.put(key, orjson.dumps(disabled))
+        self.DB.main.put(key, orjson.dumps(disabled))
 
     @commands.command()
     @commands.cooldown(1, 86400, commands.BucketType.user)
@@ -175,7 +173,7 @@ class admin(commands.Cog):
 
         message = await ctx.send(msg)
 
-        DB.rrole.put(str(message.id).encode(), orjson.dumps(rrole))
+        self.DB.rrole.put(str(message.id).encode(), orjson.dumps(rrole))
         for name in roles:
             await message.add_reaction(roles[name][1])
 
@@ -193,20 +191,20 @@ class admin(commands.Cog):
             key = f"{ctx.guild.id}-{channel.id}-lock".encode()
 
             if perms.send_messages is False and state is False:
-                DB.db.put(key, b"1")
+                self.DB.main.put(key, b"1")
             elif perms.send_messages is True and state is False:
-                DB.db.put(key, b"0")
+                self.DB.main.put(key, b"0")
                 perms.send_messages = False
                 await channel.set_permissions(ctx.guild.default_role, overwrite=perms)
-            elif (data := DB.db.get(key)) == b"0":
+            elif (data := self.DB.main.get(key)) == b"0":
                 perms.send_messages = True
                 await channel.set_permissions(ctx.guild.default_role, overwrite=perms)
-                DB.db.delete(key)
+                self.DB.main.delete(key)
             elif not data:
                 perms.send_messages = state
                 await channel.set_permissions(ctx.guild.default_role, overwrite=perms)
             else:
-                DB.db.delete(key)
+                self.DB.main.delete(key)
 
         embed = discord.Embed(color=discord.Color.blurple())
         if toggle:
@@ -240,21 +238,21 @@ class admin(commands.Cog):
             return await ctx.send(embed=embed)
 
         key = f"{ctx.guild.id}-{command}".encode()
-        state = DB.db.get(key)
+        state = self.DB.main.get(key)
 
         if not state:
-            DB.db.put(key, b"1")
+            self.DB.main.put(key, b"1")
             embed.description = f"```Disabled the {command} command```"
             return await ctx.send(embed=embed)
 
-        DB.db.delete(key)
+        self.DB.main.delete(key)
         embed.description = f"```Enabled the {command} command```"
         return await ctx.send(embed=embed)
 
     @commands.command()
     async def emojis(self, ctx):
         """Shows a list of the current emojis being voted on."""
-        emojis = DB.db.get(b"emoji_submissions")
+        emojis = self.DB.main.get(b"emoji_submissions")
 
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -283,7 +281,7 @@ class admin(commands.Cog):
         message_id: str
             Id of the message to remove from the db.
         """
-        emojis = DB.db.get(b"emoji_submissions")
+        emojis = self.DB.main.get(b"emoji_submissions")
 
         if not emojis:
             emojis = {}
@@ -295,7 +293,7 @@ class admin(commands.Cog):
         except KeyError:
             await ctx.send(f"Message {message_id} not found in emojis")
 
-        DB.db.put(b"emoji_submissions", orjson.dumps(emojis))
+        self.DB.main.put(b"emoji_submissions", orjson.dumps(emojis))
 
     @commands.command(aliases=["aemoji"])
     async def add_emoji(self, ctx, message_id, name):
@@ -304,7 +302,7 @@ class admin(commands.Cog):
         message_id: int
             Id of the message you are adding the emoji of.
         """
-        emojis = DB.db.get(b"emoji_submissions")
+        emojis = self.DB.main.get(b"emoji_submissions")
 
         if not emojis:
             emojis = {}
@@ -313,7 +311,7 @@ class admin(commands.Cog):
 
         emojis[message_id] = {"name": name, "users": []}
 
-        DB.db.put(b"emoji_submissions", orjson.dumps(emojis))
+        self.DB.main.put(b"emoji_submissions", orjson.dumps(emojis))
 
     @commands.command()
     async def edit(self, ctx, message: discord.Message, *, content):
@@ -402,12 +400,12 @@ class admin(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not member:
-            if list(DB.blacklist) == []:
+            if list(self.DB.blacklist) == []:
                 embed.title = "No downvoted users"
                 return await ctx.send(embed=embed)
 
             embed.title = "Downvoted users"
-            for member_id in DB.blacklist.iterator(include_value=False):
+            for member_id in self.DB.blacklist.iterator(include_value=False):
                 member_id = member_id.decode().split("-")
 
                 if len(member_id) > 1:
@@ -429,8 +427,8 @@ class admin(commands.Cog):
 
         member_id = f"{ctx.guild.id}-{str(member.id)}".encode()
 
-        if DB.blacklist.get(member_id):
-            DB.blacklist.delete(member_id)
+        if self.DB.blacklist.get(member_id):
+            self.DB.blacklist.delete(member_id)
 
             embed.title = "User Undownvoted"
             embed.description = (
@@ -441,7 +439,7 @@ class admin(commands.Cog):
         await member.edit(voice_channel=None)
 
         if not duration:
-            DB.blacklist.put(member_id, b"1")
+            self.DB.blacklist.put(member_id, b"1")
             embed.title = "User Downvoted"
             embed.description = f"**{member}** has been added to the downvote list"
             return await ctx.send(embed=embed)
@@ -452,8 +450,8 @@ class admin(commands.Cog):
             embed.description = "```Invalid duration. Example: '3d 5h 10m'```"
             return await ctx.send(embed=embed)
 
-        DB.blacklist.put(member_id, b"1")
-        self.loop.call_later(seconds, DB.blacklist.delete, member_id)
+        self.DB.blacklist.put(member_id, b"1")
+        self.loop.call_later(seconds, self.DB.blacklist.delete, member_id)
 
         embed.title = "User Undownvoted"
         embed.description = f"***{member}*** has been added from the downvote list"
@@ -468,12 +466,12 @@ class admin(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
         if not user:
-            if list(DB.blacklist) == []:
+            if list(self.DB.blacklist) == []:
                 embed.title = "No blacklisted users"
                 return await ctx.send(embed=embed)
 
             embed.title = "Blacklisted users"
-            for member_id in DB.blacklist.iterator(include_value=False):
+            for member_id in self.DB.blacklist.iterator(include_value=False):
                 member_id = member_id.decode().split("-")
 
                 if len(member_id) > 1:
@@ -490,14 +488,14 @@ class admin(commands.Cog):
             return await ctx.send(embed=embed)
 
         user_id = f"{ctx.guild.id}-{str(user.id)}".encode()
-        if DB.blacklist.get(user_id):
-            DB.blacklist.delete(user_id)
+        if self.DB.blacklist.get(user_id):
+            self.DB.blacklist.delete(user_id)
 
             embed.title = "User Unblacklisted"
             embed.description = f"***{user}*** has been unblacklisted"
             return await ctx.send(embed=embed)
 
-        DB.blacklist.put(user_id, b"2")
+        self.DB.blacklist.put(user_id, b"2")
         embed.title = "User Blacklisted"
         embed.description = f"**{user}** has been added to the blacklist"
 
@@ -507,7 +505,3 @@ class admin(commands.Cog):
 def setup(bot: commands.Bot) -> None:
     """Starts admin cog."""
     bot.add_cog(admin(bot))
-    if not hasattr(bot, "client_session"):
-        bot.client_session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=4)
-        )

@@ -4,8 +4,6 @@ from discord.ext import commands, menus
 import discord
 import orjson
 
-import cogs.utils.database as DB
-
 
 class CryptoMenu(menus.ListPageSource):
     def __init__(self, data):
@@ -22,6 +20,7 @@ class crypto(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.DB = self.bot.DB
 
     @commands.group(aliases=["coin"])
     async def crypto(self, ctx):
@@ -40,7 +39,7 @@ class crypto(commands.Cog):
             return await ctx.send(embed=embed)
 
         symbol = ctx.subcommand_passed.upper()
-        crypto = await DB.get_crypto(symbol)
+        crypto = await self.DB.get_crypto(symbol)
 
         if not crypto:
             embed.description = f"```Couldn't find {symbol}```"
@@ -94,7 +93,7 @@ class crypto(commands.Cog):
             return await ctx.send(embed=embed)
 
         symbol = symbol.upper()
-        data = await DB.get_crypto(symbol)
+        data = await self.DB.get_crypto(symbol)
 
         if not data:
             embed.description = f"```Couldn't find crypto {symbol}```"
@@ -102,7 +101,7 @@ class crypto(commands.Cog):
 
         price = float(data["price"])
         member_id = str(ctx.author.id).encode()
-        bal = await DB.get_bal(member_id)
+        bal = await self.DB.get_bal(member_id)
 
         if bal < cash:
             embed.description = "```You don't have enough cash```"
@@ -110,7 +109,7 @@ class crypto(commands.Cog):
 
         amount = cash / price
 
-        cryptobal = await DB.get_cryptobal(member_id)
+        cryptobal = await self.DB.get_cryptobal(member_id)
 
         if symbol not in cryptobal:
             cryptobal[symbol] = {"total": 0, "history": [(amount, cash)]}
@@ -128,8 +127,8 @@ class crypto(commands.Cog):
 
         await ctx.send(embed=embed)
 
-        await DB.put_bal(member_id, bal)
-        await DB.put_cryptobal(member_id, cryptobal)
+        await self.DB.put_bal(member_id, bal)
+        await self.DB.put_cryptobal(member_id, cryptobal)
 
     @crypto.command(aliases=["s"])
     async def sell(self, ctx, symbol, amount):
@@ -143,7 +142,7 @@ class crypto(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         symbol = symbol.upper()
-        price = await DB.get_crypto(symbol)
+        price = await self.DB.get_crypto(symbol)
 
         if not price:
             embed.description = f"```Couldn't find {symbol}```"
@@ -151,7 +150,7 @@ class crypto(commands.Cog):
 
         price = price["price"]
         member_id = str(ctx.author.id).encode()
-        cryptobal = await DB.get_cryptobal(member_id)
+        cryptobal = await self.DB.get_cryptobal(member_id)
 
         if not cryptobal:
             embed.description = "```You haven't invested.```"
@@ -176,7 +175,7 @@ class crypto(commands.Cog):
             )
             return await ctx.send(embed=embed)
 
-        bal = await DB.get_bal(member_id)
+        bal = await self.DB.get_bal(member_id)
         cash = amount * float(price)
 
         cryptobal[symbol]["total"] -= amount
@@ -193,8 +192,8 @@ class crypto(commands.Cog):
 
         await ctx.send(embed=embed)
 
-        await DB.put_bal(member_id, bal)
-        await DB.put_cryptobal(member_id, cryptobal)
+        await self.DB.put_bal(member_id, bal)
+        await self.DB.put_cryptobal(member_id, cryptobal)
 
     @crypto.command(aliases=["p"])
     async def profile(self, ctx, member: discord.Member = None):
@@ -206,7 +205,7 @@ class crypto(commands.Cog):
         member = member or ctx.author
 
         member_id = str(member.id).encode()
-        cryptobal = await DB.get_cryptobal(member_id)
+        cryptobal = await self.DB.get_cryptobal(member_id)
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not cryptobal:
@@ -220,7 +219,7 @@ class crypto(commands.Cog):
         )
 
         for crypto in cryptobal:
-            data = await DB.get_crypto(crypto)
+            data = await self.DB.get_crypto(crypto)
 
             trades = [
                 trade[1] / trade[0]
@@ -248,7 +247,7 @@ class crypto(commands.Cog):
         symbol = symbol.upper()
         member_id = str(ctx.author.id).encode()
 
-        cryptobal = await DB.get_cryptobal(member_id)
+        cryptobal = await self.DB.get_cryptobal(member_id)
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not cryptobal:
@@ -259,7 +258,7 @@ class crypto(commands.Cog):
             embed.description = f"```You haven't invested in {symbol}```"
             return await ctx.send(embed=embed)
 
-        crypto = await DB.get_crypto(symbol)
+        crypto = await self.DB.get_crypto(symbol)
 
         trades = [
             trade[1] / trade[0]
@@ -299,7 +298,7 @@ class crypto(commands.Cog):
     async def list(self, ctx):
         """Shows the prices of crypto with pagination."""
         data = []
-        for i, (stock, price) in enumerate(DB.crypto, start=1):
+        for i, (stock, price) in enumerate(self.DB.crypto, start=1):
             price = orjson.loads(price)["price"]
 
             if not i % 3:
@@ -325,7 +324,7 @@ class crypto(commands.Cog):
         member = member or ctx.author
 
         embed = discord.Embed(color=discord.Color.blurple())
-        cryptobal = await DB.get_cryptobal(str(member.id).encode())
+        cryptobal = await self.DB.get_cryptobal(str(member.id).encode())
 
         if not cryptobal:
             embed.description = "```You haven't invested.```"

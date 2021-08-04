@@ -5,7 +5,6 @@ import discord
 import orjson
 
 from cogs.utils.relativedelta import pretty_time
-import cogs.utils.database as DB
 from cogs.utils.useful import run_process
 
 
@@ -14,6 +13,7 @@ class background_tasks(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.DB = self.bot.DB
         self.start_tasks()
 
     def cog_unload(self):
@@ -207,7 +207,7 @@ class background_tasks(commands.Cog):
         async with self.bot.client_session.get(url, headers=headers) as response:
             stocks = await response.json()
 
-        with DB.stocks.write_batch() as wb:
+        with self.DB.stocks.write_batch() as wb:
             for stock in stocks["data"]["table"]["rows"]:
                 stock_data = {
                     "name": stock["name"],
@@ -251,10 +251,10 @@ class background_tasks(commands.Cog):
     @tasks.loop(hours=6)
     async def backup(self):
         """Makes a backup of the db every 6 hours."""
-        if DB.db.get(b"restart") == b"1":
-            return DB.db.delete(b"restart")
+        if self.DB.main.get(b"restart") == b"1":
+            return self.DB.main.delete(b"restart")
 
-        number = DB.db.get(b"backup_number")
+        number = self.DB.main.get(b"backup_number")
 
         if not number:
             number = -1
@@ -263,7 +263,7 @@ class background_tasks(commands.Cog):
 
         number = (number + 1) % 11
 
-        DB.db.put(b"backup_number", str(number).encode())
+        self.DB.main.put(b"backup_number", str(number).encode())
 
         os.makedirs("backup/", exist_ok=True)
         with open(f"backup/{number}backup.json", "w", encoding="utf-8") as file:
@@ -275,7 +275,7 @@ class background_tasks(commands.Cog):
                 b"boot_times",
             )
 
-            for key, value in DB.db:
+            for key, value in self.DB.main:
                 if key.split(b"-")[0] not in excluded:
                     if value[:1] in [b"{", b"["]:
                         value = orjson.loads(value)
@@ -300,8 +300,8 @@ class background_tasks(commands.Cog):
             aliases.add(language["language"])
             languages.append(language["language"])
 
-        DB.db.put(b"languages", orjson.dumps(languages))
-        DB.db.put(b"aliases", orjson.dumps(list(aliases)))
+        self.DB.main.put(b"languages", orjson.dumps(languages))
+        self.DB.main.put(b"aliases", orjson.dumps(list(aliases)))
 
     @tasks.loop(minutes=10)
     async def update_crypto(self):
@@ -310,7 +310,7 @@ class background_tasks(commands.Cog):
         async with self.bot.client_session.get(url) as response:
             crypto = await response.json()
 
-        with DB.crypto.write_batch() as wb:
+        with self.DB.crypto.write_batch() as wb:
             for coin in crypto["data"]["cryptoCurrencyList"]:
                 if "price" not in coin["quotes"][0]:
                     continue

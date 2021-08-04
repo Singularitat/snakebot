@@ -11,12 +11,11 @@ import discord
 import orjson
 import psutil
 
-import cogs.utils.database as DB
-
 
 class events(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.DB = self.bot.DB
 
     async def poll_check(self, payload):
         """Keeps track of poll results.
@@ -27,7 +26,7 @@ class events(commands.Cog):
         if not payload.guild_id or payload.emoji.is_custom_emoji():
             return
 
-        polls = DB.db.get(b"polls")
+        polls = self.DB.main.get(b"polls")
 
         if not polls:
             return
@@ -48,7 +47,7 @@ class events(commands.Cog):
 
         polls[guild][message][payload.emoji.name]["count"] += 1
 
-        DB.db.put(b"polls", orjson.dumps(polls))
+        self.DB.main.put(b"polls", orjson.dumps(polls))
 
     async def emoji_submission_check(self, payload):
         """Checks if an emoji submission has passed 8 votes.
@@ -56,7 +55,7 @@ class events(commands.Cog):
         payload: discord.RawReactionActionEvent
             A payload of raw data about the reaction and member.
         """
-        emojis = DB.db.get(b"emoji_submissions")
+        emojis = self.DB.main.get(b"emoji_submissions")
 
         if not payload.emoji.is_custom_emoji():
             return
@@ -93,7 +92,7 @@ class events(commands.Cog):
 
             emojis.pop(message_id)
 
-        DB.db.put(b"emoji_submissions", orjson.dumps(emojis))
+        self.DB.main.put(b"emoji_submissions", orjson.dumps(emojis))
 
     async def reaction_role_check(self, payload):
         """Checks if a reaction was on a reaction role message.
@@ -101,7 +100,7 @@ class events(commands.Cog):
         payload: discord.RawReactionActionEvent
             A payload of raw data about the reaction and member.
         """
-        reaction_roles = DB.rrole.get(str(payload.message_id).encode())
+        reaction_roles = self.DB.rrole.get(str(payload.message_id).encode())
 
         if not reaction_roles:
             return
@@ -178,9 +177,9 @@ class events(commands.Cog):
             return
 
         if reaction.emoji.name.lower() == "downvote":
-            await DB.add_karma(reaction.message.author.id, -1)
+            await self.DB.add_karma(reaction.message.author.id, -1)
         elif reaction.emoji.name.lower() == "upvote":
-            await DB.add_karma(reaction.message.author.id, 1)
+            await self.DB.add_karma(reaction.message.author.id, 1)
 
     @commands.Cog.listener()
     async def on_reaction_remove(self, reaction, user):
@@ -203,9 +202,9 @@ class events(commands.Cog):
             return
 
         if reaction.emoji.name.lower() == "downvote":
-            await DB.add_karma(reaction.message.author.id, 1)
+            await self.DB.add_karma(reaction.message.author.id, 1)
         elif reaction.emoji.name.lower() == "upvote":
-            await DB.add_karma(reaction.message.author.id, -1)
+            await self.DB.add_karma(reaction.message.author.id, -1)
 
     @commands.Cog.listener()
     async def on_reaction_clear(self, message, reactions):
@@ -214,7 +213,7 @@ class events(commands.Cog):
         message: discord.Message
         reactions: List[discord.Reaction]
         """
-        if await DB.get_blacklist(message.author.id, message.guild.id) == b"1":
+        if await self.DB.get_blacklist(message.author.id, message.guild.id) == b"1":
             try:
                 await message.add_reaction("<:downvote:766414744730206228>")
             except discord.errors.HTTPException:
@@ -234,9 +233,9 @@ class events(commands.Cog):
         if not after.channel:
             return
 
-        if await DB.get_blacklist(member.id, member.guild.id) == b"1":
+        if await self.DB.get_blacklist(member.id, member.guild.id) == b"1":
             await member.edit(voice_channel=None)
-            await DB.add_karma(member.id, -1)
+            await self.DB.add_karma(member.id, -1)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
@@ -249,7 +248,7 @@ class events(commands.Cog):
         """
         if (
             not before.guild
-            or DB.db.get(f"{after.guild.id}-logging".encode())
+            or self.DB.main.get(f"{after.guild.id}-logging".encode())
             or not after.content
             or before.content == after.content
             or after.author == self.bot.user
@@ -257,7 +256,7 @@ class events(commands.Cog):
             return
 
         member_id = f"{before.guild.id}-{before.author.id}".encode()
-        edited = DB.edited.get(member_id)
+        edited = self.DB.edited.get(member_id)
 
         if not edited:
             edited = {}
@@ -266,8 +265,8 @@ class events(commands.Cog):
 
         date = str(int(datetime.now().timestamp()))
         edited[date] = [before.content, after.content]
-        DB.edited.put(member_id, orjson.dumps(edited))
-        DB.db.put(
+        self.DB.edited.put(member_id, orjson.dumps(edited))
+        self.DB.main.put(
             f"{before.guild.id}-editsnipe_message".encode(),
             orjson.dumps([before.content, after.content, before.author.display_name]),
         )
@@ -302,7 +301,7 @@ class events(commands.Cog):
         """
         if (
             not message.guild
-            or DB.db.get(f"{message.guild.id}-logging".encode())
+            or self.DB.main.get(f"{message.guild.id}-logging".encode())
             or message.author == self.bot.user
             or not message.content
             and not message.attachments[0].content_type.startswith("image/")
@@ -321,7 +320,7 @@ class events(commands.Cog):
         )
 
         member_id = f"{message.guild.id}-{message.author.id}".encode()
-        deleted = DB.deleted.get(member_id)
+        deleted = self.DB.deleted.get(member_id)
 
         if not deleted:
             deleted = {}
@@ -331,8 +330,8 @@ class events(commands.Cog):
         date = str(int(datetime.now().timestamp()))
         deleted[date] = message.content
 
-        DB.deleted.put(member_id, orjson.dumps(deleted))
-        DB.db.put(
+        self.DB.deleted.put(member_id, orjson.dumps(deleted))
+        self.DB.main.put(
             f"{message.guild.id}-snipe_message".encode(),
             orjson.dumps([content, message.author.display_name]),
         )
@@ -360,18 +359,18 @@ class events(commands.Cog):
             guild = message.guild.id
 
             key = f"{guild}-{message.author.id}".encode()
-            count = DB.message_count.get(key)
+            count = self.DB.message_count.get(key)
 
             if count:
                 count = int(count) + 1
             else:
                 count = 1
 
-            DB.message_count.put(key, str(count).encode())
+            self.DB.message_count.put(key, str(count).encode())
         else:
             guild = None
 
-        if await DB.get_blacklist(message.author.id, guild) == b"1":
+        if await self.DB.get_blacklist(message.author.id, guild) == b"1":
             try:
                 await message.add_reaction("<:downvote:766414744730206228>")
             except discord.errors.HTTPException:
@@ -391,7 +390,7 @@ class events(commands.Cog):
 
         member_id = str(after.id).encode()
 
-        nicks = DB.nicks.get(member_id)
+        nicks = self.DB.nicks.get(member_id)
 
         if not nicks:
             nicks = {"nicks": {}, "names": {}}
@@ -408,7 +407,7 @@ class events(commands.Cog):
         nicks["nicks"][date] = before.nick
         nicks["nicks"]["current"] = [after.nick, now]
 
-        DB.nicks.put(member_id, orjson.dumps(nicks))
+        self.DB.nicks.put(member_id, orjson.dumps(nicks))
 
     @commands.Cog.listener()
     async def on_user_update(self, before, after):
@@ -424,7 +423,7 @@ class events(commands.Cog):
 
         member_id = str(after.id).encode()
 
-        names = DB.nicks.get(member_id)
+        names = self.DB.nicks.get(member_id)
 
         if not names:
             names = {"nicks": {}, "names": {}}
@@ -441,7 +440,7 @@ class events(commands.Cog):
         names["names"][date] = before.name
         names["names"]["current"] = [after.name, now]
 
-        DB.nicks.put(member_id, orjson.dumps(names))
+        self.DB.nicks.put(member_id, orjson.dumps(names))
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -451,14 +450,14 @@ class events(commands.Cog):
         """
         for invite in await member.guild.invites():
             key = f"{invite.code}-{invite.guild.id}"
-            uses = DB.invites.get(key.encode())
+            uses = self.DB.invites.get(key.encode())
 
             if not uses:
-                DB.invites.put(key.encode(), str(invite.uses).encode())
+                self.DB.invites.put(key.encode(), str(invite.uses).encode())
                 continue
 
             if invite.uses > int(uses):
-                DB.invites.put(str(member.id).encode(), invite.code.encode())
+                self.DB.invites.put(str(member.id).encode(), invite.code.encode())
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
@@ -485,7 +484,7 @@ class events(commands.Cog):
         invite: discord.Invite
         """
         key = f"{invite.code}-{invite.guild.id}"
-        DB.invites.put(key.encode(), str(invite.uses).encode())
+        self.DB.invites.put(key.encode(), str(invite.uses).encode())
 
     @commands.Cog.listener()
     async def on_invite_delete(self, invite):
@@ -493,7 +492,7 @@ class events(commands.Cog):
 
         invite: discord.Invite
         """
-        DB.invites.delete(f"{invite.code}-{invite.guild.id}".encode())
+        self.DB.invites.delete(f"{invite.code}-{invite.guild.id}".encode())
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -583,7 +582,7 @@ class events(commands.Cog):
             )
 
             self.bot.uptime = datetime.utcnow()
-            boot_times = DB.db.get(b"boot_times")
+            boot_times = self.DB.main.get(b"boot_times")
 
             if boot_times:
                 boot_times = orjson.loads(boot_times)
@@ -591,11 +590,11 @@ class events(commands.Cog):
                 boot_times = []
 
             boot_times.append(round(boot_time, 5))
-            DB.db.put(b"boot_times", orjson.dumps(boot_times))
+            self.DB.main.put(b"boot_times", orjson.dumps(boot_times))
 
             # Wipe the cache and polls as we have no way of knowing if they have expired
-            DB.db.put(b"cache", b"{}")
-            DB.db.delete(b"polls")
+            self.DB.main.put(b"cache", b"{}")
+            self.DB.main.delete(b"polls")
 
             print(
                 f"Logged in as {self.bot.user.name}\n"
@@ -612,7 +611,7 @@ class events(commands.Cog):
             return True
 
         if ctx.guild:
-            disabled = DB.db.get(f"{ctx.guild.id}-disabled_channels".encode())
+            disabled = self.DB.main.get(f"{ctx.guild.id}-disabled_channels".encode())
 
             if (
                 disabled
@@ -622,7 +621,7 @@ class events(commands.Cog):
                 if ctx.channel.id in disabled[str(ctx.guild.id)]:
                     return False
 
-            if ctx.guild and DB.db.get(f"{ctx.guild.id}-{ctx.command}".encode()):
+            if ctx.guild and self.DB.main.get(f"{ctx.guild.id}-{ctx.command}".encode()):
                 await ctx.send(
                     embed=discord.Embed(
                         color=discord.Color.red(), description="```Command disabled```"
@@ -630,7 +629,9 @@ class events(commands.Cog):
                 )
                 return False
 
-        if await DB.get_blacklist(ctx.author.id, ctx.guild.id if ctx.guild else None):
+        if await self.DB.get_blacklist(
+            ctx.author.id, ctx.guild.id if ctx.guild else None
+        ):
             await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.red(),

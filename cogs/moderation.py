@@ -4,8 +4,6 @@ from discord.ext import commands, menus
 import discord
 import orjson
 
-import cogs.utils.database as DB
-
 
 class HistoryMenu(menus.ListPageSource):
     def __init__(self, data):
@@ -25,6 +23,7 @@ class moderation(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.DB = self.bot.DB
         self.loop = asyncio.get_event_loop()
 
     @commands.command()
@@ -41,10 +40,9 @@ class moderation(commands.Cog):
             )
         )
 
-    @staticmethod
-    async def _end_poll(guild, message):
+    async def _end_poll(self, guild, message):
         """Ends a poll and sends the results."""
-        polls = DB.db.get(b"polls")
+        polls = self.DB.main.get(b"polls")
 
         if not polls:
             return
@@ -65,7 +63,7 @@ class moderation(commands.Cog):
         await message.reply(f"Winner of the poll was {winner}")
 
         polls[guild].pop(message_id)
-        DB.db.put(b"polls", orjson.dumps(polls))
+        self.DB.main.put(b"polls", orjson.dumps(polls))
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
@@ -85,7 +83,7 @@ class moderation(commands.Cog):
             embed.description = "```You need at least 2 options```"
             return await ctx.send(embed=embed)
 
-        polls = DB.db.get(b"polls")
+        polls = self.DB.main.get(b"polls")
 
         if not polls:
             polls = {}
@@ -116,14 +114,14 @@ class moderation(commands.Cog):
         for i in range(len(options)):
             await message.add_reaction(chr(127462 + i))
 
-        DB.db.put(b"polls", orjson.dumps(polls))
+        self.DB.main.put(b"polls", orjson.dumps(polls))
         self.loop.call_later(21600, asyncio.create_task, self.end_poll(guild, message))
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
     async def end_poll(self, ctx, message_id):
         """Ends a poll based off its message id."""
-        polls = DB.db.get(b"polls")
+        polls = self.DB.main.get(b"polls")
 
         if not polls:
             return
@@ -152,7 +150,7 @@ class moderation(commands.Cog):
         await ctx.reply(f"Winner of the poll was {winner}")
 
         polls[str(ctx.guild.id)].pop(message_id)
-        DB.db.put(b"polls", orjson.dumps(polls))
+        self.DB.main.put(b"polls", orjson.dumps(polls))
 
     @commands.command(name="mute")
     @commands.has_permissions(kick_members=True)
@@ -171,7 +169,7 @@ class moderation(commands.Cog):
             return await ctx.send(embed=embed)
 
         member_id = f"{ctx.guild.id}-{member.id}".encode()
-        infractions = DB.infractions.get(member_id)
+        infractions = self.DB.infractions.get(member_id)
 
         if not infractions:
             infractions = {
@@ -229,7 +227,7 @@ class moderation(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-        DB.infractions.put(member_id, orjson.dumps(infractions))
+        self.DB.infractions.put(member_id, orjson.dumps(infractions))
 
     @commands.command()
     @commands.has_permissions(manage_nicknames=True)
@@ -251,7 +249,7 @@ class moderation(commands.Cog):
         reason: str
         """
         member_id = f"{ctx.guild.id}-{member.id}".encode()
-        infractions = DB.infractions.get(member_id)
+        infractions = self.DB.infractions.get(member_id)
 
         if not infractions:
             infractions = {
@@ -275,7 +273,7 @@ class moderation(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-        DB.infractions.put(member_id, orjson.dumps(infractions))
+        self.DB.infractions.put(member_id, orjson.dumps(infractions))
 
     @commands.command()
     @commands.has_permissions(manage_messages=True)
@@ -285,7 +283,7 @@ class moderation(commands.Cog):
         member: discord.members
         """
         member_id = f"{ctx.guild.id}-{member.id}".encode()
-        infractions = DB.infractions.get(member_id)
+        infractions = self.DB.infractions.get(member_id)
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not infractions:
@@ -346,7 +344,7 @@ class moderation(commands.Cog):
         await member.ban(reason=reason)
 
         member_id = f"{ctx.guild.id}-{member.id}".encode()
-        infractions = DB.infractions.get(member_id)
+        infractions = self.DB.infractions.get(member_id)
 
         if not infractions:
             infractions = {
@@ -363,7 +361,7 @@ class moderation(commands.Cog):
         infractions["bans"].append(reason)
 
         embed.description = f"```They had {infractions['count']} total infractions.```"
-        DB.infractions.put(member_id, orjson.dumps(infractions))
+        self.DB.infractions.put(member_id, orjson.dumps(infractions))
 
         await ctx.send(embed=embed)
 
@@ -439,7 +437,7 @@ class moderation(commands.Cog):
         await member.kick()
 
         member_id = f"{ctx.guild.id}-{member.id}".encode()
-        infractions = DB.infractions.get(member_id)
+        infractions = self.DB.infractions.get(member_id)
 
         if not infractions:
             infractions = {
@@ -461,7 +459,7 @@ class moderation(commands.Cog):
             description=f"```They had {infractions['count']} total infractions.```",
         )
         await ctx.send(embed=embed)
-        DB.infractions.put(member_id, orjson.dumps(infractions))
+        self.DB.infractions.put(member_id, orjson.dumps(infractions))
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)
@@ -592,7 +590,7 @@ class moderation(commands.Cog):
         member = member or ctx.author
 
         member_id = f"{ctx.guild.id}-{member.id}".encode()
-        deleted = DB.deleted.get(member_id)
+        deleted = self.DB.deleted.get(member_id)
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not deleted:
@@ -625,7 +623,7 @@ class moderation(commands.Cog):
         member = member or ctx.author
 
         member_id = f"{ctx.guild.id}-{member.id}".encode()
-        edited = DB.edited.get(member_id)
+        edited = self.DB.edited.get(member_id)
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not edited:

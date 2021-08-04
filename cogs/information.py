@@ -10,7 +10,6 @@ import orjson
 import psutil
 
 from .utils.relativedelta import pretty_time
-import cogs.utils.database as DB
 from cogs.utils.useful import get_json
 
 
@@ -19,6 +18,7 @@ class information(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.DB = self.bot.DB
         self.process = psutil.Process()
 
     @commands.command()
@@ -92,7 +92,7 @@ class information(commands.Cog):
         msgtop = sorted(
             [
                 (int(b), m.decode())
-                for m, b in DB.message_count
+                for m, b in self.DB.message_count
                 if int(m.decode().split("-")[0]) == ctx.guild.id
             ],
             reverse=True,
@@ -126,7 +126,7 @@ class information(commands.Cog):
         number: int
             Which rule to get.
         """
-        rules = DB.db.get(f"{ctx.guild.id}-rules".encode())
+        rules = self.DB.main.get(f"{ctx.guild.id}-rules".encode())
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not rules:
@@ -145,7 +145,7 @@ class information(commands.Cog):
     @commands.command()
     async def rules(self, ctx):
         """Shows all the rules of the server"""
-        rules = DB.db.get(f"{ctx.guild.id}-rules".encode())
+        rules = self.DB.main.get(f"{ctx.guild.id}-rules".encode())
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not rules:
