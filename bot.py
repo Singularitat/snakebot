@@ -8,6 +8,7 @@ import aiohttp
 import logging
 
 import config
+from cogs.utils.database import Database
 
 
 log = logging.getLogger("discord")
@@ -31,6 +32,7 @@ class Bot(commands.Bot):
         super().__init__(*args, **kwargs)
 
         self.client_session = None
+        self.DB = Database()
 
     @classmethod
     def create(cls) -> commands.Bot:
@@ -84,6 +86,7 @@ class Bot(commands.Bot):
         await super().login(*args, **kwargs)
 
 
-bot = Bot.create()
-bot.load_extensions()
-bot.run(config.token)
+if __name__ == "__main__":
+    bot = Bot.create()
+    bot.load_extensions()
+    bot.run(config.token)
