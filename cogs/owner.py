@@ -13,7 +13,6 @@ from discord.ext import commands
 import discord
 import orjson
 
-import cogs.utils.database as DB
 from cogs.utils.useful import run_process
 
 
@@ -60,6 +59,7 @@ class owner(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.DB = self.bot.DB
 
     async def cog_check(self, ctx):
         """Checks if the member is an owner.
@@ -130,8 +130,8 @@ class owner(commands.Cog):
     @commands.command(name="wipeblacklist")
     async def wipe_blacklist(self, ctx):
         """Wipes everyone from the blacklist list includes downvoted members."""
-        for member, value in DB.blacklist:
-            DB.blacklist.delete(member)
+        for member, value in self.DB.blacklist:
+            self.DB.blacklist.delete(member)
 
     @commands.group()
     async def db(self, ctx):
@@ -150,7 +150,7 @@ class owner(commands.Cog):
         key: str
         value: str
         """
-        DB.db.put(key.encode(), value.encode())
+        self.DB.main.put(key.encode(), value.encode())
 
         await ctx.send(
             embed=discord.Embed(
@@ -165,7 +165,7 @@ class owner(commands.Cog):
 
         key: str
         """
-        DB.db.delete(key.encode())
+        self.DB.main.delete(key.encode())
 
         await ctx.send(
             embed=discord.Embed(
@@ -180,7 +180,7 @@ class owner(commands.Cog):
 
         key: str
         """
-        item = DB.db.get(key.encode())
+        item = self.DB.main.get(key.encode())
 
         if not item:
             return await ctx.send(
@@ -210,7 +210,7 @@ class owner(commands.Cog):
                 b"aliases",
             )
 
-            for key, value in DB.db:
+            for key, value in self.DB.main:
                 if key.split(b"-")[0] not in excluded:
                     if value[:1] in [b"{", b"["]:
                         value = orjson.loads(value)
@@ -218,7 +218,7 @@ class owner(commands.Cog):
                         value = value.decode()
                     database[key.decode()] = value
         else:
-            for key, value in DB.db:
+            for key, value in self.DB.main:
                 if value[:1] in [b"{", b"["]:
                     value = orjson.loads(value)
                 else:
@@ -231,15 +231,16 @@ class owner(commands.Cog):
     @db.command(aliases=["pre"])
     async def show_prefixed(self, ctx, prefixed):
         """Sends a json of the entire database."""
-        if not hasattr(DB, prefixed):
+        if not hasattr(self.DB, prefixed):
             return await ctx.send(
                 embed=discord.Embed(
-                    color=discord.Color.blurple, description="```DB not found```"
+                    color=discord.Color.blurple,
+                    description="```self.DB not found```",
                 )
             )
 
         database = {
-            key.decode(): value.decode() for key, value in getattr(DB, prefixed)
+            key.decode(): value.decode() for key, value in getattr(self.DB, prefixed)
         }
 
         file = StringIO(str(database))
@@ -252,7 +253,7 @@ class owner(commands.Cog):
 
         member: discord.Member
         """
-        DB.infractions.delete(f"{ctx.guild.id}-{member.id}".encode())
+        self.DB.infractions.delete(f"{ctx.guild.id}-{member.id}".encode())
 
     @commands.command(aliases=["showinf"])
     async def show_infractions(self, ctx, member: discord.Member):
@@ -261,7 +262,7 @@ class owner(commands.Cog):
         member: discord.Member
         """
         member_id = f"{ctx.guild.id}-{member.id}".encode()
-        infractions = DB.infractions.get(member_id)
+        infractions = self.DB.infractions.get(member_id)
 
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -277,7 +278,7 @@ class owner(commands.Cog):
 
         await ctx.send(embed=embed)
 
-        DB.infractions.put(member_id, orjson.dumps(infractions))
+        self.DB.infractions.put(member_id, orjson.dumps(infractions))
 
     @commands.command(aliases=["removeinf"])
     async def remove_infraction(
@@ -292,7 +293,7 @@ class owner(commands.Cog):
             The index of the infraction to remove e.g 0, 1, 2
         """
         member_id = f"{ctx.guild.id}-{member.id}".encode()
-        infractions = DB.infractions.get(member_id)
+        infractions = self.DB.infractions.get(member_id)
 
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -306,7 +307,7 @@ class owner(commands.Cog):
         embed.description = f"Deleted infraction [{infraction}] from {member}"
         await ctx.send(embed=embed)
 
-        DB.infractions.put(member_id, orjson.dumps(infractions))
+        self.DB.infractions.put(member_id, orjson.dumps(infractions))
 
     @commands.command(name="loglevel")
     async def log_level(self, ctx, level):
@@ -330,14 +331,14 @@ class owner(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         user_id = str(user.id).encode()
-        if DB.blacklist.get(user_id):
-            DB.blacklist.delete(user_id)
+        if self.DB.blacklist.get(user_id):
+            self.DB.blacklist.delete(user_id)
 
             embed.title = "User Unblacklisted"
             embed.description = f"***{user}*** has been unblacklisted"
             return await ctx.send(embed=embed)
 
-        DB.blacklist.put(user_id, b"2")
+        self.DB.blacklist.put(user_id, b"2")
         embed.title = "User Blacklisted"
         embed.description = f"**{user}** has been added to the blacklist"
 
@@ -352,14 +353,14 @@ class owner(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         user_id = str(user.id).encode()
-        if DB.blacklist.get(user_id):
-            DB.blacklist.delete(user_id)
+        if self.DB.blacklist.get(user_id):
+            self.DB.blacklist.delete(user_id)
 
             embed.title = "User Undownvoted"
             embed.description = f"***{user}*** has been undownvoted"
             return await ctx.send(embed=embed)
 
-        DB.blacklist.put(user_id, b"1")
+        self.DB.blacklist.put(user_id, b"1")
         embed.title = "User Downvoted"
         embed.description = f"**{user}** has been added to the downvote list"
 
@@ -373,7 +374,7 @@ class owner(commands.Cog):
             Which backup to get.
         """
         if not number:
-            number = int(DB.db.get(b"backup_number").decode())
+            number = int(self.DB.main.get(b"backup_number").decode())
 
             with open(f"backup/{number}backup.json", "rb") as file:
                 return await ctx.send(file=discord.File(file, "backup.json"))
@@ -386,7 +387,7 @@ class owner(commands.Cog):
     @commands.command(name="boot")
     async def boot_times(self, ctx):
         """Shows the average fastest and slowest boot times of the bot."""
-        boot_times = DB.db.get(b"boot_times")
+        boot_times = self.DB.main.get(b"boot_times")
 
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -420,7 +421,7 @@ class owner(commands.Cog):
     @cache.command()
     async def wipe(self, ctx):
         """Wipes cache from the db."""
-        DB.db.delete(b"cache")
+        self.DB.main.delete(b"cache")
 
         await ctx.send(
             embed=discord.Embed(
@@ -432,7 +433,7 @@ class owner(commands.Cog):
     async def list(self, ctx):
         """Lists the cached items in the db."""
         embed = discord.Embed(color=discord.Color.blurple())
-        cache = DB.db.get(b"cache")
+        cache = self.DB.main.get(b"cache")
 
         if not cache or cache == b"{}":
             embed.description = "```Nothing has been cached```"
@@ -695,7 +696,7 @@ class owner(commands.Cog):
     async def restart(self, ctx):
         """Restarts all extensions."""
         embed = discord.Embed(color=discord.Color.blurple())
-        DB.db.put(b"restart", b"1")
+        self.DB.main.put(b"restart", b"1")
 
         for ext in [f[:-3] for f in os.listdir("cogs") if f.endswith(".py")]:
             try:
@@ -723,7 +724,7 @@ class owner(commands.Cog):
     async def rrole_list(self, ctx):
         """Sends a list of the message ids of current reaction roles."""
         msg = ""
-        for message_id, roles in DB.rrole:
+        for message_id, roles in self.DB.rrole:
             msg += f"\n\n{message_id.decode()}: {orjson.loads(roles)}"
         await ctx.send(f"```{msg}```")
 
@@ -734,7 +735,7 @@ class owner(commands.Cog):
         message: int
             Id of the reaction role messgae to delete.
         """
-        DB.rrole.delete(str(message_id).encode())
+        self.DB.rrole.delete(str(message_id).encode())
         message = ctx.channel.get_partial_message(message_id)
         await message.delete()
 
@@ -795,7 +796,9 @@ class owner(commands.Cog):
             await message.delete()
             return await ctx.send("Invalid emoji")
 
-        DB.rrole.put(str(message.id).encode(), orjson.dumps(dict(zip(emojis, roles))))
+        self.DB.rrole.put(
+            str(message.id).encode(), orjson.dumps(dict(zip(emojis, roles)))
+        )
 
     @rrole.command()
     async def edit(self, ctx, message: discord.Message, *emojis):
@@ -806,7 +809,7 @@ class owner(commands.Cog):
         emojis: tuple
             A tuple of emojis.
         """
-        reaction = DB.rrole.get(str(message.id).encode())
+        reaction = self.DB.rrole.get(str(message.id).encode())
 
         if not reaction:
             return await ctx.send(
@@ -848,7 +851,7 @@ class owner(commands.Cog):
         for emoji, role in zip(emojis, roles):
             reaction[emoji] = role
 
-        DB.rrole.put(str(message.id).encode(), orjson.dumps(reaction))
+        self.DB.rrole.put(str(message.id).encode(), orjson.dumps(reaction))
 
     @staticmethod
     async def await_for_message(ctx, message):

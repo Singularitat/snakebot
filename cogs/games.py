@@ -4,7 +4,6 @@ from discord.ext import commands
 import discord
 import orjson
 
-import cogs.utils.database as DB
 import config
 
 
@@ -21,9 +20,10 @@ HANGMAN_IMAGES = {
 
 
 class CookieClicker(discord.ui.View):
-    def __init__(self, user: discord.User):
+    def __init__(self, db, user: discord.User):
         super().__init__(timeout=1200.0)
         self.user = user
+        self.DB = db
 
     @staticmethod
     def get_embed(name, data):
@@ -38,7 +38,7 @@ class CookieClicker(discord.ui.View):
     async def click(self, button, interaction):
         if interaction.user == self.user:
             user_id = str(interaction.user.id).encode()
-            cookies = DB.cookies.get(user_id)
+            cookies = self.DB.cookies.get(user_id)
 
             if not cookies:
                 cookies = {"cookies": 1, "upgrade": 1}
@@ -56,13 +56,13 @@ class CookieClicker(discord.ui.View):
             await interaction.response.edit_message(
                 content=None, embed=self.get_embed(self.user.display_name, cookies)
             )
-            DB.cookies.put(user_id, orjson.dumps(cookies))
+            self.DB.cookies.put(user_id, orjson.dumps(cookies))
 
     @discord.ui.button(label="🆙", style=discord.ButtonStyle.blurple)
     async def upgrade(self, button, interaction):
         if interaction.user == self.user:
             user_id = str(interaction.user.id).encode()
-            cookies = DB.cookies.get(user_id)
+            cookies = self.DB.cookies.get(user_id)
 
             if not cookies:
                 cookies = {"cookies": 1, "upgrade": 1}
@@ -85,7 +85,7 @@ class CookieClicker(discord.ui.View):
             cookies["cookies"] -= cost
             cookies["upgrade"] += 1
 
-            DB.cookies.put(user_id, orjson.dumps(cookies))
+            self.DB.cookies.put(user_id, orjson.dumps(cookies))
             await interaction.response.edit_message(
                 content=None, embed=self.get_embed(self.user.display_name, cookies)
             )
@@ -94,7 +94,7 @@ class CookieClicker(discord.ui.View):
     async def autocookie(self, button, interaction):
         if interaction.user == self.user:
             user_id = str(interaction.user.id).encode()
-            cookies = DB.cookies.get(user_id)
+            cookies = self.DB.cookies.get(user_id)
 
             if not cookies:
                 return
@@ -120,7 +120,7 @@ class CookieClicker(discord.ui.View):
 
             cookies["cps"] += 1
 
-            DB.cookies.put(user_id, orjson.dumps(cookies))
+            self.DB.cookies.put(user_id, orjson.dumps(cookies))
             await interaction.response.edit_message(
                 content=None, embed=self.get_embed(self.user.display_name, cookies)
             )
@@ -215,12 +215,13 @@ class games(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.DB = self.bot.DB
 
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.command()
     async def cookie(self, ctx):
         """Starts a simple game of cookie clicker."""
-        await ctx.send("Click for cookies", view=CookieClicker(ctx.author))
+        await ctx.send("Click for cookies", view=CookieClicker(self.DB, ctx.author))
 
     @commands.command()
     async def cookies(self, ctx, user: discord.User = None):
@@ -232,7 +233,7 @@ class games(commands.Cog):
         user = user or ctx.author
 
         user_id = str(user.id).encode()
-        cookies = DB.cookies.get(user_id)
+        cookies = self.DB.cookies.get(user_id)
 
         if not cookies:
             cookies = {"cookies": 0, "upgrade": 1}
@@ -251,13 +252,13 @@ class games(commands.Cog):
         )
 
         await ctx.send(embed=embed)
-        DB.cookies.put(user_id, orjson.dumps(cookies))
+        self.DB.cookies.put(user_id, orjson.dumps(cookies))
 
     @commands.command()
     async def cookietop(self, ctx):
         """Gets the users with the most cookies."""
         cookietop = []
-        for member, data in DB.cookies:
+        for member, data in self.DB.cookies:
             data = orjson.loads(data)
             cps = data.get("cps", 0)
             if cps:
@@ -297,7 +298,7 @@ class games(commands.Cog):
         sender = str(ctx.author.id).encode()
         receiver = str(member.id).encode()
 
-        sender_bal = DB.cookies.get(sender)
+        sender_bal = self.DB.cookies.get(sender)
 
         if not sender_bal:
             embed.description = "```You don't have any cookies```"
@@ -309,7 +310,7 @@ class games(commands.Cog):
             embed.description = "```You don't have enough cookies```"
             return await ctx.send(embed=embed)
 
-        receiver_bal = DB.cookies.get(receiver)
+        receiver_bal = self.DB.cookies.get(receiver)
 
         if not receiver_bal:
             receiver_bal = {"cookies": amount, "upgrade": 1}
@@ -323,8 +324,8 @@ class games(commands.Cog):
         embed.title = f"You sent {amount} 🍪 to {member}"
         await ctx.send(embed=embed)
 
-        DB.cookies.put(sender, orjson.dumps(sender_bal))
-        DB.cookies.put(receiver, orjson.dumps(receiver_bal))
+        self.DB.cookies.put(sender, orjson.dumps(sender_bal))
+        self.DB.cookies.put(receiver, orjson.dumps(receiver_bal))
 
     @commands.command()
     async def tictactoe(self, ctx):
@@ -401,7 +402,7 @@ class games(commands.Cog):
     @commands.guild_only()
     async def chess(self, ctx):
         """Starts a Chess In The Park game."""
-        if (code := DB.db.get(b"chess")) and discord.utils.get(
+        if (code := self.DB.main.get(b"chess")) and discord.utils.get(
             await ctx.guild.invites(), code=code.decode()
         ):
             return await ctx.send(
@@ -435,13 +436,13 @@ class games(commands.Cog):
             data = await response.json()
 
         await ctx.send(f"https://discord.gg/{data['code']}")
-        DB.db.put(b"chess", data["code"].encode())
+        self.DB.main.put(b"chess", data["code"].encode())
 
     @commands.command()
     @commands.guild_only()
     async def poker(self, ctx):
         """Starts a Discord Poke Night."""
-        if (code := DB.db.get(b"poker_night")) and discord.utils.get(
+        if (code := self.DB.main.get(b"poker_night")) and discord.utils.get(
             await ctx.guild.invites(), code=code.decode()
         ):
             return await ctx.send(
@@ -475,13 +476,13 @@ class games(commands.Cog):
             data = await response.json()
 
         await ctx.send(f"https://discord.gg/{data['code']}")
-        DB.db.put(b"poker_night", data["code"].encode())
+        self.DB.main.put(b"poker_night", data["code"].encode())
 
     @commands.command()
     @commands.guild_only()
     async def betrayal(self, ctx):
         """Starts a Betrayal.io game."""
-        if (code := DB.db.get(b"betrayal_io")) and discord.utils.get(
+        if (code := self.DB.main.get(b"betrayal_io")) and discord.utils.get(
             await ctx.guild.invites(), code=code.decode()
         ):
             return await ctx.send(
@@ -515,13 +516,13 @@ class games(commands.Cog):
             data = await response.json()
 
         await ctx.send(f"https://discord.gg/{data['code']}")
-        DB.db.put(b"betrayal_io", data["code"].encode())
+        self.DB.main.put(b"betrayal_io", data["code"].encode())
 
     @commands.command()
     @commands.guild_only()
     async def fishing(self, ctx):
         """Starts a Fishington.io game."""
-        if (code := DB.db.get(b"fishington")) and discord.utils.get(
+        if (code := self.DB.main.get(b"fishington")) and discord.utils.get(
             await ctx.guild.invites(), code=code.decode()
         ):
             return await ctx.send(
@@ -555,7 +556,7 @@ class games(commands.Cog):
             data = await response.json()
 
         await ctx.send(f"https://discord.gg/{data['code']}")
-        DB.db.put(b"fishington", data["code"].encode())
+        self.DB.main.put(b"fishington", data["code"].encode())
 
 
 def setup(bot: commands.Bot) -> None:

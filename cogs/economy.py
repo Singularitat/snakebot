@@ -4,8 +4,6 @@ from discord.ext import commands
 import discord
 import orjson
 
-import cogs.utils.database as DB
-
 
 class Card:
     def __init__(self, suit, name, value):
@@ -85,6 +83,7 @@ class economy(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.DB = self.bot.DB
 
     @commands.command()
     async def blackjack(self, ctx, bet: float):
@@ -99,7 +98,7 @@ class economy(commands.Cog):
             return await ctx.send(embed=embed)
 
         member = str(ctx.author.id).encode()
-        bal = await DB.get_bal(member)
+        bal = await self.DB.get_bal(member)
 
         if bal < bet:
             embed.title = "You don't have enough cash"
@@ -114,12 +113,12 @@ class economy(commands.Cog):
 
         if deck.get_score(m_cards) == 21:
             await message.edit(embed=deck.get_embed(bet, False))
-            await DB.put_bal(member, bal + bet)
+            await self.DB.put_bal(member, bal + bet)
             return await message.add_reaction("✅")
 
         if deck.get_score(d_cards) == 21:
             await message.edit(embed=deck.get_embed(bet, False))
-            await DB.put_bal(member, bal - bet)
+            await self.DB.put_bal(member, bal - bet)
             return await message.add_reaction("❎")
 
         reactions = ["🇭", "🇸"]
@@ -162,7 +161,7 @@ class economy(commands.Cog):
                 await message.add_reaction("❎")
 
         await message.edit(embed=deck.get_embed(bet, False))
-        await DB.put_bal(member, bal)
+        await self.DB.put_bal(member, bal)
 
     @commands.command(aliases=["flip", "fcoin", "coinf"])
     async def coinflip(self, ctx, choice, bet: float):
@@ -182,7 +181,7 @@ class economy(commands.Cog):
             return await ctx.send(embed=embed)
 
         member = str(ctx.author.id).encode()
-        bal = await DB.get_bal(member)
+        bal = await self.DB.get_bal(member)
 
         if bal <= 1:
             bal += 1
@@ -208,7 +207,7 @@ class economy(commands.Cog):
             embed.description = f"You lost ${bet}"
             bal -= bet
 
-        await DB.put_bal(member, bal)
+        await self.DB.put_bal(member, bal)
 
         embed.set_footer(text=f"Balance: ${bal:,}")
         await ctx.send(embed=embed)
@@ -220,7 +219,7 @@ class economy(commands.Cog):
         amount: int
             The amount of balances to get defaulting to 3.
         """
-        topbal = await DB.get_baltop(amount)
+        topbal = await self.DB.get_baltop(amount)
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.title = f"Top {len(topbal)} Balances"
@@ -246,7 +245,7 @@ class economy(commands.Cog):
             return await ctx.send(embed=embed)
 
         member = str(ctx.author.id).encode()
-        bal = await DB.get_bal(member)
+        bal = await self.DB.get_bal(member)
 
         if bal < bet:
             embed.title = "You don't have enough cash"
@@ -254,19 +253,19 @@ class economy(commands.Cog):
 
         if random.randint(1, 100) == 50:
             bal += bet * 99
-            await DB.put_bal(member, bal)
+            await self.DB.put_bal(member, bal)
             embed.title = f"You won ${bet * 99}"
             embed.set_footer(text=f"Balance: ${bal:,}")
             return await ctx.send(embed=embed)
 
-        await DB.put_bal(member, bal - bet)
+        await self.DB.put_bal(member, bal - bet)
         embed.title = f"You lost ${bet}"
         embed.set_footer(text=f"Balance: ${bal - bet:,}")
         embed.color = discord.Color.red()
         await ctx.send(embed=embed)
 
     async def streak_update(self, member, result):
-        data = DB.wins.get(member)
+        data = self.DB.wins.get(member)
 
         if not data:
             data = {
@@ -290,7 +289,7 @@ class economy(commands.Cog):
             data["totallose"] += 1
             data["currentlose"] += 1
             data["currentwin"] = 0
-        DB.wins.put(member, orjson.dumps(data))
+        self.DB.wins.put(member, orjson.dumps(data))
 
     @commands.command(aliases=["slots"])
     async def slot(self, ctx, bet, silent: bool = False):
@@ -304,7 +303,7 @@ class economy(commands.Cog):
         embed = discord.Embed(color=discord.Color.red())
 
         member = str(ctx.author.id).encode()
-        bal = await DB.get_bal(member)
+        bal = await self.DB.get_bal(member)
 
         if bet[-1] == "%":
             bet = bal * ((float(bet[:-1])) / 100)
@@ -360,7 +359,7 @@ class economy(commands.Cog):
             embed.color = discord.Color.red()
 
         bal += bet * winnings
-        await DB.put_bal(member, bal)
+        await self.DB.put_bal(member, bal)
 
         if not silent:
             embed.title = f"[ {a} {b} {c} {d} ]"
@@ -382,7 +381,7 @@ class economy(commands.Cog):
         else:
             user = str(ctx.author.id).encode()
 
-        wins = DB.wins.get(user)
+        wins = self.DB.wins.get(user)
 
         if not wins:
             return
@@ -431,7 +430,7 @@ class economy(commands.Cog):
         user = user or ctx.author
 
         user_id = str(user.id).encode()
-        bal = await DB.get_bal(user_id)
+        bal = await self.DB.get_bal(user_id)
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(name=f"{user.display_name}'s balance", value=f"${bal:,}")
@@ -456,7 +455,7 @@ class economy(commands.Cog):
         _from = str(ctx.author.id).encode()
         to = str(user.id).encode()
 
-        bal = await DB.transfer(_from, to, amount)
+        bal = await self.DB.transfer(_from, to, amount)
 
         embed = discord.Embed(
             title=f"Sent ${amount} to {user.display_name}",
@@ -471,7 +470,7 @@ class economy(commands.Cog):
     async def salary(self, ctx):
         """Gives you a salary of 1000 on a 6 hour cooldown."""
         member = str(ctx.author.id).encode()
-        bal = await DB.add_bal(member, 1000)
+        bal = await self.DB.add_bal(member, 1000)
 
         embed = discord.Embed(
             title=f"Paid {ctx.author.display_name} $1000", color=discord.Color.blurple()
@@ -485,7 +484,7 @@ class economy(commands.Cog):
         """Shows the top slot streaks."""
         streak_top = []
 
-        for member, data in DB.wins:
+        for member, data in self.DB.wins:
             user = self.bot.get_user(int(member))
             if user is not None:
                 json = orjson.loads(data)

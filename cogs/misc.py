@@ -8,7 +8,6 @@ import aiohttp
 import discord
 import lxml.html
 
-import cogs.utils.database as DB
 import config
 
 
@@ -20,6 +19,7 @@ class misc(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.DB = self.bot.DB
 
     @commands.command()
     async def snowflake(self, ctx, snowflake: int):
@@ -259,7 +259,7 @@ class misc(commands.Cog):
     @commands.guild_only()
     async def youtube(self, ctx):
         """Starts a YouTube Together."""
-        if (code := DB.db.get(b"youtube_together")) and discord.utils.get(
+        if (code := self.DB.main.get(b"youtube_together")) and discord.utils.get(
             await ctx.guild.invites(), code=code.decode()
         ):
             return await ctx.send(
@@ -293,7 +293,7 @@ class misc(commands.Cog):
             data = await response.json()
 
         await ctx.send(f"https://discord.gg/{data['code']}")
-        DB.db.put(b"youtube_together", data["code"].encode())
+        self.DB.main.put(b"youtube_together", data["code"].encode())
 
     @commands.command(name="8ball")
     async def eightball(self, ctx):
@@ -374,7 +374,7 @@ class misc(commands.Cog):
         """
         user = user or ctx.author
         user_id = str(user.id).encode()
-        karma = DB.karma.get(user_id)
+        karma = self.DB.karma.get(user_id)
 
         if not karma:
             karma = 0
@@ -390,7 +390,9 @@ class misc(commands.Cog):
     @commands.command(aliases=["kboard", "karmab", "karmatop"])
     async def karmaboard(self, ctx):
         """Displays the top 5 and bottom 5 members karma."""
-        sorted_karma = sorted([(int(k), int(m)) for m, k in DB.karma], reverse=True)
+        sorted_karma = sorted(
+            [(int(k), int(m)) for m, k in self.DB.karma], reverse=True
+        )
         embed = discord.Embed(title="Karma Board", color=discord.Color.blurple())
 
         def parse_karma(data):
