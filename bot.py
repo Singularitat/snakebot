@@ -58,7 +58,7 @@ class Bot(commands.Bot):
         """Load all extensions."""
         for extension in [f.name[:-3] for f in os.scandir("cogs") if f.is_file()]:
             try:
-                bot.load_extension(f"cogs.{extension}")
+                self.load_extension(f"cogs.{extension}")
             except Exception as e:
                 print(f"Failed to load extension {extension}.\n{e} \n")
 
