@@ -1,7 +1,6 @@
 import asyncio
 
 from discord.ext import commands
-import aiohttp
 import discord
 import orjson
 
@@ -507,7 +506,3 @@ class admin(commands.Cog):
 def setup(bot: commands.Bot) -> None:
     """Starts admin cog."""
     bot.add_cog(admin(bot))
-    if not hasattr(bot, "client_session"):
-        bot.client_session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=4)
-        )
