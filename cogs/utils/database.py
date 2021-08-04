@@ -3,215 +3,200 @@ import plyvel
 import orjson
 
 
-db = plyvel.DB(
-    f"{pathlib.Path(__file__).parent.parent.parent}/db", create_if_missing=True
-)
-infractions = db.prefixed_db(b"infractions-")
-karma = db.prefixed_db(b"karma-")
-blacklist = db.prefixed_db(b"blacklist-")
-rrole = db.prefixed_db(b"rrole-")
-deleted = db.prefixed_db(b"deleted-")
-edited = db.prefixed_db(b"edited-")
-invites = db.prefixed_db(b"invites-")
-nicks = db.prefixed_db(b"nicks-")
-cryptobal = db.prefixed_db(b"cryptobal-")
-crypto = db.prefixed_db(b"crypto-")
-stocks = db.prefixed_db(b"stocks-")
-stockbal = db.prefixed_db(b"stockbal-")
-bal = db.prefixed_db(b"bal-")
-wins = db.prefixed_db(b"wins-")
-message_count = db.prefixed_db(b"message_count-")
-cookies = db.prefixed_db(b"cookies-")
+class Database:
+    def __init__(self):
+        self.main = plyvel.DB(
+            f"{pathlib.Path(__file__).parent.parent.parent}/db", create_if_missing=True
+        )
+        self.infractions = self.main.prefixed_db(b"infractions-")
+        self.karma = self.main.prefixed_db(b"karma-")
+        self.blacklist = self.main.prefixed_db(b"blacklist-")
+        self.rrole = self.main.prefixed_db(b"rrole-")
+        self.deleted = self.main.prefixed_db(b"deleted-")
+        self.edited = self.main.prefixed_db(b"edited-")
+        self.invites = self.main.prefixed_db(b"invites-")
+        self.nicks = self.main.prefixed_db(b"nicks-")
+        self.cryptobal = self.main.prefixed_db(b"cryptobal-")
+        self.crypto = self.main.prefixed_db(b"crypto-")
+        self.stocks = self.main.prefixed_db(b"stocks-")
+        self.stockbal = self.main.prefixed_db(b"stockbal-")
+        self.bal = self.main.prefixed_db(b"bal-")
+        self.wins = self.main.prefixed_db(b"wins-")
+        self.message_count = self.main.prefixed_db(b"message_count-")
+        self.cookies = self.main.prefixed_db(b"cookies-")
 
+    def delete_cache(self, search, cache):
+        """Deletes a search from the cache.
 
-def delete_cache(search, cache):
-    """Deletes a search from the cache.
+        search: str
+        """
+        try:
+            cache.pop(search)
+        except KeyError:
+            return
+        self.main.put(b"cache", orjson.dumps(cache))
 
-    search: str
-    """
-    try:
-        cache.pop(search)
-    except KeyError:
-        return
-    db.put(b"cache", orjson.dumps(cache))
+    async def add_karma(self, member_id, amount):
+        """Adds or removes an amount from a members karma.
 
+        member_id: int
+        amount: int
+        """
+        member_id = str(member_id).encode()
+        member_karma = self.karma.get(member_id)
 
-async def add_karma(member_id, amount):
-    """Adds or removes an amount from a members karma.
+        if not member_karma:
+            member_karma = amount
+        else:
+            member_karma = int(member_karma) + amount
 
-    member_id: int
-    amount: int
-    """
-    member_id = str(member_id).encode()
-    member_karma = karma.get(member_id)
+        self.karma.put(member_id, str(member_karma).encode())
 
-    if not member_karma:
-        member_karma = amount
-    else:
-        member_karma = int(member_karma) + amount
+    async def get_blacklist(self, member_id, guild=None):
+        """Returns whether someone is blacklisted.
 
-    karma.put(member_id, str(member_karma).encode())
+        member_id: int
+        """
+        if state := self.blacklist.get(str(member_id).encode()):
+            return state
 
+        if guild and (state := self.blacklist.get(f"{guild}-{member_id}".encode())):
+            return state
 
-async def get_blacklist(member_id, guild=None):
-    """Returns whether someone is blacklisted.
+    async def get_bal(self, member_id):
+        """Gets the balance of an member.
 
-    member_id: int
-    """
-    if state := blacklist.get(str(member_id).encode()):
-        return state
+        member_id: bytes
+        """
+        balance = self.bal.get(member_id)
 
-    if guild and (state := blacklist.get(f"{guild}-{member_id}".encode())):
-        return state
+        if balance:
+            return float(balance)
 
+        return 1000.0
 
-async def get_bal(member_id):
-    """Gets the balance of an member.
+    async def get_baltop(self, amount: int):
+        """Gets the top [amount] balances.
 
-    member_id: bytes
-    """
-    balance = bal.get(member_id)
+        amount: int
+        """
+        return sorted([(float(b), int(m)) for m, b in self.bal], reverse=True)[:amount]
 
-    if balance:
-        return float(balance)
+    async def put_bal(self, member_id, amount: float):
+        """Sets the balance of an member.
 
-    return 1000.0
+        member_id: bytes
+        amount: int
+        """
+        self.bal.put(member_id, str(amount).encode())
+        return amount
 
+    async def add_bal(self, member_id, amount: float):
+        """Adds to the balance of an member.
 
-async def get_baltop(amount: int):
-    """Gets the top [amount] balances.
+        member_id: bytes
+        amount: int
+        """
+        if amount < 0:
+            raise ValueError("You can't pay a negative amount")
+        return await self.put_bal(member_id, await self.get_bal(member_id) + amount)
 
-    amount: int
-    """
-    return sorted([(float(b), int(m)) for m, b in bal], reverse=True)[:amount]
+    async def withdraw_bal(self, member_id, amount: float):
+        """Withdraws from the balance of an member.
 
+        member_id: bytes
+        amount: int
+        """
+        if amount < 0:
+            raise ValueError("You can't pay a negative amount")
+        return await self.put_bal(member_id, await self.get_bal(member_id) - amount)
 
-async def put_bal(member_id, amount: float):
-    """Sets the balance of an member.
+    async def transfer(self, _from, to, amount: float):
+        """Transfers money from one member to another.
 
-    member_id: bytes
-    amount: int
-    """
-    bal.put(member_id, str(amount).encode())
-    return amount
+        _from: bytes
+        to: bytes
+        amount: int
+        """
+        from_bal = await self.get_bal(_from)
 
+        if from_bal > amount:
+            await self.add_bal(to, amount)
+            return await self.withdraw_bal(_from, amount)
 
-async def add_bal(member_id, amount: float):
-    """Adds to the balance of an member.
+    async def get_stock(self, symbol):
+        """Returns the data of a stock.
 
-    member_id: bytes
-    amount: int
-    """
-    if amount < 0:
-        raise ValueError("You can't pay a negative amount")
-    return await put_bal(member_id, await get_bal(member_id) + amount)
+        symbol: bytes
+        """
+        stock = self.stocks.get(symbol.encode())
 
+        if stock:
+            return orjson.loads(stock)
+        return None
 
-async def withdraw_bal(member_id, amount: float):
-    """Withdraws from the balance of an member.
+    async def put_stock(self, symbol, data):
+        """Sets the data of a stock.
 
-    member_id: bytes
-    amount: int
-    """
-    if amount < 0:
-        raise ValueError("You can't pay a negative amount")
-    return await put_bal(member_id, await get_bal(member_id) - amount)
+        symbol: bytes
+        data: dict
+        """
+        self.stocks.put(symbol.encode(), orjson.dumps(data))
 
+    async def get_stockbal(self, member_id):
+        """Returns a members stockbal.
 
-async def transfer(_from, to, amount: float):
-    """Transfers money from one member to another.
+        member_id: bytes
+        """
+        data = self.stockbal.get(member_id)
 
-    _from: bytes
-    to: bytes
-    amount: int
-    """
-    from_bal = await get_bal(_from)
+        if data:
+            return orjson.loads(data)
+        return {}
 
-    if from_bal > amount:
-        await add_bal(to, amount)
-        return await withdraw_bal(_from, amount)
+    async def put_stockbal(self, member_id, data):
+        """Sets a members stockbal.
 
+        member_id: bytes
+        data: dict
+        """
+        self.stockbal.put(member_id, orjson.dumps(data))
 
-async def get_stock(symbol):
-    """Returns the data of a stock.
+    async def get_crypto(self, symbol):
+        """Returns the data of a crypto.
 
-    symbol: bytes
-    """
-    stock = stocks.get(symbol.encode())
+        symbol: bytes
+        """
+        data = self.crypto.get(symbol.encode())
 
-    if stock:
-        return orjson.loads(stock)
-    return None
+        if data:
+            return orjson.loads(data)
+        return None
 
+    async def put_crypto(self, symbol, data):
+        """Sets the data of a crypto.
 
-async def put_stock(symbol, data):
-    """Sets the data of a stock.
+        symbol: bytes
+        data: dict
+        """
+        data = orjson.dumps(data)
+        self.crypto.put(symbol.encode(), data)
 
-    symbol: bytes
-    data: dict
-    """
-    stocks.put(symbol.encode(), orjson.dumps(data))
+    async def get_cryptobal(self, member_id):
+        """Returns a members cryptobal.
 
+        member_id: bytes
+        """
+        data = self.cryptobal.get(member_id)
 
-async def get_stockbal(member_id):
-    """Returns a members stockbal.
+        if data:
+            return orjson.loads(data)
+        return {}
 
-    member_id: bytes
-    """
-    data = stockbal.get(member_id)
+    async def put_cryptobal(self, member_id, data):
+        """Sets a members cryptobal.
 
-    if data:
-        return orjson.loads(data)
-    return {}
-
-
-async def put_stockbal(member_id, data):
-    """Sets a members stockbal.
-
-    member_id: bytes
-    data: dict
-    """
-    stockbal.put(member_id, orjson.dumps(data))
-
-
-async def get_crypto(symbol):
-    """Returns the data of a crypto.
-
-    symbol: bytes
-    """
-    data = crypto.get(symbol.encode())
-
-    if data:
-        return orjson.loads(data)
-    return None
-
-
-async def put_crypto(symbol, data):
-    """Sets the data of a crypto.
-
-    symbol: bytes
-    data: dict
-    """
-    data = orjson.dumps(data)
-    crypto.put(symbol.encode(), data)
-
-
-async def get_cryptobal(member_id):
-    """Returns a members cryptobal.
-
-    member_id: bytes
-    """
-    data = cryptobal.get(member_id)
-
-    if data:
-        return orjson.loads(data)
-    return {}
-
-
-async def put_cryptobal(member_id, data):
-    """Sets a members cryptobal.
-
-    member_id: bytes
-    data: dict
-    """
-    cryptobal.put(member_id, orjson.dumps(data))
+        member_id: bytes
+        data: dict
+        """
+        self.cryptobal.put(member_id, orjson.dumps(data))
