@@ -207,6 +207,7 @@ class owner(commands.Cog):
                 b"invites",
                 b"karma",
                 b"boot_times",
+                b"aliases",
             )
 
             for key, value in DB.db:
@@ -623,45 +624,6 @@ class owner(commands.Cog):
         new_ctx = await self.bot.get_context(msg, cls=type(ctx))
         await self.bot.invoke(new_ctx)
 
-    @commands.command(aliases=["pull"])
-    async def update(self, ctx):
-        """Gets latest commits and applies them through git."""
-        pull = await run_process("git pull")
-
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if pull == ["Already", "up", "to", "date."]:
-            embed.title = "Bot Is Already Up To Date"
-            return await ctx.send(embed=embed)
-
-        diff = await run_process("git diff --name-only HEAD@{0} HEAD@{1}")
-
-        if "poetry.lock" in diff:
-            await run_process("poetry install")
-
-        embed.title = "Pulled latests commits, restarting."
-        await ctx.send(embed=embed)
-
-        if "bot.py" in diff:
-            await self.bot.logout()
-
-            if os.name == "nt":
-                await run_process("python ./bot.py")
-            else:
-                await run_process("nohup python3 bot.py &")
-            return
-
-        diff = [ext[5:] for ext in diff if ext.startswith("/cogs")]
-
-        for ext in [
-            f[:-3] for f in os.listdir("cogs") if f.endswith(".py") and f in diff
-        ]:
-            try:
-                self.bot.reload_extension(f"cogs.{ext}")
-            except Exception as e:
-                if isinstance(e, commands.errors.ExtensionNotLoaded):
-                    self.bot.load_extension(f"cogs.{ext}")
-
     @commands.command()
     async def status(self, ctx):
         await run_process("git fetch")
@@ -686,11 +648,6 @@ class owner(commands.Cog):
                 description=f"```Removed command {command}```",
             )
         )
-
-    @commands.command()
-    async def kill(self, ctx):
-        """Kills the bot."""
-        await self.bot.logout()
 
     @commands.command()
     async def load(self, ctx, extension: str):
@@ -751,21 +708,6 @@ class owner(commands.Cog):
 
         embed.title = "Extensions restarted."
         await ctx.send(embed=embed)
-
-    @commands.command()
-    async def revive(self, ctx):
-        """Kills the bot then revives it."""
-        await ctx.send(
-            embed=discord.Embed(
-                title="Killing bot.",
-                color=discord.Color.blurple(),
-            )
-        )
-        await self.bot.logout()
-        if os.name == "nt":
-            os.system("python ./bot.py")
-        else:
-            os.system("nohup python3 bot.py &")
 
     @commands.group()
     async def rrole(self, ctx):
