@@ -755,7 +755,7 @@ class useful(commands.Cog):
         regex = r"(?:0[xX])?[0-9a-fA-F]+" if base == 16 else r"\d+"
         numbers = [int(num, base) for num in re.findall(regex, args)]
 
-        expr = re.sub(regex, "%s", args) % tuple(numbers)
+        expr = re.sub(regex, "{}", args).format(*numbers)
         result = self.safe_eval(ast.parse(expr, "<string>", "eval").body)
 
         await ctx.send(
