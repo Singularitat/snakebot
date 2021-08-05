@@ -451,16 +451,6 @@ class misc(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def icon(self, ctx, user: discord.User = None):
-        """Sends a members avatar url.
-
-        user: discord.User
-            The member to show the avatar of.
-        """
-        user = user or ctx.author
-        await ctx.send(user.avatar_url)
-
-    @commands.command()
     async def roll(self, ctx, dice: str):
         """Rolls dice in AdX format. A is number of dice, X is number of faces.
 

@@ -345,7 +345,7 @@ class information(commands.Cog):
                 {online} {online_users:,} {dnd} {dnd_users:,} {idle} {idle_users:,} {offline} {offline_users:,}
             """
         )
-        embed.set_thumbnail(url=ctx.guild.icon_url)
+        embed.set_thumbnail(url=ctx.guild.icon)
         await ctx.send(embed=embed)
 
     @commands.command(name="user", aliases=["member"])
@@ -386,6 +386,16 @@ class information(commands.Cog):
         embed.set_thumbnail(url=user.avatar)
 
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def icon(self, ctx, user: discord.User = None):
+        """Sends a members avatar url.
+
+        user: discord.User
+            The member to show the avatar of.
+        """
+        user = user or ctx.author
+        await ctx.send(user.avatar)
 
 
 def setup(bot: commands.Bot) -> None:
