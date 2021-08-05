@@ -22,6 +22,42 @@ class misc(commands.Cog):
         self.DB = self.bot.DB
 
     @commands.command()
+    async def ones(self, ctx, number: int):
+        """Converts a decimal number to binary ones complement."""
+        table = str.maketrans({"1": "0", "0": "1"})
+        return await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```{bin(number)[2:].translate(table)}```",
+            )
+        )
+
+    @commands.command()
+    async def twos(self, ctx, number: int):
+        """Converts a decimal number to binary twos complement."""
+        table = str.maketrans({"1": "0", "0": "1"})
+        numbers = list(f"{number:b}".translate(table))
+
+        for i in range(len(numbers) - 1, -1, -1):
+            if numbers[i] == "1":
+                numbers[i] = "0"
+            else:
+                numbers[i] = "1"
+                break
+
+        i -= 1
+
+        if i == -1:
+            numbers.insert(0, "1")
+
+        return await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```{''.join(numbers).removeprefix('-')}```",
+            )
+        )
+
+    @commands.command()
     async def snowflake(self, ctx, snowflake: int):
         """Shows some information about a discord snowflake.
 
@@ -449,16 +485,6 @@ class misc(commands.Cog):
         embed.add_field(name="Discoverer", value=text[text.index("Discoverer:") + 1])
 
         await ctx.send(embed=embed)
-
-    @commands.command()
-    async def icon(self, ctx, user: discord.User = None):
-        """Sends a members avatar url.
-
-        user: discord.User
-            The member to show the avatar of.
-        """
-        user = user or ctx.author
-        await ctx.send(user.avatar_url)
 
     @commands.command()
     async def roll(self, ctx, dice: str):
