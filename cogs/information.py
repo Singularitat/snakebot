@@ -3,6 +3,7 @@ from io import StringIO
 import inspect
 import os
 import textwrap
+import typing
 
 from discord.ext import commands
 import discord
@@ -348,7 +349,9 @@ class information(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="user", aliases=["member"])
-    async def user_info(self, ctx, user: discord.User = None) -> None:
+    async def user_info(
+        self, ctx, user: typing.Union[discord.Member, discord.User] = None
+    ):
         """Sends info about a member.
 
         member: discord.Member
