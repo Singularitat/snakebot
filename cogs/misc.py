@@ -38,7 +38,7 @@ class misc(commands.Cog):
         table = str.maketrans({"1": "0", "0": "1"})
         numbers = list(f"{number:b}".translate(table))
 
-        for i in range(len(numbers)-1, -1, -1):
+        for i in range(len(numbers) - 1, -1, -1):
             if numbers[i] == "1":
                 numbers[i] = "0"
             else:
@@ -47,8 +47,8 @@ class misc(commands.Cog):
 
         i -= 1
 
-        if (i == -1):
-            numbers.insert(0, '1')
+        if i == -1:
+            numbers.insert(0, "1")
 
         return await ctx.send(
             embed=discord.Embed(
