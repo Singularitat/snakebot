@@ -168,11 +168,12 @@ class useful(commands.Cog):
         location: str
             The name of the location to get the weather of.
         """
-        url = f"https://www.google.co.nz/search?q=weather:{location}"
+        url = f"https://www.google.com/search?q=weather:{location}"
 
         async with ctx.typing():
             headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36",
+                "referer": "https://www.google.com/",
             }
             async with self.bot.client_session.get(url, headers=headers) as page:
                 soup = lxml.html.fromstring(await page.text())
@@ -585,7 +586,7 @@ class useful(commands.Cog):
             return await self.wait_for_deletion(message, ctx)
 
         async with ctx.typing():
-            url = f"https://www.google.co.nz/search?q={search}&source=lnms&tbm=isch&safe=active"
+            url = f"https://www.google.com/search?q={search}&source=lnms&tbm=isch&safe=active"
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
             }
