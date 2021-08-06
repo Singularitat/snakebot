@@ -75,7 +75,7 @@ class CookieClicker(discord.ui.View):
                 )
                 cookies["start"] = time.time()
 
-            cost = int((100 * cookies["upgrade"]) ** .9)
+            cost = int((100 * cookies["upgrade"]) ** 0.9)
 
             if cookies["cookies"] < cost:
                 return await interaction.response.edit_message(
@@ -100,7 +100,7 @@ class CookieClicker(discord.ui.View):
                 return
 
             cookies = orjson.loads(cookies)
-            cost = int((1000 * (cookies.get("cps", 0) + 1)) ** .9)
+            cost = int((1000 * (cookies.get("cps", 0) + 1)) ** 0.9)
 
             if "cps" in cookies:
                 cookies["cookies"] += round(
