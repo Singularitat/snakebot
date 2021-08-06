@@ -33,27 +33,12 @@ class misc(commands.Cog):
         )
 
     @commands.command()
-    async def twos(self, ctx, number: int):
+    async def twos(self, ctx, num: int, bits: int):
         """Converts a decimal number to binary twos complement."""
-        table = str.maketrans({"1": "0", "0": "1"})
-        numbers = list(f"{number:b}".translate(table))
-
-        for i in range(len(numbers) - 1, -1, -1):
-            if numbers[i] == "1":
-                numbers[i] = "0"
-            else:
-                numbers[i] = "1"
-                break
-
-        i -= 1
-
-        if i == -1:
-            numbers.insert(0, "1")
-
         return await ctx.send(
             embed=discord.Embed(
                 color=discord.Color.blurple(),
-                description=f"```{''.join(numbers).removeprefix('-')}```",
+                description=f"{bin(num & int('1'*bits, 2))[2:]:0>{bits}}",
             )
         )
 

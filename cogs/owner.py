@@ -144,7 +144,7 @@ class owner(commands.Cog):
             )
 
     @db.command()
-    async def put(self, ctx, key, value):
+    async def put(self, ctx, key, *, value):
         """Puts a value in the database
 
         key: str
@@ -234,8 +234,8 @@ class owner(commands.Cog):
         if not hasattr(self.DB, prefixed):
             return await ctx.send(
                 embed=discord.Embed(
-                    color=discord.Color.blurple,
-                    description="```self.DB not found```",
+                    color=discord.Color.blurple(),
+                    description=f"```Prefixed DB {prefixed} not found```",
                 )
             )
 
