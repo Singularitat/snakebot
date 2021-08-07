@@ -22,14 +22,14 @@ class apis(commands.Cog):
         self.loop = asyncio.get_event_loop()
 
     @commands.command(aliases=["so"])
-    async def stackoverflow(self, ctx, search):
+    async def stackoverflow(self, ctx, *, search):
         """Gets stackoverflow posts based off a search.
 
         search: str
         """
         url = (
             "https://api.stackexchange.com/2.3/search/advanced?pagesize=5&"
-            f"order=desc&sort=relevance&q={search}&site=stackoverflow"
+            f"order=asc&sort=relevance&q={search}&site=stackoverflow"
         )
 
         embed = discord.Embed(color=discord.Color.blurple())

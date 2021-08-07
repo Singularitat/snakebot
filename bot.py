@@ -72,12 +72,10 @@ class Bot(commands.Bot):
             with suppress(Exception):
                 self.remove_cog(cog)
 
-        await asyncio.gather(*self.closing_tasks)
-
         await super().close()
 
-        if self.http_session:
-            await self.http_session.close()
+        if self.client_session:
+            await self.client_session.close()
 
     async def login(self, *args, **kwargs) -> None:
         """Setup the client_session before logging in."""
