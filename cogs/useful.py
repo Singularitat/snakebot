@@ -168,43 +168,7 @@ class useful(commands.Cog):
         location: str
             The name of the location to get the weather of.
         """
-        url = f"https://www.google.com/search?q=weather:{location}"
-
-        async with ctx.typing():
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36",
-                "referer": "https://www.google.com/",
-            }
-            async with self.bot.client_session.get(url, headers=headers) as page:
-                soup = lxml.html.fromstring(await page.text())
-
-            embed = discord.Embed(color=discord.Color.blurple())
-            soup = soup.xpath('.//div[@class="nawv0d"]')
-
-            if not soup:
-                embed.description = f"```No weather for {location} found```"
-                return await ctx.send(embed=embed)
-
-            soup = soup[0]
-            image = soup.xpath(".//img")[0].attrib["src"]
-            location = soup.xpath('.//div[@id="wob_loc"]')[0].text_content()
-            temp = soup.xpath('.//span[@id="wob_tm"]')[0].text_content()
-            precipitation = soup.xpath('.//span[@id="wob_pp"]')[0].text_content()
-            humidity = soup.xpath('.//span[@id="wob_hm"]')[0].text_content()
-            wind = soup.xpath('.//span[@id="wob_ws"]')[0].text_content()
-            state = soup.xpath('//span[@id="wob_dc"]')[0].text_content()
-            current_time = soup.xpath('//div[@id="wob_dts"]')[0].text_content()
-
-            embed.set_author(name=location, icon_url=f"https:{image}")
-            embed.description = state
-
-            embed.add_field(name="Temp:", value=f"{temp}°C")
-            embed.add_field(name="Precipitation:", value=precipitation)
-            embed.add_field(name="Humidity:", value=humidity)
-            embed.add_field(name="Wind:", value=wind)
-            embed.add_field(name="Time:", value=current_time)
-
-            await ctx.send(embed=embed)
+        await ctx.send(f"http://wttr.in/{location}.png?m")
 
     @commands.command(name="statuscodes")
     async def status_codes(self, ctx):
