@@ -217,8 +217,7 @@ class information(commands.Cog):
     @commands.command()
     async def invite(self, ctx):
         """Sends the invite link of the bot."""
-        perms = discord.Permissions.all()
-        await ctx.send(f"<{discord.utils.oauth_url(self.bot.user.id, perms)}>")
+        await ctx.send(discord.utils.oauth_url(self.bot.user.id, permissions=discord.Permissions.all()))
 
     @commands.command()
     async def ping(self, ctx):
