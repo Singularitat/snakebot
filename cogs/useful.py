@@ -58,6 +58,14 @@ class useful(commands.Cog):
         self.DB = self.bot.DB
         self.loop = asyncio.get_event_loop()
 
+    @commands.command()
+    async def temp(self, ctx, *, location="auckland+cbd"):
+        """Gets a temperature/rain graph of a location.
+
+        location: str
+        """
+        await ctx.send(f"http://v2d.wttr.in/{location.replace(' ', '+')}.png")
+
     @commands.command(name="float")
     async def _float(self, ctx, number: float):
         """Converts a float a half-precision floating-point format.
@@ -162,13 +170,13 @@ class useful(commands.Cog):
                 return await ctx.send(translate_text)
 
     @commands.command()
-    async def weather(self, ctx, *, location="auckland"):
-        """Gets the weather from google.
+    async def weather(self, ctx, *, location="auckland+cbd"):
+        """Gets the weather from wttr.in defaults location to auckland cbd.
 
         location: str
             The name of the location to get the weather of.
         """
-        await ctx.send(f"http://wttr.in/{location}.png?m")
+        await ctx.send(f"http://wttr.in/{location.replace(' ', '+')}.png?2&m&q&n")
 
     @commands.command(name="statuscodes")
     async def status_codes(self, ctx):
