@@ -200,12 +200,14 @@ class YTDLSource(discord.PCMVolumeTransformer):
     def parse_number(number: int):
         if number < 10000:
             return f"{number}"
-        elif number > 10000 and number < 1000000:
+
+        if number > 10000 and number < 1000000:
             return f"{round(number/1000, 2)}K"
-        elif number > 1000000 and number < 1000000000:
+
+        if number > 1000000 and number < 1000000000:
             return f"{round(number/1000000, 2)}M"
-        else:
-            return f"{round(number/1000000000, 2)}B"
+
+        return f"{round(number/1000000000, 2)}B"
 
     @staticmethod
     def parse_limited_title(title: str):
@@ -515,7 +517,7 @@ class music(commands.Cog):
                 if "list" in search:
                     typ = "playlist_alt"
 
-            if typ == "playlist" or typ == "playlist_alt":
+            if typ in ("playlist", "playlist_alt"):
                 ctx.voice_state.processing = True
                 playlist = None
                 skipped = 0
