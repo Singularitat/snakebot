@@ -58,6 +58,14 @@ class useful(commands.Cog):
         self.DB = self.bot.DB
         self.loop = asyncio.get_event_loop()
 
+    @commands.command()
+    async def temp(self, ctx, *, location):
+        """Gets a temperature/rain graph of a location.
+
+        location: str
+        """
+        await ctx.send(f"http://v2d.wttr.in/{location}.png")
+
     @commands.command(name="float")
     async def _float(self, ctx, number: float):
         """Converts a float a half-precision floating-point format.
