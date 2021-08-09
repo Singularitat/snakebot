@@ -377,14 +377,14 @@ class useful(commands.Cog):
         """Runs code.
 
         Examples:
-        .run ```py
-        print("Example")```
+        .run `\u200b`\u200b`\u200bpy
+        print("Example")`\u200b`\u200b`\u200b
 
         .run py print("Example")
 
-        .run py `print("Example")`
+        .run py `\u200bprint("Example")`\u200b
 
-        .run py ```print("Example")```
+        .run py `\u200b`\u200b`\u200bprint("Example")`\u200b`\u200b`\u200b
 
         code: str
             The code to run.
