@@ -243,7 +243,10 @@ class VoiceState:
         while True:
             self.next.clear()
 
-            if self.loop is False:
+            if not self.voice:
+                return
+
+            if not self.loop:
                 try:
                     async with timeout(180):
                         self.current = await self.songs.get()
@@ -253,7 +256,7 @@ class VoiceState:
                 self.current.source.volume = self._volume
                 self.voice.play(self.current.source, after=self.play_next_song)
 
-            elif self.loop is True:
+            elif self.loop:
                 self.now = discord.FFmpegPCMAudio(
                     self.current.source.stream_url, **YTDLSource.FFMPEG_OPTIONS
                 )
@@ -421,7 +424,8 @@ class music(commands.Cog):
             await ctx.send("Not playing any music right now...", delete_after=20)
             return await self.r_command_error(ctx.message)
 
-        voter = ctx.message.author
+        voter = ctx.author
+
         if voter == ctx.voice_state.current.requester:
             ctx.voice_state.skip()
             await self.r_command_success(ctx.message)
