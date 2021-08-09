@@ -377,14 +377,14 @@ class useful(commands.Cog):
         """Runs code.
 
         Examples:
-        .run ```py
-        print("Example")```
+        .run `\u200b`\u200b`\u200bpy
+        print("Example")`\u200b`\u200b`\u200b
 
         .run py print("Example")
 
-        .run py `print("Example")`
+        .run py `\u200bprint("Example")`\u200b
 
-        .run py ```print("Example")```
+        .run py `\u200b`\u200b`\u200bprint("Example")`\u200b`\u200b`\u200b
 
         code: str
             The code to run.
@@ -506,13 +506,12 @@ class useful(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @staticmethod
-    async def wait_for_deletion(message: discord.Message, ctx):
+    async def wait_for_deletion(self, author: discord.Member, message: discord.Message):
         def check(reaction: discord.Reaction, user: discord.User) -> bool:
-            return ctx.author.id == user.id and reaction.message.id == message.id
+            return author == user and reaction.message == message
 
         await message.add_reaction("❎")
-        reaction, user = await ctx.bot.wait_for(
+        reaction, user = await self.bot.wait_for(
             "reaction_add", timeout=60.0, check=check
         )
         await message.delete()
@@ -555,7 +554,7 @@ class useful(commands.Cog):
             embed.title = title
 
             message = await ctx.send(embed=embed)
-            return await self.wait_for_deletion(message, ctx)
+            return await self.wait_for_deletion(ctx.author, message)
 
         async with ctx.typing():
             url = f"https://www.google.com/search?q={search}&source=lnms&tbm=isch&safe=active"
@@ -588,7 +587,7 @@ class useful(commands.Cog):
             self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
             self.DB.main.put(b"cache", orjson.dumps(cache))
 
-        await self.wait_for_deletion(message, ctx)
+        await self.wait_for_deletion(ctx.author, message)
 
     @commands.command(aliases=["img"])
     async def image(self, ctx, *, search):
@@ -608,7 +607,7 @@ class useful(commands.Cog):
             embed.title = title
 
             message = await ctx.send(embed=embed)
-            return await self.wait_for_deletion(message, ctx)
+            return await self.wait_for_deletion(ctx.author, message)
 
         async with ctx.typing():
             url = f"https://www.bing.com/images/search?q={search}&first=1"
@@ -639,7 +638,7 @@ class useful(commands.Cog):
             self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
             self.DB.main.put(b"cache", orjson.dumps(cache))
 
-        await self.wait_for_deletion(message, ctx)
+        await self.wait_for_deletion(ctx.author, message)
 
     @staticmethod
     def bin_float(number: float):

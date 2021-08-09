@@ -1,7 +1,6 @@
 import asyncio
 import functools
 import itertools
-import random
 
 from discord.ext import commands
 from async_timeout import timeout
@@ -64,51 +63,38 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         self.uploader = data.get("uploader")
         self.title = data.get("title")
-        self.title_limited = self.parse_limited_title(str(data.get("title")))
-        self.title_limited_embed = self.parse_limited_title_embed(
-            str(data.get("title"))
-        )
+        self.title_limited = self.parse_limited_title(data["title"])
+        self.title_limited_embed = self.parse_limited_title_embed(data["title"])
         self.thumbnail = data.get("thumbnail")
         self.description = data.get("description")
-        self.duration = self.parse_duration(int(data.get("duration")))
+        self.duration = self.parse_duration(data["duration"])
         self.url = data.get("webpage_url")
-        self.views = self.parse_number(int(data.get("view_count")))
-        self.likes = self.parse_number(int(data.get("like_count")))
-        self.dislikes = self.parse_number(int(data.get("dislike_count")))
+        self.views = self.parse_number(data["view_count"])
+        self.likes = self.parse_number(data["like_count"])
+        self.dislikes = self.parse_number(data["dislike_count"])
         self.stream_url = data.get("url")
 
     def __str__(self):
         return f"**{self.title}** by **{self.uploader}**"
 
     @classmethod
-    async def check_type(cls, ctx, search: str, *, loop: asyncio.BaseEventLoop = None):
+    async def check_type(cls, ctx, search: str, *, loop):
         try:
-            loop = loop or asyncio.get_event_loop()
-
             partial = functools.partial(
                 cls.ytdl.extract_info, search, download=False, process=False
             )
             data = await loop.run_in_executor(None, partial)
 
-            return data["_type"]
+            if not data:
+                raise YTDLError(f"Couldn't find anything that matches `{search}`")
+
+            return data
         except Exception:
             pass
 
     @classmethod
-    async def create_source_playlist(
-        cls,
-        ctx,
-        typ,
-        search: str,
-        *,
-        loop: asyncio.BaseEventLoop = None,
-    ):
-        loop = loop or asyncio.get_event_loop()
-
-        partial = functools.partial(
-            cls.ytdl.extract_info, search, download=False, process=False
-        )
-        data = await loop.run_in_executor(None, partial)
+    async def create_source_playlist(cls, ctx, typ, data, *, loop):
+        search = data["url"]
 
         if typ == "playlist_alt":
             search = data["url"]
@@ -118,16 +104,16 @@ class YTDLSource(discord.PCMVolumeTransformer):
             )
             data = await loop.run_in_executor(None, partial)
 
-        if data is None:
-            raise YTDLError(f"Couldn't find anything that matches `{search}`")
+        if not data:
+            raise YTDLError(f"Couldn't find anything that matches `{data['url']}`")
 
-        numbers = []
+        songs = []
 
         for entry in data["entries"]:
             if entry:
-                numbers.append(entry)
+                songs.append(entry)
 
-        return numbers
+        return songs
 
     @classmethod
     async def playlist_put(cls, ctx, number):
@@ -138,38 +124,29 @@ class YTDLSource(discord.PCMVolumeTransformer):
         )
 
     @classmethod
-    async def create_source_single(
-        cls, ctx, search: str, *, loop: asyncio.BaseEventLoop = None
-    ):
-        loop = loop or asyncio.get_event_loop()
+    async def create_source_single(cls, ctx, data, *, loop):
+        search = data.get("id")
 
-        partial = functools.partial(
-            cls.ytdl.extract_info, search, download=False, process=False
-        )
-        data = await loop.run_in_executor(None, partial)
+        if search:
+            search = f"https://www.youtube.com/watch?v={search}"
+        else:
+            search = data["webpage_url"]
 
-        if data is None:
-            raise YTDLError(f"Couldn't find anything that matches `{search}`")
-
-        webpage_url = data["webpage_url"]
-
-        partial = functools.partial(cls.ytdl.extract_info, webpage_url, download=False)
+        partial = functools.partial(cls.ytdl.extract_info, search, download=False)
         processed_info = await loop.run_in_executor(None, partial)
 
         if processed_info is None:
-            raise YTDLError(f"Couldn't fetch `{webpage_url}`")
+            raise YTDLError(f"Couldn't fetch `{search}`")
 
-        if "entries" not in processed_info:
-            info = processed_info
-        else:
+        if "entries" in processed_info:
             info = None
             while info is None:
                 try:
                     info = processed_info["entries"].pop(0)
                 except IndexError:
-                    raise YTDLError(
-                        f"Couldn't retrieve any matches for `{webpage_url}`"
-                    )
+                    raise YTDLError(f"Couldn't retrieve any matches for `{search}`")
+        else:
+            info = processed_info
 
         if info["duration"] > 7200:
             raise YTDLError("Video is longer than 2 hours")
@@ -201,10 +178,10 @@ class YTDLSource(discord.PCMVolumeTransformer):
         if number < 10000:
             return f"{number}"
 
-        if number > 10000 and number < 1000000:
+        if number < 1000000:
             return f"{round(number/1000, 2)}K"
 
-        if number > 1000000 and number < 1000000000:
+        if number < 1000000000:
             return f"{round(number/1000000, 2)}M"
 
         return f"{round(number/1000000000, 2)}B"
@@ -266,7 +243,10 @@ class VoiceState:
         while True:
             self.next.clear()
 
-            if self.loop is False:
+            if not self.voice:
+                return
+
+            if not self.loop:
                 try:
                     async with timeout(180):
                         self.current = await self.songs.get()
@@ -276,7 +256,7 @@ class VoiceState:
                 self.current.source.volume = self._volume
                 self.voice.play(self.current.source, after=self.play_next_song)
 
-            elif self.loop is True:
+            elif self.loop:
                 self.now = discord.FFmpegPCMAudio(
                     self.current.source.stream_url, **YTDLSource.FFMPEG_OPTIONS
                 )
@@ -364,12 +344,6 @@ class SongQueue(asyncio.Queue):
     def clear(self):
         self._queue.clear()
 
-    def shuffle(self):
-        random.shuffle(self._queue)
-
-    def remove(self, index: int):
-        del self._queue[index]
-
 
 class music(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -417,6 +391,7 @@ class music(commands.Cog):
 
     @commands.command(name="leave")
     async def _leave(self, ctx):
+        """Clears the queue and leaves the voice channel."""
         if not ctx.voice_state.voice:
             await ctx.send("Not connected to any voice channel.", delete_after=20)
             return await self.r_command_error(ctx.message)
@@ -427,6 +402,15 @@ class music(commands.Cog):
 
     @commands.command(name="now")
     async def _now(self, ctx):
+        """Displays the currently playing song."""
+        if not ctx.voice_state.current:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple,
+                    description="```Not playing any songs```",
+                )
+            )
+
         await ctx.send(
             embed=ctx.voice_state.current.create_embed(
                 ctx.voice_state.songs, ctx.voice_state.loop
@@ -435,11 +419,13 @@ class music(commands.Cog):
 
     @commands.command(name="skip")
     async def _skip(self, ctx):
+        """Vote to skip a song."""
         if not ctx.voice_state.is_playing:
             await ctx.send("Not playing any music right now...", delete_after=20)
             return await self.r_command_error(ctx.message)
 
-        voter = ctx.message.author
+        voter = ctx.author
+
         if voter == ctx.voice_state.current.requester:
             ctx.voice_state.skip()
             await self.r_command_success(ctx.message)
@@ -457,6 +443,11 @@ class music(commands.Cog):
 
     @commands.command(name="queue", aliases=["q"])
     async def _queue(self, ctx, *, page: int = 1):
+        """Shows the player's queue.
+
+        page: int
+            The page to display defaulting to the first page.
+        """
         if len(ctx.voice_state.songs) == 0:
             await ctx.send("Empty queue.", delete_after=15)
             return await self.r_command_error(ctx.message)
@@ -479,6 +470,7 @@ class music(commands.Cog):
 
     @commands.command(name="clear")
     async def _clear(self, ctx):
+        """Clears the queue."""
         if ctx.voice_state.processing:
             return await ctx.send(
                 "I'm currently processing the previous request.", delete_after=10
@@ -493,6 +485,7 @@ class music(commands.Cog):
 
     @commands.command(name="loop", aliases=["loopn"])
     async def _loop(self, ctx):
+        """Loops the currently playing song."""
         await self.r_command_success(ctx.message)
         if not ctx.voice_state.is_playing:
             return await ctx.send(
@@ -503,6 +496,7 @@ class music(commands.Cog):
 
     @commands.command(name="play", aliases=["p"])
     async def _play(self, ctx, *, search: str):
+        """Plays a song from youtube from a search."""
         if ctx.voice_state.processing:
             return await ctx.send(
                 "I'm currently processing the previous request.", delete_after=10
@@ -512,10 +506,10 @@ class music(commands.Cog):
             ctx.voice_state.voice = await ctx.author.voice.channel.connect()
 
         async with ctx.typing():
-            typ = await YTDLSource.check_type(ctx, search, loop=self.bot.loop)
-            if "https://www.youtube.com/" in search:
-                if "list" in search:
-                    typ = "playlist_alt"
+            data = await YTDLSource.check_type(ctx, search, loop=self.bot.loop)
+            typ = data["_type"]
+            if "https://www.youtube.com/" in search and "list" in search:
+                typ = "playlist_alt"
 
             if typ in ("playlist", "playlist_alt"):
                 ctx.voice_state.processing = True
@@ -523,17 +517,17 @@ class music(commands.Cog):
                 skipped = 0
 
                 playlist = await YTDLSource.create_source_playlist(
-                    ctx, typ, search, loop=self.bot.loop
+                    ctx, typ, data, loop=self.bot.loop
                 )
 
                 for song in playlist:
-                    if not song:
-                        continue
-
+                    # If the bot has been disconnected in the middle stop adding songs.
+                    if not ctx.voice_state.voice:
+                        return
                     try:
                         source = await YTDLSource.create_source_single(
                             ctx,
-                            f"https://www.youtube.com/watch?v={song['url']}",
+                            song,
                             loop=self.bot.loop,
                         )
 
@@ -551,7 +545,9 @@ class music(commands.Cog):
 
             ctx.voice_state.processing = True
             source = await YTDLSource.create_source_single(
-                ctx, search, loop=self.bot.loop
+                ctx,
+                data,
+                loop=self.bot.loop,
             )
 
             await ctx.voice_state.songs.put(Song(source))
