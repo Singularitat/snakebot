@@ -35,13 +35,12 @@ class apis(commands.Cog):
             data = await reponse.json()
 
             for senti in data["sentences"]:
-                print(senti)
-                type, value = senti["sentiment"]["type"], senti["sentiment"]["polarity"]
-                embed.add_field(name=f"{type}, {value}", value=senti["sentence"])
+                sign, value = senti["sentiment"]["type"], senti["sentiment"]["polarity"]
+                embed.add_field(name=f"{sign}, {value}", value=senti["sentence"])
 
-            type, value = data["result"]["type"], data["result"]["polarity"]
+            sign, value = data["result"]["type"], data["result"]["polarity"]
 
-            embed.set_footer(text=f"Overall sentiment {type}, {value}")
+            embed.set_footer(text=f"Overall sentiment {sign}, {value}")
 
         await ctx.send(embed=embed)
 
