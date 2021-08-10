@@ -59,6 +59,31 @@ class useful(commands.Cog):
         self.loop = asyncio.get_event_loop()
 
     @commands.command()
+    async def news(self, ctx):
+        """Gets top New Zealand stories from google."""
+        async with ctx.typing():
+            url = "https://news.google.com/topstories?hl=en-NZ&gl=NZ&ceid=NZ:en"
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
+            }
+
+            async with self.bot.client_session.get(url, headers=headers) as page:
+                soup = lxml.html.fromstring(await page.text())
+
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            for article in soup.xpath(
+                './/article[@class=" MQsxIb xTewfe R7GTQ keNKEd j7vNaf Cc0Z5d EjqUne"]'
+            ):
+                a_tag = article.xpath('.//a[@class="DY5T1d RZIKme"]')[0]
+                embed.add_field(
+                    name=a_tag.text,
+                    value=f"[Link](https://news.google.com{a_tag.attrib['href'][1:]})",
+                )
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def temp(self, ctx, *, location="auckland+cbd"):
         """Gets a temperature/rain graph of a location.
 
