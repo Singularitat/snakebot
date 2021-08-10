@@ -21,6 +21,29 @@ class apis(commands.Cog):
         self.DB = self.bot.DB
         self.loop = asyncio.get_event_loop()
 
+    @commands.command()
+    async def sentiment(self, ctx, *, text):
+        """Gets the sentiment of some text."""
+        url = "https://sentim-api.herokuapp.com/api/v1/"
+        headers = {"Accept": "application/json", "Content-Type": "application/json"}
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        async with ctx.typing(), self.bot.client_session.post(
+            url, headers=headers, json={"text": text}
+        ) as reponse:
+            data = await reponse.json()
+
+            for senti in data["sentences"]:
+                sign, value = senti["sentiment"]["type"], senti["sentiment"]["polarity"]
+                embed.add_field(name=f"{sign}, {value}", value=senti["sentence"])
+
+            sign, value = data["result"]["type"], data["result"]["polarity"]
+
+            embed.set_footer(text=f"Overall sentiment {sign}, {value}")
+
+        await ctx.send(embed=embed)
+
     @commands.command(aliases=["so"])
     async def stackoverflow(self, ctx, *, search):
         """Gets stackoverflow posts based off a search.
