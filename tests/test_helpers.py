@@ -173,9 +173,8 @@ class DiscordMocksTests(unittest.TestCase):
         )
 
         for mock in mocks:
-            with self.subTest(mock=mock):
-                with self.assertRaises(AttributeError):
-                    mock.the_cake_is_a_lie
+            with self.subTest(mock=mock), self.assertRaises(AttributeError):
+                mock.the_cake_is_a_lie
 
     def test_mocks_use_mention_when_provided_as_kwarg(self):
         test_cases = (
