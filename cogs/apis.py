@@ -365,7 +365,7 @@ class apis(commands.Cog):
 
             embed = discord.Embed(
                 color=discord.Color.blurple(),
-                title=f"{apod['title']}",
+                title=apod["title"],
                 description="[Link](https://apod.nasa.gov/apod/astropix.html)",
             )
             embed.set_image(url=apod["hdurl"])

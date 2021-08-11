@@ -1,7 +1,5 @@
 from io import StringIO
-import ast
 import asyncio
-import operator
 import random
 import re
 import time
@@ -11,6 +9,8 @@ from discord.ext import commands, menus
 import discord
 import lxml.html
 import orjson
+
+from cogs.utils.calculation import calculate, hex_float, oct_float, bin_float
 
 
 CODE_REGEX = re.compile(
@@ -22,22 +22,6 @@ CODE_REGEX = re.compile(
 RAW_CODE_REGEX = re.compile(
     r"(?:(?P<lang>^[a-z0-9]+[\ \n])?)(?P<code>(?s).*)", re.DOTALL | re.IGNORECASE
 )
-
-
-OPERATIONS = {
-    ast.Add: operator.add,
-    ast.Sub: operator.sub,
-    ast.Mult: operator.mul,
-    ast.Div: operator.truediv,
-    ast.FloorDiv: operator.floordiv,
-    ast.Pow: operator.pow,
-    ast.Mod: operator.mod,
-    ast.LShift: operator.lshift,
-    ast.RShift: operator.rshift,
-    ast.BitOr: operator.or_,
-    ast.BitAnd: operator.and_,
-    ast.BitXor: operator.xor,
-}
 
 
 class InviteMenu(menus.ListPageSource):
@@ -665,64 +649,6 @@ class useful(commands.Cog):
 
         await self.wait_for_deletion(ctx.author, message)
 
-    @staticmethod
-    def bin_float(number: float):
-        exponent = 0
-        shifted_num = number
-
-        while shifted_num != int(shifted_num):
-            shifted_num *= 2
-            exponent += 1
-
-        if not exponent:
-            return bin(number).removeprefix("0b")
-
-        binary = f"{int(shifted_num):0{exponent + 1}b}"
-        return f"{binary[:-exponent]}.{binary[-exponent:].rstrip('0')}"
-
-    @staticmethod
-    def hex_float(number: float):
-        exponent = 0
-        shifted_num = number
-
-        while shifted_num != int(shifted_num):
-            shifted_num *= 16
-            exponent += 1
-
-        if not exponent:
-            return hex(number).removeprefix("0x")
-
-        hexadecimal = f"{int(shifted_num):0{exponent + 1}x}"
-        return f"{hexadecimal[:-exponent]}.{hexadecimal[-exponent:]}"
-
-    @staticmethod
-    def oct_float(number: float):
-        exponent = 0
-        shifted_num = number
-
-        while shifted_num != int(shifted_num):
-            shifted_num *= 8
-            exponent += 1
-
-        if not exponent:
-            return oct(number).removeprefix("0o")
-
-        octal = f"{int(shifted_num):0{exponent + 1}o}"
-        return f"{octal[:-exponent]}.{octal[-exponent:]}"
-
-    def safe_eval(self, node):
-        if isinstance(node, ast.Num):
-            return node.n
-
-        if isinstance(node, ast.BinOp):
-            left = self.safe_eval(node.left)
-            right = self.safe_eval(node.right)
-            if isinstance(node.op, ast.Pow) and len(str(left)) * right > 1000:
-                raise ValueError("Too large to calculate")
-            return OPERATIONS[node.op.__class__](left, right)
-
-        raise ValueError("Calculation failed")
-
     @commands.command()
     async def calc(self, ctx, num_base, *, args=""):
         """Does math.
@@ -734,9 +660,9 @@ class useful(commands.Cog):
             A str of arguments to calculate.
         """
         num_bases = {
-            "h": (16, self.hex_float),
-            "o": (8, self.oct_float),
-            "b": (2, self.bin_float),
+            "h": (16, hex_float),
+            "o": (8, oct_float),
+            "b": (2, bin_float),
         }
         base, method = num_bases.get(num_base.lower()[:1], ("unknown", int))
 
@@ -753,7 +679,7 @@ class useful(commands.Cog):
         numbers = [int(num, base) for num in re.findall(regex, args)]
 
         expr = re.sub(regex, "{}", args).format(*numbers)
-        result = self.safe_eval(ast.parse(expr, "<string>", "eval").body)
+        result = calculate(expr)
 
         await ctx.send(
             embed=discord.Embed(

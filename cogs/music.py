@@ -27,7 +27,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
     YTDL_OPTIONS = {
         "format": "bestaudio/best",
         "extractaudio": True,
-        "audioformat": "mp3",
         "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
         "restrictfilenames": True,
         "noplaylist": False,
@@ -86,7 +85,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
             data = await loop.run_in_executor(None, partial)
 
             if not data:
-                raise YTDLError(f"Couldn't find anything that matches `{search}`")
+                raise YTDLError(f"Couldn't find anything that matches {search}")
 
             return data
         except Exception:
@@ -105,7 +104,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
             data = await loop.run_in_executor(None, partial)
 
         if not data:
-            raise YTDLError(f"Couldn't find anything that matches `{data['url']}`")
+            raise YTDLError(f"Couldn't find anything that matches {data['url']}")
 
         songs = []
 
@@ -144,12 +143,14 @@ class YTDLSource(discord.PCMVolumeTransformer):
                 try:
                     info = processed_info["entries"].pop(0)
                 except IndexError:
-                    raise YTDLError(f"Couldn't retrieve any matches for `{search}`")
+                    raise YTDLError(f"Couldn't retrieve any matches for {search}")
         else:
             info = processed_info
 
-        if info["duration"] > 7200:
-            raise YTDLError("Video is longer than 2 hours")
+        size = info["filesize"]
+
+        if info["filesize"] > 1_000_000_000:
+            raise YTDLError(f"Video is larger than 1GB({size//1000000000}GB)")
 
         return cls(
             ctx, discord.FFmpegPCMAudio(info["url"], **cls.FFMPEG_OPTIONS), data=info
@@ -243,9 +244,6 @@ class VoiceState:
         while True:
             self.next.clear()
 
-            if not self.voice:
-                return
-
             if not self.loop:
                 try:
                     async with timeout(180):
@@ -261,6 +259,9 @@ class VoiceState:
                     self.current.source.stream_url, **YTDLSource.FFMPEG_OPTIONS
                 )
                 self.voice.play(self.now, after=self.play_next_song)
+
+            if not self.voice:
+                return
 
             await self.next.wait()
 
@@ -367,8 +368,7 @@ class music(commands.Cog):
         ctx.voice_state = state
 
     async def cog_command_error(self, ctx, error: commands.CommandError):
-        if ctx.command == "play" and ctx.voice_state.processing:
-            ctx.voice_state.processing = False
+        ctx.voice_state.processing = False
 
     async def r_command_success(self, message):
         try:
@@ -406,7 +406,7 @@ class music(commands.Cog):
         if not ctx.voice_state.current:
             return await ctx.send(
                 embed=discord.Embed(
-                    color=discord.Color.blurple,
+                    color=discord.Color.blurple(),
                     description="```Not playing any songs```",
                 )
             )
@@ -428,15 +428,17 @@ class music(commands.Cog):
 
         if voter == ctx.voice_state.current.requester:
             ctx.voice_state.skip()
-            await self.r_command_success(ctx.message)
+            return await self.r_command_success(ctx.message)
 
-        elif voter.id not in ctx.voice_state.skip_votes:
+        if voter.id not in ctx.voice_state.skip_votes:
             ctx.voice_state.skip_votes.add(voter.id)
             total_votes = len(ctx.voice_state.skip_votes)
 
             if total_votes >= len(ctx.author.voice.channel.members) // 2:
                 await ctx.message.add_reaction("⏭")
                 ctx.voice_state.skip()
+            else:
+                ctx.message.add_reaction("➕")
         else:
             await ctx.send("You have already voted to skip this song.", delete_after=15)
             await self.r_command_error(ctx.message)
@@ -449,7 +451,7 @@ class music(commands.Cog):
             The page to display defaulting to the first page.
         """
         if len(ctx.voice_state.songs) == 0:
-            await ctx.send("Empty queue.", delete_after=15)
+            await ctx.send("Empty queue.")
             return await self.r_command_error(ctx.message)
 
         queue = ""
@@ -465,7 +467,7 @@ class music(commands.Cog):
         embed = discord.Embed(
             description=f"**{len(ctx.voice_state.songs)} tracks:**\n\n{queue}"
         ).set_footer(text=f"Viewing page {page}/{-(-len(ctx.voice_state.songs) // 10)}")
-        await ctx.send(embed=embed, delete_after=20)
+        await ctx.send(embed=embed)
         await self.r_command_success(ctx.message)
 
     @commands.command(name="clear")
@@ -507,7 +509,7 @@ class music(commands.Cog):
 
         async with ctx.typing():
             data = await YTDLSource.check_type(ctx, search, loop=self.bot.loop)
-            typ = data["_type"]
+            typ = data.get("_type")
             if "https://www.youtube.com/" in search and "list" in search:
                 typ = "playlist_alt"
 

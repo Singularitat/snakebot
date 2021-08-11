@@ -101,14 +101,19 @@ class information(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
         members = []
+        counts = []
 
         for count, member in msgtop:
             user = self.bot.get_user(int(member.split("-")[1]))
             if user:
-                members.append((count, user.display_name))
+                members.append(user.display_name)
+                counts.append(count)
 
         description = "\n".join(
-            [f"**{member}:** {count} messages" for count, member in members]
+            [
+                f"**{member}:** {count} messages"
+                for count, member in zip(members, counts)
+            ]
         )
 
         if len(description) > 2048:
@@ -117,6 +122,17 @@ class information(commands.Cog):
 
         embed.title = f"Top {len(msgtop)} chatters"
         embed.description = description
+        data = str(
+            {
+                "type": "bar",
+                "data": {
+                    "labels": members,
+                    "datasets": [{"label": "Users", "data": counts}],
+                },
+            }
+        ).replace(" ", "%20")
+
+        embed.set_image(url=f"https://quickchart.io/chart?bkg=%23202225&c={data}")
 
         await ctx.send(embed=embed)
 
