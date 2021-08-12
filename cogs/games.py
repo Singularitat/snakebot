@@ -85,6 +85,13 @@ class CookieClicker(discord.ui.View):
             cookies["cookies"] -= cost
             cookies["upgrade"] += 1
 
+            if cookies.get("buy_all"):
+                while cookies["cookies"] > (
+                    cost := int((100 * cookies["upgrade"]) ** 0.8)
+                ):
+                    cookies["cookies"] -= cost
+                    cookies["upgrade"] += 1
+
             self.DB.cookies.put(user_id, orjson.dumps(cookies))
             await interaction.response.edit_message(
                 content=None, embed=self.get_embed(self.user.display_name, cookies)
@@ -113,16 +120,41 @@ class CookieClicker(discord.ui.View):
                     content=f"You need {cost} cookies to upgrade"
                 )
 
-            cookies["cookies"] -= cost
             if "cps" not in cookies:
                 cookies["cps"] = 0
                 cookies["start"] = time.time()
 
+            cookies["cookies"] -= cost
             cookies["cps"] += 1
+
+            if cookies.get("buy_all"):
+                while cookies["cookies"] > (
+                    cost := int((1000 * (cookies.get("cps", 0) + 1)) ** 0.9)
+                ):
+                    cookies["cookies"] -= cost
+                    cookies["cps"] += 1
 
             self.DB.cookies.put(user_id, orjson.dumps(cookies))
             await interaction.response.edit_message(
                 content=None, embed=self.get_embed(self.user.display_name, cookies)
+            )
+
+    @discord.ui.button(label="🕹️", style=discord.ButtonStyle.blurple)
+    async def toggle(self, button, interaction):
+        if interaction.user == self.user:
+            user_id = str(interaction.user.id).encode()
+            cookies = self.DB.cookies.get(user_id)
+
+            if not cookies:
+                return
+
+            cookies = orjson.loads(cookies)
+            cookies["buy_all"] = not cookies.get("buy_all")
+
+            self.DB.cookies.put(user_id, orjson.dumps(cookies))
+            response = "on" if cookies["buy_all"] else "off"
+            await interaction.response.edit_message(
+                content=f"Togged buy all {response}"
             )
 
 
