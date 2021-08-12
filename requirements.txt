@@ -3,7 +3,7 @@ git+https://github.com/Rapptz/discord.py@master
 aiohttp[speedups]
 lxml
 psutil
-youtube_dl
+yt-dlp
 pillow
 orjson
 plyvel-wheels
