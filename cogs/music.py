@@ -5,7 +5,7 @@ import itertools
 from discord.ext import commands
 from async_timeout import timeout
 import discord
-import youtube_dl
+import yt_dlp
 
 try:
     import uvloop
@@ -44,7 +44,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         "options": "-vn -loglevel -8",
     }
 
-    ytdl = youtube_dl.YoutubeDL(YTDL_OPTIONS)
+    ytdl = yt_dlp.YoutubeDL(YTDL_OPTIONS)
 
     def __init__(
         self,
@@ -147,10 +147,10 @@ class YTDLSource(discord.PCMVolumeTransformer):
         else:
             info = processed_info
 
-        size = info["filesize"]
+        duration = info["duration"]
 
-        if info["filesize"] > 1_000_000_000:
-            raise YTDLError(f"Video is larger than 1GB({size//1000000000}GB)")
+        if duration > 72000:
+            raise YTDLError(f"Video is longer than 20 hours({duration//3600} hours)")
 
         return cls(
             ctx, discord.FFmpegPCMAudio(info["url"], **cls.FFMPEG_OPTIONS), data=info

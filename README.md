@@ -44,12 +44,12 @@ the [bot.py](/bot.py) file is
 
 ## Requirements
 
-- [Python 3.9+](https://www.python.org/downloads/)
+- [Python 3.9+](https://www.python.org/downloads)
 - [discord-ext-menus](https://github.com/Rapptz/discord-ext-menus)
-- [discord.py](https://github.com/Rapptz/discord.py/)
+- [discord.py](https://github.com/Rapptz/discord.py)
 - [lxml](https://github.com/lxml/lxml)
 - [psutil](https://github.com/giampaolo/psutil)
 - [orjson](https://github.com/ijl/orjson)
-- [youtube_dl](https://github.com/ytdl-org/youtube-dl)
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp)
 - [plyvel](https://github.com/wbolster/plyvel)
 - [pillow](https://github.com/python-pillow/Pillow)

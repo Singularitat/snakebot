@@ -22,6 +22,19 @@ class misc(commands.Cog):
         self.DB = self.bot.DB
 
     @commands.command()
+    async def convert(self, ctx, num: int):
+        """Converts fahrenheit to celsius
+
+        num: int
+        """
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```{num}°F is {(num - 32) * (5/9):.2f}°C```",
+            )
+        )
+
+    @commands.command()
     async def ones(self, ctx, number: int):
         """Converts a decimal number to binary ones complement."""
         table = str.maketrans({"1": "0", "0": "1"})
