@@ -45,5 +45,20 @@ class BotTests(unittest.TestCase):
             "```ml\n125 * 125\n\n3d09\n\nDecimal: 15625```",
         )
 
+    def test_cat_commands(self):
+        mocked_context = MockContext()
+
+        for command in ("cat", "cat2", "cat3", "cat4"):
+
+            command = self.bot.get_command(command)
+
+            self.loop.run_until_complete(command.callback(self.bot, mocked_context))
+
+            self.assertEqual(
+                mocked_context.send.call_args.args[0][:4],
+                "http",
+            )
+
+
 
 unittest.main()
