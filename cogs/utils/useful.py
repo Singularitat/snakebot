@@ -31,16 +31,16 @@ async def run_process(command, raw=False):
     return "".join([output.decode() for output in result]).split()
 
 
-async def get_json(url):
+async def get_json(session, url):
     """Gets and loads json from a url.
 
+    session: aiohttp.ClientSession
+        A aiohttp client session so that a new one isn't made every request
     url: str
         The url to fetch the json from.
     """
     try:
-        async with aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=6)
-        ) as session, session.get(url) as response:
+        async with session.get(url) as response:
             return await response.json()
     except (
         asyncio.exceptions.TimeoutError,
