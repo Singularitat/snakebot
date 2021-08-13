@@ -13,13 +13,13 @@ class background_tasks(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.DB = self.bot.DB
+        self.DB = bot.DB
         self.start_tasks()
 
     def cog_unload(self):
         """When the cog is unloaded stop all running tasks."""
-        for task in self.tasks:
-            self.tasks[task].cancel()
+        for task in self.tasks.values():
+            task.cancel()
 
     async def cog_check(self, ctx):
         """Checks if the member is an owner.
@@ -184,9 +184,9 @@ class background_tasks(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         msg = "Name:               Interval:      Running/Failed/Count:\n\n"
-        for task_name, task in self.tasks.items():
+        for name, task in self.tasks.items():
             msg += "{:<20}{:<15}{}/{}/{}\n".format(
-                task_name,
+                name,
                 f"{task.hours:.0f}h {task.minutes:.0f}m {task.seconds:.0f}s",
                 task.is_running(),
                 task.failed(),

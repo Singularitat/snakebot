@@ -15,7 +15,7 @@ import psutil
 class events(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.DB = self.bot.DB
+        self.DB = bot.DB
 
     async def poll_check(self, payload):
         """Keeps track of poll results.

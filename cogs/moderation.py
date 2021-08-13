@@ -23,8 +23,8 @@ class moderation(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.DB = self.bot.DB
-        self.loop = asyncio.get_event_loop()
+        self.DB = bot.DB
+        self.loop = bot.loop
 
     @commands.command()
     async def inactive(self, ctx, days: int = 7):

@@ -19,7 +19,7 @@ class misc(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.DB = self.bot.DB
+        self.DB = bot.DB
 
     @commands.command()
     async def convert(self, ctx, num: int):
