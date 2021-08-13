@@ -79,6 +79,36 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         context.send.assert_called_with("Oh yeah its all coming together")
 
+    async def test_convert_command(self):
+        context = MockContext()
+
+        await self.cog.convert(self.cog, context, number=32)
+
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description,
+            "```32°F is 0.00°C```",
+        )
+
+    async def test_ones_command(self):
+        context = MockContext()
+
+        await self.cog.ones(self.cog, context, number=32)
+
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description,
+            "```011111```",
+        )
+
+    async def test_twos_command(self):
+        context = MockContext()
+
+        await self.cog.twos(self.cog, context, number=32, bits=8)
+
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description,
+            "```00100000```",
+        )
+
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     pass
