@@ -292,9 +292,7 @@ class MockObjectTests(unittest.TestCase):
 
     def test_custom_mock_mixin_accepts_mock_seal(self):
         class MyMock(helpers.CustomMockMixin, unittest.mock.MagicMock):
-
             child_mock_type = unittest.mock.MagicMock
-            pass
 
         mock = MyMock()
         unittest.mock.seal(mock)
@@ -329,4 +327,5 @@ class MockObjectTests(unittest.TestCase):
         self.assertIsInstance(mock.__aenter__, unittest.mock.AsyncMock)
 
 
-unittest.main()
+if __name__ == "__main__":
+    unittest.main()
