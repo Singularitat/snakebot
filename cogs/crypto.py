@@ -20,7 +20,7 @@ class crypto(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.DB = self.bot.DB
+        self.DB = bot.DB
 
     @commands.group(aliases=["coin"])
     async def crypto(self, ctx):

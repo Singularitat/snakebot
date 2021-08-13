@@ -247,7 +247,7 @@ class games(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.DB = self.bot.DB
+        self.DB = bot.DB
 
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.command()

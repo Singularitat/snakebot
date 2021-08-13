@@ -17,7 +17,7 @@ class animals(commands.Cog):
         url = "https://axoltlapi.herokuapp.com/"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image["url"])
 
@@ -27,7 +27,7 @@ class animals(commands.Cog):
         url = "https://nekos.life/api/v2/img/lizard"
 
         async with ctx.typing():
-            lizard = await get_json(url)
+            lizard = await get_json(self.bot.client_session, url)
 
         await ctx.send(lizard["url"])
 
@@ -37,7 +37,7 @@ class animals(commands.Cog):
         url = "https://random-d.uk/api/v1/random?type=png"
 
         async with ctx.typing():
-            duck = await get_json(url)
+            duck = await get_json(self.bot.client_session, url)
 
         await ctx.send(duck["url"])
 
@@ -47,7 +47,7 @@ class animals(commands.Cog):
         url = "https://api.bunnies.io/v2/loop/random/?media=webm"
 
         async with ctx.typing():
-            bunny = await get_json(url)
+            bunny = await get_json(self.bot.client_session, url)
 
         await ctx.send(bunny["media"]["webm"])
 
@@ -57,7 +57,7 @@ class animals(commands.Cog):
         url = "https://some-random-api.ml/img/whale"
 
         async with ctx.typing():
-            whale = await get_json(url)
+            whale = await get_json(self.bot.client_session, url)
 
         await ctx.send(whale["link"])
 
@@ -76,7 +76,7 @@ class animals(commands.Cog):
         url = "https://ntgc.ddns.net/mAPI/api"
 
         async with ctx.typing():
-            monkey = await get_json(url)
+            monkey = await get_json(self.bot.client_session, url)
 
         await ctx.send(monkey["image"])
 
@@ -86,7 +86,7 @@ class animals(commands.Cog):
         url = "https://api.monkedev.com/attachments/monkey"
 
         async with ctx.typing():
-            monkey = await get_json(url)
+            monkey = await get_json(self.bot.client_session, url)
 
         await ctx.send(monkey["url"])
 
@@ -96,7 +96,7 @@ class animals(commands.Cog):
         url = "https://some-random-api.ml/img/racoon"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image["link"])
 
@@ -106,7 +106,7 @@ class animals(commands.Cog):
         url = "https://some-random-api.ml/img/kangaroo"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image["link"])
 
@@ -116,7 +116,7 @@ class animals(commands.Cog):
         url = "https://some-random-api.ml/img/koala"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image["link"])
 
@@ -126,7 +126,7 @@ class animals(commands.Cog):
         url = "https://some-random-api.ml/img/birb"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image["link"])
 
@@ -136,7 +136,7 @@ class animals(commands.Cog):
         url = "http://shibe.online/api/birds"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image[0])
 
@@ -146,7 +146,7 @@ class animals(commands.Cog):
         url = "https://api.monkedev.com/attachments/bird"
 
         async with ctx.typing():
-            bird = await get_json(url)
+            bird = await get_json(self.bot.client_session, url)
 
         await ctx.send(bird["url"])
 
@@ -156,7 +156,7 @@ class animals(commands.Cog):
         url = "https://some-random-api.ml/img/red_panda"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image["link"])
 
@@ -166,7 +166,7 @@ class animals(commands.Cog):
         url = "https://some-random-api.ml/img/panda"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image["link"])
 
@@ -176,7 +176,7 @@ class animals(commands.Cog):
         url = "https://randomfox.ca/floof"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image["image"])
 
@@ -186,7 +186,7 @@ class animals(commands.Cog):
         url = "https://wohlsoft.ru/images/foxybot/randomfox.php"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image["file"])
 
@@ -196,7 +196,7 @@ class animals(commands.Cog):
         url = "https://api.thecatapi.com/v1/images/search"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image[0]["url"])
 
@@ -206,7 +206,7 @@ class animals(commands.Cog):
         url = "https://cataas.com/cat?json=true"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(f"https://cataas.com{image['url']}")
 
@@ -216,7 +216,7 @@ class animals(commands.Cog):
         url = "https://thatcopy.pw/catapi/rest"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image["webpurl"])
 
@@ -226,7 +226,7 @@ class animals(commands.Cog):
         url = "http://shibe.online/api/cats"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image[0])
 
@@ -244,7 +244,7 @@ class animals(commands.Cog):
             url = "https://dog.ceo/api/breeds/image/random"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image["message"])
 
@@ -254,7 +254,7 @@ class animals(commands.Cog):
         url = "https://random.dog/woof.json"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image["url"])
 
@@ -269,7 +269,7 @@ class animals(commands.Cog):
         url = "http://shibe.online/api/shibes"
 
         async with ctx.typing():
-            image = await get_json(url)
+            image = await get_json(self.bot.client_session, url)
 
         await ctx.send(image[0])
 

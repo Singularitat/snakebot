@@ -19,7 +19,7 @@ class information(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.DB = self.bot.DB
+        self.DB = bot.DB
         self.process = psutil.Process()
 
     @commands.command()
@@ -28,7 +28,7 @@ class information(commands.Cog):
         url = "https://api.github.com/repos/Singularitat/snakebot/commits?per_page=12"
 
         async with ctx.typing():
-            commits = await get_json(url)
+            commits = await get_json(self.bot.client_session, url)
 
         embed = discord.Embed(color=discord.Color.blurple())
 

@@ -59,7 +59,7 @@ class owner(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.DB = self.bot.DB
+        self.DB = bot.DB
 
     async def cog_check(self, ctx):
         """Checks if the member is an owner.

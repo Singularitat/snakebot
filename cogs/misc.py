@@ -19,24 +19,27 @@ class misc(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.DB = self.bot.DB
+        self.DB = bot.DB
 
     @commands.command()
-    async def convert(self, ctx, num: int):
+    async def convert(self, ctx, number: int):
         """Converts fahrenheit to celsius
 
-        num: int
+        number: int
         """
         await ctx.send(
             embed=discord.Embed(
                 color=discord.Color.blurple(),
-                description=f"```{num}°F is {(num - 32) * (5/9):.2f}°C```",
+                description=f"```{number}°F is {(number - 32) * (5/9):.2f}°C```",
             )
         )
 
     @commands.command()
     async def ones(self, ctx, number: int):
-        """Converts a decimal number to binary ones complement."""
+        """Converts a decimal number to binary ones complement.
+
+        number: int
+        """
         table = str.maketrans({"1": "0", "0": "1"})
         return await ctx.send(
             embed=discord.Embed(
@@ -46,12 +49,16 @@ class misc(commands.Cog):
         )
 
     @commands.command()
-    async def twos(self, ctx, num: int, bits: int):
-        """Converts a decimal number to binary twos complement."""
+    async def twos(self, ctx, number: int, bits: int):
+        """Converts a decimal number to binary twos complement.
+
+        number: int
+        bits: int
+        """
         return await ctx.send(
             embed=discord.Embed(
                 color=discord.Color.blurple(),
-                description=f"{bin(num & int('1'*bits, 2))[2:]:0>{bits}}",
+                description=f"```{bin(number & int('1'*bits, 2))[2:]:0>{bits}}```",
             )
         )
 
