@@ -22,6 +22,20 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def fact(self, ctx):
+        """Gets a random fact."""
+        url = "https://uselessfacts.jsph.pl/random.json?language=en"
+
+        async with ctx.typing():
+            data = await get_json(self.bot.client_session, url)
+
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description=f"```{data['text']}```"
+                )
+            )
+
+    @commands.command()
     async def sentiment(self, ctx, *, text):
         """Gets the sentiment of some text."""
         url = "https://sentim-api.herokuapp.com/api/v1/"
