@@ -23,6 +23,25 @@ class information(commands.Cog):
         self.process = psutil.Process()
 
     @commands.command()
+    async def roles(self, ctx):
+        """Shows the roles of the server."""
+        description = ""
+
+        for i, role in enumerate(ctx.guild.roles, start=1):
+            if not i % 4:
+                description += f"`{role}` \n"
+            else:
+                description += f"`{role}` "
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                title="Server Roles",
+                description=description,
+            )
+        )
+
+    @commands.command()
     async def changes(self, ctx):
         """Gets the last 12 commits."""
         url = "https://api.github.com/repos/Singularitat/snakebot/commits?per_page=12"

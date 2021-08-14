@@ -463,23 +463,24 @@ class moderation(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)
-    async def role(self, ctx, role: discord.Role, member: discord.Member = None):
+    async def role(self, ctx, member: discord.Member, role: discord.Role):
         """Gives member a role.
 
+        role: discord.Role
+            The name of the role.
         member: discord.Member
             The member to give the role.
-        role: str
-            The name of the role.
         """
         embed = discord.Embed(color=discord.Color.blurple())
-        member = member or ctx.author
 
         if (
             ctx.author != member
             and ctx.author.top_role <= member.top_role
             and ctx.guild.owner != ctx.author
         ):
-            embed.title = "```You can't change the roles of someone higher than you.```"
+            embed.description = (
+                "```You can't change the roles of someone higher than you.```"
+            )
             return await ctx.send(embed=embed)
 
         if (
@@ -487,18 +488,18 @@ class moderation(commands.Cog):
             and ctx.author.top_role <= role
             and ctx.guild.owner != ctx.author
         ):
-            embed.title = (
+            embed.description = (
                 "```You can't give yourself a role higher than your highest role.```"
             )
             return await ctx.send(embed=embed)
 
         if role in member.roles:
             await member.remove_roles(role)
-            embed.title = f"Removed the role {role} from {member}"
+            embed.description = f"```Removed the role {role} from {member}```"
             return await ctx.send(embed=embed)
 
         await member.add_roles(role)
-        embed.title = f"Gave {member} the role {role}"
+        embed.description = f"```Gave {member} the role {role}```"
         return await ctx.send(embed=embed)
 
     @commands.group()
