@@ -163,8 +163,7 @@ class useful(commands.Cog):
             )
         )
 
-        async with self.bot.client_session as session:
-            response = await session.post(url, data=data, headers=headers)
+        response = await self.bot.client_session.post(url, data=data, headers=headers)
 
         async for line in response.content:
             decoded_line = line.decode("utf-8")
