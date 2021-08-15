@@ -91,8 +91,8 @@ class apis(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def kanye(self, ctx):
+    @commands.command(aliases=["kayne"])
+    async def justin(self, ctx):
         """Gets a random Kanye West quote."""
         url = "https://api.kanye.rest"
 
