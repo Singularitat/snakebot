@@ -27,17 +27,17 @@ class information(commands.Cog):
         """Shows the roles of the server."""
         description = ""
 
-        for i, role in enumerate(ctx.guild.roles, start=1):
-            if not i % 4:
-                description += f"`{role}` \n"
+        for i, role in enumerate(ctx.guild.roles[1:], start=1):
+            if not i % 3:
+                description += f"{role}\n"
             else:
-                description += f"`{role}` "
+                description += f"{str(role):<20}"
 
         await ctx.send(
             embed=discord.Embed(
                 color=discord.Color.blurple(),
                 title="Server Roles",
-                description=description,
+                description=f"```{description}```",
             )
         )
 

@@ -2,6 +2,7 @@ from io import StringIO
 import difflib
 import opcode
 import random
+import re
 
 from discord.ext import commands
 import aiohttp
@@ -20,6 +21,28 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.DB = bot.DB
+
+    @commands.group()
+    async def rli(self, ctx):
+        """Encodes or decodes a string with run length encoding."""
+        if not ctx.invoked_subcommand:
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}rli [de/en]```",
+            )
+            await ctx.send(embed=embed)
+
+    @rli.command()
+    async def en(self, ctx, *, text):
+        """Encodes a string with run length encoding."""
+        text = re.sub(r"(.)\1*", lambda m: str(len(m.group(0))) + m.group(1), text)
+        await ctx.send(text)
+
+    @rli.command()
+    async def de(self, ctx, *, text):
+        """Decodes a string with run length encoding."""
+        text = re.sub(r"(\d+)(\D)", lambda m: m.group(2) * int(m.group(1)), text)
+        await ctx.send(text)
 
     @commands.command()
     async def convert(self, ctx, number: int):

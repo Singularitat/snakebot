@@ -1,7 +1,6 @@
 from io import StringIO
 import asyncio
 import cProfile
-import copy
 import logging
 import os
 import pstats
@@ -74,10 +73,8 @@ class owner(commands.Cog):
 
         command: str
         """
-        msg = copy.copy(ctx.message)
-        msg.content = f"{ctx.prefix}{command}"
-
-        new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+        ctx.message.content = f"{ctx.prefix}{command}"
+        new_ctx = await self.bot.get_context(ctx.message, cls=type(ctx))
 
         new_ctx._state = PerformanceMocker()
         new_ctx.channel = PerformanceMocker()
@@ -541,10 +538,8 @@ class owner(commands.Cog):
         command: str
             The command to run including arguments.
         """
-        msg = copy.copy(ctx.message)
-        msg.content = f"{ctx.prefix}{command}"
-
-        new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+        ctx.message.content = f"{ctx.prefix}{command}"
+        new_ctx = await self.bot.get_context(ctx.message, cls=type(ctx))
 
         # Intercepts the Messageable interface a bit
         new_ctx._state = PerformanceMocker()
@@ -601,12 +596,10 @@ class owner(commands.Cog):
         command: str
             The command name.
         """
-        msg = copy.copy(ctx.message)
-        channel = channel or ctx.channel
-        msg.channel = channel
-        msg.author = member
-        msg.content = f"{ctx.prefix}{command}"
-        new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+        ctx.message.channel = channel
+        ctx.message.author = member
+        ctx.message.content = f"{ctx.prefix}{command}"
+        new_ctx = await self.bot.get_context(ctx.message, cls=type(ctx))
         await self.bot.invoke(new_ctx)
 
     @commands.command()
@@ -618,11 +611,9 @@ class owner(commands.Cog):
         command: str
             The command name.
         """
-        msg = copy.copy(ctx.message)
-
-        msg.author = member
-        msg.content = f"{ctx.prefix}{command}"
-        new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+        ctx.message.author = member
+        ctx.message.content = f"{ctx.prefix}{command}"
+        new_ctx = await self.bot.get_context(ctx.message, cls=type(ctx))
         await self.bot.invoke(new_ctx)
 
     @commands.command()
