@@ -34,12 +34,17 @@ class animals(commands.Cog):
     @commands.command()
     async def duck(self, ctx):
         """Gets a random duck image."""
-        url = "https://random-d.uk/api/v1/random?type=png"
+        url = "https://random-d.uk/api/v2/random"
 
         async with ctx.typing():
             duck = await get_json(self.bot.client_session, url)
 
         await ctx.send(duck["url"])
+
+    @commands.command(name="duckstatus")
+    async def duck_status(self, ctx, status):
+        """Gets a duck image for status codes e.g 404 Not Found."""
+        await ctx.send(f"https://random-d.uk/api/http/{status}.jpg")
 
     @commands.command()
     async def bunny(self, ctx):
