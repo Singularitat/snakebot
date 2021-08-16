@@ -22,23 +22,70 @@ class misc(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
+    @commands.command()
+    async def nato(self, ctx, *, text):
+        """Converts text to the NATO phonetic alphabet.
+
+        text: str
+        """
+        table = {
+            32: "(space) ",
+            49: "One ",
+            50: "Two ",
+            51: "Three ",
+            52: "Four ",
+            53: "Five ",
+            54: "Six ",
+            55: "Seven ",
+            56: "Eight ",
+            57: "Nine ",
+            97: "Alfa ",
+            98: "Bravo ",
+            99: "Charlie ",
+            100: "Delta ",
+            101: "Echo ",
+            102: "Foxtrot ",
+            103: "Golf ",
+            104: "Hotel ",
+            105: "India ",
+            106: "Juliett ",
+            107: "Kilo ",
+            108: "Lima ",
+            109: "Mike ",
+            110: "November ",
+            111: "Oscar ",
+            112: "Papa ",
+            113: "Quebec ",
+            114: "Romeo ",
+            115: "Sierra ",
+            116: "Tango ",
+            117: "Uniform ",
+            118: "Victor ",
+            119: "Whiskey ",
+            120: "X-ray ",
+            121: "Yankee ",
+            122: "Zulu ",
+        }
+
+        await ctx.send(text.lower().translate(table))
+
     @commands.group()
-    async def rli(self, ctx):
+    async def rle(self, ctx):
         """Encodes or decodes a string with run length encoding."""
         if not ctx.invoked_subcommand:
             embed = discord.Embed(
                 color=discord.Color.blurple(),
-                description=f"```Usage: {ctx.prefix}rli [de/en]```",
+                description=f"```Usage: {ctx.prefix}rle [de/en]```",
             )
             await ctx.send(embed=embed)
 
-    @rli.command()
+    @rle.command()
     async def en(self, ctx, *, text):
         """Encodes a string with run length encoding."""
         text = re.sub(r"(.)\1*", lambda m: str(len(m.group(0))) + m.group(1), text)
         await ctx.send(text)
 
-    @rli.command()
+    @rle.command()
     async def de(self, ctx, *, text):
         """Decodes a string with run length encoding."""
         text = re.sub(r"(\d+)(\D)", lambda m: m.group(2) * int(m.group(1)), text)
