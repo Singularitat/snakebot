@@ -113,7 +113,7 @@ class useful(commands.Cog):
         binary_float = sign + mantissa + exponent_sign + binary_exponent
 
         # fmt: off
-        hex_float = "".join(
+        hexadecimal_float = "".join(
             [
                 hex(int(binary_float[i: i + 4], 2))[2:]
                 for i in range(0, len(binary_float), 4)
@@ -133,7 +133,7 @@ class useful(commands.Cog):
             name="Sign of Mantissa  Mantissa  Sign of Exponent  Exponent",
             value=f"`{sign:^15s}{mantissa:^10s}{exponent_sign:^18s}{binary_exponent:^6s}`",
         )
-        embed.add_field(name="Result", value=hex_float)
+        embed.add_field(name="Result", value=hexadecimal_float)
         return await ctx.send(embed=embed)
 
     @commands.command()
