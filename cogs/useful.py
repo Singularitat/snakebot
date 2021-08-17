@@ -44,6 +44,24 @@ class useful(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def hello(self, ctx, language):
+        """Gets the code for hello world in a language.
+
+        language: str
+        """
+        data = orjson.loads(self.DB.main.get(b"helloworlds"))
+        code = data.get(language)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not code:
+            embed.description = "```Language not found.```"
+            return await ctx.send(embed=embed)
+
+        embed.description = f"```{language}\n{code}```"
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def tio(self, ctx, *, code):
         """Uses tio.run to run code.
 
