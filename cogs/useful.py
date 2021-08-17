@@ -35,6 +35,22 @@ class InviteMenu(menus.ListPageSource):
         )
 
 
+class LanguageMenu(menus.ListPageSource):
+    def __init__(self, data):
+        super().__init__(data, per_page=100)
+
+    async def format_page(self, menu, entries):
+        msg = ""
+
+        for count, language in enumerate(sorted(entries), start=1):
+            if count % 2 == 0:
+                msg += f"{language}\n"
+            else:
+                msg += f"{language:<26}"
+
+        return discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
+
+
 class useful(commands.Cog):
     """Actually useful commands."""
 
@@ -42,6 +58,18 @@ class useful(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
         self.loop = bot.loop
+
+    @commands.command()
+    async def tiolanguages(self, ctx):
+        """Shows all the languages that tio.run can handle."""
+        languages = orjson.loads(self.DB.main.get(b"tiolanguages"))
+
+        pages = menus.MenuPages(
+            source=LanguageMenu(languages),
+            clear_reactions_after=True,
+            delete_message_after=True,
+        )
+        await pages.start(ctx)
 
     @commands.command()
     async def hello(self, ctx, language):
@@ -385,12 +413,8 @@ class useful(commands.Cog):
     @commands.command()
     async def languages(self, ctx):
         """Shows the languages that the run command can use."""
-        languages = self.DB.main.get(b"languages")
+        languages = orjson.loads(self.DB.main.get(b"languages"))
 
-        if not languages:
-            return await ctx.send("No languages found")
-
-        languages = orjson.loads(languages)
         msg = ""
 
         for count, language in enumerate(sorted(languages), start=1):
