@@ -4,6 +4,7 @@ import random
 import re
 import time
 import urllib
+from zlib import compress
 
 from discord.ext import commands, menus
 import discord
@@ -34,6 +35,22 @@ class InviteMenu(menus.ListPageSource):
         )
 
 
+class LanguageMenu(menus.ListPageSource):
+    def __init__(self, data):
+        super().__init__(data, per_page=100)
+
+    async def format_page(self, menu, entries):
+        msg = ""
+
+        for count, language in enumerate(sorted(entries), start=1):
+            if count % 2 == 0:
+                msg += f"{language}\n"
+            else:
+                msg += f"{language:<26}"
+
+        return discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
+
+
 class useful(commands.Cog):
     """Actually useful commands."""
 
@@ -41,6 +58,106 @@ class useful(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
         self.loop = bot.loop
+
+    @commands.command()
+    async def tiolanguages(self, ctx):
+        """Shows all the languages that tio.run can handle."""
+        languages = orjson.loads(self.DB.main.get(b"tiolanguages"))
+
+        pages = menus.MenuPages(
+            source=LanguageMenu(languages),
+            clear_reactions_after=True,
+            delete_message_after=True,
+        )
+        await pages.start(ctx)
+
+    @commands.command()
+    async def hello(self, ctx, language):
+        """Gets the code for hello world in a language.
+
+        language: str
+        """
+        data = orjson.loads(self.DB.main.get(b"helloworlds"))
+        code = data.get(language)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not code:
+            embed.description = "```Language not found.```"
+            return await ctx.send(embed=embed)
+
+        embed.description = f"```{language}\n{code}```"
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def tio(self, ctx, *, code):
+        """Uses tio.run to run code.
+
+        Examples:
+        .run `\u200b`\u200b`\u200bpy
+        print("Example")`\u200b`\u200b`\u200b
+
+        .run py print("Example")
+
+        .run py `\u200bprint("Example")`\u200b
+
+        .run py `\u200b`\u200b`\u200bprint("Example")`\u200b`\u200b`\u200b
+
+        code: str
+            The code to run.
+        """
+        if ctx.message.attachments:
+            file = ctx.message.attachments[0]
+            lang = file.filename.split(".")[-1]
+            code = (await file.read()).decode()
+        elif match := list(CODE_REGEX.finditer(code)):
+            code, lang, alang = match[0].group("code", "lang", "alang")
+            lang = lang or alang
+        elif match := list(RAW_CODE_REGEX.finditer(code)):
+            code, lang = match[0].group("code", "lang")
+
+        if not lang:
+            return await ctx.reply(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You need to supply a language"
+                    " either as an arg or inside a codeblock```",
+                )
+            )
+
+        lang = lang.strip()
+
+        if lang == "python":  # tio doesn't default python to python3 it
+            lang = "python3"
+
+        if lang not in orjson.loads(self.DB.main.get(b"tiolanguages")):
+            return await ctx.reply(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"```No support for language {lang}```",
+                )
+            )
+
+        url = "https://tio.run/cgi-bin/run/api/"
+
+        data = compress(
+            b"Vlang\x001\x00"
+            + lang.encode()
+            + b"\x00F.code.tio\x00"
+            + str(len(code)).encode()
+            + b"\0"
+            + code.encode()
+            + b"\x00R",
+            9,
+        )[2:-4]
+
+        async with ctx.typing(), self.bot.client_session.post(
+            url, data=data
+        ) as response:
+            response = (await response.read()).decode("utf-8")
+            response = response.replace(response[:16], "")
+
+        await ctx.send(response)
 
     @commands.command()
     async def news(self, ctx):
@@ -296,12 +413,8 @@ class useful(commands.Cog):
     @commands.command()
     async def languages(self, ctx):
         """Shows the languages that the run command can use."""
-        languages = self.DB.main.get(b"languages")
+        languages = orjson.loads(self.DB.main.get(b"languages"))
 
-        if not languages:
-            return await ctx.send("No languages found")
-
-        languages = orjson.loads(languages)
         msg = ""
 
         for count, language in enumerate(sorted(languages), start=1):

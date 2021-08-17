@@ -5,7 +5,7 @@ import discord
 import orjson
 
 from cogs.utils.relativedelta import pretty_time
-from cogs.utils.useful import run_process
+from cogs.utils.useful import run_process, get_json
 
 
 class background_tasks(commands.Cog):
@@ -289,8 +289,7 @@ class background_tasks(commands.Cog):
     async def update_languages(self):
         """Updates pistons supported languages for the run command."""
         url = "https://emkc.org/api/v2/piston/runtimes"
-        async with self.bot.client_session.get(url) as page:
-            data = await page.json()
+        data = await get_json(self.bot.client_session, url)
 
         aliases = set()
         languages = []
@@ -302,6 +301,20 @@ class background_tasks(commands.Cog):
 
         self.DB.main.put(b"languages", orjson.dumps(languages))
         self.DB.main.put(b"aliases", orjson.dumps(list(aliases)))
+
+        url = "https://tio.run/languages.json"
+        data = await get_json(self.bot.client_session, url)
+
+        self.DB.main.put(b"tiolanguages", orjson.dumps([*data]))
+
+        hello_worlds = {}
+
+        for language in data:
+            for request in data[language]["tests"]["helloWorld"]["request"]:
+                if request["command"] == "F" and ".code.tio" in request["payload"]:
+                    hello_worlds[language] = request["payload"][".code.tio"]
+
+        self.DB.main.put(b"helloworlds", orjson.dumps(hello_worlds))
 
     @tasks.loop(minutes=10)
     async def update_crypto(self):
