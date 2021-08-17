@@ -43,7 +43,10 @@ class animals(commands.Cog):
 
     @commands.command(name="duckstatus")
     async def duck_status(self, ctx, status):
-        """Gets a duck image for status codes e.g 404 Not Found."""
+        """Gets a duck image for status codes e.g 404.
+
+        status: str
+        """
         await ctx.send(f"https://random-d.uk/api/http/{status}.jpg")
 
     @commands.command()
@@ -237,7 +240,10 @@ class animals(commands.Cog):
 
     @commands.command(name="catstatus")
     async def cat_status(self, ctx, status):
-        """Gets a cat image for a status e.g Error 404 not found."""
+        """Gets a cat image for a status e.g 404.
+
+        status: str
+        """
         await ctx.send(f"https://http.cat/{status}")
 
     @commands.command()
@@ -265,7 +271,10 @@ class animals(commands.Cog):
 
     @commands.command(name="dogstatus")
     async def dog_status(self, ctx, status):
-        """Gets a dog image for a status e.g Error 404 not found."""
+        """Gets a dog image for a status e.g 404.
+
+        status: str
+        """
         await ctx.send(f"https://httpstatusdogs.com/img/{status}.jpg")
 
     @commands.command()
