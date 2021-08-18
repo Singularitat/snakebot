@@ -304,7 +304,8 @@ class events(commands.Cog):
             or self.DB.main.get(f"{message.guild.id}-logging".encode())
             or message.author == self.bot.user
             or not message.content
-            and not message.attachments[0].content_type.startswith("image/")
+            and not message.attachments
+            or message.attachments[0].content_type.startswith("image/")
         ):
             return
 
