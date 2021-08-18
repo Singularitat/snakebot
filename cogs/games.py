@@ -27,11 +27,17 @@ class CookieClicker(discord.ui.View):
 
     @staticmethod
     def get_embed(name, data):
+        cps = data.get("cps", 0) + 1
+        upgrades = data["upgrade"]
+
         return (
             discord.Embed(color=discord.Color.blurple(), title=name)
             .add_field(name="Cookies", value=f"{data['cookies']} 🍪")
-            .add_field(name="Upgrades", value=data["upgrade"])
-            .add_field(name="Cookies per second", value=data.get("cps", 0))
+            .add_field(name="Upgrades", value=upgrades)
+            .add_field(name="Cookies per second", value=cps)
+            .add_field(name="\u200b", value="\u200b")
+            .add_field(name="Cost", value=int((100 * upgrades) ** 0.8))
+            .add_field(name="Cost", value=int((1000 * cps) ** 0.9))
         )
 
     @discord.ui.button(label="🍪", style=discord.ButtonStyle.blurple)
