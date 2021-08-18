@@ -22,6 +22,33 @@ class misc(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
+    @commands.command(name="embedjson")
+    async def embed_json(self, ctx, message: discord.Message):
+        """Converts the embed of a message to json.
+
+        message: discord.Message
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not message.embeds:
+            embed.description = "```Message has no embed```"
+            await ctx.send(embed=embed)
+
+        message_embed = message.embeds[0]
+
+        json = (
+            str(message_embed.to_dict())
+            .replace("'", '"')
+            .replace("True", "true")
+            .replace("False", "false")
+        )
+
+        if len(json) > 2000:
+            return await ctx.send(file=discord.File(StringIO(json), "embed.json"))
+
+        embed.description = f"```json\n{json}```"
+        await ctx.send(embed=embed)
+
     @commands.command()
     async def nato(self, ctx, *, text):
         """Converts text to the NATO phonetic alphabet.
