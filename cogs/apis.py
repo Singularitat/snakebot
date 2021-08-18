@@ -22,6 +22,34 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def country(self, ctx, *, name):
+        """Show information about a given country.
+
+        name: str
+        """
+        url = f"https://restcountries.com/v2/name/{name}"
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        async with ctx.typing():
+            data = await get_json(self.bot.client_session, url)
+
+            if not isinstance(data, list):
+                embed.description = "```Country not found```"
+                return await ctx.send(embed=embed)
+
+            data = data[0]
+
+            embed.set_author(name=data["name"], icon_url=data["flags"][-1])
+            embed.add_field(name="Capital", value=data["capital"])
+            embed.add_field(name="Demonym", value=data["demonym"])
+            embed.add_field(name="Continent", value=data["continent"])
+            embed.add_field(name="Population", value=f"{data['population']:,}")
+            embed.add_field(name="Total Area", value=f"{data['area']:,.0f}km²")
+            embed.add_field(name="TLD", value=", ".join(data["topLevelDomain"]))
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def fact(self, ctx):
         """Gets a random fact."""
         url = "https://uselessfacts.jsph.pl/random.json?language=en"
@@ -842,16 +870,17 @@ class apis(commands.Cog):
 
         country: str - The country to search for
         """
-        url = "https://corona.lmao.ninja/v3/covid-19/countries/" + country
         if country.lower() == "all":
             url = "https://corona.lmao.ninja/v3/covid-19/all"
+        else:
+            url = f"https://corona.lmao.ninja/v3/covid-19/countries/{country}"
 
         embed = discord.Embed(colour=discord.Color.red())
 
         async with ctx.typing():
             data = await get_json(self.bot.client_session, url)
 
-        if "country" not in data:
+        if "message" in data:
             embed.description = (
                 "```Not a valid country\nExamples: NZ, New Zealand, all```"
             )
