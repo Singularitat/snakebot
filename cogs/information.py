@@ -10,7 +10,6 @@ import discord
 import orjson
 import psutil
 
-from .utils.relativedelta import pretty_time
 from cogs.utils.useful import get_json
 
 
@@ -347,7 +346,7 @@ class information(commands.Cog):
     @commands.command()
     async def uptime(self, ctx):
         """Shows the bots uptime."""
-        await ctx.send(f"**{pretty_time(self.bot.uptime)}**")
+        await ctx.send(f"Bot has been up since **<t:{self.bot.uptime:.0f}:R>**")
 
     @commands.command(name="server")
     async def server_info(self, ctx):
@@ -372,7 +371,7 @@ class information(commands.Cog):
         embed.description = textwrap.dedent(
             f"""
                 **Server Information**
-                Created: {pretty_time(ctx.guild.created_at)} ago
+                Created: **<t:{ctx.guild.created_at.timestamp():.0f}:R>**
                 Region: {ctx.guild.region.name.title()}
                 Owner: {ctx.guild.owner}
 
@@ -396,7 +395,7 @@ class information(commands.Cog):
             The member to get info of defulting to the invoker.
         """
         user = user or ctx.author
-        created = f"{pretty_time(user.created_at)} ago"
+        created = f"<t:{user.created_at.timestamp():.0f}:R>"
 
         embed = discord.Embed(
             title=(str(user) + (" `[BOT]`" if user.bot else "")),
@@ -405,13 +404,13 @@ class information(commands.Cog):
 
         embed.add_field(
             name="User information",
-            value=f"Created: {created}\nProfile: {user.mention}\nID: {user.id}",
+            value=f"Created: **{created}**\nProfile: {user.mention}\nID: {user.id}",
             inline=False,
         )
 
         if hasattr(user, "guild"):
             roles = ", ".join(role.mention for role in user.roles[1:])
-            joined = f"{pretty_time(user.joined_at)} ago"
+            joined = f"**<t:{user.joined_at.timestamp():.0f}:R>**"
             embed.color = user.top_role.colour if roles else embed.color
             embed.title = f"{user.nick} ({user})" if user.nick else embed.title
 
