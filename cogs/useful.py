@@ -51,6 +51,19 @@ class LanguageMenu(menus.ListPageSource):
         return discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
 
 
+class PoiMenu(menus.ListPageSource):
+    def __init__(self, data):
+        super().__init__(data, per_page=9)
+
+    async def format_page(self, menu, entries):
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        for location, sep, poi in entries:
+            embed.add_field(name=location, value=poi)
+
+        return embed
+
+
 class useful(commands.Cog):
     """Actually useful commands."""
 
@@ -58,6 +71,40 @@ class useful(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
         self.loop = bot.loop
+
+    @commands.command()
+    async def poi(self, ctx):
+        """Gets the places of interest for covid."""
+        url = (
+            "https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-"
+            "coronavirus/covid-19-health-advice-public/contact-tracing-covid-19/covid-19"
+            "-contact-tracing-locations-interest"
+        )
+
+        async with self.bot.client_session.get(url) as page:
+            soup = lxml.html.fromstring(await page.text())
+
+        pois = []
+
+        for poi in soup.xpath(".//tbody")[0].xpath(".//tr"):
+            pois.append(
+                poi.text_content()[1:]
+                .replace("\t", "")
+                .replace(
+                    "\nIsolate at home for 14 days from date of last exposure."
+                    " Test immediately, and on days 5 & 12 and on day 12 after"
+                    " last exposure. Call Healthline for what to do next.",
+                    "",
+                )
+                .partition("\n")
+            )
+
+        pages = menus.MenuPages(
+            source=PoiMenu(pois),
+            clear_reactions_after=True,
+            delete_message_after=True,
+        )
+        await pages.start(ctx)
 
     @commands.command()
     async def tiolanguages(self, ctx):
