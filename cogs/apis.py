@@ -22,6 +22,31 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def currency(self, ctx, orginal, amount: float, new):
+        """Converts between currencies.
+
+        orginal: str
+            The orginal currency.
+        amount: int
+        new: str
+            The new currency.
+        """
+        url = (
+            "https://cdn.jsdelivr.net/gh/fawazahmed0"
+            f"/currency-api@1/latest/currencies/{orginal}.json"
+        )
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        async with ctx.typing():
+            data = await get_json(self.bot.client_session, url)
+
+            embed.description = (
+                f"```{amount} {orginal} is {data[orginal][new] * amount} {new}```"
+            )
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def country(self, ctx, *, name):
         """Show information about a given country.
 
@@ -40,11 +65,14 @@ class apis(commands.Cog):
             data = data[0]
 
             embed.set_author(name=data["name"], icon_url=data["flags"][-1])
-            embed.add_field(name="Capital", value=data["capital"])
+            embed.add_field(name="Capital", value=data.get("capital", "No Capital"))
             embed.add_field(name="Demonym", value=data["demonym"])
             embed.add_field(name="Continent", value=data["continent"])
             embed.add_field(name="Population", value=f"{data['population']:,}")
-            embed.add_field(name="Total Area", value=f"{data['area']:,.0f}km²")
+            embed.add_field(
+                name="Total Area",
+                value=f"{data['area']:,.0f}km²" if "area" in data else "NaN",
+            )
             embed.add_field(name="TLD", value=", ".join(data["topLevelDomain"]))
 
         await ctx.send(embed=embed)
@@ -726,23 +754,24 @@ class apis(commands.Cog):
         url = "https://quicklatex.com/latex3.f"
 
         preamble = (
-            r"\usepackage{amsmath}\n"
-            r"\usepackage{amsfonts}\n"
-            r"\usepackage{amssymb}\n"
-            r"\newcommand{\N}{\mathbb N}\n"
-            r"\newcommand{\Z}{\mathbb Z}\n"
-            r"\newcommand{\Q}{\mathbb Q}"
-            r"\newcommand{\R}{\mathbb R}\n"
-            r"\newcommand{\C}{\mathbb C}\n"
-            r"\newcommand{\V}[1]{\begin{bmatrix}#1\end{bmatrix}}\n"
-            r"\newcommand{\set}[1]{\left\{#1\right\}}\n"
+            "\\usepackage{amsmath}\n"
+            "\\usepackage{amsfonts}\n"
+            "\\usepackage{amssymb}\n"
+            "\\newcommand{\\N}{\\mathbb N}\n"
+            "\\newcommand{\\Z}{\\mathbb Z}\n"
+            "\\newcommand{\\Q}{\\mathbb Q}"
+            "\\newcommand{\\R}{\\mathbb R}\n"
+            "\\newcommand{\\C}{\\mathbb C}\n"
+            "\\newcommand{\\V}[1]{\\begin{bmatrix}#1\\end{bmatrix}}\n"
+            "\\newcommand{\\set}[1]{\\left\\{#1\\right\\}}"
         )
 
-        latex = re.sub(r"```\w+\n|```", "", latex)
+        table = {37: "%25", 38: "%26"}
+        latex = re.sub(r"```\w+\n|```", "", latex).strip("\n").translate(table)
 
         if "%%preamble%%" in latex:
             _, pre, latex = re.split("%%preamble%%", latex)
-            preamble += pre
+            preamble += pre.translate(table)
 
         data = (
             f"formula={latex}&fsize=50px&fcolor=FFFFFF&mode=0&out=1"
