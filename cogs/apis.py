@@ -22,6 +22,31 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def currency(self, ctx, orginal, amount: float, new):
+        """Converts between currencies.
+
+        orginal: str
+            The orginal currency.
+        amount: int
+        new: str
+            The new currency.
+        """
+        url = (
+            "https://cdn.jsdelivr.net/gh/fawazahmed0"
+            f"/currency-api@1/latest/currencies/{orginal}.json"
+        )
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        async with ctx.typing():
+            data = await get_json(self.bot.client_session, url)
+
+            embed.description = (
+                f"```{amount} {orginal} is {data[orginal][new] * amount} {new}```"
+            )
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def country(self, ctx, *, name):
         """Show information about a given country.
 
