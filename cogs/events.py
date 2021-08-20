@@ -304,8 +304,10 @@ class events(commands.Cog):
             or self.DB.main.get(f"{message.guild.id}-logging".encode())
             or message.author == self.bot.user
             or not message.content
-            and not message.attachments
-            or message.attachments[0].content_type.startswith("image/")
+            and (
+                not message.attachments
+                or message.attachments[0].content_type.startswith("image/")
+            )
         ):
             return
 
@@ -473,7 +475,7 @@ class events(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.description = (
-            f"```{member.display_name} left the server" f"\n\nMember ID: {member.id}```"
+            f"```{member.display_name} left the server\n\nMember ID: {member.id}```"
         )
 
         await channel.send(embed=embed)
@@ -494,6 +496,13 @@ class events(commands.Cog):
         invite: discord.Invite
         """
         self.DB.invites.delete(f"{invite.code}-{invite.guild.id}".encode())
+
+    @staticmethod
+    async def can_run(ctx, command):
+        try:
+            return await command.can_run(ctx)
+        except commands.errors.CommandError:
+            return False
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -528,12 +537,12 @@ class events(commands.Cog):
             all_commands = [
                 str(command)
                 for command in self.bot.walk_commands()
-                if not command.hidden
+                if not command.hidden and await self.can_run(ctx, command)
             ]
 
             matches = difflib.get_close_matches(invoked, all_commands, cutoff=0.5)
 
-            if len(matches) == 0:
+            if not matches:
                 return
 
             message = "Did you mean:\n\n" + "\n".join(matches)
@@ -578,11 +587,10 @@ class events(commands.Cog):
     async def on_ready(self):
         """Called when the bot is done preparing the data received from Discord."""
         if not hasattr(self.bot, "uptime"):
-            boot_time = (
-                datetime.now().timestamp() - psutil.Process(os.getpid()).create_time()
-            )
+            start_time = datetime.now().timestamp()
+            boot_time = start_time - psutil.Process(os.getpid()).create_time()
 
-            self.bot.uptime = datetime.utcnow()
+            self.bot.uptime = start_time
             boot_times = self.DB.main.get(b"boot_times")
 
             if boot_times:
