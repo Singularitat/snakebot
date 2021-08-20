@@ -58,7 +58,7 @@ class PoiMenu(menus.ListPageSource):
     async def format_page(self, menu, entries):
         embed = discord.Embed(color=discord.Color.blurple())
 
-        for location, sep, poi in entries:
+        for location, poi in entries:
             embed.add_field(name=location, value=poi)
 
         return embed
@@ -74,7 +74,7 @@ class useful(commands.Cog):
 
     @commands.command()
     async def poi(self, ctx):
-        """Gets the places of interest for covid."""
+        """Gets the auckland places of interest for covid."""
         url = (
             "https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-"
             "coronavirus/covid-19-health-advice-public/contact-tracing-covid-19/covid-19"
@@ -86,18 +86,9 @@ class useful(commands.Cog):
 
         pois = []
 
-        for poi in soup.xpath(".//tbody")[0].xpath(".//tr"):
-            pois.append(
-                poi.text_content()[1:]
-                .replace("\t", "")
-                .replace(
-                    "\nIsolate at home for 14 days from date of last exposure."
-                    " Test immediately, and on days 5 & 12 and on day 12 after"
-                    " last exposure. Call Healthline for what to do next.",
-                    "",
-                )
-                .partition("\n")
-            )
+        for poi in soup.xpath(".//tbody")[1].xpath(".//tr"):
+            data = poi.text_content()[1:].replace("\t", "").split("\n")
+            pois.append((data[0], "\n".join(data[1:4])))
 
         pages = menus.MenuPages(
             source=PoiMenu(pois),
