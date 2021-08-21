@@ -373,13 +373,12 @@ class games(commands.Cog):
     @commands.command()
     async def hangman(self, ctx):
         """Starts a game of hangman with a random word."""
-        url = "https://random-words-api.vercel.app/word"
+        url = "https://random-word-form.herokuapp.com/random/adjective"
 
         async with self.bot.client_session.get(url) as response:
             data = await response.json()
 
-        word = data[0]["word"]
-        definition = data[0]["definition"]
+        word = data[0]
 
         letter_indexs = {}
 
@@ -422,7 +421,6 @@ class games(commands.Cog):
 
             if misses == 7:
                 embed.title = word
-                embed.description = definition
             else:
                 embed.title = "".join(guessed)
                 embed.set_image(url=HANGMAN_IMAGES[misses])
