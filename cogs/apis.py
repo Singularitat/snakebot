@@ -32,8 +32,8 @@ class apis(commands.Cog):
             The new currency.
         """
         url = (
-            "https://cdn.jsdelivr.net/gh/fawazahmed0"
-            f"/currency-api@1/latest/currencies/{orginal}.json"
+            "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api"
+            f"@1/latest/currencies/{orginal}/{new}.min.json"
         )
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -41,7 +41,7 @@ class apis(commands.Cog):
             data = await get_json(self.bot.client_session, url)
 
             embed.description = (
-                f"```{amount} {orginal} is {data[orginal][new] * amount} {new}```"
+                f"```{amount} {orginal} is {data[new] * amount} {new}```"
             )
 
         await ctx.send(embed=embed)
