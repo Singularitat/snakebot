@@ -76,19 +76,22 @@ class useful(commands.Cog):
     async def poi(self, ctx):
         """Gets the auckland places of interest for covid."""
         url = (
-            "https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-"
-            "coronavirus/covid-19-health-advice-public/contact-tracing-covid-19/covid-19"
-            "-contact-tracing-locations-interest"
+            "https://raw.githubusercontent.com/minhealthnz/nz-covid-data/main"
+            "/locations-of-interest/august-2021/locations-of-interest.geojson"
         )
 
         async with self.bot.client_session.get(url) as page:
-            soup = lxml.html.fromstring(await page.text())
+            data = orjson.loads(await page.read())
 
         pois = []
 
-        for poi in soup.xpath(".//tbody")[1].xpath(".//tr"):
-            data = poi.text_content()[1:].replace("\t", "").split("\n")
-            pois.append((data[0], "\n".join(data[1:4])))
+        for poi in data["features"]:
+            prop = poi["properties"]
+            information = (
+                f"{prop['Location']}\n{prop['Start'][11:]} - {prop['End'][11:]}"
+            )
+            if prop["City"] == "Auckland":
+                pois.append((prop["Event"], information))
 
         pages = menus.MenuPages(
             source=PoiMenu(pois),
