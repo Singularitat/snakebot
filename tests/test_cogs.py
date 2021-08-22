@@ -9,6 +9,7 @@ from cogs.animals import animals
 from cogs.misc import misc
 from cogs.useful import useful
 from cogs.stocks import stocks
+from cogs.crypto import crypto
 
 bot = Bot(MockBot())
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -49,7 +50,21 @@ class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
 
 
 class CryptoCogTests(unittest.IsolatedAsyncioTestCase):
-    pass
+    @classmethod
+    def setUpClass(cls):
+        cls.cog = crypto(bot=bot)
+
+    async def test_crypto_command(self):
+        context = MockContext()
+        context.invoked_subcommand = None
+        context.subcommand_passed = "BTC"
+
+        await self.cog.crypto(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].description,
+            "```No stock found for BTC```",
+        )
 
 
 class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
