@@ -41,9 +41,7 @@ class CustomMockMixin:
     additional_spec_asyncs = None
 
     def __init__(self, **kwargs):
-        name = kwargs.pop(
-            "name", None
-        )  # `name` has special meaning for Mock classes, so we need to set it manually.
+        name = kwargs.pop("name", None)
         super().__init__(spec_set=self.spec_set, **kwargs)
 
         if self.additional_spec_asyncs:
@@ -62,7 +60,6 @@ class CustomMockMixin:
             issubclass(_type, unittest.mock.MagicMock)
             and _new_name in unittest.mock._async_method_magics
         ):
-            # Any asynchronous magic becomes an AsyncMock
             klass = unittest.mock.AsyncMock
         else:
             klass = self.child_mock_type
@@ -75,7 +72,6 @@ class CustomMockMixin:
         return klass(**kw)
 
 
-# Create a guild instance to get a realistic Mock of `discord.Guild`
 guild_data = {
     "id": 1,
     "name": "guild",
@@ -110,7 +106,6 @@ class MockGuild(CustomMockMixin, unittest.mock.Mock, HashableMixin):
             self.roles.extend(roles)
 
 
-# Create a Role instance to get a realistic Mock of `discord.Role`
 role_data = {"name": "role", "id": 1}
 role_instance = discord.Role(
     guild=guild_instance, state=unittest.mock.MagicMock(), data=role_data
@@ -140,15 +135,12 @@ class MockRole(CustomMockMixin, unittest.mock.Mock, ColourMixin, HashableMixin):
             self.mention = f"&{self.name}"
 
     def __lt__(self, other):
-        """Simplified position-based comparisons similar to those of `discord.Role`."""
         return self.position < other.position
 
     def __ge__(self, other):
-        """Simplified position-based comparisons similar to those of `discord.Role`."""
         return self.position >= other.position
 
 
-# Create a Member instance to get a realistic Mock of `discord.Member`
 member_data = {"user": "lemon", "roles": [1]}
 state_mock = unittest.mock.MagicMock()
 member_instance = discord.Member(
@@ -176,7 +168,6 @@ class MockMember(CustomMockMixin, unittest.mock.Mock, ColourMixin, HashableMixin
             self.mention = f"@{self.name}"
 
 
-# Create a User instance to get a realistic Mock of `discord.User`
 user_instance = discord.User(
     data=unittest.mock.MagicMock(), state=unittest.mock.MagicMock()
 )
@@ -195,12 +186,7 @@ class MockUser(CustomMockMixin, unittest.mock.Mock, ColourMixin, HashableMixin):
 
 def _get_mock_loop() -> unittest.mock.Mock:
     loop = unittest.mock.create_autospec(spec=AbstractEventLoop, spec_set=True)
-
-    # Since calling `create_task` on our MockBot does not actually schedule the coroutine object
-    # as a task in the asyncio loop, this `side_effect` calls `close()` on the coroutine object
-    # to prevent "has not been awaited"-warnings.
     loop.create_task.side_effect = lambda coroutine: coroutine.close()
-
     return loop
 
 
@@ -217,7 +203,6 @@ class MockBot(CustomMockMixin, unittest.mock.MagicMock):
         self.loop = _get_mock_loop()
 
 
-# Create a TextChannel instance to get a realistic MagicMock of `discord.TextChannel`
 channel_data = {
     "id": 1,
     "type": "TextChannel",
@@ -268,7 +253,6 @@ class MockVoiceChannel(CustomMockMixin, unittest.mock.Mock, HashableMixin):
             self.mention = f"#{self.name}"
 
 
-# Create data for the DMChannel instance
 state = unittest.mock.MagicMock()
 me = unittest.mock.MagicMock()
 dm_channel_data = {"id": 1, "recipients": [unittest.mock.MagicMock()]}
@@ -287,7 +271,6 @@ class MockDMChannel(CustomMockMixin, unittest.mock.Mock, HashableMixin):
         super().__init__(**collections.ChainMap(kwargs, default_kwargs))
 
 
-# Create CategoryChannel instance to get a realistic MagicMock of `discord.CategoryChannel`
 category_channel_data = {
     "id": 1,
     "type": discord.ChannelType.category,
@@ -308,7 +291,6 @@ class MockCategoryChannel(CustomMockMixin, unittest.mock.Mock, HashableMixin):
         super().__init__(**collections.ChainMap(default_kwargs, kwargs))
 
 
-# Create a Message instance to get a realistic MagicMock of `discord.Message`
 message_data = {
     "id": 1,
     "webhook_id": 431341013479718912,
@@ -330,8 +312,12 @@ channel = unittest.mock.MagicMock()
 message_instance = discord.Message(state=state, channel=channel, data=message_data)
 
 
-# Create a Context instance to get a realistic MagicMock of `discord.ext.commands.Context`
-context_instance = Context(message=unittest.mock.MagicMock(), prefix=".")
+context_instance = Context(
+    message=unittest.mock.MagicMock(),
+    prefix=".",
+    bot=MockBot(),
+    view=unittest.mock.MagicMock(),
+)
 context_instance.invoked_from_error_handler = None
 
 

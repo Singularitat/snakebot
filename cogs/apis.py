@@ -31,17 +31,17 @@ class apis(commands.Cog):
         new: str
             The new currency.
         """
-        url = (
-            "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api"
-            f"@1/latest/currencies/{orginal}/{new}.min.json"
-        )
+        new = new.upper()
+        orginal = orginal.upper()
+
+        url = f"https://api.frankfurter.app/latest?amount={amount}&from={orginal}&to={new}"
         embed = discord.Embed(color=discord.Color.blurple())
 
         async with ctx.typing():
             data = await get_json(self.bot.client_session, url)
 
             embed.description = (
-                f"```{amount} {orginal} is {data[new] * amount} {new}```"
+                f"```{amount} {orginal} is {data['rates'][new]} {new}```"
             )
 
         await ctx.send(embed=embed)
