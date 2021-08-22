@@ -202,6 +202,7 @@ class MockBot(CustomMockMixin, unittest.mock.MagicMock):
 
         self.loop = _get_mock_loop()
 
+
 channel_data = {
     "id": 1,
     "type": "TextChannel",
@@ -311,7 +312,12 @@ channel = unittest.mock.MagicMock()
 message_instance = discord.Message(state=state, channel=channel, data=message_data)
 
 
-context_instance = Context(message=unittest.mock.MagicMock(), prefix=".", bot=MockBot(), view=unittest.mock.MagicMock())
+context_instance = Context(
+    message=unittest.mock.MagicMock(),
+    prefix=".",
+    bot=MockBot(),
+    view=unittest.mock.MagicMock(),
+)
 context_instance.invoked_from_error_handler = None
 
 
