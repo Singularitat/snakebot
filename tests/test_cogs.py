@@ -8,6 +8,7 @@ from tests.helpers import MockBot, MockContext
 from cogs.animals import animals
 from cogs.misc import misc
 from cogs.useful import useful
+from cogs.stocks import stocks
 
 bot = Bot(MockBot())
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -123,7 +124,21 @@ class OwnerCogTests(unittest.IsolatedAsyncioTestCase):
 
 
 class StocksCogTests(unittest.IsolatedAsyncioTestCase):
-    pass
+    @classmethod
+    def setUpClass(cls):
+        cls.cog = stocks(bot=bot)
+
+    async def test_stock_command(self):
+        context = MockContext()
+        context.invoked_subcommand = None
+        context.subcommand_passed = "TSLA"
+
+        await self.cog.stock(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].description,
+            "```No stock found for TSLA```",
+        )
 
 
 class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
