@@ -1,11 +1,11 @@
 import os
 import asyncio
+import logging
 from contextlib import suppress
 
 import discord
 from discord.ext import commands
 import aiohttp
-import logging
 
 import config
 from cogs.utils.database import Database
@@ -62,6 +62,23 @@ class Bot(commands.Bot):
             except Exception as e:
                 print(f"Failed to load extension {extension}.\n{e} \n")
 
+    async def get_json(self, url):
+        """Gets and loads json from a url.
+
+        session: aiohttp.ClientSession
+            A aiohttp client session so that a new one isn't made every request
+        url: str
+            The url to fetch the json from.
+        """
+        try:
+            async with self.client_session.get(url) as response:
+                return await response.json()
+        except (
+            asyncio.exceptions.TimeoutError,
+            aiohttp.client_exceptions.ContentTypeError,
+        ):
+            return None
+
     async def close(self) -> None:
         """Close the Discord connection and the aiohttp session."""
         for ext in list(self.extensions):
@@ -79,7 +96,9 @@ class Bot(commands.Bot):
 
     async def login(self, *args, **kwargs) -> None:
         """Setup the client_session before logging in."""
-        self.client_session = aiohttp.ClientSession()
+        self.client_session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=6)
+        )
 
         await super().login(*args, **kwargs)
 
