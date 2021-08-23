@@ -22,6 +22,40 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def wolfram(self, ctx, *, query):
+        """Gets the output of a query from wolfram alpha."""
+        query = query.replace(" ", "+")
+        url = (
+            "https://lin2jing4-cors-1.herokuapp.com/api.wolframalpha.com/v2/query"
+            "?&output=json&podstate=step-by-step+solution&podstate=step-by-step&podstate"
+            "=show+all+steps&scantimeout=30&podtimeout=30&formattimeout=30&parsetimeout"
+            "=30&totaltimeout=30&reinterpret=true&podstate=undefined&appid="
+            f"KQRKKJ-8WHPY395HA&input={query}&lang=en"
+        )
+
+        headers = {"Origin": "https://wolfreealpha.gitlab.io"}
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        async with ctx.typing(), self.bot.client_session.get(
+            url, headers=headers
+        ) as response:
+            data = (await response.json())["queryresult"]
+
+        if data["error"]:
+            embed.description = "```Calculation errored out```"
+            return await ctx.send(embed=embed)
+
+        msg = ""
+
+        for pod in data["pods"]:
+            if pod["title"] and pod["subpods"][0]["plaintext"]:
+                msg += f"{pod['title']}\n{pod['subpods'][0]['plaintext']}\n\n"
+
+        embed.title = "Results"
+        embed.description = f"```\n{msg}```"
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def currency(self, ctx, orginal, amount: float, new):
         """Converts between currencies.
 
