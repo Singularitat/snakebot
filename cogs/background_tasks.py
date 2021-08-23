@@ -4,7 +4,7 @@ from discord.ext import commands, tasks
 import discord
 import orjson
 
-from cogs.utils.useful import run_process, get_json
+from cogs.utils.useful import run_process
 
 
 class background_tasks(commands.Cog):
@@ -289,7 +289,7 @@ class background_tasks(commands.Cog):
     async def update_languages(self):
         """Updates pistons supported languages for the run command."""
         url = "https://emkc.org/api/v2/piston/runtimes"
-        data = await get_json(self.bot.client_session, url)
+        data = await self.bot.get_json(url)
 
         aliases = set()
         languages = []
@@ -303,7 +303,7 @@ class background_tasks(commands.Cog):
         self.DB.main.put(b"aliases", orjson.dumps(list(aliases)))
 
         url = "https://tio.run/languages.json"
-        data = await get_json(self.bot.client_session, url)
+        data = await self.bot.get_json(url)
 
         self.DB.main.put(b"tiolanguages", orjson.dumps([*data]))
 
