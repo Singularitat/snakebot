@@ -10,8 +10,6 @@ import discord
 import orjson
 import psutil
 
-from cogs.utils.useful import get_json
-
 
 class information(commands.Cog):
     """Commands that give information about the bot or server."""
@@ -46,7 +44,7 @@ class information(commands.Cog):
         url = "https://api.github.com/repos/Singularitat/snakebot/commits?per_page=12"
 
         async with ctx.typing():
-            commits = await get_json(self.bot.client_session, url)
+            commits = await self.bot.get_json(url)
 
         embed = discord.Embed(color=discord.Color.blurple())
 
