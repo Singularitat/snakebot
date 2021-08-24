@@ -176,7 +176,7 @@ class TicTacToeButton(discord.ui.Button["TicTacToe"]):
         if not view.playing_against and interaction.user != view.author:
             view.playing_against = interaction.user
 
-        if view.playing_against != interaction.user and view.author != interaction.user:
+        if interaction.user not in (view.playing_against, view.author):
             return
 
         if view.current_player == -1:
