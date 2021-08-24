@@ -125,6 +125,20 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             "```00100000```",
         )
 
+    async def test_nato_command(self):
+        context = MockContext()
+
+        await self.cog.nato(
+            self.cog, context, text="the quick brown fox jumps over 13 lazy dogs"
+        )
+
+        context.send.assert_called_with(
+            "Tango Hotel Echo (space) Quebec Uniform India Charlie Kilo (space) Bravo "
+            "Romeo Oscar Whiskey November (space) Foxtrot Oscar X-ray (space) Juliett "
+            "Uniform Mike Papa Sierra (space) Oscar Victor Echo Romeo (space) One Three"
+            " (space) Lima Alfa Zulu Yankee (space) Delta Oscar Golf Sierra ",
+        )
+
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     pass
