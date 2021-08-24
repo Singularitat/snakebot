@@ -4,7 +4,7 @@ import asyncio
 from aiohttp import ClientSession
 
 from bot import Bot
-from tests.helpers import MockBot, MockContext
+from tests.helpers import MockBot, MockContext, MockMessage
 from cogs.animals import animals
 from cogs.misc import misc
 from cogs.useful import useful
@@ -123,6 +123,30 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             context.send.call_args.kwargs["embed"].description,
             "```00100000```",
+        )
+
+    async def test_nato_command(self):
+        context = MockContext()
+
+        await self.cog.nato(
+            self.cog, context, text="the quick brown fox jumps over 13 lazy dogs"
+        )
+
+        context.send.assert_called_with(
+            "Tango Hotel Echo (space) Quebec Uniform India Charlie Kilo (space) Bravo "
+            "Romeo Oscar Whiskey November (space) Foxtrot Oscar X-ray (space) Juliett "
+            "Uniform Mike Papa Sierra (space) Oscar Victor Echo Romeo (space) One Three"
+            " (space) Lima Alfa Zulu Yankee (space) Delta Oscar Golf Sierra ",
+        )
+
+    async def test_embedjson_command(self):
+        context = MockContext()
+
+        await self.cog.embed_json(self.cog, context, message=MockMessage())
+
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description[:61],
+            '```json\n<MagicMock name="mock.embeds.__getitem__().to_dict()"',
         )
 
 

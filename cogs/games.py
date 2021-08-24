@@ -172,31 +172,37 @@ class TicTacToeButton(discord.ui.Button["TicTacToe"]):
 
     async def callback(self, interaction: discord.Interaction):
         view = self.view
+
         if not view.playing_against and interaction.user != view.author:
             view.playing_against = interaction.user
+
+        if interaction.user not in (view.playing_against, view.author):
+            return
 
         if view.current_player == -1:
             if interaction.user != view.author:
                 return await interaction.response.edit_message(
-                    content="It is X's turn", view=view
+                    content=f"It is {view.author}'s turn", view=view
                 )
             self.style = discord.ButtonStyle.danger
             self.label = "X"
-            content = "It is now O's turn"
+            content = f"It is now {view.playing_against}'s turn"
         else:
             if interaction.user != view.playing_against:
                 return await interaction.response.edit_message(
-                    content="It is O's turn", view=view
+                    content=f"It is {view.playing_against}'s turn", view=view
                 )
             self.style = discord.ButtonStyle.success
             self.label = "O"
-            content = "It is now X's turn"
+            content = f"It is now {view.author}'s turn"
 
         self.disabled = True
         view.board[self.y][self.x] = view.current_player
         view.current_player = -view.current_player
 
-        if winner := view.check_for_win(self.label):
+        if winner := view.check_for_win(
+            str(view.author) if self.label == "X" else str(view.playing_against)
+        ):
             content = winner
 
             for label in view.children:
@@ -368,7 +374,9 @@ class games(commands.Cog):
     @commands.command()
     async def tictactoe(self, ctx):
         """Starts a game of tic tac toe."""
-        await ctx.send("Tic Tac Toe: X goes first", view=TicTacToe(ctx.author))
+        await ctx.send(
+            f"Tic Tac Toe: {ctx.author} goes first", view=TicTacToe(ctx.author)
+        )
 
     @commands.command()
     async def hangman(self, ctx):

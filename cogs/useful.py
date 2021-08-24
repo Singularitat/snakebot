@@ -1,5 +1,4 @@
 from io import StringIO
-import asyncio
 import random
 import re
 import time

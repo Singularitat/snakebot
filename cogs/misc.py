@@ -243,8 +243,7 @@ class misc(commands.Cog):
         binary = binary.replace(" ", "")
         # fmt: off
         await ctx.send(
-            "".join([chr(int(binary[i: i + 8], 2))
-                    for i in range(0, len(binary), 8)])
+            "".join([chr(int(binary[i: i + 8], 2)) for i in range(0, len(binary), 8)])
         )
         # fmt: on
 
@@ -620,7 +619,9 @@ class misc(commands.Cog):
         options: str
             The options to choose from.
         """
-        await ctx.reply(random.choice(options))
+        await ctx.reply(
+            random.choice(options), allowed_mentions=discord.AllowedMentions.none()
+        )
 
     @commands.command()
     async def yeah(self, ctx):
@@ -637,7 +638,8 @@ class misc(commands.Cog):
             The reason for the slap.
         """
         await ctx.send(
-            f"{ctx.author.mention} slapped {member.mention} because {reason}"
+            f"{ctx.author.mention} slapped {member.mention} because {reason}",
+            allowed_mentions=discord.AllowedMentions.none(),
         )
 
     @commands.command()
