@@ -146,7 +146,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(
             context.send.call_args.kwargs["embed"].description[:61],
-            '```json\n<MagicMock name="mock.embeds.__getitem__().to_dict()"'
+            '```json\n<MagicMock name="mock.embeds.__getitem__().to_dict()"',
         )
 
 
