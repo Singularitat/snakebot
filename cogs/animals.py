@@ -40,7 +40,7 @@ class animals(commands.Cog):
         await ctx.send(duck["url"])
 
     @commands.command(name="duckstatus")
-    async def duck_status(self, ctx, status):
+    async def duck_status(self, ctx, status=404):
         """Gets a duck image for status codes e.g 404.
 
         status: str
@@ -237,7 +237,7 @@ class animals(commands.Cog):
         await ctx.send(image[0])
 
     @commands.command(name="catstatus")
-    async def cat_status(self, ctx, status):
+    async def cat_status(self, ctx, status=404):
         """Gets a cat image for a status e.g 404.
 
         status: str
@@ -268,7 +268,7 @@ class animals(commands.Cog):
         await ctx.send(image["url"])
 
     @commands.command(name="dogstatus")
-    async def dog_status(self, ctx, status):
+    async def dog_status(self, ctx, status=404):
         """Gets a dog image for a status e.g 404.
 
         status: str
