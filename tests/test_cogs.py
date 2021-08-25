@@ -11,6 +11,8 @@ from cogs.misc import misc
 from cogs.useful import useful
 from cogs.stocks import stocks
 from cogs.crypto import crypto
+from cogs.apis import apis
+
 
 bot = Bot(MockBot())
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -47,7 +49,19 @@ class AnimalsCogTests(unittest.IsolatedAsyncioTestCase):
 
 
 class ApisCogTests(unittest.IsolatedAsyncioTestCase):
-    pass
+    @classmethod
+    def setUpClass(cls):
+        cls.cog = apis(bot=bot)
+
+    async def test_fact_command(self):
+        if not bot.client_session:  # This is only needed if test_animal_commands is skipped
+            bot.client_session = ClientSession()
+
+        context = MockContext()
+
+        await self.cog.fact(self.cog, context)
+
+        self.assertNotEqual(context.send.call_args.kwargs["embed"].color.value, 10038562)
 
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
