@@ -54,14 +54,16 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         cls.cog = apis(bot=bot)
 
     async def test_fact_command(self):
-        if not bot.client_session:  # This is only needed if test_animal_commands is skipped
+        if not bot.client_session:
             bot.client_session = ClientSession()
 
         context = MockContext()
 
         await self.cog.fact(self.cog, context)
 
-        self.assertNotEqual(context.send.call_args.kwargs["embed"].color.value, 10038562)
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
 
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
