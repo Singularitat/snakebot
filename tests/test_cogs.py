@@ -1,5 +1,6 @@
 import unittest
 import asyncio
+import re
 
 from aiohttp import ClientSession
 
@@ -10,9 +11,18 @@ from cogs.misc import misc
 from cogs.useful import useful
 from cogs.stocks import stocks
 from cogs.crypto import crypto
+from cogs.apis import apis
+
 
 bot = Bot(MockBot())
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
+url_regex = re.compile(
+    r"^(?:http)s?://(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}"
+    r"[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?))",
+    re.IGNORECASE,
+)
 
 
 class AdminCogTests(unittest.IsolatedAsyncioTestCase):
@@ -24,25 +34,36 @@ class AnimalsCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = animals(bot=bot)
 
-    async def test_cat_commands(self):
+    @unittest.skip("Really slow as it has to make api calls one by one")
+    async def test_animal_commands(self):
         if not bot.client_session:
             bot.client_session = ClientSession()
 
         context = MockContext()
 
-        for command in ("cat", "cat2", "cat3", "cat4"):
-            with self.subTest(command=command):
+        for command in self.cog.walk_commands():
+            with self.subTest(command=command.name):
+                await command._callback(self.cog, context)
 
-                await getattr(self.cog, command)(self.cog, context)
-
-                self.assertEqual(
-                    context.send.call_args.args[0][:4],
-                    "http",
-                )
+                self.assertRegex(context.send.call_args.args[0], url_regex)
 
 
 class ApisCogTests(unittest.IsolatedAsyncioTestCase):
-    pass
+    @classmethod
+    def setUpClass(cls):
+        cls.cog = apis(bot=bot)
+
+    async def test_fact_command(self):
+        if not bot.client_session:
+            bot.client_session = ClientSession()
+
+        context = MockContext()
+
+        await self.cog.fact(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
 
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
