@@ -76,6 +76,17 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```Country not found```")
 
+        with self.subTest(command="currency"):
+            context = MockContext()
+
+            await self.cog.currency(
+                self.cog, context, orginal="USD", amount=10, new="NZD"
+            )
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
     pass
