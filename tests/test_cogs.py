@@ -57,13 +57,47 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         if not bot.client_session:
             bot.client_session = ClientSession()
 
-        context = MockContext()
+        with self.subTest(command="fact"):
+            context = MockContext()
 
-        await self.cog.fact(self.cog, context)
+            await self.cog.fact(self.cog, context)
 
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="country"):
+            context = MockContext()
+
+            await self.cog.country(self.cog, context, name="New Zealand")
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(embed.description, "```Country not found```")
+
+        with self.subTest(command="currency"):
+            context = MockContext()
+
+            await self.cog.currency(
+                self.cog, context, orginal="USD", amount=10, new="NZD"
+            )
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="stackoverflow"):
+            context = MockContext()
+
+            await self.cog.stackoverflow(
+                self.cog, context, search="reverse a linked list"
+            )
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(embed.description, "```No posts found```")
 
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
