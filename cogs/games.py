@@ -35,7 +35,7 @@ class CookieClicker(discord.ui.View):
             .add_field(name="Cookies", value=f"{data['cookies']} 🍪")
             .add_field(name="Upgrades", value=upgrades)
             .add_field(name="Cookies per second", value=cps)
-            .add_field(name="\u200b", value="\u200b")
+            .add_field(name="Buy all", value="On" if data.get("buy_all") else "Off")
             .add_field(name="Cost", value=int((100 * upgrades) ** 0.8))
             .add_field(name="Cost", value=int((1000 * cps) ** 0.9))
         )
@@ -160,7 +160,7 @@ class CookieClicker(discord.ui.View):
             self.DB.cookies.put(user_id, orjson.dumps(cookies))
             response = "on" if cookies["buy_all"] else "off"
             await interaction.response.edit_message(
-                content=f"Togged buy all {response}"
+                content=None, embed=self.get_embed(self.user.display_name, cookies)
             )
 
 
@@ -389,14 +389,20 @@ class games(commands.Cog):
         word = data[0]
 
         letter_indexs = {}
+        guessed = []
 
         for index, letter in enumerate(word):
+            if not letter.isalpha():
+                guessed.append(letter + " ")
+                continue
+
+            guessed.append("\\_ ")
+
             if letter not in letter_indexs:
                 letter_indexs[letter] = [index]
             else:
                 letter_indexs[letter].append(index)
 
-        guessed = ["\\_ "] * len(word)
         missed_letters = set()
         misses = 0
 
@@ -416,6 +422,8 @@ class games(commands.Cog):
                 return await embed_message.add_reaction("✅")
 
             guess = message.content[0].lower()
+            if not guess.isalpha():
+                continue
 
             if guess in letter_indexs:
                 for index in letter_indexs[guess]:
