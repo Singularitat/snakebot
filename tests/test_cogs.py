@@ -87,6 +87,18 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+        with self.subTest(command="stackoverflow"):
+            context = MockContext()
+
+            await self.cog.stackoverflow(
+                self.cog, context, search="reverse a linked list"
+            )
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(embed.description, "```No posts found```")
+
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
     pass
