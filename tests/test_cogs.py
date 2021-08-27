@@ -119,6 +119,13 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 "```Not a valid country\nExamples: NZ, New Zealand, all```",
             )
 
+        with self.subTest(command="github"):
+            await self.cog.github(self.cog, context, username="Singularitat")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
     pass
