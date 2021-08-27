@@ -960,8 +960,8 @@ class apis(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(name="github", aliases=["gh"])
-    async def get_github_info(self, ctx: commands.Context, username: str) -> None:
+    @commands.command(aliases=["gh"])
+    async def github(self, ctx, username: str):
         """Fetches a members's GitHub information."""
         async with ctx.typing():
             user_data = await self.bot.get_json(
@@ -969,13 +969,12 @@ class apis(commands.Cog):
             )
 
             if user_data.get("message") is not None:
-                await ctx.send(
+                return await ctx.send(
                     embed=discord.Embed(
                         title=f"The profile for `{username}` was not found.",
-                        colour=discord.Colour.red(),
+                        colour=discord.Colour.dark_red(),
                     )
                 )
-                return
 
             org_data = await self.bot.get_json(user_data["organizations_url"])
 
@@ -996,9 +995,7 @@ class apis(commands.Cog):
 
             embed = discord.Embed(
                 title=f"`{user_data['login']}`'s GitHub profile info",
-                description=f"```{user_data['bio']}```\n"
-                if user_data["bio"] is not None
-                else "",
+                description=user_data["bio"] or "",
                 colour=0x7289DA,
                 url=user_data["html_url"],
                 timestamp=datetime.strptime(
@@ -1032,8 +1029,8 @@ class apis(commands.Cog):
                 )
 
                 embed.add_field(
-                    name=f"Organization{'s' if len(orgs)!=1 else ''}",
-                    value=orgs_to_add if orgs else "No organizations",
+                    name=f"Organization(s)",
+                    value=orgs_to_add or "No organizations",
                 )
                 embed.add_field(name="\u200b", value="\u200b")
             embed.add_field(name="Website", value=blog)
