@@ -1029,7 +1029,7 @@ class apis(commands.Cog):
                 )
 
                 embed.add_field(
-                    name=f"Organization(s)",
+                    name="Organization(s)",
                     value=orgs_to_add or "No organizations",
                 )
                 embed.add_field(name="\u200b", value="\u200b")
