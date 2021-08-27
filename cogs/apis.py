@@ -868,8 +868,26 @@ class apis(commands.Cog):
         self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
         await ctx.send(embed=embed)
 
+    @commands.command()
+    async def wikir(self, ctx):
+        """Gets a random wikipedia article."""
+        url = "https://en.wikipedia.org/api/rest_v1/page/random/summary"
+
+        async with ctx.typing():
+            data = await self.bot.get_json(url)
+
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                title=data["title"],
+                description=data["extract"],
+                url=data["content_urls"]["desktop"]["page"],
+            )
+            embed.set_image(url=data["thumbnail"]["source"])
+
+            await ctx.send(embed=embed)
+
     @commands.command(aliases=["wiki"])
-    async def wikipedia(self, ctx: commands.Context, *, search: str):
+    async def wikipedia(self, ctx, *, search: str):
         """Return list of results containing your search query from wikipedia.
 
         search: str
@@ -906,10 +924,7 @@ class apis(commands.Cog):
 
         country: str - The country to search for
         """
-        if country.lower() == "all":
-            url = "https://disease.sh/v3/covid-19/all"
-        else:
-            url = f"https://disease.sh/v3/covid-19/countries/{country}"
+        url = f"https://disease.sh/v3/covid-19/countries/{country}"
 
         embed = discord.Embed(colour=discord.Color.red())
 
