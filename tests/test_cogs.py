@@ -108,6 +108,17 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```Couldn't find any results```")
 
+        with self.subTest(command="covid"):
+            await self.cog.covid(self.cog, context)
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(
+                embed.description,
+                "```Not a valid country\nExamples: NZ, New Zealand, all```",
+            )
+
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
     pass
