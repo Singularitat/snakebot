@@ -381,7 +381,7 @@ class games(commands.Cog):
     @commands.command()
     async def hangman(self, ctx):
         """Starts a game of hangman with a random word."""
-        url = "https://random-word-form.herokuapp.com/random/adjective"
+        url = "https://random-word-api.herokuapp.com/word"
 
         async with self.bot.client_session.get(url) as response:
             data = await response.json()
