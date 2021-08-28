@@ -10,7 +10,7 @@ import discord
 import lxml.html
 import orjson
 
-from cogs.utils.calculation import calculate, hex_float, oct_float, bin_float
+from cogs.utils.calculation import safe_eval, hex_float, oct_float, bin_float
 
 
 CODE_REGEX = re.compile(
@@ -831,7 +831,7 @@ class useful(commands.Cog):
         numbers = [int(num, base) for num in re.findall(regex, args)]
 
         expr = re.sub(regex, "{}", args).format(*numbers)
-        result = calculate(expr)
+        result = safe_eval(compile(expr, "<calc>", "eval", flags=1024).body)
 
         await ctx.send(
             embed=discord.Embed(
