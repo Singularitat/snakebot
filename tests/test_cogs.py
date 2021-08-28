@@ -34,7 +34,7 @@ class AnimalsCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = animals(bot=bot)
 
-    @unittest.skip("Really slow as it has to make api calls one by one")
+    @unittest.skip("Really slow as it has to make api calls one by one.")
     async def test_animal_commands(self):
         if not bot.client_session:
             bot.client_session = ClientSession()
@@ -53,7 +53,8 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = apis(bot=bot)
 
-    async def test_fact_command(self):
+    @unittest.skip("Really slow as it has to make api calls one by one.")
+    async def test_api_commands(self):
         if not bot.client_session:
             bot.client_session = ClientSession()
 
@@ -121,6 +122,27 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
         with self.subTest(command="github"):
             await self.cog.github(self.cog, context, username="Singularitat")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="justin"):
+            await self.cog.justin(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="quote"):
+            await self.cog.quote(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="suntzu"):
+            await self.cog.suntzu(self.cog, context)
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
