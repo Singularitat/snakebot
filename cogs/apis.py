@@ -214,7 +214,7 @@ class apis(commands.Cog):
             embed.set_footer(text="The numbers below are the scores")
 
             for rhyme in rhymes:
-                embed.add_field(name=rhyme["word"], value=rhyme["score"])
+                embed.add_field(name=rhyme["word"], value=rhyme.get("score", "N/A"))
 
             await ctx.send(embed=embed)
 
