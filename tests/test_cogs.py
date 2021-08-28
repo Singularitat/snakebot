@@ -148,6 +148,33 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+        with self.subTest(command="rhyme"):
+            await self.cog.rhyme(self.cog, context, word="forgetful")
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(
+                embed.description,
+                "```No results found```",
+            )
+
+        with self.subTest(command="spelling"):
+            await self.cog.spelling(self.cog, context, word="hipopatamus")
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(
+                embed.description,
+                "```No results found```",
+            )
+
+        with self.subTest(command="meaning"):
+            await self.cog.meaning(self.cog, context, words="ringing in the ears")
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(
+                embed.description,
+                "```No results found```",
+            )
+
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
     pass
