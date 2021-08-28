@@ -118,7 +118,3 @@ def safe_eval(node):
         return OPERATIONS[node.op.__class__](left, right)
 
     raise ValueError("Calculation failed")
-
-
-def calculate(expr):
-    return safe_eval(ast.parse(expr, "<string>", "eval").body)
