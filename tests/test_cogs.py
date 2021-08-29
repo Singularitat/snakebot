@@ -209,6 +209,27 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+        with self.subTest(command="nationalize"):
+            await self.cog.nationalize(self.cog, context, search="Joe")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="game"):
+            await self.cog.game(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="game category"):
+            await self.cog.game(self.cog, context, category="open-world")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
     pass
