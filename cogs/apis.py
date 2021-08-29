@@ -300,7 +300,7 @@ class apis(commands.Cog):
             )
 
     @apis.command()
-    async def random(self, ctx, category=None):
+    async def random(self, ctx, category=""):
         """Gets a random api.
 
         category: str
@@ -335,9 +335,12 @@ class apis(commands.Cog):
         async with ctx.typing():
             entries = (await self.bot.get_json(url))["entries"]
 
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-            )
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            if not entries:
+                embed.description = f"No apis found for `{search}`"
+                return await ctx.send(embed=embed)
+
             for index, entry in enumerate(entries):
                 if index == 12:
                     break
@@ -381,8 +384,7 @@ class apis(commands.Cog):
             url = "https://www.freetogame.com/api/games?platform=pc"
 
             async with ctx.typing():
-                games = await self.bot.get_json(url)
-                game = random.choice(games)
+                game = random.choice(await self.bot.get_json(url))
 
                 embed = discord.Embed(
                     color=discord.Color.blurple(),
@@ -397,10 +399,14 @@ class apis(commands.Cog):
                 await ctx.send(embed=embed)
 
     @game.command()
-    async def category(self, ctx, category):
-        """Gets a random game that is free"""
-        if category.lower() == "list":
-            embed = discord.Embed(color=discord.Color.blurple())
+    async def category(self, ctx, category=None):
+        """Gets a random game that is free by category.
+
+        category: str
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not category:
             embed.description = textwrap.dedent(
                 """
                 ```mmorpg, shooter, strategy, moba, racing, sports
@@ -418,14 +424,13 @@ class apis(commands.Cog):
         url = f"https://www.freetogame.com/api/games?platform=pc&category={category}"
 
         async with ctx.typing():
-            games = await self.bot.get_json(url)
-            game = random.choice(games)
+            game = random.choice(await self.bot.get_json(url))
 
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                title=game["title"],
-                description=f"{game['short_description']}\n[Link]({game['game_url']})",
+            embed.title = game["title"]
+            embed.description = (
+                f"{game['short_description']}\n[Link]({game['game_url']})"
             )
+
             embed.add_field(name="Genre", value=game["genre"])
             embed.add_field(name="Publisher", value=game["publisher"])
             embed.add_field(name="Developer", value=game["developer"])
