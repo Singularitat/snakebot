@@ -300,7 +300,7 @@ class apis(commands.Cog):
             )
 
     @apis.command()
-    async def random(self, ctx, category=None):
+    async def random(self, ctx, category=""):
         """Gets a random api.
 
         category: str
@@ -335,9 +335,12 @@ class apis(commands.Cog):
         async with ctx.typing():
             entries = (await self.bot.get_json(url))["entries"]
 
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-            )
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            if not entries:
+                embed.description = f"No apis found for `{search}`"
+                return await ctx.send(embed=embed)
+
             for index, entry in enumerate(entries):
                 if index == 12:
                     break
