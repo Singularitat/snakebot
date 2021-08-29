@@ -151,6 +151,8 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="rhyme"):
             await self.cog.rhyme(self.cog, context, word="forgetful")
 
+            embed = context.send.call_args.kwargs["embed"]
+
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(
                 embed.description,
@@ -159,6 +161,8 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
         with self.subTest(command="spelling"):
             await self.cog.spelling(self.cog, context, word="hipopatamus")
+
+            embed = context.send.call_args.kwargs["embed"]
 
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(
@@ -169,10 +173,40 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="meaning"):
             await self.cog.meaning(self.cog, context, words="ringing in the ears")
 
+            embed = context.send.call_args.kwargs["embed"]
+
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(
                 embed.description,
                 "```No results found```",
+            )
+
+        with self.subTest(command="apis"):
+            await self.cog.apis(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="apis categories"):
+            await self.cog.categories(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="apis random"):
+            await self.cog.random(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="apis search"):
+            await self.cog.search(self.cog, context, search="cat")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
 
