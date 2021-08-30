@@ -37,6 +37,29 @@ class misc(commands.Cog):
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
+    @commands.guild_only()
+    @commands.command()
+    async def ship(self, ctx, user: discord.User = None):
+        """Ships a user with a random other user.
+
+        Results are not endorsed by Snake Bot
+
+        user: discord.User
+            Defaults to author.
+        """
+        user = user or ctx.author
+        temp_random = random.Random(user.id >> 4)
+
+        ship = temp_random.choice(ctx.guild.members)
+
+        while user == ship:
+            ship = temp_random.choice(ctx.guild.members)
+
+        await ctx.send(
+            f"{user.mention} has been shipped with {ship.mention} :eyes:",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @commands.command(name="embedjson")
     async def embed_json(self, ctx, message: discord.Message):
         """Converts the embed of a message to json.
