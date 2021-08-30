@@ -22,6 +22,21 @@ class misc(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
+    @commands.command()
+    async def rate(self, ctx, user: discord.User = None):
+        """Rates users out of 100.
+
+        user: discord.User
+            Defaults to author.
+        """
+        user = user or ctx.author
+        num = random.Random(user.id ^ 1970636).randint(0, 100)
+
+        await ctx.send(
+            f"{user.mention} is a {num} out of 100",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @commands.command(name="embedjson")
     async def embed_json(self, ctx, message: discord.Message):
         """Converts the embed of a message to json.
