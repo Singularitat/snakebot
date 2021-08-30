@@ -5,7 +5,7 @@ import re
 from aiohttp import ClientSession
 
 from bot import Bot
-from tests.helpers import MockBot, MockContext, MockMessage
+import tests.helpers as helpers
 from cogs.animals import animals
 from cogs.misc import misc
 from cogs.useful import useful
@@ -14,7 +14,7 @@ from cogs.crypto import crypto
 from cogs.apis import apis
 
 
-bot = Bot(MockBot())
+bot = Bot(helpers.MockBot())
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
@@ -39,7 +39,7 @@ class AnimalsCogTests(unittest.IsolatedAsyncioTestCase):
         if not bot.client_session:
             bot.client_session = ClientSession()
 
-        context = MockContext()
+        context = helpers.MockContext()
 
         for command in self.cog.walk_commands():
             with self.subTest(command=command.name):
@@ -58,7 +58,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         if not bot.client_session:
             bot.client_session = ClientSession()
 
-        context = MockContext()
+        context = helpers.MockContext()
 
         with self.subTest(command="fact"):
             await self.cog.fact(self.cog, context)
@@ -241,7 +241,7 @@ class CryptoCogTests(unittest.IsolatedAsyncioTestCase):
         cls.cog = crypto(bot=bot)
 
     async def test_crypto_command(self):
-        context = MockContext()
+        context = helpers.MockContext()
         context.invoked_subcommand = None
         context.subcommand_passed = "BTC"
 
@@ -275,14 +275,14 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         cls.cog = misc(bot=bot)
 
     async def test_yeah_command(self):
-        context = MockContext()
+        context = helpers.MockContext()
 
         await self.cog.yeah(self.cog, context)
 
         context.send.assert_called_with("Oh yeah its all coming together")
 
     async def test_convert_command(self):
-        context = MockContext()
+        context = helpers.MockContext()
 
         await self.cog.convert(self.cog, context, number=32)
 
@@ -292,7 +292,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_ones_command(self):
-        context = MockContext()
+        context = helpers.MockContext()
 
         await self.cog.ones(self.cog, context, number=32)
 
@@ -302,7 +302,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_twos_command(self):
-        context = MockContext()
+        context = helpers.MockContext()
 
         await self.cog.twos(self.cog, context, number=32, bits=8)
 
@@ -312,7 +312,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_nato_command(self):
-        context = MockContext()
+        context = helpers.MockContext()
 
         await self.cog.nato(
             self.cog, context, text="the quick brown fox jumps over 13 lazy dogs"
@@ -326,14 +326,43 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_embedjson_command(self):
-        context = MockContext()
+        context = helpers.MockContext()
 
-        await self.cog.embed_json(self.cog, context, message=MockMessage())
+        await self.cog.embed_json(self.cog, context, message=helpers.MockMessage())
 
         self.assertEqual(
             context.send.call_args.kwargs["embed"].description[:61],
             '```json\n<MagicMock name="mock.embeds.__getitem__().to_dict()"',
         )
+
+    async def test_rate_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.rate(self.cog, context)
+
+        self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
+
+    async def test_ship_command(self):
+        context = helpers.MockContext(
+            guild=helpers.MockGuild(
+                members=[helpers.MockMember(), helpers.MockMember()]
+            )
+        )
+
+        await self.cog.ship(self.cog, context)
+
+        self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
+
+    async def test_match_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.match(
+            self.cog,
+            context,
+            user1=helpers.MockMember(name="Snake Bot", id=744747000293228684),
+        )
+
+        self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
 
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
@@ -354,7 +383,7 @@ class StocksCogTests(unittest.IsolatedAsyncioTestCase):
         cls.cog = stocks(bot=bot)
 
     async def test_stock_command(self):
-        context = MockContext()
+        context = helpers.MockContext()
         context.invoked_subcommand = None
         context.subcommand_passed = "TSLA"
 
@@ -372,7 +401,7 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         cls.cog = useful(bot=bot)
 
     async def test_calc_command(self):
-        context = MockContext()
+        context = helpers.MockContext()
 
         await self.cog.calc(self.cog, context, num_base="hex", args="0x7d * 0x7d")
 
