@@ -26,6 +26,8 @@ class misc(commands.Cog):
     async def rate(self, ctx, user: discord.User = None):
         """Rates users out of 100.
 
+        Results are not endorsed by Snake Bot
+
         user: discord.User
             Defaults to author.
         """
@@ -57,6 +59,24 @@ class misc(commands.Cog):
 
         await ctx.send(
             f"{user.mention} has been shipped with {ship.mention} :eyes:",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
+    @commands.command()
+    async def match(self, ctx, user1: discord.User, user2: discord.User = None):
+        """Sees how much of a match two users are.
+
+        Results are not endorsed by Snake Bot
+
+        user1: discord.User
+        user2: discord.User
+            Defaults to author.
+        """
+        user2 = user2 or ctx.author
+        perc = random.Random(user1.id & user2.id).randint(0, 100)
+
+        await ctx.send(
+            f"{user1.mention} is a {perc}% match with {user2.mention}",
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
