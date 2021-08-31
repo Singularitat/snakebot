@@ -53,7 +53,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = apis(bot=bot)
 
-    @unittest.skip("Really slow as it has to make api calls one by one.")
+    # @unittest.skip("Really slow as it has to make api calls one by one.")
     async def test_api_commands(self):
         if not bot.client_session:
             bot.client_session = ClientSession()
@@ -201,7 +201,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             )
 
         with self.subTest(command="nationalize"):
-            await self.cog.nationalize(self.cog, context, search="Joe")
+            await self.cog.nationalize(self.cog, context, first_name="Joe")
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -215,7 +215,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             )
 
         with self.subTest(command="game category"):
-            await self.cog.game(self.cog, context, category="open-world")
+            await self.cog.category(self.cog, context, category="open-world")
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -268,14 +268,20 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             embed = context.send.call_args.kwargs["embed"]
 
             self.assertNotEqual(embed.color.value, 10038562)
-            self.assertNotEqual(
-                embed.description, "```No cocktails found.```"
-            )
+            self.assertNotEqual(embed.description, "```No cocktails found.```")
 
         with self.subTest(command="trivia"):
-            await self.cog.trivia(self.cog, context)
+            with self.assertRaises(TypeError):
+                await self.cog.trivia(self.cog, context)
+
+        with self.subTest(command="minecraft"):
+            await self.cog.cocktail(self.cog, context, ip="ntgc.ddns.net")
+
+            embed = context.send.call_args.kwargs["embed"]
 
             self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(embed.description, "```Pinging failed.```")
+            self.assertNotEqual(embed.description, "```Pinging timed out.```")
 
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
