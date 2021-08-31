@@ -154,10 +154,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             embed = context.send.call_args.kwargs["embed"]
 
             self.assertNotEqual(embed.color.value, 10038562)
-            self.assertNotEqual(
-                embed.description,
-                "```No results found```",
-            )
+            self.assertNotEqual(embed.description, "```No results found```")
 
         with self.subTest(command="spelling"):
             await self.cog.spelling(self.cog, context, word="hipopatamus")
@@ -165,10 +162,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             embed = context.send.call_args.kwargs["embed"]
 
             self.assertNotEqual(embed.color.value, 10038562)
-            self.assertNotEqual(
-                embed.description,
-                "```No results found```",
-            )
+            self.assertNotEqual(embed.description, "```No results found```")
 
         with self.subTest(command="meaning"):
             await self.cog.meaning(self.cog, context, words="ringing in the ears")
@@ -176,10 +170,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             embed = context.send.call_args.kwargs["embed"]
 
             self.assertNotEqual(embed.color.value, 10038562)
-            self.assertNotEqual(
-                embed.description,
-                "```No results found```",
-            )
+            self.assertNotEqual(embed.description, "```No results found```")
 
         with self.subTest(command="apis"):
             await self.cog.apis(self.cog, context)
@@ -228,6 +219,37 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="apod"):
+            await self.cog.apod(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="github_trending"):
+            await self.cog.github_trending(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="gender"):
+            await self.cog.gender(self.cog, context, first_name="Joe")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="trends"):
+            await self.cog.trends(self.cog, context)
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(
+                embed.description, "```Country New Zealand not found.```"
             )
 
 
