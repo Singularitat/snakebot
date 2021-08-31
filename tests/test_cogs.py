@@ -255,12 +255,12 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="fake_user"):
             await self.cog.fake_user(self.cog, context)
 
-            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(context.send.call_args.kwargs["embed"].color.value, 10038562)
 
         with self.subTest(command="dad_joke"):
             await self.cog.dad_joke(self.cog, context)
 
-            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(context.send.call_args.kwargs["embed"].color.value, 10038562)
 
         with self.subTest(command="cocktail"):
             await self.cog.cocktail(self.cog, context)
@@ -275,13 +275,31 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 await self.cog.trivia(self.cog, context)
 
         with self.subTest(command="minecraft"):
-            await self.cog.cocktail(self.cog, context, ip="ntgc.ddns.net")
+            await self.cog.minecraft(self.cog, context, ip="ntgc.ddns.net")
 
             embed = context.send.call_args.kwargs["embed"]
 
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```Pinging failed.```")
             self.assertNotEqual(embed.description, "```Pinging timed out.```")
+
+        with self.subTest(command="define"):
+            await self.cog.define(self.cog, context, word="cat")
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(embed.description, "```No definition found```")
+
+        with self.subTest(command="latex"):
+            await self.cog.latex(self.cog, context, latex="Latex")
+
+            self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
+
+        with self.subTest(command="xkcd"):
+            await self.cog.xkcd(self.cog, context)
+
+            self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
 
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
