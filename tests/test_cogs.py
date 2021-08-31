@@ -53,7 +53,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = apis(bot=bot)
 
-    # @unittest.skip("Really slow as it has to make api calls one by one.")
+    @unittest.skip("Really slow as it has to make api calls one by one.")
     async def test_api_commands(self):
         if not bot.client_session:
             bot.client_session = ClientSession()
@@ -255,12 +255,16 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="fake_user"):
             await self.cog.fake_user(self.cog, context)
 
-            self.assertNotEqual(context.send.call_args.kwargs["embed"].color.value, 10038562)
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
 
         with self.subTest(command="dad_joke"):
             await self.cog.dad_joke(self.cog, context)
 
-            self.assertNotEqual(context.send.call_args.kwargs["embed"].color.value, 10038562)
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
 
         with self.subTest(command="cocktail"):
             await self.cog.cocktail(self.cog, context)
@@ -270,9 +274,8 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```No cocktails found.```")
 
-        with self.subTest(command="trivia"):
-            with self.assertRaises(TypeError):
-                await self.cog.trivia(self.cog, context)
+        with self.subTest(command="trivia"), self.assertRaises(TypeError):
+            await self.cog.trivia(self.cog, context)
 
         with self.subTest(command="minecraft"):
             await self.cog.minecraft(self.cog, context, ip="ntgc.ddns.net")
