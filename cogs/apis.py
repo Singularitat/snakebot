@@ -819,7 +819,7 @@ class apis(commands.Cog):
     @commands.command()
     async def xkcd(self, ctx):
         """Gets a random xkcd comic."""
-        await ctx.send(f"https://xkcd.com/{random.randint(0, 2486)}")
+        await ctx.send(f"https://xkcd.com/{random.randint(0, 2509)}")
 
     @commands.command(aliases=["urbandictionary"])
     async def urban(self, ctx, *, search):

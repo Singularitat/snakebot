@@ -154,10 +154,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             embed = context.send.call_args.kwargs["embed"]
 
             self.assertNotEqual(embed.color.value, 10038562)
-            self.assertNotEqual(
-                embed.description,
-                "```No results found```",
-            )
+            self.assertNotEqual(embed.description, "```No results found```")
 
         with self.subTest(command="spelling"):
             await self.cog.spelling(self.cog, context, word="hipopatamus")
@@ -165,10 +162,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             embed = context.send.call_args.kwargs["embed"]
 
             self.assertNotEqual(embed.color.value, 10038562)
-            self.assertNotEqual(
-                embed.description,
-                "```No results found```",
-            )
+            self.assertNotEqual(embed.description, "```No results found```")
 
         with self.subTest(command="meaning"):
             await self.cog.meaning(self.cog, context, words="ringing in the ears")
@@ -176,10 +170,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             embed = context.send.call_args.kwargs["embed"]
 
             self.assertNotEqual(embed.color.value, 10038562)
-            self.assertNotEqual(
-                embed.description,
-                "```No results found```",
-            )
+            self.assertNotEqual(embed.description, "```No results found```")
 
         with self.subTest(command="apis"):
             await self.cog.apis(self.cog, context)
@@ -210,7 +201,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             )
 
         with self.subTest(command="nationalize"):
-            await self.cog.nationalize(self.cog, context, search="Joe")
+            await self.cog.nationalize(self.cog, context, first_name="Joe")
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -224,11 +215,94 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             )
 
         with self.subTest(command="game category"):
-            await self.cog.game(self.cog, context, category="open-world")
+            await self.cog.category(self.cog, context, category="open-world")
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
+
+        with self.subTest(command="apod"):
+            await self.cog.apod(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="github_trending"):
+            await self.cog.github_trending(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="gender"):
+            await self.cog.gender(self.cog, context, first_name="Joe")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="trends"):
+            await self.cog.trends(self.cog, context)
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(
+                embed.description, "```Country New Zealand not found.```"
+            )
+
+        with self.subTest(command="fake_user"):
+            await self.cog.fake_user(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="dad_joke"):
+            await self.cog.dad_joke(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="cocktail"):
+            await self.cog.cocktail(self.cog, context)
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(embed.description, "```No cocktails found.```")
+
+        with self.subTest(command="trivia"), self.assertRaises(TypeError):
+            await self.cog.trivia(self.cog, context)
+
+        with self.subTest(command="minecraft"):
+            await self.cog.minecraft(self.cog, context, ip="ntgc.ddns.net")
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(embed.description, "```Pinging failed.```")
+            self.assertNotEqual(embed.description, "```Pinging timed out.```")
+
+        with self.subTest(command="define"):
+            await self.cog.define(self.cog, context, word="cat")
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(embed.description, "```No definition found```")
+
+        with self.subTest(command="latex"):
+            await self.cog.latex(self.cog, context, latex="Latex")
+
+            self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
+
+        with self.subTest(command="xkcd"):
+            await self.cog.xkcd(self.cog, context)
+
+            self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
 
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
