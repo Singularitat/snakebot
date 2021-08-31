@@ -252,6 +252,31 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 embed.description, "```Country New Zealand not found.```"
             )
 
+        with self.subTest(command="fake_user"):
+            await self.cog.fake_user(self.cog, context)
+
+            self.assertNotEqual(embed.color.value, 10038562)
+
+        with self.subTest(command="dad_joke"):
+            await self.cog.dad_joke(self.cog, context)
+
+            self.assertNotEqual(embed.color.value, 10038562)
+
+        with self.subTest(command="cocktail"):
+            await self.cog.cocktail(self.cog, context)
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(
+                embed.description, "```No cocktails found.```"
+            )
+
+        with self.subTest(command="trivia"):
+            await self.cog.trivia(self.cog, context)
+
+            self.assertNotEqual(embed.color.value, 10038562)
+
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
     pass
