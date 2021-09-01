@@ -94,39 +94,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```No posts found```")
 
-        with self.subTest(command="wikir"):
-            await self.cog.wikir(self.cog, context)
-
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
-        with self.subTest(command="wikipedia"):
-            await self.cog.wikipedia(self.cog, context, search="cat")
-
-            embed = context.send.call_args.kwargs["embed"]
-
-            self.assertNotEqual(embed.color.value, 10038562)
-            self.assertNotEqual(embed.description, "```Couldn't find any results```")
-
-        with self.subTest(command="covid"):
-            await self.cog.covid(self.cog, context)
-
-            embed = context.send.call_args.kwargs["embed"]
-
-            self.assertNotEqual(embed.color.value, 10038562)
-            self.assertNotEqual(
-                embed.description,
-                "```Not a valid country\nExamples: NZ, New Zealand, all```",
-            )
-
-        with self.subTest(command="github"):
-            await self.cog.github(self.cog, context, username="Singularitat")
-
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
         with self.subTest(command="justin"):
             await self.cog.justin(self.cog, context)
 
@@ -305,13 +272,51 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
 
         with self.subTest(command="urban"):
-            await self.cog.xkcd(self.cog, context, search="cat")
+            await self.cog.urban(self.cog, context, search="cat")
 
             embed = context.send.call_args.kwargs["embed"]
 
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.title, "Timed out try again later")
             self.assertNotEqual(embed.title, "No results found")
+
+        with self.subTest(command="wikir"):
+            await self.cog.wikir(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="wikipedia"):
+            await self.cog.wikipedia(self.cog, context, search="cat")
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(embed.description, "```Couldn't find any results```")
+
+        with self.subTest(command="covid"):
+            await self.cog.covid(self.cog, context)
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(
+                embed.description,
+                "```Not a valid country\nExamples: NZ, New Zealand, all```",
+            )
+
+        with self.subTest(command="github"):
+            await self.cog.github(self.cog, context, username="Singularitat")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+        with self.subTest(command="tenor"):
+            await self.cog.tenor(self.cog, context, search="cat")
+
+            self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
 
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
