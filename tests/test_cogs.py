@@ -34,18 +34,24 @@ class AnimalsCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = animals(bot=bot)
 
-    @unittest.skip("Really slow as it has to make api calls one by one.")
+    async def run_command(self, command, context):
+        with self.subTest(command=command.name):
+            await command._callback(self.cog, context)
+
+            self.assertRegex(context.send.call_args.args[0], url_regex)
+
     async def test_animal_commands(self):
         if not bot.client_session:
             bot.client_session = ClientSession()
 
         context = helpers.MockContext()
 
-        for command in self.cog.walk_commands():
-            with self.subTest(command=command.name):
-                await command._callback(self.cog, context)
-
-                self.assertRegex(context.send.call_args.args[0], url_regex)
+        await asyncio.gather(
+            *[
+                self.run_command(command, context)
+                for command in self.cog.walk_commands()
+            ]
+        )
 
 
 class ApisCogTests(unittest.IsolatedAsyncioTestCase):
