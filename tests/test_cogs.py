@@ -304,6 +304,15 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
 
+        with self.subTest(command="urban"):
+            await self.cog.xkcd(self.cog, context, search="cat")
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(embed.title, "Timed out try again later")
+            self.assertNotEqual(embed.title, "No results found")
+
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
     pass
