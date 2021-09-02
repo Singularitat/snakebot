@@ -49,7 +49,7 @@ class misc(commands.Cog):
     async def ship(self, ctx, user: discord.User = None):
         """Ships a user with a random other user.
 
-        Results are not endorsed by Snake Bot
+        Results are endorsed by Snake Bot
 
         user: discord.User
             Defaults to author.
@@ -71,7 +71,7 @@ class misc(commands.Cog):
     async def match(self, ctx, user1: discord.User, user2: discord.User = None):
         """Sees how much of a match two users are.
 
-        Results are not endorsed by Snake Bot
+        Results are endorsed by Snake Bot
 
         user1: discord.User
         user2: discord.User
