@@ -559,6 +559,31 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
+    async def test_rle_command(self):
+        context = helpers.MockContext()
+        context.invoked_subcommand = None
+
+        await self.cog.rle(self.cog, context)
+
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description,
+            f"```Usage: {context.prefix}rle [de/en]```",
+        )
+
+    async def test_rle_en_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.en(self.cog, context, text="aaaabbbccd")
+
+        self.assertEqual(context.send.call_args.args[0], "4a3b2c1d")
+
+    async def test_rle_de_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.de(self.cog, context, text="4a3b2c1d")
+
+        self.assertEqual(context.send.call_args.args[0], "aaaabbbccd")
+
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     pass
