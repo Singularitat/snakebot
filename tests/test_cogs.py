@@ -584,6 +584,18 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(context.send.call_args.args[0], "aaaabbbccd")
 
+    async def test_snowflake_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.snowflake(self.cog, context, snowflake=744747000293228684)
+
+        embed = context.send.call_args.kwargs["embed"]
+
+        self.assertEqual(embed.fields[0].value, "2")
+        self.assertEqual(embed.fields[1].value, "0")
+        self.assertEqual(embed.fields[2].value, "<t:1597631921>")
+        self.assertEqual(embed.fields[3].value, "140")
+
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     pass
