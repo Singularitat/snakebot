@@ -34,23 +34,19 @@ class AnimalsCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = animals(bot=bot)
 
-    async def run_command(self, command, context):
+    async def run_command(self, command):
+        context = helpers.MockContext()
+
         with self.subTest(command=command.name):
             await command._callback(self.cog, context)
 
             self.assertRegex(context.send.call_args.args[0], url_regex)
 
     async def test_animal_commands(self):
-        if not bot.client_session:
-            bot.client_session = ClientSession()
-
-        context = helpers.MockContext()
+        bot.client_session = ClientSession()
 
         await asyncio.gather(
-            *[
-                self.run_command(command, context)
-                for command in self.cog.walk_commands()
-            ]
+            *[self.run_command(command) for command in self.cog.walk_commands()]
         )
 
 
@@ -59,11 +55,14 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = apis(bot=bot)
 
-    @unittest.skip("Really slow as it has to make api calls one by one.")
     async def test_api_commands(self):
-        if not bot.client_session:
-            bot.client_session = ClientSession()
+        bot.client_session = ClientSession()
 
+        await asyncio.gather(
+            *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
+        )
+
+    async def fact_command(self):
         context = helpers.MockContext()
 
         with self.subTest(command="fact"):
@@ -73,6 +72,9 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def country_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="country"):
             await self.cog.country(self.cog, context, name="New Zealand")
 
@@ -80,6 +82,9 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```Country not found```")
+
+    async def currency_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="currency"):
             await self.cog.currency(
@@ -89,6 +94,9 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
+
+    async def stackoverflow_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="stackoverflow"):
             await self.cog.stackoverflow(
@@ -100,12 +108,18 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```No posts found```")
 
+    async def justin_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="justin"):
             await self.cog.justin(self.cog, context)
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
+
+    async def quote_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="quote"):
             await self.cog.quote(self.cog, context)
@@ -114,12 +128,18 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def suntzu_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="suntzu"):
             await self.cog.suntzu(self.cog, context)
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
+
+    async def rhyme_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="rhyme"):
             await self.cog.rhyme(self.cog, context, word="forgetful")
@@ -129,6 +149,9 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```No results found```")
 
+    async def spelling_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="spelling"):
             await self.cog.spelling(self.cog, context, word="hipopatamus")
 
@@ -136,6 +159,9 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```No results found```")
+
+    async def meaning_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="meaning"):
             await self.cog.meaning(self.cog, context, words="ringing in the ears")
@@ -145,12 +171,19 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```No results found```")
 
+    async def apis_command(self):
+        context = helpers.MockContext()
+        context.invoked_subcommand = None
+
         with self.subTest(command="apis"):
             await self.cog.apis(self.cog, context)
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
+
+    async def apis_categories_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="apis categories"):
             await self.cog.categories(self.cog, context)
@@ -159,12 +192,18 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def apis_random_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="apis random"):
             await self.cog.random(self.cog, context)
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
+
+    async def apis_search_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="apis search"):
             await self.cog.search(self.cog, context, search="cat")
@@ -173,12 +212,19 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def nationalize_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="nationalize"):
             await self.cog.nationalize(self.cog, context, first_name="Joe")
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
+
+    async def game_command(self):
+        context = helpers.MockContext()
+        context.invoked_subcommand = None
 
         with self.subTest(command="game"):
             await self.cog.game(self.cog, context)
@@ -187,12 +233,18 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def game_category_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="game category"):
             await self.cog.category(self.cog, context, category="open-world")
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
+
+    async def apod_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="apod"):
             await self.cog.apod(self.cog, context)
@@ -201,6 +253,9 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def github_trending_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="github_trending"):
             await self.cog.github_trending(self.cog, context)
 
@@ -208,12 +263,18 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def gender_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="gender"):
             await self.cog.gender(self.cog, context, first_name="Joe")
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
+
+    async def trends_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="trends"):
             await self.cog.trends(self.cog, context)
@@ -225,6 +286,9 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 embed.description, "```Country New Zealand not found.```"
             )
 
+    async def fake_user_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="fake_user"):
             await self.cog.fake_user(self.cog, context)
 
@@ -232,12 +296,16 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def dad_joke_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="dad_joke"):
             await self.cog.dad_joke(self.cog, context)
 
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
+    async def cocktail_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="cocktail"):
             await self.cog.cocktail(self.cog, context)
@@ -247,8 +315,14 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```No cocktails found.```")
 
+    async def trivia_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="trivia"), self.assertRaises(TypeError):
             await self.cog.trivia(self.cog, context)
+
+    async def minecraft_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="minecraft"):
             await self.cog.minecraft(self.cog, context, ip="ntgc.ddns.net")
@@ -259,6 +333,9 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.description, "```Pinging failed.```")
             self.assertNotEqual(embed.description, "```Pinging timed out.```")
 
+    async def define_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="define"):
             await self.cog.define(self.cog, context, word="cat")
 
@@ -267,15 +344,24 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```No definition found```")
 
+    async def latex_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="latex"):
             await self.cog.latex(self.cog, context, latex="Latex")
 
-            self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
+    async def xkcd_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="xkcd"):
             await self.cog.xkcd(self.cog, context)
 
-            self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
+    async def urban_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="urban"):
             await self.cog.urban(self.cog, context, search="cat")
@@ -286,12 +372,18 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.title, "Timed out try again later")
             self.assertNotEqual(embed.title, "No results found")
 
+    async def wikir_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="wikir"):
             await self.cog.wikir(self.cog, context)
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
+
+    async def wikipedia_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="wikipedia"):
             await self.cog.wikipedia(self.cog, context, search="cat")
@@ -300,6 +392,9 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```Couldn't find any results```")
+
+    async def covid_command(self):
+        context = helpers.MockContext()
 
         with self.subTest(command="covid"):
             await self.cog.covid(self.cog, context)
@@ -312,6 +407,9 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 "```Not a valid country\nExamples: NZ, New Zealand, all```",
             )
 
+    async def github_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="github"):
             await self.cog.github(self.cog, context, username="Singularitat")
 
@@ -319,10 +417,13 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def tenor_command(self):
+        context = helpers.MockContext()
+
         with self.subTest(command="tenor"):
             await self.cog.tenor(self.cog, context, search="cat")
 
-            self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
@@ -434,7 +535,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.rate(self.cog, context)
 
-        self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
     async def test_ship_command(self):
         context = helpers.MockContext(
@@ -445,7 +546,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.ship(self.cog, context)
 
-        self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
     async def test_match_command(self):
         context = helpers.MockContext()
@@ -456,7 +557,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             user1=helpers.MockMember(name="Snake Bot", id=744747000293228684),
         )
 
-        self.assertEqual(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
