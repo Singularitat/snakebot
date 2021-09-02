@@ -596,6 +596,22 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(embed.fields[2].value, "<t:1597631921>")
         self.assertEqual(embed.fields[3].value, "140")
 
+    async def test_dashboard_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.dashboard(self.cog, context)
+
+        self.assertEqual(context.send.call_args.args[0], "https://web.tukib.org/uoa")
+
+    async def test_notes_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.notes(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     pass
