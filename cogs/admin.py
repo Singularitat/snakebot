@@ -1,5 +1,3 @@
-import asyncio
-
 from discord.ext import commands
 import discord
 import orjson
@@ -325,21 +323,22 @@ class admin(commands.Cog):
         await message.edit(content=content)
 
     @commands.command(name="embededit")
-    async def embed_edit(self, ctx, message: discord.Message, description, title=None):
+    async def embed_edit(self, ctx, message: discord.Message, *, json):
         """Edits the embed of a bot message.
 
-        message: discord.Message
-            The message you want to edit.
-        description: str
-            Description of the embed.
-        title: str
-            Title of the embed.
+        example:
+        .embed {
+            "description": "description",
+            "title": "title",
+            "fields": [{"name": "name", "value": "value"}]
+        }
+
+        You only need either the title or description
+        and fields are alaways optional
+
+        json: str
         """
-        embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = description
-        if title:
-            embed.title = title
-        await message.edit(embed=embed)
+        await message.edit(embed=discord.Embed.from_dict(orjson.loads(json)))
 
     @commands.command()
     async def embed(self, ctx, *, json):
@@ -349,7 +348,7 @@ class admin(commands.Cog):
         .embed {
             "description": "description",
             "title": "title",
-            "fields": {"name": "value"}
+            "fields": [{"name": "name", "value": "value"}]
         }
 
         You only need either the title or description
@@ -357,20 +356,7 @@ class admin(commands.Cog):
 
         json: str
         """
-        embed = discord.Embed(color=discord.Color.blurple())
-        json = orjson.loads(json)
-
-        embed.description = json.get("description")
-        embed.title = json.get("title")
-
-        if "fields" in json:
-            for field in json["fields"]:
-                embed.add_field(
-                    name=field,
-                    value=json["fields"][field],
-                )
-
-        await ctx.send(embed=embed)
+        await ctx.send(embed=discord.Embed.from_dict(orjson.loads(json)))
 
     async def end_date(self, duration):
         """Converts a duration to an end date.

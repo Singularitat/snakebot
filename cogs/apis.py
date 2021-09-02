@@ -1,4 +1,3 @@
-import asyncio
 import html
 import random
 import re
@@ -10,8 +9,6 @@ from discord.ext import commands
 import discord
 import orjson
 
-from cogs.utils.useful import get_json
-
 
 class apis(commands.Cog):
     """For commands related to apis."""
@@ -22,41 +19,108 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def wolfram(self, ctx, *, query):
+        """Gets the output of a query from wolfram alpha."""
+        query = query.replace(" ", "+")
+        url = (
+            "https://lin2jing4-cors-1.herokuapp.com/api.wolframalpha.com/v2/query"
+            "?&output=json&podstate=step-by-step+solution&podstate=step-by-step&podstate"
+            "=show+all+steps&scantimeout=30&podtimeout=30&formattimeout=30&parsetimeout"
+            "=30&totaltimeout=30&reinterpret=true&podstate=undefined&appid="
+            f"KQRKKJ-8WHPY395HA&input={query}&lang=en"
+        )
+
+        headers = {"Origin": "https://wolfreealpha.gitlab.io"}
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        async with ctx.typing(), self.bot.client_session.get(
+            url, headers=headers
+        ) as response:
+            data = (await response.json())["queryresult"]
+
+        if data["error"]:
+            embed.description = "```Calculation errored out```"
+            return await ctx.send(embed=embed)
+
+        msg = ""
+
+        for pod in data["pods"]:
+            if pod["title"] and pod["subpods"][0]["plaintext"]:
+                msg += f"{pod['title']}\n{pod['subpods'][0]['plaintext']}\n\n"
+
+        embed.title = "Results"
+        embed.description = f"```\n{msg}```"
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def currency(self, ctx, orginal, amount: float, new):
+        """Converts between currencies.
+
+        orginal: str
+            The orginal currency.
+        amount: int
+        new: str
+            The new currency.
+        """
+        new = new.upper()
+        orginal = orginal.upper()
+
+        url = f"https://api.frankfurter.app/latest?amount={amount}&from={orginal}&to={new}"
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        async with ctx.typing():
+            data = await self.bot.get_json(url)
+
+            embed.description = (
+                f"```{amount} {orginal} is {data['rates'][new]} {new}```"
+            )
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def country(self, ctx, *, name):
+        """Show information about a given country.
+
+        name: str
+        """
+        url = f"https://restcountries.com/v2/name/{name}"
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        async with ctx.typing():
+            data = await self.bot.get_json(url)
+
+            if not isinstance(data, list):
+                embed.description = "```Country not found```"
+                return await ctx.send(embed=embed)
+
+            data = data[0]
+
+            embed.set_author(name=data["name"], icon_url=data["flags"][-1])
+            embed.add_field(name="Capital", value=data.get("capital", "No Capital"))
+            embed.add_field(name="Demonym", value=data["demonym"])
+            embed.add_field(name="Continent", value=data["continent"])
+            embed.add_field(name="Population", value=f"{data['population']:,}")
+            embed.add_field(
+                name="Total Area",
+                value=f"{data['area']:,.0f}km²" if "area" in data else "NaN",
+            )
+            embed.add_field(name="TLD(s)", value=", ".join(data["topLevelDomain"]))
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def fact(self, ctx):
         """Gets a random fact."""
         url = "https://uselessfacts.jsph.pl/random.json?language=en"
 
         async with ctx.typing():
-            data = await get_json(self.bot.client_session, url)
+            data = await self.bot.get_json(url)
 
             await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(), description=f"```{data['text']}```"
                 )
             )
-
-    @commands.command()
-    async def sentiment(self, ctx, *, text):
-        """Gets the sentiment of some text."""
-        url = "https://sentim-api.herokuapp.com/api/v1/"
-        headers = {"Accept": "application/json", "Content-Type": "application/json"}
-
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        async with ctx.typing(), self.bot.client_session.post(
-            url, headers=headers, json={"text": text}
-        ) as reponse:
-            data = await reponse.json()
-
-            for senti in data["sentences"]:
-                sign, value = senti["sentiment"]["type"], senti["sentiment"]["polarity"]
-                embed.add_field(name=f"{sign}, {value}", value=senti["sentence"])
-
-            sign, value = data["result"]["type"], data["result"]["polarity"]
-
-            embed.set_footer(text=f"Overall sentiment {sign}, {value}")
-
-        await ctx.send(embed=embed)
 
     @commands.command(aliases=["so"])
     async def stackoverflow(self, ctx, *, search):
@@ -72,7 +136,7 @@ class apis(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         async with ctx.typing():
-            posts = (await get_json(self.bot.client_session, url))["items"]
+            posts = (await self.bot.get_json(url))["items"]
 
             if not posts:
                 embed.description = "```No posts found```"
@@ -97,7 +161,7 @@ class apis(commands.Cog):
         url = "https://api.kanye.rest"
 
         async with ctx.typing():
-            quote = await get_json(self.bot.client_session, url)
+            quote = await self.bot.get_json(url)
             embed = discord.Embed(
                 color=discord.Color.blurple(), description=quote["quote"]
             )
@@ -110,7 +174,7 @@ class apis(commands.Cog):
         url = "https://api.fisenko.net/quotes?l=en"
 
         async with ctx.typing():
-            quote = await get_json(self.bot.client_session, url)
+            quote = await self.bot.get_json(url)
             embed = discord.Embed(
                 color=discord.Color.blurple(), description=quote["text"]
             )
@@ -123,7 +187,7 @@ class apis(commands.Cog):
         url = "http://api.fakeartofwar.gaborszathmari.me/v1/getquote"
 
         async with ctx.typing():
-            quote = await get_json(self.bot.client_session, url)
+            quote = await self.bot.get_json(url)
             embed = discord.Embed(
                 color=discord.Color.blurple(), description=quote["quote"]
             )
@@ -139,7 +203,7 @@ class apis(commands.Cog):
         url = f"https://api.datamuse.com/words?rel_rhy={word}&max=9"
 
         async with ctx.typing():
-            rhymes = await get_json(self.bot.client_session, url)
+            rhymes = await self.bot.get_json(url)
 
             embed = discord.Embed(color=discord.Color.blurple())
 
@@ -150,7 +214,7 @@ class apis(commands.Cog):
             embed.set_footer(text="The numbers below are the scores")
 
             for rhyme in rhymes:
-                embed.add_field(name=rhyme["word"], value=rhyme["score"])
+                embed.add_field(name=rhyme["word"], value=rhyme.get("score", "N/A"))
 
             await ctx.send(embed=embed)
 
@@ -164,7 +228,7 @@ class apis(commands.Cog):
         url = f"https://api.datamuse.com/words?sp={word}&max=9"
 
         async with ctx.typing():
-            spellings = await get_json(self.bot.client_session, url)
+            spellings = await self.bot.get_json(url)
 
             embed = discord.Embed(
                 color=discord.Color.blurple(), title="Possible spellings"
@@ -192,7 +256,7 @@ class apis(commands.Cog):
         url = f"https://api.datamuse.com/words?ml={words}&max=9"
 
         async with ctx.typing():
-            meanings = await get_json(self.bot.client_session, url)
+            meanings = await self.bot.get_json(url)
 
             embed = discord.Embed(
                 color=discord.Color.blurple(), title="Possible meanings"
@@ -225,7 +289,7 @@ class apis(commands.Cog):
         url = "https://api.publicapis.org/categories"
 
         async with ctx.typing():
-            categories = await get_json(self.bot.client_session, url)
+            categories = await self.bot.get_json(url)
 
             await ctx.send(
                 embed=discord.Embed(
@@ -236,7 +300,7 @@ class apis(commands.Cog):
             )
 
     @apis.command()
-    async def random(self, ctx, category=None):
+    async def random(self, ctx, category=""):
         """Gets a random api.
 
         category: str
@@ -244,7 +308,7 @@ class apis(commands.Cog):
         url = f"https://api.publicapis.org/random?category={category}"
 
         async with ctx.typing():
-            data = (await get_json(self.bot.client_session, url))["entries"][0]
+            data = (await self.bot.get_json(url))["entries"][0]
 
             embed = discord.Embed(
                 color=discord.Color.blurple(),
@@ -269,11 +333,14 @@ class apis(commands.Cog):
         url = f"https://api.publicapis.org/entries?title={search}"
 
         async with ctx.typing():
-            entries = (await get_json(self.bot.client_session, url))["entries"]
+            entries = (await self.bot.get_json(url))["entries"]
 
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-            )
+            embed = discord.Embed(color=discord.Color.blurple())
+
+            if not entries:
+                embed.description = f"No apis found for `{search}`"
+                return await ctx.send(embed=embed)
+
             for index, entry in enumerate(entries):
                 if index == 12:
                     break
@@ -293,7 +360,7 @@ class apis(commands.Cog):
         url = f"https://api.nationalize.io/?name={first_name}"
 
         async with ctx.typing():
-            data = await get_json(self.bot.client_session, url)
+            data = await self.bot.get_json(url)
 
             embed = discord.Embed(color=discord.Color.blurple())
 
@@ -317,8 +384,7 @@ class apis(commands.Cog):
             url = "https://www.freetogame.com/api/games?platform=pc"
 
             async with ctx.typing():
-                games = await get_json(self.bot.client_session, url)
-                game = random.choice(games)
+                game = random.choice(await self.bot.get_json(url))
 
                 embed = discord.Embed(
                     color=discord.Color.blurple(),
@@ -333,10 +399,14 @@ class apis(commands.Cog):
                 await ctx.send(embed=embed)
 
     @game.command()
-    async def category(self, ctx, category):
-        """Gets a random game that is free"""
-        if category.lower() == "list":
-            embed = discord.Embed(color=discord.Color.blurple())
+    async def category(self, ctx, category=None):
+        """Gets a random game that is free by category.
+
+        category: str
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not category:
             embed.description = textwrap.dedent(
                 """
                 ```mmorpg, shooter, strategy, moba, racing, sports
@@ -354,14 +424,13 @@ class apis(commands.Cog):
         url = f"https://www.freetogame.com/api/games?platform=pc&category={category}"
 
         async with ctx.typing():
-            games = await get_json(self.bot.client_session, url)
-            game = random.choice(games)
+            game = random.choice(await self.bot.get_json(url))
 
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                title=game["title"],
-                description=f"{game['short_description']}\n[Link]({game['game_url']})",
+            embed.title = game["title"]
+            embed.description = (
+                f"{game['short_description']}\n[Link]({game['game_url']})"
             )
+
             embed.add_field(name="Genre", value=game["genre"])
             embed.add_field(name="Publisher", value=game["publisher"])
             embed.add_field(name="Developer", value=game["developer"])
@@ -375,7 +444,7 @@ class apis(commands.Cog):
         url = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
 
         async with ctx.typing():
-            apod = await get_json(self.bot.client_session, url)
+            apod = await self.bot.get_json(url)
 
             embed = discord.Embed(
                 color=discord.Color.blurple(),
@@ -391,7 +460,7 @@ class apis(commands.Cog):
         url = "https://api.trending-github.com/github/repositories"
 
         async with ctx.typing():
-            repositories = await get_json(self.bot.client_session, url)
+            repositories = await self.bot.get_json(url)
             embed = discord.Embed(
                 color=discord.Color.blurple(), title="5 Trending Github Repositories"
             )
@@ -423,7 +492,7 @@ class apis(commands.Cog):
         url = f"https://api.genderize.io/?name={first_name}"
 
         async with ctx.typing():
-            data = await get_json(self.bot.client_session, url)
+            data = await self.bot.get_json(url)
             embed = discord.Embed(color=discord.Color.blurple())
             embed.description = textwrap.dedent(
                 f"""
@@ -445,7 +514,7 @@ class apis(commands.Cog):
         country = country.lower()
 
         async with ctx.typing():
-            data = await get_json(self.bot.client_session, url)
+            data = await self.bot.get_json(url)
             embed = discord.Embed(color=discord.Color.blurple())
 
             if country not in data:
@@ -462,7 +531,7 @@ class apis(commands.Cog):
         url = "https://randomuser.me/api/?results=1"
 
         async with ctx.typing():
-            data = await get_json(self.bot.client_session, url)
+            data = await self.bot.get_json(url)
             data = data["results"][0]
             embed = (
                 discord.Embed(color=discord.Color.blurple())
@@ -520,7 +589,7 @@ class apis(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         async with ctx.typing():
-            data = await get_json(self.bot.client_session, url)
+            data = await self.bot.get_json(url)
             if not data["drinks"]:
                 embed.description = "```No cocktails found.```"
                 embed.color = discord.Color.red()
@@ -561,7 +630,7 @@ class apis(commands.Cog):
         url = f"https://opentdb.com/api.php?amount=1&difficulty={difficulty}&type=multiple"
 
         async with ctx.typing():
-            data = await get_json(self.bot.client_session, url)
+            data = await self.bot.get_json(url)
 
         result = data["results"][0]
 
@@ -611,7 +680,7 @@ class apis(commands.Cog):
         url = f"https://api.mcsrvstat.us/2/{ip}"
 
         async with ctx.typing():
-            data = await get_json(self.bot.client_session, url)
+            data = await self.bot.get_json(url)
 
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -656,7 +725,7 @@ class apis(commands.Cog):
         url = f"https://api.dictionaryapi.dev/api/v2/entries/en_US/{word}"
 
         async with ctx.typing():
-            definition = await get_json(self.bot.client_session, url)
+            definition = await self.bot.get_json(url)
 
             embed = discord.Embed(color=discord.Color.blurple())
             if isinstance(definition, dict):
@@ -698,23 +767,24 @@ class apis(commands.Cog):
         url = "https://quicklatex.com/latex3.f"
 
         preamble = (
-            r"\usepackage{amsmath}\n"
-            r"\usepackage{amsfonts}\n"
-            r"\usepackage{amssymb}\n"
-            r"\newcommand{\N}{\mathbb N}\n"
-            r"\newcommand{\Z}{\mathbb Z}\n"
-            r"\newcommand{\Q}{\mathbb Q}"
-            r"\newcommand{\R}{\mathbb R}\n"
-            r"\newcommand{\C}{\mathbb C}\n"
-            r"\newcommand{\V}[1]{\begin{bmatrix}#1\end{bmatrix}}\n"
-            r"\newcommand{\set}[1]{\left\{#1\right\}}\n"
+            "\\usepackage{amsmath}\n"
+            "\\usepackage{amsfonts}\n"
+            "\\usepackage{amssymb}\n"
+            "\\newcommand{\\N}{\\mathbb N}\n"
+            "\\newcommand{\\Z}{\\mathbb Z}\n"
+            "\\newcommand{\\Q}{\\mathbb Q}"
+            "\\newcommand{\\R}{\\mathbb R}\n"
+            "\\newcommand{\\C}{\\mathbb C}\n"
+            "\\newcommand{\\V}[1]{\\begin{bmatrix}#1\\end{bmatrix}}\n"
+            "\\newcommand{\\set}[1]{\\left\\{#1\\right\\}}"
         )
 
-        latex = re.sub(r"```\w+\n|```", "", latex)
+        table = {37: "%25", 38: "%26"}
+        latex = re.sub(r"```\w+\n|```", "", latex).strip("\n").translate(table)
 
         if "%%preamble%%" in latex:
             _, pre, latex = re.split("%%preamble%%", latex)
-            preamble += pre
+            preamble += pre.translate(table)
 
         data = (
             f"formula={latex}&fsize=50px&fcolor=FFFFFF&mode=0&out=1"
@@ -749,7 +819,7 @@ class apis(commands.Cog):
     @commands.command()
     async def xkcd(self, ctx):
         """Gets a random xkcd comic."""
-        await ctx.send(f"https://xkcd.com/{random.randint(0, 2486)}")
+        await ctx.send(f"https://xkcd.com/{random.randint(0, 2509)}")
 
     @commands.command(aliases=["urbandictionary"])
     async def urban(self, ctx, *, search):
@@ -772,7 +842,7 @@ class apis(commands.Cog):
             url = f"https://api.urbandictionary.com/v0/define?term={search}"
 
             async with ctx.typing():
-                urban = await get_json(self.bot.client_session, url)
+                urban = await self.bot.get_json(url)
 
             if not urban:
                 embed.title = "Timed out try again later"
@@ -803,16 +873,33 @@ class apis(commands.Cog):
         self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
         await ctx.send(embed=embed)
 
+    @commands.command()
+    async def wikir(self, ctx):
+        """Gets a random wikipedia article."""
+        url = "https://en.wikipedia.org/api/rest_v1/page/random/summary"
+
+        async with ctx.typing():
+            data = await self.bot.get_json(url)
+
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                title=data["title"],
+                description=data["extract"],
+                url=data["content_urls"]["desktop"]["page"],
+            )
+            embed.set_image(url=data["thumbnail"]["source"])
+
+            await ctx.send(embed=embed)
+
     @commands.command(aliases=["wiki"])
-    async def wikipedia(self, ctx: commands.Context, *, search: str):
+    async def wikipedia(self, ctx, *, search: str):
         """Return list of results containing your search query from wikipedia.
 
         search: str
             The term to search wikipedia for.
         """
         async with ctx.typing():
-            titles = await get_json(
-                self.bot.client_session,
+            titles = await self.bot.get_json(
                 f"https://en.wikipedia.org/w/api.php?action=opensearch&search={search}",
             )
             embed = discord.Embed(color=discord.Color.blurple())
@@ -842,16 +929,14 @@ class apis(commands.Cog):
 
         country: str - The country to search for
         """
-        url = "https://corona.lmao.ninja/v3/covid-19/countries/" + country
-        if country.lower() == "all":
-            url = "https://corona.lmao.ninja/v3/covid-19/all"
+        url = f"https://disease.sh/v3/covid-19/countries/{country}"
 
         embed = discord.Embed(colour=discord.Color.red())
 
         async with ctx.typing():
-            data = await get_json(self.bot.client_session, url)
+            data = await self.bot.get_json(url)
 
-        if "country" not in data:
+        if "message" in data:
             embed.description = (
                 "```Not a valid country\nExamples: NZ, New Zealand, all```"
             )
@@ -880,26 +965,23 @@ class apis(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(name="github", aliases=["gh"])
-    async def get_github_info(self, ctx: commands.Context, username: str) -> None:
+    @commands.command(aliases=["gh"])
+    async def github(self, ctx, username: str):
         """Fetches a members's GitHub information."""
         async with ctx.typing():
-            user_data = await get_json(
-                self.bot.client_session, f"https://api.github.com/users/{username}"
+            user_data = await self.bot.get_json(
+                f"https://api.github.com/users/{username}"
             )
 
             if user_data.get("message") is not None:
-                await ctx.send(
+                return await ctx.send(
                     embed=discord.Embed(
                         title=f"The profile for `{username}` was not found.",
-                        colour=discord.Colour.red(),
+                        colour=discord.Colour.dark_red(),
                     )
                 )
-                return
 
-            org_data = await get_json(
-                self.bot.client_session, user_data["organizations_url"]
-            )
+            org_data = await self.bot.get_json(user_data["organizations_url"])
 
             orgs = [
                 f"[{org['login']}](https://github.com/{org['login']})"
@@ -918,9 +1000,7 @@ class apis(commands.Cog):
 
             embed = discord.Embed(
                 title=f"`{user_data['login']}`'s GitHub profile info",
-                description=f"```{user_data['bio']}```\n"
-                if user_data["bio"] is not None
-                else "",
+                description=user_data["bio"] or "",
                 colour=0x7289DA,
                 url=user_data["html_url"],
                 timestamp=datetime.strptime(
@@ -954,8 +1034,8 @@ class apis(commands.Cog):
                 )
 
                 embed.add_field(
-                    name=f"Organization{'s' if len(orgs)!=1 else ''}",
-                    value=orgs_to_add if orgs else "No organizations",
+                    name="Organization(s)",
+                    value=orgs_to_add or "No organizations",
                 )
                 embed.add_field(name="\u200b", value="\u200b")
             embed.add_field(name="Website", value=blog)
@@ -986,7 +1066,7 @@ class apis(commands.Cog):
         url = f"https://api.tenor.com/v1/search?q={search}&limit=50"
 
         async with ctx.typing():
-            tenor = await get_json(self.bot.client_session, url)
+            tenor = await self.bot.get_json(url)
 
         tenor = [image["media"][0]["gif"]["url"] for image in tenor["results"]]
         image = random.choice(tenor)

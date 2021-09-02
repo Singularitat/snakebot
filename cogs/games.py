@@ -35,7 +35,7 @@ class CookieClicker(discord.ui.View):
             .add_field(name="Cookies", value=f"{data['cookies']} 🍪")
             .add_field(name="Upgrades", value=upgrades)
             .add_field(name="Cookies per second", value=cps)
-            .add_field(name="\u200b", value="\u200b")
+            .add_field(name="Buy all", value="On" if data.get("buy_all") else "Off")
             .add_field(name="Cost", value=int((100 * upgrades) ** 0.8))
             .add_field(name="Cost", value=int((1000 * cps) ** 0.9))
         )
@@ -160,7 +160,7 @@ class CookieClicker(discord.ui.View):
             self.DB.cookies.put(user_id, orjson.dumps(cookies))
             response = "on" if cookies["buy_all"] else "off"
             await interaction.response.edit_message(
-                content=f"Togged buy all {response}"
+                content=None, embed=self.get_embed(self.user.display_name, cookies)
             )
 
 
@@ -172,31 +172,37 @@ class TicTacToeButton(discord.ui.Button["TicTacToe"]):
 
     async def callback(self, interaction: discord.Interaction):
         view = self.view
+
         if not view.playing_against and interaction.user != view.author:
             view.playing_against = interaction.user
+
+        if interaction.user not in (view.playing_against, view.author):
+            return
 
         if view.current_player == -1:
             if interaction.user != view.author:
                 return await interaction.response.edit_message(
-                    content="It is X's turn", view=view
+                    content=f"It is {view.author}'s turn", view=view
                 )
             self.style = discord.ButtonStyle.danger
             self.label = "X"
-            content = "It is now O's turn"
+            content = f"It is now {view.playing_against}'s turn"
         else:
             if interaction.user != view.playing_against:
                 return await interaction.response.edit_message(
-                    content="It is O's turn", view=view
+                    content=f"It is {view.playing_against}'s turn", view=view
                 )
             self.style = discord.ButtonStyle.success
             self.label = "O"
-            content = "It is now X's turn"
+            content = f"It is now {view.author}'s turn"
 
         self.disabled = True
         view.board[self.y][self.x] = view.current_player
         view.current_player = -view.current_player
 
-        if winner := view.check_for_win(self.label):
+        if winner := view.check_for_win(
+            str(view.author) if self.label == "X" else str(view.playing_against)
+        ):
             content = winner
 
             for label in view.children:
@@ -368,28 +374,35 @@ class games(commands.Cog):
     @commands.command()
     async def tictactoe(self, ctx):
         """Starts a game of tic tac toe."""
-        await ctx.send("Tic Tac Toe: X goes first", view=TicTacToe(ctx.author))
+        await ctx.send(
+            f"Tic Tac Toe: {ctx.author} goes first", view=TicTacToe(ctx.author)
+        )
 
     @commands.command()
     async def hangman(self, ctx):
         """Starts a game of hangman with a random word."""
-        url = "https://random-words-api.vercel.app/word"
+        url = "https://random-word-api.herokuapp.com/word"
 
         async with self.bot.client_session.get(url) as response:
             data = await response.json()
 
-        word = data[0]["word"]
-        definition = data[0]["definition"]
+        word = data[0]
 
         letter_indexs = {}
+        guessed = []
 
         for index, letter in enumerate(word):
+            if not letter.isalpha():
+                guessed.append(letter + " ")
+                continue
+
+            guessed.append("\\_ ")
+
             if letter not in letter_indexs:
                 letter_indexs[letter] = [index]
             else:
                 letter_indexs[letter].append(index)
 
-        guessed = ["\\_ "] * len(word)
         missed_letters = set()
         misses = 0
 
@@ -409,6 +422,8 @@ class games(commands.Cog):
                 return await embed_message.add_reaction("✅")
 
             guess = message.content[0].lower()
+            if not guess.isalpha():
+                continue
 
             if guess in letter_indexs:
                 for index in letter_indexs[guess]:
@@ -422,7 +437,6 @@ class games(commands.Cog):
 
             if misses == 7:
                 embed.title = word
-                embed.description = definition
             else:
                 embed.title = "".join(guessed)
                 embed.set_image(url=HANGMAN_IMAGES[misses])

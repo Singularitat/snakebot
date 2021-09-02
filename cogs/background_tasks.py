@@ -4,8 +4,7 @@ from discord.ext import commands, tasks
 import discord
 import orjson
 
-from cogs.utils.relativedelta import pretty_time
-from cogs.utils.useful import run_process, get_json
+from cogs.utils.useful import run_process
 
 
 class background_tasks(commands.Cog):
@@ -50,15 +49,16 @@ class background_tasks(commands.Cog):
             if task_name in self.tasks:
                 task = self.tasks[task_name]
                 embed.title = f"{task_name.replace('_', ' ').title()} Task"
-                embed.description = (
-                    "```Running: {}\nFailed: {}\nCount: {}"
-                    "\n\nNext Loop:\n{}\n\nInterval:\n{}```"
-                ).format(
-                    task.is_running(),
-                    task.failed(),
-                    task.current_loop,
-                    pretty_time(task.next_iteration.replace(tzinfo=None), False),
-                    f"{task.hours:.0f}h {task.minutes:.0f}m {task.seconds:.0f}s",
+                embed.add_field(name="Running", value=task.is_running())
+                embed.add_field(name="Failed", value=task.failed())
+                embed.add_field(name="Count", value=task.current_loop)
+                embed.add_field(
+                    name="Next Loop",
+                    value=f"**<t:{task.next_iteration.timestamp():.0f}:R>**",
+                )
+                embed.add_field(
+                    name="Interval",
+                    value=f"{task.hours:.0f}h {task.minutes:.0f}m {task.seconds:.0f}s",
                 )
                 return await ctx.send(embed=embed)
 
@@ -289,7 +289,7 @@ class background_tasks(commands.Cog):
     async def update_languages(self):
         """Updates pistons supported languages for the run command."""
         url = "https://emkc.org/api/v2/piston/runtimes"
-        data = await get_json(self.bot.client_session, url)
+        data = await self.bot.get_json(url)
 
         aliases = set()
         languages = []
@@ -303,7 +303,7 @@ class background_tasks(commands.Cog):
         self.DB.main.put(b"aliases", orjson.dumps(list(aliases)))
 
         url = "https://tio.run/languages.json"
-        data = await get_json(self.bot.client_session, url)
+        data = await self.bot.get_json(url)
 
         self.DB.main.put(b"tiolanguages", orjson.dumps([*data]))
 

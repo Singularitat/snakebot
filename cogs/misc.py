@@ -28,6 +28,91 @@ class misc(commands.Cog):
         await ctx.send("Please buy us tiki fire rum: https://www.thewhiskyexchange.com/p/24202/admiral-vernons-old-j-spiced-tiki-fire-rum")
                    
     @commands.command()
+    async def rate(self, ctx, user: discord.User = None):
+        """Rates users out of 100.
+
+        Results are not endorsed by Snake Bot
+
+        user: discord.User
+            Defaults to author.
+        """
+        user = user or ctx.author
+        num = random.Random(user.id ^ 1970636).randint(0, 100)
+
+        await ctx.send(
+            f"{user.mention} is a {num} out of 100",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
+    @commands.guild_only()
+    @commands.command()
+    async def ship(self, ctx, user: discord.User = None):
+        """Ships a user with a random other user.
+
+        Results are not endorsed by Snake Bot
+
+        user: discord.User
+            Defaults to author.
+        """
+        user = user or ctx.author
+        temp_random = random.Random(user.id >> 4)
+
+        ship = temp_random.choice(ctx.guild.members)
+
+        while user == ship:
+            ship = temp_random.choice(ctx.guild.members)
+
+        await ctx.send(
+            f"{user.mention} has been shipped with {ship.mention} :eyes:",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
+    @commands.command()
+    async def match(self, ctx, user1: discord.User, user2: discord.User = None):
+        """Sees how much of a match two users are.
+
+        Results are not endorsed by Snake Bot
+
+        user1: discord.User
+        user2: discord.User
+            Defaults to author.
+        """
+        user2 = user2 or ctx.author
+        perc = random.Random(user1.id & user2.id).randint(0, 100)
+
+        await ctx.send(
+            f"{user1.mention} is a {perc}% match with {user2.mention}",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
+    @commands.command(name="embedjson")
+    async def embed_json(self, ctx, message: discord.Message):
+        """Converts the embed of a message to json.
+
+        message: discord.Message
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not message.embeds:
+            embed.description = "```Message has no embed```"
+            await ctx.send(embed=embed)
+
+        message_embed = message.embeds[0]
+
+        json = (
+            str(message_embed.to_dict())
+            .replace("'", '"')
+            .replace("True", "true")
+            .replace("False", "false")
+        )
+
+        if len(json) > 2000:
+            return await ctx.send(file=discord.File(StringIO(json), "embed.json"))
+
+        embed.description = f"```json\n{json}```"
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def nato(self, ctx, *, text):
         """Converts text to the NATO phonetic alphabet.
 
@@ -221,8 +306,7 @@ class misc(commands.Cog):
         binary = binary.replace(" ", "")
         # fmt: off
         await ctx.send(
-            "".join([chr(int(binary[i: i + 8], 2))
-                    for i in range(0, len(binary), 8)])
+            "".join([chr(int(binary[i: i + 8], 2)) for i in range(0, len(binary), 8)])
         )
         # fmt: on
 
@@ -598,7 +682,9 @@ class misc(commands.Cog):
         options: str
             The options to choose from.
         """
-        await ctx.reply(random.choice(options))
+        await ctx.reply(
+            random.choice(options), allowed_mentions=discord.AllowedMentions.none()
+        )
 
     @commands.command()
     async def yeah(self, ctx):
@@ -615,7 +701,8 @@ class misc(commands.Cog):
             The reason for the slap.
         """
         await ctx.send(
-            f"{ctx.author.mention} slapped {member.mention} because {reason}"
+            f"{ctx.author.mention} slapped {member.mention} because {reason}",
+            allowed_mentions=discord.AllowedMentions.none(),
         )
 
     @commands.command()

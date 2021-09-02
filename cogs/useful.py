@@ -1,5 +1,4 @@
 from io import StringIO
-import asyncio
 import random
 import re
 import time
@@ -11,7 +10,7 @@ import discord
 import lxml.html
 import orjson
 
-from cogs.utils.calculation import calculate, hex_float, oct_float, bin_float
+from cogs.utils.calculation import safe_eval, hex_float, oct_float, bin_float
 
 
 CODE_REGEX = re.compile(
@@ -51,6 +50,19 @@ class LanguageMenu(menus.ListPageSource):
         return discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
 
 
+class PoiMenu(menus.ListPageSource):
+    def __init__(self, data):
+        super().__init__(data, per_page=9)
+
+    async def format_page(self, menu, entries):
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        for location, poi in entries:
+            embed.add_field(name=location, value=poi)
+
+        return embed
+
+
 class useful(commands.Cog):
     """Actually useful commands."""
 
@@ -58,6 +70,34 @@ class useful(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
         self.loop = bot.loop
+
+    @commands.command()
+    async def poi(self, ctx):
+        """Gets the auckland places of interest for covid."""
+        url = (
+            "https://raw.githubusercontent.com/minhealthnz/nz-covid-data/main"
+            "/locations-of-interest/august-2021/locations-of-interest.geojson"
+        )
+
+        async with self.bot.client_session.get(url) as page:
+            data = orjson.loads(await page.read())
+
+        pois = []
+
+        for poi in data["features"]:
+            prop = poi["properties"]
+            information = (
+                f"{prop['Location']}\n{prop['Start'][11:]} - {prop['End'][11:]}"
+            )
+            if prop["City"] == "Auckland":
+                pois.append((prop["Event"], information))
+
+        pages = menus.MenuPages(
+            source=PoiMenu(pois),
+            clear_reactions_after=True,
+            delete_message_after=True,
+        )
+        await pages.start(ctx)
 
     @commands.command()
     async def tiolanguages(self, ctx):
@@ -791,7 +831,7 @@ class useful(commands.Cog):
         numbers = [int(num, base) for num in re.findall(regex, args)]
 
         expr = re.sub(regex, "{}", args).format(*numbers)
-        result = calculate(expr)
+        result = safe_eval(compile(expr, "<calc>", "eval", flags=1024).body)
 
         await ctx.send(
             embed=discord.Embed(
