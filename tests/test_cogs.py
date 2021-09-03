@@ -579,14 +579,14 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.en(self.cog, context, text="aaaabbbccd")
 
-        self.assertEqual(context.send.call_args.args[0], "4a3b2c1d")
+        context.send.assert_called_with("4a3b2c1d")
 
     async def test_rle_de_command(self):
         context = helpers.MockContext()
 
         await self.cog.de(self.cog, context, text="4a3b2c1d")
 
-        self.assertEqual(context.send.call_args.args[0], "aaaabbbccd")
+        context.send.assert_called_with("aaaabbbccd")
 
     async def test_snowflake_command(self):
         context = helpers.MockContext()
@@ -605,7 +605,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.dashboard(self.cog, context)
 
-        self.assertEqual(context.send.call_args.args[0], "https://web.tukib.org/uoa")
+        context.send.assert_called_with("https://web.tukib.org/uoa")
 
     async def test_notes_command(self):
         context = helpers.MockContext()
@@ -621,9 +621,8 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.markdown(self.cog, context)
 
-        self.assertEqual(
-            context.send.call_args.args[0],
-            "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51",
+        context.send.assert_called_with(
+            "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51"
         )
 
     async def test_cipher_command(self):
@@ -647,10 +646,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             message="the quick brown fox jumps over the lazy dog",
         )
 
-        self.assertEqual(
-            context.send.call_args.args[0],
-            "aol xbpjr iyvdu mve qbtwz vcly aol shgf kvn",
-        )
+        context.send.assert_called_with("aol xbpjr iyvdu mve qbtwz vcly aol shgf kvn")
 
     async def test_cipher_decode_command(self):
         context = helpers.MockContext()
@@ -672,7 +668,50 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
         self.assertEqual(
-            context.send.call_args.kwargs["embed"].description, "```[21, 26, 140]```"
+            context.send.call_args.kwargs["embed"].description, "```[21, 26, 140]\n```"
+        )
+
+    async def test_eightball_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.eightball(self.cog, context)
+
+        self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
+    async def test_hex_command(self):
+        context = helpers.MockContext()
+
+        await self.cog._hex(self.cog, context, number="16666")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description, "```0x411a```"
+        )
+
+    async def test_oct_command(self):
+        context = helpers.MockContext()
+
+        await self.cog._oct(self.cog, context, number="1666")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description, "```0o3202```"
+        )
+
+    async def test_bin_command(self):
+        context = helpers.MockContext()
+
+        await self.cog._bin(self.cog, context, number="1666")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description, "```0b11010000010```"
         )
 
 
