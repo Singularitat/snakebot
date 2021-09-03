@@ -2,7 +2,7 @@ import unittest
 import asyncio
 import re
 
-from aiohttp import ClientSession
+import aiohttp
 
 from bot import Bot
 import tests.helpers as helpers
@@ -43,7 +43,9 @@ class AnimalsCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertRegex(context.send.call_args.args[0], url_regex)
 
     async def test_animal_commands(self):
-        bot.client_session = ClientSession()
+        bot.client_session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=6)
+        )
 
         await asyncio.gather(
             *[self.run_command(command) for command in self.cog.walk_commands()]
@@ -56,7 +58,9 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         cls.cog = apis(bot=bot)
 
     async def test_api_commands(self):
-        bot.client_session = ClientSession()
+        bot.client_session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=6)
+        )
 
         await asyncio.gather(
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
@@ -575,14 +579,14 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.en(self.cog, context, text="aaaabbbccd")
 
-        self.assertEqual(context.send.call_args.args[0], "4a3b2c1d")
+        context.send.assert_called_with("4a3b2c1d")
 
     async def test_rle_de_command(self):
         context = helpers.MockContext()
 
         await self.cog.de(self.cog, context, text="4a3b2c1d")
 
-        self.assertEqual(context.send.call_args.args[0], "aaaabbbccd")
+        context.send.assert_called_with("aaaabbbccd")
 
     async def test_snowflake_command(self):
         context = helpers.MockContext()
@@ -601,12 +605,128 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.dashboard(self.cog, context)
 
-        self.assertEqual(context.send.call_args.args[0], "https://web.tukib.org/uoa")
+        context.send.assert_called_with("https://web.tukib.org/uoa")
 
     async def test_notes_command(self):
         context = helpers.MockContext()
 
         await self.cog.notes(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_markdown_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.markdown(self.cog, context)
+
+        context.send.assert_called_with(
+            "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51"
+        )
+
+    async def test_cipher_command(self):
+        context = helpers.MockContext()
+        context.invoked_subcommand = None
+
+        await self.cog.cipher(self.cog, context)
+
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description,
+            f"```Usage: {context.prefix}cipher [decode/encode]```",
+        )
+
+    async def test_cipher_encode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.encode(
+            self.cog,
+            context,
+            shift=7,
+            message="the quick brown fox jumps over the lazy dog",
+        )
+
+        context.send.assert_called_with("aol xbpjr iyvdu mve qbtwz vcly aol shgf kvn")
+
+    async def test_cipher_decode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.decode(
+            self.cog, context, message="aol xbpjr iyvdu mve qbtwz vcly aol shgf kvn"
+        )
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_block_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.block(self.cog, context, A="1 2 3", B="3 7 15, 6 2 61, 2 5 1")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description, "```[21, 26, 140]\n```"
+        )
+
+    async def test_eightball_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.eightball(self.cog, context)
+
+        self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
+    async def test_hex_command(self):
+        context = helpers.MockContext()
+
+        await self.cog._hex(self.cog, context, number="16666")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description, "```0x411a```"
+        )
+
+    async def test_oct_command(self):
+        context = helpers.MockContext()
+
+        await self.cog._oct(self.cog, context, number="1666")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description, "```0o3202```"
+        )
+
+    async def test_bin_command(self):
+        context = helpers.MockContext()
+
+        await self.cog._bin(self.cog, context, number="1666")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description, "```0b11010000010```"
+        )
+
+    async def test_karma_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.karma(self.cog, context, user=helpers.MockMember())
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_karmaboard_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.karmaboard(self.cog, context)
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
