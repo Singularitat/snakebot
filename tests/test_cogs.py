@@ -663,6 +663,18 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_block_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.block(self.cog, context, A="1 2 3", B="3 7 15, 6 2 61, 2 5 1")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description, "```[21, 26, 140]```"
+        )
+
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     pass
