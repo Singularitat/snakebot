@@ -2,7 +2,7 @@ import unittest
 import asyncio
 import re
 
-from aiohttp import ClientSession
+import aiohttp
 
 from bot import Bot
 import tests.helpers as helpers
@@ -43,7 +43,9 @@ class AnimalsCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertRegex(context.send.call_args.args[0], url_regex)
 
     async def test_animal_commands(self):
-        bot.client_session = ClientSession()
+        bot.client_session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=6)
+        )
 
         await asyncio.gather(
             *[self.run_command(command) for command in self.cog.walk_commands()]
@@ -56,7 +58,9 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         cls.cog = apis(bot=bot)
 
     async def test_api_commands(self):
-        bot.client_session = ClientSession()
+        bot.client_session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=6)
+        )
 
         await asyncio.gather(
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
@@ -607,6 +611,53 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         await self.cog.notes(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_markdown_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.markdown(self.cog, context)
+
+        self.assertEqual(
+            context.send.call_args.args[0],
+            "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51",
+        )
+
+    async def test_cipher_command(self):
+        context = helpers.MockContext()
+        context.invoked_subcommand = None
+
+        await self.cog.cipher(self.cog, context)
+
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description,
+            f"```Usage: {context.prefix}cipher [decode/encode]```",
+        )
+
+    async def test_cipher_encode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.encode(
+            self.cog,
+            context,
+            shift=7,
+            message="the quick brown fox jumps over the lazy dog",
+        )
+
+        self.assertEqual(
+            context.send.call_args.args[0],
+            "aol xbpjr iyvdu mve qbtwz vcly aol shgf kvn",
+        )
+
+    async def test_cipher_decode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.decode(
+            self.cog, context, message="aol xbpjr iyvdu mve qbtwz vcly aol shgf kvn"
+        )
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
