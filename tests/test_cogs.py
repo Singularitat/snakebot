@@ -714,6 +714,24 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].description, "```0b11010000010```"
         )
 
+    async def test_karma_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.karma(self.cog, context, user=helpers.MockMember())
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_karmaboard_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.karmaboard(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     pass
