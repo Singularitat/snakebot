@@ -732,6 +732,29 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_roll_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.roll(self.cog, context, dice="10d10")
+
+        self.assertNotEqual(
+            context.reply.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_choose_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.choose(self.cog, context, 1, 2, 3)
+
+        self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
+    async def test_slap_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.slap(self.cog, context, member=helpers.MockMember())
+
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     pass
@@ -777,3 +800,59 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].description,
             "```ml\n125 * 125\n\n3d09\n\nDecimal: 15625```",
         )
+
+    async def test_format_command(self):
+        context = helpers.MockContext()
+
+        bot.client_session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=6)
+        )
+
+        code = """```py
+        from seven_dwwarfs import Grumpy, Happy, Sleepy, Bashful, Sneezy, Dopey, Doc
+        x = {  'a':37,'b':42,
+
+        'c':927}
+
+        x = 123456789.123456789E123456789
+
+        if very_long_variable_name is not None and \
+         very_long_variable_name.field > 0 or \
+         very_long_variable_name.is_debug:
+         z = 'hello '+'world'
+        else:
+         world = 'world'
+         a = 'hello {}'.format(world)
+         f = rf'hello {world}'
+        if (this
+        and that): y = 'hello ''world'
+        class Foo  (     object  ):
+          def f    (self   ):
+            return       37*-2
+          def g(self, x,y=42):
+              return y
+        def f  (   a: List[ int ]) :
+          return      37-a[42-u :  y**3]
+        def very_important_function(template: str,
+        *variables,file: os.PathLike,debug:bool=False,):
+            '''Applies `variables` to the `template` and writes to `file`.'''
+            with open(file, "w") as f:
+             ...
+        # fmt: off
+        custom_formatting = [
+            0,  1,  2,
+            3,  4,  5,
+            6,  7,  8,
+        ]
+        # fmt: on
+        regular_formatting = [
+            0,  1,  2,
+            3,  4,  5,
+            6,  7,  8,
+        ]
+        ```"""
+
+        await self.cog.format(self.cog, context, code=code)
+
+        context.reply.assert_called()
+        self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
