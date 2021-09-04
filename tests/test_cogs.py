@@ -737,8 +737,23 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.roll(self.cog, context, dice="10d10")
 
-        context.reply.assert_called()
+        self.assertNotEqual(
+            context.reply.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_choose_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.choose(self.cog, context, 1, 2, 3)
+
         self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
+    async def test_slap_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.slap(self.cog, context, member=helpers.MockMember())
+
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
