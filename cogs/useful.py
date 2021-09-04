@@ -72,6 +72,38 @@ class useful(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def format(self, ctx, *, code=None):
+        """Formats python code using the black formatter.
+
+        code: str
+        """
+        if not code and ctx.message.attachments:
+            file = ctx.message.attachments[0]
+            if file.filename.split(".")[-1] != "py":
+                return
+            code = (await file.read()).decode()
+
+        url = "https://1rctyledh3.execute-api.us-east-1.amazonaws.com/dev"
+        data = {
+            "options": {
+                "fast": False,
+                "line_length": 88,
+                "py36": False,
+                "pyi": False,
+                "skip_string_normalization": False,
+            },
+            "source": re.sub(r"```\w+\n|```", "", code),
+        }
+
+        async with self.bot.client_session.post(url, json=data) as response:
+            formatted = (await response.json())["formatted_code"]
+
+        if len(formatted) > 1991:
+            return await ctx.reply(file=discord.File(StringIO(formatted), "output.py"))
+
+        await ctx.reply(f"```py\n{formatted}```")
+
+    @commands.command()
     async def poi(self, ctx):
         """Gets the auckland places of interest for covid."""
         url = (
