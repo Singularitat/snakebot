@@ -755,6 +755,25 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
+    async def test_bar_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.bar(self.cog, context, graph_data=(1, 2, 3))
+
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertEqual(
+            context.send.call_args.args[0],
+            (
+                "```\n"
+                "             ____ \n"
+                "       ____ |    |\n"
+                " ____ |    ||    |\n"
+                "|    ||    ||    |\n"
+                "------------------"
+                "```"
+            ),
+        )
+
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     pass
