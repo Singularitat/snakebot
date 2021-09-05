@@ -892,3 +892,19 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
+
+    async def test_weather_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.weather(self.cog, context)
+
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
+    async def test_status_codes_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.status_codes(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
