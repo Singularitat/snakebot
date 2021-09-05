@@ -755,6 +755,25 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
+    async def test_bar_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.bar(self.cog, context, graph_data=(1, 2, 3))
+
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertEqual(
+            context.send.call_args.args[0],
+            (
+                "```\n"
+                "             ____ \n"
+                "       ____ |    |\n"
+                " ____ |    ||    |\n"
+                "|    ||    ||    |\n"
+                "------------------"
+                "```"
+            ),
+        )
+
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     pass
@@ -854,5 +873,38 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.format(self.cog, context, code=code)
 
-        context.reply.assert_called()
         self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
+    async def test_hello_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.hello(self.cog, context, language="python3")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_float_command(self):
+        context = helpers.MockContext()
+
+        await self.cog._float(self.cog, context, number=3.125)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_weather_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.weather(self.cog, context)
+
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
+    async def test_status_codes_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.status_codes(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )

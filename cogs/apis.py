@@ -451,7 +451,8 @@ class apis(commands.Cog):
                 title=apod["title"],
                 description="[Link](https://apod.nasa.gov/apod/astropix.html)",
             )
-            embed.set_image(url=apod["hdurl"])
+            if "hdurl" in apod:
+                embed.set_image(url=apod["hdurl"])
             await ctx.send(embed=embed)
 
     @commands.command(name="githubtrending", aliases=["githubt", "tgithub"])
