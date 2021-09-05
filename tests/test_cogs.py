@@ -873,5 +873,22 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.format(self.cog, context, code=code)
 
-        context.reply.assert_called()
         self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
+    async def test_hello_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.hello(self.cog, context, language="python3")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_float_command(self):
+        context = helpers.MockContext()
+
+        await self.cog._float(self.cog, context, number=3.125)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
