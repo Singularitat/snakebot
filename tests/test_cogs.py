@@ -884,6 +884,15 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
             self.assertEqual(context.reply.call_args.args[0], "```\nTest\n```")
 
+    async def translate_command(self):
+        with self.subTest(command="translate"):
+            context = helpers.MockContext()
+
+            await self.cog.translate(self.cog, context, text="안녕하십니까")
+
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertEqual(context.send.call_args.args[0], "Hello ")
+
     async def test_calc_command(self):
         context = helpers.MockContext()
 
