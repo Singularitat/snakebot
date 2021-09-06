@@ -810,22 +810,21 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = useful(bot=bot)
 
-    async def test_calc_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.calc(self.cog, context, num_base="hex", args="0x7d * 0x7d")
-
-        self.assertEqual(
-            context.send.call_args.kwargs["embed"].description,
-            "```ml\n125 * 125\n\n3d09\n\nDecimal: 15625```",
-        )
-
-    async def test_format_command(self):
-        context = helpers.MockContext()
-
+    async def test_useful_cog_api_commands(self):
         bot.client_session = aiohttp.ClientSession(
             timeout=aiohttp.ClientTimeout(total=6)
         )
+
+        await asyncio.gather(
+            *[
+                getattr(self, name)()
+                for name in dir(self)
+                if name.endswith("command") and not name.startswith("test")
+            ]
+        )
+
+    async def format_command(self):
+        context = helpers.MockContext()
 
         code = """```py
         from seven_dwwarfs import Grumpy, Happy, Sleepy, Bashful, Sneezy, Dopey, Doc
@@ -871,9 +870,66 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         ]
         ```"""
 
-        await self.cog.format(self.cog, context, code=code)
+        with self.subTest(command="format"):
+            await self.cog.format(self.cog, context, code=code)
 
-        self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
+    async def run_command(self):
+        with self.subTest(command="run"):
+            context = helpers.MockContext()
+
+            await self.cog.run(self.cog, context, code="```py\nprint('Test')```")
+
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+            self.assertEqual(context.reply.call_args.args[0], "```\nTest\n```")
+
+    async def translate_command(self):
+        with self.subTest(command="translate"):
+            context = helpers.MockContext()
+
+            await self.cog.translate(self.cog, context, text="안녕하십니까")
+
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertEqual(context.send.call_args.args[0], "Hello ")
+
+    async def news_command(self):
+        with self.subTest(command="news"):
+            context = helpers.MockContext()
+
+            await self.cog.news(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+    async def tio_command(self):
+        with self.subTest(command="tio"):
+            context = helpers.MockContext()
+
+            await self.cog.tio(self.cog, context, code="```python\nprint('Test')```")
+
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
+    async def poi_command(self):
+        with self.subTest(command="poi"):
+            context = helpers.MockContext()
+
+            await self.cog.poi(self.cog, context)
+
+            self.assertNotEqual(
+                context.channel.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+    async def test_calc_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.calc(self.cog, context, num_base="hex", args="0x7d * 0x7d")
+
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description,
+            "```ml\n125 * 125\n\n3d09\n\nDecimal: 15625```",
+        )
 
     async def test_hello_command(self):
         context = helpers.MockContext()
