@@ -903,6 +903,24 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def tio_command(self):
+        with self.subTest(command="tio"):
+            context = helpers.MockContext()
+
+            await self.cog.tio(self.cog, context, code="```python\nprint('Test')```")
+
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
+    async def poi_command(self):
+        with self.subTest(command="poi"):
+            context = helpers.MockContext()
+
+            await self.cog.poi(self.cog, context)
+
+            self.assertNotEqual(
+                context.channel.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def test_calc_command(self):
         context = helpers.MockContext()
 
