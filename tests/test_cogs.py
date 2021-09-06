@@ -893,6 +893,16 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertIs(context.send.call_args.kwargs.get("embed"), None)
             self.assertEqual(context.send.call_args.args[0], "Hello ")
 
+    async def news_command(self):
+        with self.subTest(command="news"):
+            context = helpers.MockContext()
+
+            await self.cog.news(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def test_calc_command(self):
         context = helpers.MockContext()
 
