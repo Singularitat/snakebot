@@ -921,6 +921,16 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
                 context.channel.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def google_command(self):
+        with self.subTest(command="google"):
+            context = helpers.MockContext()
+
+            await self.cog.google(self.cog, context, search="cat")
+
+            self.assertNotEqual(
+                context.channel.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def test_calc_command(self):
         context = helpers.MockContext()
 
