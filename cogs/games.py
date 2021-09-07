@@ -19,26 +19,119 @@ HANGMAN_IMAGES = {
 }
 
 
+class CookieClickerButton(discord.ui.Button["CookieClicker"]):
+    def __init__(self, name, cost, cps, label, row):
+        super().__init__(style=discord.ButtonStyle.gray, label=label, row=row)
+        self.cost = cost
+        self.name = name
+        self.cps = cps
+
+    async def callback(self, interaction: discord.Interaction):
+        view = self.view
+
+        if interaction.user == view.user:
+            user_id = str(view.user.id).encode()
+            cookies = view.DB.cookies.get(user_id)
+
+            if not cookies:
+                cookies = view.default
+            else:
+                cookies = orjson.loads(cookies)
+
+            cookies["cookies"] += (time.time() - cookies["start"]) * cookies["cps"]
+
+            cookies["start"] = time.time()
+            current = cookies[self.name]
+            amount = cookies["buy_amount"]
+
+            if amount > 1:
+                cost = -(
+                    self.cost
+                    * ((1.15 ** current) - (1.15 ** (current + amount)))
+                    / 0.15
+                )
+
+            else:
+                cost = self.cost * 1.15 ** cookies[self.name]
+
+            if cookies["cookies"] < cost:
+                return await interaction.response.edit_message(
+                    content=f"You need {cost:.0f} cookies to upgrade"
+                )
+
+            cookies["cookies"] -= cost
+            cookies[self.name] += amount
+
+            if amount == 0:
+                while cookies["cookies"] > (
+                    cost := self.cost * 1.15 ** cookies[self.name]
+                ):
+                    cookies["cookies"] -= cost
+                    cookies[self.name] += 1
+
+            view.DB.cookies.put(user_id, orjson.dumps(cookies))
+            await interaction.response.edit_message(
+                content=None, embed=view.get_embed(cookies)
+            )
+
+
 class CookieClicker(discord.ui.View):
+    default = {
+        "cookies": 0,
+        "start": 0,
+        "cps": 0,
+        "cursor": 0,
+        "grandma": 0,
+        "farm": 0,
+        "mine": 0,
+        "factory": 0,
+        "bank": 0,
+        "temple": 0,
+        "wizard tower": 0,
+        "shipment": 0,
+        "buy_amount": 1,
+    }
+
+    prices = {
+        "cursor": (15, 0.1, "🖱️"),
+        "grandma": (100, 1, "👵"),
+        "farm": (1_100, 8, "🚜"),
+        "mine": (12_000, 47, "⛏️"),
+        "factory": (130_000, 260, "🏭"),
+        "bank": (1_400_000, 1_400, "🏦"),
+        "temple": (20_000_000, 7_800, "🛕"),
+        "wizard tower": (330_000_000, 44_000, "🧙‍♂️"),
+        "shipment": (5_100_000_000, 260_000, "🚀"),  # Cost, Cookies Per Second, Label
+    }
+
     def __init__(self, db, user: discord.User):
         super().__init__(timeout=1200.0)
         self.user = user
         self.DB = db
 
-    @staticmethod
-    def get_embed(name, data):
-        cps = data.get("cps", 0) + 1
-        upgrades = data["upgrade"]
+        row = 5
 
-        return (
-            discord.Embed(color=discord.Color.blurple(), title=name)
-            .add_field(name="Cookies", value=f"{data['cookies']} 🍪")
-            .add_field(name="Upgrades", value=upgrades)
-            .add_field(name="Cookies per second", value=cps)
-            .add_field(name="Buy all", value="On" if data.get("buy_all") else "Off")
-            .add_field(name="Cost", value=int((100 * upgrades) ** 0.8))
-            .add_field(name="Cost", value=int((1000 * cps) ** 0.9))
+        for name, (price, cps, label) in self.prices.items():
+            row += 1
+            self.add_item(CookieClickerButton(name, price, cps, label, row // 3))
+
+    def get_embed(self, name, data):
+        embed = discord.Embed(
+            color=discord.Color.blurple(), title=self.user.display_name
         )
+
+        embed.add_field(name="Cookies", value=f"{data['cookies']:.0f} 🍪")
+        embed.add_field(name="CPS", value=data["cps"])
+        embed.add_field(
+            name="Buy Amount",
+            value="Max" if not data["buy_amount"] else data["buy_amount"],
+        )
+
+        for building in self.prices:
+            if data[building]:
+                embed.add_field(name=building.title(), value=data[building])
+
+        return embed
 
     @discord.ui.button(label="🍪", style=discord.ButtonStyle.blurple)
     async def click(self, button, interaction):
@@ -47,120 +140,47 @@ class CookieClicker(discord.ui.View):
             cookies = self.DB.cookies.get(user_id)
 
             if not cookies:
-                cookies = {"cookies": 1, "upgrade": 1}
+                cookies = self.default
             else:
                 cookies = orjson.loads(cookies)
 
-            cookies["cookies"] += cookies["upgrade"]
-
-            if "start" in cookies:
-                cookies["cookies"] += round(
-                    (time.time() - cookies["start"]) * cookies["cps"]
-                )
-                cookies["start"] = time.time()
+            cookies["cookies"] += (
+                3 * (cookies["cps"] + 1)
+                + (time.time() - cookies["start"]) * cookies["cps"]
+            )
+            cookies["start"] = time.time()
 
             await interaction.response.edit_message(
-                content=None, embed=self.get_embed(self.user.display_name, cookies)
+                content=None, embed=self.get_embed(cookies)
             )
             self.DB.cookies.put(user_id, orjson.dumps(cookies))
 
-    @discord.ui.button(label="🆙", style=discord.ButtonStyle.blurple)
-    async def upgrade(self, button, interaction):
+    @discord.ui.select(
+        placeholder="Change buy amount",
+        min_values=1,
+        max_values=1,
+        options=[
+            discord.SelectOption(label="Buy 1", value=1),
+            discord.SelectOption(label="Buy 10", value=10),
+            discord.SelectOption(label="Buy 100", value=100),
+            discord.SelectOption(label="Buy Max", value=0),
+        ],
+    )
+    async def change_purchase_amount(self, select, interaction):
         if interaction.user == self.user:
             user_id = str(interaction.user.id).encode()
             cookies = self.DB.cookies.get(user_id)
 
             if not cookies:
-                cookies = {"cookies": 1, "upgrade": 1}
+                cookies = self.default
             else:
                 cookies = orjson.loads(cookies)
 
-            if "start" in cookies:
-                cookies["cookies"] += round(
-                    (time.time() - cookies["start"]) * cookies["cps"]
-                )
-                cookies["start"] = time.time()
-
-            cost = int((100 * cookies["upgrade"]) ** 0.8)
-
-            if cookies["cookies"] < cost:
-                return await interaction.response.edit_message(
-                    content=f"You need {cost} cookies to upgrade"
-                )
-
-            cookies["cookies"] -= cost
-            cookies["upgrade"] += 1
-
-            if cookies.get("buy_all"):
-                while cookies["cookies"] > (
-                    cost := int((100 * cookies["upgrade"]) ** 0.8)
-                ):
-                    cookies["cookies"] -= cost
-                    cookies["upgrade"] += 1
-
+            cookies["buy_amount"] = int(interaction.data["values"][0])
             self.DB.cookies.put(user_id, orjson.dumps(cookies))
+
             await interaction.response.edit_message(
-                content=None, embed=self.get_embed(self.user.display_name, cookies)
-            )
-
-    @discord.ui.button(label="🤖", style=discord.ButtonStyle.blurple)
-    async def autocookie(self, button, interaction):
-        if interaction.user == self.user:
-            user_id = str(interaction.user.id).encode()
-            cookies = self.DB.cookies.get(user_id)
-
-            if not cookies:
-                return
-
-            cookies = orjson.loads(cookies)
-            cost = int((1000 * (cookies.get("cps", 0) + 1)) ** 0.9)
-
-            if "cps" in cookies:
-                cookies["cookies"] += round(
-                    (time.time() - cookies["start"]) * cookies["cps"]
-                )
-                cookies["start"] = time.time()
-
-            if cookies["cookies"] < cost:
-                return await interaction.response.edit_message(
-                    content=f"You need {cost} cookies to upgrade"
-                )
-
-            if "cps" not in cookies:
-                cookies["cps"] = 0
-                cookies["start"] = time.time()
-
-            cookies["cookies"] -= cost
-            cookies["cps"] += 1
-
-            if cookies.get("buy_all"):
-                while cookies["cookies"] > (
-                    cost := int((1000 * (cookies.get("cps", 0) + 1)) ** 0.9)
-                ):
-                    cookies["cookies"] -= cost
-                    cookies["cps"] += 1
-
-            self.DB.cookies.put(user_id, orjson.dumps(cookies))
-            await interaction.response.edit_message(
-                content=None, embed=self.get_embed(self.user.display_name, cookies)
-            )
-
-    @discord.ui.button(label="🕹️", style=discord.ButtonStyle.blurple)
-    async def toggle(self, button, interaction):
-        if interaction.user == self.user:
-            user_id = str(interaction.user.id).encode()
-            cookies = self.DB.cookies.get(user_id)
-
-            if not cookies:
-                return
-
-            cookies = orjson.loads(cookies)
-            cookies["buy_all"] = not cookies.get("buy_all")
-
-            self.DB.cookies.put(user_id, orjson.dumps(cookies))
-            response = "on" if cookies["buy_all"] else "off"
-            await interaction.response.edit_message(
-                content=None, embed=self.get_embed(self.user.display_name, cookies)
+                content=None, embed=self.get_embed(cookies)
             )
 
 
@@ -308,7 +328,7 @@ class games(commands.Cog):
             if cps:
                 data["cookies"] += round((time.time() - data["start"]) * cps)
 
-            cookietop.append(((data["cookies"], data["upgrade"], cps), int(member)))
+            cookietop.append((data["cookies"], int(member)))
 
         cookietop = sorted(cookietop, reverse=True)[:10]
 
@@ -316,8 +336,7 @@ class games(commands.Cog):
         embed.title = f"Top {len(cookietop)} members"
         embed.description = "\n".join(
             [
-                f"**{self.bot.get_user(member).display_name}:**"
-                f" `{bal[0]:,}` 🍪 `{bal[1]:,}` 🆙 `{bal[2]:,}` 🤖"
+                f"**{self.bot.get_user(member).display_name}:** `{bal:,.0f}` 🍪"
                 for bal, member in cookietop
             ]
         )
