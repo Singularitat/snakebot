@@ -931,6 +931,15 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
                 context.channel.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def image_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.image(self.cog, context, search="cat")
+
+        self.assertNotEqual(
+            context.channel.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
     async def test_calc_command(self):
         context = helpers.MockContext()
 
