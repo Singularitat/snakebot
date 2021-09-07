@@ -115,7 +115,7 @@ class CookieClicker(discord.ui.View):
             row += 1
             self.add_item(CookieClickerButton(name, price, cps, label, row // 3))
 
-    def get_embed(self, name, data):
+    def get_embed(self, data):
         embed = discord.Embed(
             color=discord.Color.blurple(), title=self.user.display_name
         )
