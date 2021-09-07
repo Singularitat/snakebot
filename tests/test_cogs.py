@@ -922,23 +922,26 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
             )
 
     async def google_command(self):
-        with self.subTest(command="google"):
+        with self.subTest(command="google"), self.assertRaises(ValueError):
             context = helpers.MockContext()
 
             await self.cog.google(self.cog, context, search="cat")
 
-            self.assertNotEqual(
-                context.channel.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
     async def image_command(self):
-        context = helpers.MockContext()
+        with self.subTest(command="image"), self.assertRaises(ValueError):
+            context = helpers.MockContext()
 
-        await self.cog.image(self.cog, context, search="cat")
+            await self.cog.image(self.cog, context, search="cat")
 
-        self.assertNotEqual(
-            context.channel.send.call_args.kwargs["embed"].color.value, 10038562
-        )
+    async def cheatsheet_command(self):
+        with self.subTest(command="cheatsheet"):
+            context = helpers.MockContext()
+
+            await self.cog.cheatsheet(self.cog, context, "reverse a linked list")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
 
     async def test_calc_command(self):
         context = helpers.MockContext()
