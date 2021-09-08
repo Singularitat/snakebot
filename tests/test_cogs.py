@@ -978,6 +978,22 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
+    async def test_temp_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.temp(self.cog, context)
+
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
+    async def test_languages_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.languages(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
     async def test_status_codes_command(self):
         context = helpers.MockContext()
 
