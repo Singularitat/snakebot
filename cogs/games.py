@@ -1,10 +1,29 @@
 import time
+import math
 
 from discord.ext import commands
 import discord
 import orjson
 
 import config
+
+
+BIG_NUMS = (
+    "",
+    "",
+    "Million",
+    "Billion",
+    "Trillion",
+    "Quadrillion",
+    "Quintillion",
+    "Sextillion",
+    "Septillion",
+    "Octillion",
+    "Nonillion",
+    "Decillion",
+    "Undecillion",
+    "Duodecillion",
+)
 
 
 IMAGE_BASE = "https://upload.wikimedia.org/wikipedia/commons/thumb/"
@@ -50,7 +69,6 @@ class CookieClickerButton(discord.ui.Button["CookieClicker"]):
                     * ((1.15 ** current) - (1.15 ** (current + amount)))
                     / 0.15
                 )
-
             else:
                 cost = self.cost * 1.15 ** cookies[self.name]
 
@@ -59,15 +77,17 @@ class CookieClickerButton(discord.ui.Button["CookieClicker"]):
                     content=f"You need {cost:.0f} cookies to upgrade"
                 )
 
-            cookies["cookies"] -= cost
-            cookies[self.name] += amount
-
             if amount == 0:
                 while cookies["cookies"] > (
                     cost := self.cost * 1.15 ** cookies[self.name]
                 ):
                     cookies["cookies"] -= cost
                     cookies[self.name] += 1
+                    cookies["cps"] += self.cps
+            else:
+                cookies["cookies"] -= cost
+                cookies[self.name] += amount
+                cookies["cps"] += amount * self.cps
 
             view.DB.cookies.put(user_id, orjson.dumps(cookies))
             await interaction.response.edit_message(
@@ -115,13 +135,18 @@ class CookieClicker(discord.ui.View):
             row += 1
             self.add_item(CookieClickerButton(name, price, cps, label, row // 3))
 
+    @staticmethod
+    def parse_num(num):
+        index = math.floor(math.log10(num) / 3) if num else 0
+        return f"{num/10**(3*index):.1f} {BIG_NUMS[index]}"
+
     def get_embed(self, data):
         embed = discord.Embed(
             color=discord.Color.blurple(), title=self.user.display_name
         )
 
-        embed.add_field(name="Cookies", value=f"{data['cookies']:.0f} 🍪")
-        embed.add_field(name="CPS", value=data["cps"])
+        embed.add_field(name="Cookies", value=f"{self.parse_num(data['cookies'])} 🍪")
+        embed.add_field(name="CPS", value=f"{self.parse_num(data['cps'])}")
         embed.add_field(
             name="Buy Amount",
             value="Max" if not data["buy_amount"] else data["buy_amount"],
@@ -129,31 +154,13 @@ class CookieClicker(discord.ui.View):
 
         for building in self.prices:
             if data[building]:
-                embed.add_field(name=building.title(), value=data[building])
+                price = self.prices[building][0] * 1.15 ** data[building]
+                embed.add_field(
+                    name=building.title(),
+                    value=f"{data[building]}/{self.parse_num(price)}",
+                )
 
         return embed
-
-    @discord.ui.button(label="🍪", style=discord.ButtonStyle.blurple)
-    async def click(self, button, interaction):
-        if interaction.user == self.user:
-            user_id = str(interaction.user.id).encode()
-            cookies = self.DB.cookies.get(user_id)
-
-            if not cookies:
-                cookies = self.default
-            else:
-                cookies = orjson.loads(cookies)
-
-            cookies["cookies"] += (
-                3 * (cookies["cps"] + 1)
-                + (time.time() - cookies["start"]) * cookies["cps"]
-            )
-            cookies["start"] = time.time()
-
-            await interaction.response.edit_message(
-                content=None, embed=self.get_embed(cookies)
-            )
-            self.DB.cookies.put(user_id, orjson.dumps(cookies))
 
     @discord.ui.select(
         placeholder="Change buy amount",
@@ -182,6 +189,28 @@ class CookieClicker(discord.ui.View):
             await interaction.response.edit_message(
                 content=None, embed=self.get_embed(cookies)
             )
+
+    @discord.ui.button(label="🍪", style=discord.ButtonStyle.blurple)
+    async def click(self, button, interaction):
+        if interaction.user == self.user:
+            user_id = str(interaction.user.id).encode()
+            cookies = self.DB.cookies.get(user_id)
+
+            if not cookies:
+                cookies = self.default
+            else:
+                cookies = orjson.loads(cookies)
+
+            cookies["cookies"] += (
+                3 * (cookies["cps"] + 1)
+                + (time.time() - cookies["start"]) * cookies["cps"]
+            )
+            cookies["start"] = time.time()
+
+            await interaction.response.edit_message(
+                content=None, embed=self.get_embed(cookies)
+            )
+            self.DB.cookies.put(user_id, orjson.dumps(cookies))
 
 
 class TicTacToeButton(discord.ui.Button["TicTacToe"]):
