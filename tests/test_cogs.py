@@ -12,6 +12,7 @@ from cogs.useful import useful
 from cogs.stocks import stocks
 from cogs.crypto import crypto
 from cogs.apis import apis
+from cogs.information import information
 
 
 bot = Bot(helpers.MockBot())
@@ -465,7 +466,27 @@ class HelpCogTests(unittest.IsolatedAsyncioTestCase):
 
 
 class InformationCogTests(unittest.IsolatedAsyncioTestCase):
-    pass
+    @classmethod
+    def setUpClass(cls):
+        cls.cog = information(bot=bot)
+
+    async def test_roles_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.roles(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_about_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.about(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
 
 
 class MiscCogTests(unittest.IsolatedAsyncioTestCase):
@@ -977,6 +998,31 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         await self.cog.weather(self.cog, context)
 
         self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
+    async def test_temp_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.temp(self.cog, context)
+
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
+    async def test_languages_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.languages(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_tiolanguages_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.tiolanguages(self.cog, context)
+
+        self.assertNotEqual(
+            context.channel.send.call_args.kwargs["embed"].color.value, 10038562
+        )
 
     async def test_status_codes_command(self):
         context = helpers.MockContext()
