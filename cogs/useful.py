@@ -36,7 +36,7 @@ class InviteMenu(menus.ListPageSource):
 
 class LanguageMenu(menus.ListPageSource):
     def __init__(self, data):
-        super().__init__(data, per_page=100)
+        super().__init__(data, per_page=60)
 
     async def format_page(self, menu, entries):
         msg = ""
