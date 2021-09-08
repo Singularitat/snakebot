@@ -994,6 +994,15 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_tiolanguages_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.tiolanguages(self.cog, context)
+
+        self.assertNotEqual(
+            context.channel.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
     async def test_status_codes_command(self):
         context = helpers.MockContext()
 
