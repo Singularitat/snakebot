@@ -166,14 +166,14 @@ class useful(commands.Cog):
         """Uses tio.run to run code.
 
         Examples:
-        .run `\u200b`\u200b`\u200bpy
+        .tio `\u200b`\u200b`\u200bpy
         print("Example")`\u200b`\u200b`\u200b
 
-        .run py print("Example")
+        .tio py print("Example")
 
-        .run py `\u200bprint("Example")`\u200b
+        .tio py `\u200bprint("Example")`\u200b
 
-        .run py `\u200b`\u200b`\u200bprint("Example")`\u200b`\u200b`\u200b
+        .tio py `\u200b`\u200b`\u200bprint("Example")`\u200b`\u200b`\u200b
 
         code: str
             The code to run.
