@@ -488,6 +488,24 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_oldest_members_commmand(self):
+        context = helpers.MockContext()
+
+        await self.cog.oldest_members(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_message_top_commmand(self):
+        context = helpers.MockContext()
+
+        await self.cog.message_top(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod

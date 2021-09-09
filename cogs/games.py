@@ -10,7 +10,7 @@ import config
 
 BIG_NUMS = (
     "",
-    "",
+    "Thousand",
     "Million",
     "Billion",
     "Trillion",
@@ -74,7 +74,7 @@ class CookieClickerButton(discord.ui.Button["CookieClicker"]):
 
             if cookies["cookies"] < cost:
                 return await interaction.response.edit_message(
-                    content=f"You need {cost:.0f} cookies to upgrade"
+                    content=f"You need {view.parse_num(cost)} cookies to upgrade"
                 )
 
             if amount == 0:
@@ -341,7 +341,8 @@ class games(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(
-            name=f"{user.display_name}'s cookies", value=f"**{cookies['cookies']:,}** 🍪"
+            name=f"{user.display_name}'s cookies",
+            value=f"**{cookies['cookies']:,.0f}** 🍪",
         )
 
         await ctx.send(embed=embed)
