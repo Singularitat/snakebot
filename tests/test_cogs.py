@@ -506,6 +506,15 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_botpermissions(self):
+        context = helpers.MockContext()
+
+        await self.cog.botpermissions(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
