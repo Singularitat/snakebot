@@ -524,6 +524,13 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_invite_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.invite(self.cog, context)
+
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
 
 class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
