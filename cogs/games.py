@@ -74,7 +74,10 @@ class CookieClickerButton(discord.ui.Button["CookieClicker"]):
 
             if cookies["cookies"] < cost:
                 return await interaction.response.edit_message(
-                    content=f"You need {view.parse_num(cost)} cookies to upgrade"
+                    content=(
+                        f"You need {view.parse_num(cost - cookies['cookies'])}"
+                        " more cookies to upgrade"
+                    )
                 )
 
             if amount == 0:
@@ -109,11 +112,14 @@ class CookieClicker(discord.ui.View):
         "temple": 0,
         "wizard tower": 0,
         "shipment": 0,
+        "alchemy lab": 0,
+        "portal": 0,
+        "time machine": 0,
         "buy_amount": 1,
     }
 
     prices = {
-        "cursor": (15, 0.1, "🖱️"),
+        "cursor": (15, 0.1, "🖱️"),  # Cost, Cookies Per Second, Label
         "grandma": (100, 1, "👵"),
         "farm": (1_100, 8, "🚜"),
         "mine": (12_000, 47, "⛏️"),
@@ -121,7 +127,10 @@ class CookieClicker(discord.ui.View):
         "bank": (1_400_000, 1_400, "🏦"),
         "temple": (20_000_000, 7_800, "🛕"),
         "wizard tower": (330_000_000, 44_000, "🧙‍♂️"),
-        "shipment": (5_100_000_000, 260_000, "🚀"),  # Cost, Cookies Per Second, Label
+        "shipment": (5_100_000_000, 260_000, "🚀"),
+        "alchemy lab": (75_000_000_000, 1_600_000, "⚗️"),
+        "portal": (1_000_000_000_000, 10_000_000, "🌀"),
+        "time machine": (14_000_000_000_000, 65_000_000, "⌛"),
     }
 
     def __init__(self, db, user: discord.User):
@@ -129,15 +138,15 @@ class CookieClicker(discord.ui.View):
         self.user = user
         self.DB = db
 
-        row = 5
+        row = 7
 
         for name, (price, cps, label) in self.prices.items():
             row += 1
-            self.add_item(CookieClickerButton(name, price, cps, label, row // 3))
+            self.add_item(CookieClickerButton(name, price, cps, label, row // 4))
 
     @staticmethod
     def parse_num(num):
-        index = math.floor(math.log10(num) / 3) if num else 0
+        index = math.floor(math.log10(num) / 3) if num // 1 else 0
         return f"{num/10**(3*index):.1f} {BIG_NUMS[index]}"
 
     def get_embed(self, data):

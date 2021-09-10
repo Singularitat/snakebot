@@ -506,6 +506,40 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_botpermissions_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.botpermissions(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_permissions_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.permissions(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_invite_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.invite(self.cog, context)
+
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
+    async def test_ping_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.ping(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
