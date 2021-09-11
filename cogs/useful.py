@@ -701,7 +701,9 @@ class useful(commands.Cog):
 
     async def wait_for_deletion(self, author: discord.Member, message: discord.Message):
         def check(reaction: discord.Reaction, user: discord.User) -> bool:
-            return author == user and reaction.message == message
+            return (
+                author == user and reaction.message == message and reaction.emoji == "❎"
+            )
 
         await message.add_reaction("❎")
         reaction, user = await self.bot.wait_for(

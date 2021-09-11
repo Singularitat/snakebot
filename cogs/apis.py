@@ -19,6 +19,32 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def wikipath(self, ctx, source: str, *, target: str):
+        """Gets the shortest wikipedia path between two articles.
+
+        source: str
+        target: str
+        """
+        url = "https://api.sixdegreesofwikipedia.com/paths"
+        json = {"source": source, "target": target}
+
+        embed = discord.Embed(
+            color=discord.Color.blurple(), title=f"From {source} to {target}"
+        )
+
+        async with ctx.typing(), self.bot.client_session.post(
+            url, json=json
+        ) as response:
+            paths = await response.json()
+
+            for num in paths["paths"][0]:
+                page = paths["pages"][str(num)]
+                embed.add_field(name=page["title"], value=f"[Link]({page['url']})")
+
+            embed.set_footer(text="In order of start to finish")
+            await ctx.send(embed=embed)
+
+    @commands.command()
     async def wolfram(self, ctx, *, query):
         """Gets the output of a query from wolfram alpha."""
         query = query.replace(" ", "+")
@@ -116,9 +142,11 @@ class apis(commands.Cog):
         async with ctx.typing():
             data = await self.bot.get_json(url)
 
+            text = data["text"].replace("`", "`\u200b")
+
             await ctx.send(
                 embed=discord.Embed(
-                    color=discord.Color.blurple(), description=f"```{data['text']}```"
+                    color=discord.Color.blurple(), description=f"```{text}```"
                 )
             )
 
@@ -513,6 +541,8 @@ class apis(commands.Cog):
         """
         url = "https://trends.google.com/trends/hottrends/visualize/internal/data"
         country = country.lower()
+        if country != "new zealand":
+            country = country.replace(" ", "_")
 
         async with ctx.typing():
             data = await self.bot.get_json(url)
