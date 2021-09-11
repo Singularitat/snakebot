@@ -41,14 +41,22 @@ class information(commands.Cog):
     @commands.command()
     async def changes(self, ctx):
         """Gets the last 12 commits."""
-        url = "https://api.github.com/repos/Singularitat/snakebot/commits?per_page=12"
+        url = "https://api.github.com/repos/Singularitat/snakebot/commits?per_page=24"
 
         async with ctx.typing():
             commits = await self.bot.get_json(url)
 
         embed = discord.Embed(color=discord.Color.blurple())
+        count = 0
 
         for commit in commits:
+            if commit["commit"]["verification"]["payload"]:
+                continue
+
+            if count == 12:
+                break
+            count += 1
+
             timestamp = int(
                 datetime.fromisoformat(
                     commit["commit"]["author"]["date"][:-1]
@@ -58,7 +66,6 @@ class information(commands.Cog):
                 name=f"<t:{timestamp}>",
                 value=f"[**{commit['commit']['message']}**]({commit['html_url']})",
             )
-
         await ctx.send(embed=embed)
 
     @commands.command()
