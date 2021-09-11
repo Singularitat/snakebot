@@ -116,9 +116,11 @@ class apis(commands.Cog):
         async with ctx.typing():
             data = await self.bot.get_json(url)
 
+            text = data["text"].replace("`", "`\u200b")
+
             await ctx.send(
                 embed=discord.Embed(
-                    color=discord.Color.blurple(), description=f"```{data['text']}```"
+                    color=discord.Color.blurple(), description=f"```{text}```"
                 )
             )
 
@@ -513,6 +515,8 @@ class apis(commands.Cog):
         """
         url = "https://trends.google.com/trends/hottrends/visualize/internal/data"
         country = country.lower()
+        if country != "new zealand":
+            country = country.replace(" ", "_")
 
         async with ctx.typing():
             data = await self.bot.get_json(url)
