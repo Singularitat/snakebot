@@ -67,6 +67,18 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def wikipath_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="wikipath"):
+            await self.cog.wikipath(
+                self.cog, context, source="Venus flytrap", target="False memory"
+            )
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def fact_command(self):
         context = helpers.MockContext()
 
@@ -846,6 +858,21 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
                 "```"
             ),
         )
+
+    async def test_opcode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.opcode(self.cog, context, search="UNARY")
+
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
+    async def test_rand_command(self):
+        context = helpers.MockContext()
+        a, b = 0, 10
+
+        await self.cog.rand(self.cog, context, a=a, b=b)
+
+        self.assertIs(a <= int(context.reply.call_args.args[0]) <= b, True)
 
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
