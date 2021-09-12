@@ -859,6 +859,13 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             ),
         )
 
+    async def test_opcode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.opcode(self.cog, context, search="UNARY")
+
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     pass
