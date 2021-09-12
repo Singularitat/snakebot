@@ -67,6 +67,18 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def wikipath_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="wikipath"):
+            await self.cog.wikipath(
+                self.cog, context, source="Venus flytrap", target="False memory"
+            )
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def fact_command(self):
         context = helpers.MockContext()
 
