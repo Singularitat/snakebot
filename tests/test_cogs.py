@@ -866,6 +866,14 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
+    async def test_rand_command(self):
+        context = helpers.MockContext()
+        a, b = 0, 10
+
+        await self.cog.rand(self.cog, context, a=a, b=b)
+
+        self.assertIs(a <= int(context.reply.call_args.args[0]) <= b, True)
+
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     pass
