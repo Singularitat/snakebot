@@ -19,6 +19,14 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def inspiro(self, ctx):
+        """Gets images from inspirobot.me an ai quote generator."""
+        url = "https://inspirobot.me/api?generate=true"
+
+        async with ctx.typing(), self.bot.client_session.get(url) as quote:
+            await ctx.send(await quote.text())
+
+    @commands.command()
     async def wikipath(self, ctx, source: str, *, target: str):
         """Gets the shortest wikipedia path between two articles.
 
