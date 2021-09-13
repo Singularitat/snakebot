@@ -19,6 +19,14 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def inspiro(self, ctx):
+        """Gets images from inspirobot.me an ai quote generator."""
+        url = "https://inspirobot.me/api?generate=true"
+
+        async with ctx.typing(), self.bot.client_session.get(url) as quote:
+            await ctx.send(await quote.text())
+
+    @commands.command()
     async def wikipath(self, ctx, source: str, *, target: str):
         """Gets the shortest wikipedia path between two articles.
 
@@ -135,14 +143,27 @@ class apis(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def fact(self, ctx):
-        """Gets a random fact."""
-        url = "https://uselessfacts.jsph.pl/random.json?language=en"
+    async def fact(self, ctx, index: int = None):
+        """Gets a random fact.
+
+        index: int
+            Can be either 0 or 1, mainly for testing purposes.
+        """
+        if index is None:
+            index = random.randint(0, 1)
+
+        url = (
+            "https://uselessfacts.jsph.pl/random.json?language=en",
+            "https://asli-fun-fact-api.herokuapp.com",
+        )[index]
 
         async with ctx.typing():
             data = await self.bot.get_json(url)
 
-            text = data["text"].replace("`", "`\u200b")
+            if index == 0:
+                text = data["text"].replace("`", "`\u200b")
+            else:
+                text = data["data"]["fact"]
 
             await ctx.send(
                 embed=discord.Embed(

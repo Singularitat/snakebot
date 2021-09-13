@@ -67,6 +67,14 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def inspiro_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="inspiro"):
+            await self.cog.inspiro(self.cog, context)
+
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
     async def wikipath_command(self):
         context = helpers.MockContext()
 
@@ -83,7 +91,13 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         with self.subTest(command="fact"):
-            await self.cog.fact(self.cog, context)
+            await self.cog.fact(self.cog, context, index=0)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+            await self.cog.fact(self.cog, context, index=1)
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
