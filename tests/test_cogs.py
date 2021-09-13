@@ -83,7 +83,13 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         with self.subTest(command="fact"):
-            await self.cog.fact(self.cog, context)
+            await self.cog.fact(self.cog, context, index=0)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+            await self.cog.fact(self.cog, context, index=1)
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
