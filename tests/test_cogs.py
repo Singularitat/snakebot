@@ -67,6 +67,16 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def githubtrending_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="githubtrending"):
+            await self.cog.githubtrending(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def inspiro_command(self):
         context = helpers.MockContext()
 
