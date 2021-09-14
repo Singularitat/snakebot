@@ -67,6 +67,14 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def dadjoke_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="dadjoke"):
+            await self.cog.dadjoke(self.cog, context)
+
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
     async def githubtrending_command(self):
         context = helpers.MockContext()
 
