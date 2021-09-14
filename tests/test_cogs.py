@@ -87,6 +87,16 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def wolfram_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="wolfram"):
+            await self.cog.wolfram(self.cog, context, query="1 plus 1")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def fact_command(self):
         context = helpers.MockContext()
 
