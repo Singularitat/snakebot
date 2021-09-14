@@ -36,9 +36,8 @@ class apis(commands.Cog):
         url = "https://api.sixdegreesofwikipedia.com/paths"
         json = {"source": source, "target": target}
 
-        embed = discord.Embed(
-            color=discord.Color.blurple(), title=f"From {source} to {target}"
-        )
+        embed = discord.Embed(color=discord.Color.blurple())
+        description = ""
 
         async with ctx.typing(), self.bot.client_session.post(
             url, json=json
@@ -47,9 +46,22 @@ class apis(commands.Cog):
 
             for num in paths["paths"][0]:
                 page = paths["pages"][str(num)]
-                embed.add_field(name=page["title"], value=f"[Link]({page['url']})")
+                description += (
+                    f"[{page['title']}]({page['url']}) - {page['description']}\n"
+                )
 
+            embed.description = description
             embed.set_footer(text="In order of start to finish")
+            first_page = paths["pages"][str(paths["paths"][0][0])]
+            if "thumbnailUrl" in first_page:
+                embed.set_author(
+                    name=f"From {source} to {target}",
+                    icon_url=first_page["thumbnailUrl"],
+                )
+            else:
+                embed.title = f"From {source} to {target}"
+            if "thumbnailUrl" in page:
+                embed.set_thumbnail(url=page["thumbnailUrl"])
             await ctx.send(embed=embed)
 
     @commands.command()

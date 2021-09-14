@@ -67,6 +67,24 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def dadjoke_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="dadjoke"):
+            await self.cog.dadjoke(self.cog, context)
+
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
+    async def githubtrending_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="githubtrending"):
+            await self.cog.githubtrending(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def inspiro_command(self):
         context = helpers.MockContext()
 
@@ -82,6 +100,16 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             await self.cog.wikipath(
                 self.cog, context, source="Venus flytrap", target="False memory"
             )
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+    async def wolfram_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="wolfram"):
+            await self.cog.wolfram(self.cog, context, query="1 plus 1")
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
