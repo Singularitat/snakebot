@@ -594,6 +594,15 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_usage_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.usage(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
