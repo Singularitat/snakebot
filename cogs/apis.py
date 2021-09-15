@@ -798,7 +798,7 @@ class apis(commands.Cog):
 
             definition = definition[0]
 
-            if "phonetics" in definition:
+            if definition["phonetics"][0]:
                 embed.title = definition["phonetics"][0]["text"]
                 embed.description = (
                     f"[pronunciation]({definition['phonetics'][0]['audio']})"
