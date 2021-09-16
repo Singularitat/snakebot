@@ -13,6 +13,7 @@ from cogs.stocks import stocks
 from cogs.crypto import crypto
 from cogs.apis import apis
 from cogs.information import information
+from cogs.moderation import moderation
 
 
 bot = Bot(helpers.MockBot())
@@ -934,7 +935,18 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
-    pass
+    @classmethod
+    def setUpClass(cls):
+        cls.cog = moderation(bot=bot)
+
+    async def test_inactive_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.inactive(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
 
 
 class MusicCogTests(unittest.IsolatedAsyncioTestCase):
