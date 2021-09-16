@@ -13,6 +13,7 @@ from cogs.stocks import stocks
 from cogs.crypto import crypto
 from cogs.apis import apis
 from cogs.information import information
+from cogs.moderation import moderation
 
 
 bot = Bot(helpers.MockBot())
@@ -934,7 +935,47 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
-    pass
+    @classmethod
+    def setUpClass(cls):
+        cls.cog = moderation(bot=bot)
+
+    async def test_inactive_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.inactive(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_poll_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.poll(
+            self.cog, context, title="Test Poll", options=("Cat", "Dog")
+        )
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_role_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.role(self.cog, context, helpers.MockMember(), helpers.MockRole())
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_mute_member_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.mute_member(self.cog, context, helpers.MockMember())
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
 
 
 class MusicCogTests(unittest.IsolatedAsyncioTestCase):
