@@ -951,7 +951,9 @@ class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     async def test_poll_command(self):
         context = helpers.MockContext()
 
-        await self.cog.poll(self.cog, context, title="Test Poll", "Cat", "Dog")
+        await self.cog.poll(
+            self.cog, context, title="Test Poll", options=("Cat", "Dog")
+        )
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -961,6 +963,15 @@ class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         await self.cog.role(self.cog, context, helpers.MockMember(), helpers.MockRole())
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_mute_member_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.mute_member(self.cog, context, helpers.MockMember())
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
