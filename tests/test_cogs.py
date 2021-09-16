@@ -948,6 +948,15 @@ class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_role_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.role(self.cog, context, helpers.MockMember(), helpers.MockRole())
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class MusicCogTests(unittest.IsolatedAsyncioTestCase):
     pass
