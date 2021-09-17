@@ -516,6 +516,15 @@ class CryptoCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_crypto_profile_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.profile(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
     async def test_crypto_sell_command(self):
         context = helpers.MockContext()
 
