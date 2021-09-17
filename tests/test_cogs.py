@@ -507,6 +507,15 @@ class CryptoCogTests(unittest.IsolatedAsyncioTestCase):
             "```No stock found for BTC```",
         )
 
+    async def test_crypto_buy_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.buy(self.cog, context, "btc", 1)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
     pass
