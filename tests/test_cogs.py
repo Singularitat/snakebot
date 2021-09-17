@@ -516,6 +516,15 @@ class CryptoCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_crypto_sell_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.sell(self.cog, context, "btc", "100%")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
     pass
