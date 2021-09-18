@@ -1039,6 +1039,15 @@ class StocksCogTests(unittest.IsolatedAsyncioTestCase):
             "```No stock found for TSLA```",
         )
 
+    async def test_stock_buy_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.buy(self.cog, context, symbol="tsla", cash=1)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
