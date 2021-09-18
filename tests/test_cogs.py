@@ -1039,6 +1039,42 @@ class StocksCogTests(unittest.IsolatedAsyncioTestCase):
             "```No stock found for TSLA```",
         )
 
+    async def test_stock_buy_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.buy(self.cog, context, symbol="tsla", cash=1)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_stock_profile_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.profile(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_stock_bal_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.bal(self.cog, context, symbol="tsla")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_stock_sell_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.sell(self.cog, context, symbol="tsla", amount="100%")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
