@@ -157,8 +157,7 @@ class apis(commands.Cog):
     @commands.command()
     async def fact(self, ctx):
         """Gets a random fact."""
-
-        url = "https://asli-fun-fact-api.herokuapp.com",
+        url = "https://asli-fun-fact-api.herokuapp.com"
 
         async with ctx.typing():
             data = await self.bot.get_json(url)
