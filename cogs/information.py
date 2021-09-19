@@ -304,7 +304,8 @@ class information(commands.Cog):
             return await ctx.send("https://github.com/Singularitat/snakebot")
 
         if command == "help":
-            filename = inspect.getsourcefile(type(self.bot.help_command))
+            src = type(self.bot.help_command)
+            filename = inspect.getsourcefile(src)
         else:
             obj = self.bot.get_command(command)
             if not obj:

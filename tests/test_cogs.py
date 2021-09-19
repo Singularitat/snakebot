@@ -68,19 +68,19 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
-    async def dadjoke_command(self):
+    async def dad_joke_command(self):
         context = helpers.MockContext()
 
         with self.subTest(command="dadjoke"):
-            await self.cog.dadjoke(self.cog, context)
+            await self.cog.dad_joke(self.cog, context)
 
             self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
 
-    async def githubtrending_command(self):
+    async def github_trending_command(self):
         context = helpers.MockContext()
 
         with self.subTest(command="githubtrending"):
-            await self.cog.githubtrending(self.cog, context)
+            await self.cog.github_trending(self.cog, context)
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -92,7 +92,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="inspiro"):
             await self.cog.inspiro(self.cog, context)
 
-            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
     async def wikipath_command(self):
         context = helpers.MockContext()
@@ -120,13 +120,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         with self.subTest(command="fact"):
-            await self.cog.fact(self.cog, context, index=0)
-
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
-            await self.cog.fact(self.cog, context, index=1)
+            await self.cog.fact(self.cog, context)
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -313,16 +307,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
-    async def github_trending_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="github_trending"):
-            await self.cog.github_trending(self.cog, context)
-
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
     async def gender_command(self):
         context = helpers.MockContext()
 
@@ -355,14 +339,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
-
-    async def dad_joke_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="dad_joke"):
-            await self.cog.dad_joke(self.cog, context)
-
-            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
 
     async def cocktail_command(self):
         context = helpers.MockContext()
@@ -538,6 +514,24 @@ class CryptoCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         await self.cog.sell(self.cog, context, symbol="btc", amount="100%")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_crypto_list_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.list(self.cog, context)
+
+        self.assertNotEqual(
+            context.channel.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_crypto_history_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.history(self.cog, context)
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -987,9 +981,7 @@ class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     async def test_poll_command(self):
         context = helpers.MockContext()
 
-        await self.cog.poll(
-            self.cog, context, title="Test Poll", options=("Cat", "Dog")
-        )
+        await self.cog.poll(self.cog, context, "Test Poll", "Cat", "Dog")
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -1039,10 +1031,10 @@ class StocksCogTests(unittest.IsolatedAsyncioTestCase):
             "```No stock found for TSLA```",
         )
 
-    async def test_stock_buy_command(self):
+    async def test_stock_invest_command(self):
         context = helpers.MockContext()
 
-        await self.cog.buy(self.cog, context, symbol="tsla", cash=1)
+        await self.cog.invest(self.cog, context, symbol="tsla", cash=1)
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562

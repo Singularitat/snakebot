@@ -155,27 +155,14 @@ class apis(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def fact(self, ctx, index: int = None):
-        """Gets a random fact.
-
-        index: int
-            Can be either 0 or 1, mainly for testing purposes.
-        """
-        if index is None:
-            index = random.randint(0, 1)
-
-        url = (
-            "https://uselessfacts.jsph.pl/random.json?language=en",
-            "https://asli-fun-fact-api.herokuapp.com",
-        )[index]
+    async def fact(self, ctx):
+        """Gets a random fact."""
+        url = "https://asli-fun-fact-api.herokuapp.com"
 
         async with ctx.typing():
             data = await self.bot.get_json(url)
 
-            if index == 0:
-                text = data["text"].replace("`", "`\u200b")
-            else:
-                text = data["data"]["fact"]
+            text = data["data"]["fact"]
 
             await ctx.send(
                 embed=discord.Embed(
