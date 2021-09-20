@@ -553,6 +553,15 @@ class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_lottery_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.lottery(self.cog, context, 1)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class EventsCogTests(unittest.IsolatedAsyncioTestCase):
     pass
