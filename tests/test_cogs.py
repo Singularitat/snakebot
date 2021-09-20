@@ -1067,6 +1067,15 @@ class StocksCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_stock_list_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.list(self.cog, context)
+
+        self.assertNotEqual(
+            context.channel.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
