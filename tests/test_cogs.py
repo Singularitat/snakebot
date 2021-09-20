@@ -14,6 +14,7 @@ from cogs.crypto import crypto
 from cogs.apis import apis
 from cogs.information import information
 from cogs.moderation import moderation
+from cogs.economy import economy
 
 
 bot = Bot(helpers.MockBot())
@@ -539,7 +540,27 @@ class CryptoCogTests(unittest.IsolatedAsyncioTestCase):
 
 
 class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
-    pass
+    @classmethod
+    def setUpClass(cls):
+        cls.cog = economy(bot=bot)
+
+    async def test_coinflip_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.coinflip(self.cog, context, "heads", 0)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_lottery_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.lottery(self.cog, context, 1)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
 
 
 class EventsCogTests(unittest.IsolatedAsyncioTestCase):
@@ -1062,6 +1083,24 @@ class StocksCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         await self.cog.sell(self.cog, context, symbol="tsla", amount="100%")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_stock_list_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.list(self.cog, context)
+
+        self.assertNotEqual(
+            context.channel.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_stock_history_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.history(self.cog, context)
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
