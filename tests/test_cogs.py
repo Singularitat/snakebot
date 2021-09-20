@@ -14,6 +14,7 @@ from cogs.crypto import crypto
 from cogs.apis import apis
 from cogs.information import information
 from cogs.moderation import moderation
+from cogs.economy import economy
 
 
 bot = Bot(helpers.MockBot())
@@ -539,7 +540,18 @@ class CryptoCogTests(unittest.IsolatedAsyncioTestCase):
 
 
 class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
-    pass
+    @classmethod
+    def setUpClass(cls):
+        cls.cog = economy(bot=bot)
+
+    async def test_coinflip_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.coinflip(self.cog, context, "heads", 0)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
 
 
 class EventsCogTests(unittest.IsolatedAsyncioTestCase):
