@@ -562,6 +562,15 @@ class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_baltop_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.top_balances(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class EventsCogTests(unittest.IsolatedAsyncioTestCase):
     pass
