@@ -1106,10 +1106,19 @@ class StocksCogTests(unittest.IsolatedAsyncioTestCase):
             context.channel.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
-    async def test_stock_history_command(self):
+    async def test_stock_net_worth_command(self):
         context = helpers.MockContext()
 
-        await self.cog.history(self.cog, context)
+        await self.cog.net_worth(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_stock_nettop_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.top_net_worths(self.cog, context)
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
