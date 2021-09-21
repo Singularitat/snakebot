@@ -562,6 +562,24 @@ class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_baltop_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.top_balances(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_slot_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.slot(self.cog, context, 1)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class EventsCogTests(unittest.IsolatedAsyncioTestCase):
     pass
@@ -1097,10 +1115,19 @@ class StocksCogTests(unittest.IsolatedAsyncioTestCase):
             context.channel.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
-    async def test_stock_history_command(self):
+    async def test_stock_net_worth_command(self):
         context = helpers.MockContext()
 
-        await self.cog.history(self.cog, context)
+        await self.cog.net_worth(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_stock_nettop_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.top_net_worths(self.cog, context)
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
