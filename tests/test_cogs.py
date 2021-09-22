@@ -1061,6 +1061,15 @@ class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_history_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.history(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class MusicCogTests(unittest.IsolatedAsyncioTestCase):
     pass
