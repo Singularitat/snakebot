@@ -115,14 +115,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return songs
 
     @classmethod
-    async def playlist_put(cls, ctx, number):
-        return cls(
-            ctx,
-            discord.FFmpegPCMAudio(number["url"], **cls.FFMPEG_OPTIONS),
-            data=number,
-        )
-
-    @classmethod
     async def create_source_single(cls, ctx, data, *, loop):
         search = data.get("id")
 
@@ -389,6 +381,39 @@ class music(commands.Cog):
             )
         )
 
+    @commands.command(name="seek")
+    async def _seek(self, ctx, seconds: int):
+        """Seeks to a point in a song.
+
+        Seeks from the begining of the song to the amount of seconds inputted.
+        """
+        if not ctx.voice_state.voice:
+            await ctx.send("Not connected to any voice channel.", delete_after=20)
+            return await self.r_command_error(ctx.message)
+
+        data = ctx.voice_state.current.source.data
+
+        if seconds < 0 or seconds > data["duration"]:
+            await ctx.send(
+                "Can't seek to a point before or after the song.", delete_after=20
+            )
+            return await self.r_command_error(ctx.message)
+
+        song = Song(
+            YTDLSource(
+                ctx,
+                discord.FFmpegPCMAudio(
+                    ctx.voice_state.current.source.stream_url,
+                    before_options="-reconnect 1 -reconnect_streamed 1 "
+                    "-reconnect_delay_max 5",
+                    options=f"-vn -loglevel -8 -ss {seconds}",
+                ),
+                data=data,
+            )
+        )
+        ctx.voice_state.songs._queue.appendleft(song)
+        ctx.voice_state.skip()
+
     @commands.command(name="leave")
     async def _leave(self, ctx):
         """Clears the queue and leaves the voice channel."""
@@ -557,7 +582,6 @@ class music(commands.Cog):
             ctx.voice_state.processing = False
 
             await ctx.send(f"Enqueued {str(source)}", delete_after=10)
-
             await self.r_refresh_embed(ctx)
 
     @_play.before_invoke
