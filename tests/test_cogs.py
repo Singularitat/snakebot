@@ -1044,6 +1044,14 @@ class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_nick_command(self):
+        context = helpers.MockContext()
+        member = helpers.MockMember()
+
+        await self.cog.nick(self.cog, context, member, nickname="test")
+
+        self.assertEqual(member.edit.call_args.kwargs["nick"], "test")
+
 
 class MusicCogTests(unittest.IsolatedAsyncioTestCase):
     pass
