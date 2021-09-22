@@ -1052,6 +1052,15 @@ class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(member.edit.call_args.kwargs["nick"], "test")
 
+    async def test_warnings_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.warnings(self.cog, context, helpers.MockMember())
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class MusicCogTests(unittest.IsolatedAsyncioTestCase):
     pass
