@@ -1044,6 +1044,32 @@ class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_nick_command(self):
+        context = helpers.MockContext()
+        member = helpers.MockMember()
+
+        await self.cog.nick(self.cog, context, member, nickname="test")
+
+        self.assertEqual(member.edit.call_args.kwargs["nick"], "test")
+
+    async def test_warnings_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.warnings(self.cog, context, helpers.MockMember())
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_history_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.history(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class MusicCogTests(unittest.IsolatedAsyncioTestCase):
     pass
