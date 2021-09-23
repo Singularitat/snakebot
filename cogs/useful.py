@@ -839,6 +839,10 @@ class useful(commands.Cog):
     async def calc(self, ctx, num_base, *, args=""):
         """Does math.
 
+        Has access to some basic math functions such as
+        comb, factorial, gcd, log, perm, cos, sin, tan
+        and constants like pi, e, tau.
+
         num_base: str
             The base you want to calculate in.
             Can be hex, oct, bin and for decimal ignore this argument

@@ -1,4 +1,5 @@
 import ast
+import math
 
 
 def add(a, b):
@@ -45,6 +46,24 @@ def xor(a, b):
     return a ^ b
 
 
+def safe_comb(n, k):
+    if n > 10000:
+        raise ValueError("Too large to calculate")
+    return math.comb(n, k)
+
+
+def safe_factorial(x):
+    if x > 5000:
+        raise ValueError("Too large to calculate")
+    return math.factorial(x)
+
+
+def safe_perm(n, k=None):
+    if n > 5000:
+        raise ValueError("Too large to calculate")
+    return math.perm(n, k)
+
+
 OPERATIONS = {
     ast.Add: add,
     ast.Sub: sub,
@@ -58,6 +77,31 @@ OPERATIONS = {
     ast.BitOr: or_,
     ast.BitAnd: and_,
     ast.BitXor: xor,
+}
+
+CONSTANTS = {
+    "pi": math.pi,
+    "e": math.e,
+    "tau": math.tau,
+}
+
+FUNCTIONS = {
+    "ceil": math.ceil,
+    "comb": safe_comb,
+    "fact": safe_factorial,
+    "gcd": math.gcd,
+    "lcm": math.lcm,
+    "perm": safe_perm,
+    "log": math.log,
+    "log2": math.log2,
+    "log10": math.log10,
+    "sqrt": math.sqrt,
+    "acos": math.acos,
+    "asin": math.asin,
+    "atan": math.atan,
+    "cos": math.cos,
+    "sin": math.sin,
+    "tan": math.tan,
 }
 
 
@@ -116,5 +160,11 @@ def safe_eval(node):
         if isinstance(node.op, ast.Pow) and len(str(left)) * right > 1000:
             raise ValueError("Too large to calculate")
         return OPERATIONS[node.op.__class__](left, right)
+
+    if isinstance(node, ast.Name):
+        return CONSTANTS[node.id]
+
+    if isinstance(node, ast.Call):
+        return FUNCTIONS[node.func.id](*[safe_eval(arg) for arg in node.args])
 
     raise ValueError("Calculation failed")
