@@ -1178,6 +1178,21 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
             ]
         )
 
+    async def text_command(self):
+        context = helpers.MockContext(
+            message=helpers.MockMessage(
+                attachments=[
+                    helpers.MockAttachment(url="https://i.imgur.com/coOVCIf.png")
+                ]
+            )
+        )
+
+        await self.cog.text(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
     async def format_command(self):
         context = helpers.MockContext()
 
@@ -1312,14 +1327,14 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(
             context.send.call_args.kwargs["embed"].description,
-            "```ml\nsin(10) ** 10\n\n0\n\nDecimal: 0.0022706883377346374```",
+            "```ml\nsin(10) ** 10 \n\n0\n\nDecimal: 0.0022706883377346374```",
         )
 
         await self.cog.calc(self.cog, context, "fact(10) ** pi")
 
         self.assertEqual(
             context.send.call_args.kwargs["embed"].description,
-            "```ml\nfact(10) ** pi\n\n405605049829938429952"
+            "```ml\nfact(10) ** pi \n\n405605049829938429952"
             "\n\nDecimal: 4.056050498299384e+20```",
         )
 
