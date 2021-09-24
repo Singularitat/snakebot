@@ -344,6 +344,11 @@ attachment_instance = discord.Attachment(
 class MockAttachment(CustomMockMixin, unittest.mock.MagicMock):
     spec_set = attachment_instance
 
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        if "url" in kwargs:
+            self.url = kwargs["url"]
+
 
 class MockMessage(CustomMockMixin, unittest.mock.MagicMock):
     spec_set = message_instance
