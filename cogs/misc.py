@@ -22,6 +22,50 @@ class misc(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
+    @commands.group()
+    async def euler(self, ctx):
+        """Gets a project euler problem based off its id.
+
+        problem: int
+        """
+        if not ctx.invoked_subcommand:
+            problem = ctx.subcommand_passed
+            url = f"https://projecteuler.net/minimal={problem}"
+            async with self.bot.client_session.get(url) as page:
+                content = re.sub("<[^<]+?>", "", (await page.text()))
+
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title=f"Project Euler Problem {problem}",
+                    description=f"```prolog\n{content.replace('$', '')}```",
+                )
+            )
+
+    @euler.command()
+    async def solution(self, ctx, problem: int):
+        """Gets a solution to a project euler problem in python.
+
+        problem: int
+        """
+        url = (
+            "https://raw.githubusercontent.com/TheAlgorithms/Python"
+            f"/master/project_euler/problem_{problem:0>3}/sol1.py"
+        )
+
+        async with self.bot.client_session.get(url) as page:
+            content = await page.text()
+
+        content = re.sub(r"\"\"\"[^\"\"\"]+\"\"\"", "", content)
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                title=f"Project Euler Problem {problem} Solution",
+                description=f"```py\n{content}```",
+            )
+        )
+
     @commands.command()
     async def rate(self, ctx, user: discord.User = None):
         """Rates users out of 100.
@@ -582,7 +626,7 @@ class misc(commands.Cog):
         embed.description = f"```diff\n{user.display_name}'s karma:\n{tenary}{karma}```"
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["kboard", "karmab", "karmatop"])
+    @commands.command(aliases=["kboard", "ktop", "karmatop"])
     async def karmaboard(self, ctx):
         """Displays the top 5 and bottom 5 members karma."""
         sorted_karma = sorted(
