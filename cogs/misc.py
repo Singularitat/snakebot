@@ -23,6 +23,24 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def euler(self, ctx, id: int):
+        """Gets a project euler problem based off its id.
+
+        id: int
+        """
+        url = f"https://projecteuler.net/minimal={id}"
+        async with self.bot.client_session.get(url) as page:
+            content = re.sub("<[^<]+?>", "", (await page.text()))
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                title=f"Project Euler Problem {id}",
+                description=f"```prolog\n{content.replace('$', '')}```",
+            )
+        )
+
+    @commands.command()
     async def rate(self, ctx, user: discord.User = None):
         """Rates users out of 100.
 
