@@ -4,6 +4,7 @@ import re
 import time
 import urllib
 from zlib import compress
+import secrets
 
 from discord.ext import commands, menus
 import discord
@@ -70,6 +71,113 @@ class useful(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
         self.loop = bot.loop
+
+    @commands.command()
+    async def tempmail(self, ctx):
+        """Creates a random tempmail account for you."""
+        url = "https://api.mail.tm/accounts"
+        password = secrets.token_urlsafe()
+        account = {
+            "address": f"{secrets.token_urlsafe(16)}@uniromax.com",
+            "password": password,
+        }
+
+        async with self.bot.client_session.post(url, json=account) as resp:
+            data = await resp.json()
+
+        embed = discord.Embed(
+            color=discord.Color.blurple(),
+            title="Temp Mail Created",
+        )
+        embed.add_field(
+            name="Email Address", value=f"```yaml\n{data['address']}```", inline=False
+        )
+        embed.add_field(name="Password", value=f"```yaml\n{password}```", inline=False)
+        embed.set_footer(text="Account is deleted when you make a new one")
+
+        await ctx.author.send(embed=embed)
+
+        async with self.bot.client_session.post(
+            "https://api.mail.tm/token",
+            json={"address": data["address"], "password": password},
+        ) as resp:
+            token = (await resp.json())["token"]
+            account["token"] = token
+
+        key = f"tempmail-{ctx.author.id}".encode()
+        old_account = self.DB.main.get(key)
+        if old_account:
+            old_account = orjson.loads(old_account)
+
+            await self.bot.client_session.delete(
+                f"https://api.mail.tm/accounts/{old_account['id']}",
+                data={"id": old_account["id"]},
+                headers={"Authorization": f"Bearer {old_account['token']}"},
+            )
+
+        account["id"] = data["id"]
+        self.DB.main.put(key, orjson.dumps(account))
+
+    @commands.command()
+    async def tempmessages(self, ctx):
+        """Gets the messages on your tempmail account if you have one."""
+        url = "https://api.mail.tm/messages"
+        key = f"tempmail-{ctx.author.id}".encode()
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        acount = self.DB.main.get(key)
+        if not acount:
+            embed.description = (
+                "You don't have a tempmail account do `.tempmail` to create one"
+            )
+            return await ctx.send(embed=embed)
+
+        acount = orjson.loads(acount)
+
+        async with self.bot.client_session.get(
+            url, headers={"Authorization": f"Bearer {acount['token']}"}
+        ) as resp:
+            messages = await resp.json()
+
+        if not messages["hydra:totalItems"]:
+            embed.description = "```You haven't received any messages```"
+            return await ctx.send(embed=embed)
+
+        for message in messages["hydra:member"]:
+            embed.add_field(
+                name=f"{message['from']['name']} [{message['from']['address']}]",
+                value=f"```Id: {message['id']}\nSubject: {message['subject']}\n\n{message['intro']}```",
+                inline=False,
+            )
+
+        embed.set_footer(text="Use .tempmessage [ID] to get the full message")
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def tempmessage(self, ctx, id):
+        """Gets a tempmail message by its id.
+
+        id: str
+        """
+        url = f"https://api.mail.tm/messages/{id}"
+        key = f"tempmail-{ctx.author.id}".encode()
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        acount = self.DB.main.get(key)
+        if not acount:
+            embed.description = (
+                "You don't have a tempmail account do `.tempmail` to create one"
+            )
+            return await ctx.send(embed=embed)
+
+        acount = orjson.loads(acount)
+
+        async with self.bot.client_session.get(
+            url, headers={"Authorization": f"Bearer {acount['token']}"}
+        ) as resp:
+            message = await resp.json()
+
+        await ctx.send(file=discord.File(StringIO(message["text"]), "email.txt"))
 
     @commands.command()
     async def text(self, ctx):
