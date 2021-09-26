@@ -119,6 +119,41 @@ class useful(commands.Cog):
         self.DB.main.put(key, orjson.dumps(account))
 
     @commands.command()
+    async def tempmessages(self, ctx):
+        """Gets the messages on your tempmail account if you have one."""
+        url = "https://api.mail.tm/messages"
+        key = f"tempmail-{ctx.author.id}".encode()
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        acount = self.DB.main.get(key)
+        if not acount:
+            embed.description = (
+                "You don't have a tempmail account do `.tempmail` to create one"
+            )
+            return await ctx.send(embed=embed)
+
+        acount = orjson.loads(acount)
+
+        async with self.bot.client_session.get(
+            url, headers={"Authorization": f"Bearer {acount['token']}"}
+        ) as resp:
+            messages = await resp.json()
+
+        if not messages["hydra:totalItems"]:
+            embed.description = "```You haven't received any messages```"
+            return await ctx.send(embed=embed)
+
+        for message in messages["hydra:member"]:
+            embed.add_field(
+                name=f"{message['from']['name']} [{message['from']['address']}]",
+                value=f"```Id: {message['id']}\nSubject: {message['subject']}\n\n{message['intro']}```",
+                inline=False,
+            )
+
+        embed.set_footer(text="Use .tempmessage [ID] to get the full message")
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def text(self, ctx):
         """Extracts the text out of an image that you attach."""
         embed = discord.Embed(color=discord.Color.blurple())
