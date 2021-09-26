@@ -154,6 +154,32 @@ class useful(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
+    async def tempmessage(self, ctx, id):
+        """Gets a tempmail message by its id.
+
+        id: str
+        """
+        url = f"https://api.mail.tm/messages/{id}"
+        key = f"tempmail-{ctx.author.id}".encode()
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        acount = self.DB.main.get(key)
+        if not acount:
+            embed.description = (
+                "You don't have a tempmail account do `.tempmail` to create one"
+            )
+            return await ctx.send(embed=embed)
+
+        acount = orjson.loads(acount)
+
+        async with self.bot.client_session.get(
+            url, headers={"Authorization": f"Bearer {acount['token']}"}
+        ) as resp:
+            message = await resp.json()
+
+        await ctx.send(file=discord.File(StringIO(message["text"]), "email.txt"))
+
+    @commands.command()
     async def text(self, ctx):
         """Extracts the text out of an image that you attach."""
         embed = discord.Embed(color=discord.Color.blurple())
