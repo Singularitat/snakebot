@@ -343,13 +343,15 @@ class misc(commands.Cog):
         [Home Page](https://notes.joewuthrich.com)
 
         [Compsci 101](https://notes.joewuthrich.com/compsci101)
-        Introduction to programming using the python programming language.
+        Introduction to programming using the Python programming language.
         [Compsci 110](https://notes.joewuthrich.com/compsci110)
         This course explains how computers work and some of the things we can use them for.
         [Compsci 120](https://notes.joewuthrich.com/compsci120)
         Introduces basic mathematical tools and methods needed for computer science.
         [Compsci 130](https://notes.joewuthrich.com/compsci130)
-        Entry course to Computer Science for students with prior programming knowledge.
+        Entry course to Computer Science for students with prior programming knowledge in Python.
+        [Compsci 225](https://notes.joewuthrich.com/compsci225)
+        Discrete Structures in Mathematics and Computer Science.
         """
         await ctx.send(embed=embed)
 
