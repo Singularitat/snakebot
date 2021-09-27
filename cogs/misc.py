@@ -22,28 +22,8 @@ class misc(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
-    @commands.group()
-    async def euler(self, ctx):
-        """Gets a project euler problem based off its id.
-
-        problem: int
-        """
-        if not ctx.invoked_subcommand:
-            problem = ctx.subcommand_passed
-            url = f"https://projecteuler.net/minimal={problem}"
-            async with self.bot.client_session.get(url) as page:
-                content = re.sub("<[^<]+?>", "", (await page.text()))
-
-            await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    title=f"Project Euler Problem {problem}",
-                    description=f"```prolog\n{content.replace('$', '')}```",
-                )
-            )
-
-    @euler.command()
-    async def solution(self, ctx, problem: int):
+    @commands.command()
+    async def euler(self, ctx, problem: int):
         """Gets a solution to a project euler problem in python.
 
         problem: int
