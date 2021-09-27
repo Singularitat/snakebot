@@ -8,6 +8,7 @@ from discord.ext import commands
 import aiohttp
 import discord
 import lxml.html
+import orjson
 
 import config
 
@@ -21,6 +22,17 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.DB = bot.DB
+
+    @commands.command()
+    async def justin(self, ctx):
+        """Gets a random message from justin."""
+        messages = orjson.loads(self.DB.main.get(b"justins-messages"))
+
+        embed = discord.Embed(
+            color=discord.Color.blurple(), description=random.choice(messages)
+        )
+        embed.set_footer(text="― Justin")
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def euler(self, ctx, problem: int):
@@ -344,12 +356,16 @@ class misc(commands.Cog):
 
         [Compsci 101](https://notes.joewuthrich.com/compsci101)
         Introduction to programming using the Python programming language.
+
         [Compsci 110](https://notes.joewuthrich.com/compsci110)
         This course explains how computers work and some of the things we can use them for.
+
         [Compsci 120](https://notes.joewuthrich.com/compsci120)
         Introduces basic mathematical tools and methods needed for computer science.
+
         [Compsci 130](https://notes.joewuthrich.com/compsci130)
         Entry course to Computer Science for students with prior programming knowledge in Python.
+
         [Compsci 225](https://notes.joewuthrich.com/compsci225)
         Discrete Structures in Mathematics and Computer Science.
         """
