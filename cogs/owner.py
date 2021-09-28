@@ -141,20 +141,25 @@ class owner(commands.Cog):
             )
 
     @db.command()
-    async def put(self, ctx, key, *, value):
+    async def put(self, ctx, key, *, value=None):
         """Puts a value in the database
 
         key: str
         value: str
         """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not value:
+            if not ctx.message.attachments:
+                embed.description = "```You need to attach a file or input a value.```"
+                return await ctx.send(embed=embed)
+
+            value = ctx.message.attachments[0].read().decode()
+
         self.DB.main.put(key.encode(), value.encode())
 
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```Put {value} at {key}```",
-            )
-        )
+        embed.description = f"```Put {value} at {key}```"
+        await ctx.send(embed=embed)
 
     @db.command(name="delete", aliases=["del"])
     async def db_delete(self, ctx, key):

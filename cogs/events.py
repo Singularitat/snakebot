@@ -372,9 +372,10 @@ class events(commands.Cog):
             self.DB.message_count.put(key, str(count).encode())
 
             if key == b"815732601302155275-190747796452671488":
-                messages = orjson.loads(self.DB.main.get(b"justins-messages"))
-                messages.append(message.content)
-                self.DB.main.put(b"justins-messages", orjson.dumps(messages))
+                if message.content and not message.content.startswith("."):
+                    messages = orjson.loads(self.DB.main.get(b"justins-messages"))
+                    messages.append(message.content)
+                    self.DB.main.put(b"justins-messages", orjson.dumps(messages))
         else:
             guild = None
 
