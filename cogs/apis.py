@@ -150,7 +150,9 @@ class apis(commands.Cog):
             data = data[0]
 
             embed.set_author(name=data["name"]["common"], icon_url=data["flags"][-1])
-            embed.add_field(name="Capital", value=data.get("capital", ["No Capital"])[0])
+            embed.add_field(
+                name="Capital", value=data.get("capital", ["No Capital"])[0]
+            )
             embed.add_field(name="Demonym", value=data["demonyms"]["eng"]["m"])
             embed.add_field(name="Continent", value=data["region"])
             embed.add_field(
