@@ -19,6 +19,14 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def insult(self, ctx):
+        """Insults you."""
+        url = "https://evilinsult.com/generate_insult.php?lang=en&type=json"
+        data = await self.bot.get_json(url)
+
+        await ctx.send(data["insult"])
+
+    @commands.command()
     async def inspiro(self, ctx):
         """Gets images from inspirobot.me an ai quote generator."""
         url = "https://inspirobot.me/api?generate=true"
