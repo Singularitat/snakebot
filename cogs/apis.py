@@ -137,7 +137,7 @@ class apis(commands.Cog):
 
         name: str
         """
-        url = f"https://restcountries.com/v2/name/{name}"
+        url = f"https://restcountries.com/v3.1/name/{name}"
         embed = discord.Embed(color=discord.Color.blurple())
 
         async with ctx.typing():
@@ -149,16 +149,15 @@ class apis(commands.Cog):
 
             data = data[0]
 
-            embed.set_author(name=data["name"], icon_url=data["flags"][-1])
-            embed.add_field(name="Capital", value=data.get("capital", "No Capital"))
-            embed.add_field(name="Demonym", value=data["demonym"])
-            embed.add_field(name="Continent", value=data["continent"])
-            embed.add_field(name="Population", value=f"{data['population']:,}")
+            embed.set_author(name=data["name"]["common"], icon_url=data["flags"][-1])
+            embed.add_field(name="Capital", value=data.get("capital", ["No Capital"])[0])
+            embed.add_field(name="Demonym", value=data["demonyms"]["eng"]["m"])
+            embed.add_field(name="Continent", value=data["region"])
             embed.add_field(
                 name="Total Area",
                 value=f"{data['area']:,.0f}km²" if "area" in data else "NaN",
             )
-            embed.add_field(name="TLD(s)", value=", ".join(data["topLevelDomain"]))
+            embed.add_field(name="TLD(s)", value=", ".join(data["tld"]))
 
         await ctx.send(embed=embed)
 
