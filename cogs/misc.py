@@ -70,7 +70,8 @@ class misc(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
-                    description=f"```No character found for {character}```",
+                    description=f"```No character found for {character}"
+                    f"\n\nOptions: {', '.join(CHARACTERS)}```",
                 )
             )
 
