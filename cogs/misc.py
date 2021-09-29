@@ -48,7 +48,8 @@ class misc(commands.Cog):
         async with self.bot.client_session.get(url) as page:
             content = await page.text()
 
-        content = re.sub(r"\"\"\"[^\"\"\"]+\"\"\"", "", content)
+        content = re.sub(r'"""[\w\W]*?"""', "", content)
+        content = re.sub(r'\n\ \ \ \ \n', "", content)
 
         await ctx.send(
             embed=discord.Embed(
