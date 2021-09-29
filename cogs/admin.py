@@ -21,6 +21,11 @@ class admin(commands.Cog):
         return ctx.author.guild_permissions.administrator
 
     @commands.command()
+    async def unsnipe(self, ctx):
+        """Unsnipes the last deleted message."""
+        self.DB.main.delete(f"{ctx.guild.id}-snipe_message".encode())
+
+    @commands.command()
     async def sudoin(self, ctx, channel: discord.TextChannel, *, command: str):
         """Runs a command in another channel.
 
