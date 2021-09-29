@@ -1,4 +1,4 @@
-from io import StringIO
+import io
 import difflib
 import opcode
 import random
@@ -13,6 +13,32 @@ import orjson
 import config
 
 
+CHARACTERS = (
+    "Miss Pauling",
+    "Scout",
+    "Soldier",
+    "Demoman",
+    "Heavy",
+    "Engineer",
+    "Medic",
+    "Sniper",
+    "Spy",
+    "Stanley",
+    "The Narrator",
+    "Steven Universe",
+    "Rise Kujikawa",
+    "SpongeBob SquarePants",
+    "Dan",
+)
+
+ALT_NAMES = {
+    "Pauling": "Miss Pauling",
+    "Narrator": "The Narrator",
+    "Steven": "Steven Universe",
+    "Rise": "Rise Kujikawa",
+    "SpongeBob": "SpongeBob SquarePants",
+}
+
 opcodes = opcode.opmap
 
 
@@ -22,6 +48,59 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.DB = bot.DB
+
+    @commands.command()
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def tts(self, ctx, character=None, *, text=None):
+        """Uses 15.ai to convert text to an audio file."""
+        if not character or not text:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```.tts [character] [text]"
+                    f"\n\nOptions: {', '.join(CHARACTERS)}\n\n"
+                    "Use quotes around characters with a space```",
+                )
+            )
+
+        character = character.title()
+        character = ALT_NAMES.get(character, character)
+
+        if character not in CHARACTERS:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"```No character found for {character}```",
+                )
+            )
+
+        if length := len(text) > 200:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"```Text must be shorter than 200 charcters[{length}]```",
+                )
+            )
+
+        url = "https://api.15.ai/app/getAudioFile4"
+        data = {
+            "character": character,
+            "emotion": "Contextual",
+            "text": text,
+        }
+        files = []
+
+        async with ctx.typing():
+            resp = await self.bot.client_session.post(url, json=data)
+            data = await resp.json(content_type=None)
+
+            for audiofile in data["wavNames"]:
+                audio = await self.bot.client_session.get(
+                    f"https://cdn.15.ai/audio/{audiofile}"
+                )
+                files.append(discord.File(io.BytesIO(await audio.read()), audiofile))
+
+        await ctx.send(files=files)
 
     @commands.command()
     async def justin(self, ctx):
@@ -49,7 +128,7 @@ class misc(commands.Cog):
             content = await page.text()
 
         content = re.sub(r'"""[\w\W]*?"""', "", content)
-        content = re.sub(r'\n\ \ \ \ \n', "", content)
+        content = re.sub(r"\n\ \ \ \ \n", "", content)
 
         await ctx.send(
             embed=discord.Embed(
@@ -139,7 +218,7 @@ class misc(commands.Cog):
         )
 
         if len(json) > 2000:
-            return await ctx.send(file=discord.File(StringIO(json), "embed.json"))
+            return await ctx.send(file=discord.File(io.StringIO(json), "embed.json"))
 
         embed.description = f"```json\n{json}```"
         await ctx.send(embed=embed)
@@ -777,7 +856,7 @@ class misc(commands.Cog):
         bar_graph += "------" * len(graph_data)
 
         if len(graph_data) * 6 * (max_val + 2) + max_val + 7 > 2000:
-            return await ctx.send(file=discord.File(StringIO(bar_graph), "bar.txt"))
+            return await ctx.send(file=discord.File(io.StringIO(bar_graph), "bar.txt"))
 
         await ctx.send(f"```\n{bar_graph}```")
 
