@@ -20,6 +20,23 @@ class admin(commands.Cog):
             return ctx.author.id in self.bot.owner_ids
         return ctx.author.guild_permissions.administrator
 
+    @commands.command()
+    async def unsnipe(self, ctx):
+        """Unsnipes the last deleted message."""
+        self.DB.main.delete(f"{ctx.guild.id}-snipe_message".encode())
+
+    @commands.command()
+    async def sudoin(self, ctx, channel: discord.TextChannel, *, command: str):
+        """Runs a command in another channel.
+
+        channel: discord.TextChannel
+        command: str
+        """
+        ctx.message.channel = channel
+        ctx.message.content = f"{ctx.prefix}{command}"
+        new_ctx = await self.bot.get_context(ctx.message, cls=type(ctx))
+        await self.bot.invoke(new_ctx)
+
     @commands.command(name="removereact")
     async def remove_reaction(self, ctx, message: discord.Message, reaction):
         """Removes a reaction from a message.
