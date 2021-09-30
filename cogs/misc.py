@@ -36,8 +36,11 @@ ALT_NAMES = {
     "Narrator": "The Narrator",
     "Steven": "Steven Universe",
     "Rise": "Rise Kujikawa",
-    "SpongeBob": "SpongeBob SquarePants",
+    "Spongebob": "SpongeBob SquarePants",
+    "Spongebob Squarepants": "SpongeBob SquarePants",
 }
+
+NUM_REGEX = re.compile(r"\d")
 
 opcodes = opcode.opmap
 
@@ -50,9 +53,18 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
+    @commands.cooldown(1, 30, commands.BucketType.user)
     async def tts(self, ctx, character=None, *, text=None):
         """Uses 15.ai to convert text to an audio file."""
+        if re.search(NUM_REGEX, text):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```Text cannot include numbers "
+                    "spell out the numbers instead```",
+                )
+            )
+
         if not character or not text:
             return await ctx.send(
                 embed=discord.Embed(
@@ -75,25 +87,42 @@ class misc(commands.Cog):
                 )
             )
 
-        if length := len(text) > 200:
+        if (length := len(text)) > 200:
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
-                    description=f"```Text must be shorter than 200 charcters[{length}]```",
+                    description=f"```Text must be longer than 4 characters "
+                    f"and shorter than 200 charcters[{length}]```",
                 )
             )
 
-        url = "https://api.15.ai/app/getAudioFile4"
+        url = "https://api.15.ai/app/getAudioFile5"
         data = {
             "character": character,
             "emotion": "Contextual",
-            "text": text,
+            "text": text + "." if text[-1] not in [".", "!"] else "",
         }
         files = []
 
         async with ctx.typing():
-            resp = await self.bot.client_session.post(url, json=data)
+            resp = await self.bot.client_session.post(url, json=data, timeout=60)
+            if resp.status != 404:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description=f"```Api cannot be reached [{resp.status}]```",
+                    )
+                )
             data = await resp.json(content_type=None)
+
+            if "wavNames" not in data:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description=f"```Failed to process request"
+                        f" [{data['message']}]```",
+                    )
+                )
 
             for audiofile in data["wavNames"]:
                 audio = await self.bot.client_session.get(
