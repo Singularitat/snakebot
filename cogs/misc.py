@@ -10,8 +10,6 @@ import discord
 import lxml.html
 import orjson
 
-import config
-
 
 CHARACTERS = (
     "Miss Pauling",
@@ -36,8 +34,11 @@ ALT_NAMES = {
     "Narrator": "The Narrator",
     "Steven": "Steven Universe",
     "Rise": "Rise Kujikawa",
-    "SpongeBob": "SpongeBob SquarePants",
+    "Spongebob": "SpongeBob SquarePants",
+    "Spongebob Squarepants": "SpongeBob SquarePants",
 }
+
+NUM_REGEX = re.compile(r"\d")
 
 opcodes = opcode.opmap
 
@@ -50,9 +51,18 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
+    @commands.cooldown(1, 30, commands.BucketType.user)
     async def tts(self, ctx, character=None, *, text=None):
         """Uses 15.ai to convert text to an audio file."""
+        if re.search(NUM_REGEX, text):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```Text cannot include numbers "
+                    "spell out the numbers instead```",
+                )
+            )
+
         if not character or not text:
             return await ctx.send(
                 embed=discord.Embed(
@@ -75,25 +85,42 @@ class misc(commands.Cog):
                 )
             )
 
-        if length := len(text) > 200:
+        if (length := len(text)) > 200:
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
-                    description=f"```Text must be shorter than 200 charcters[{length}]```",
+                    description=f"```Text must be longer than 4 characters "
+                    f"and shorter than 200 charcters[{length}]```",
                 )
             )
 
-        url = "https://api.15.ai/app/getAudioFile4"
+        url = "https://api.15.ai/app/getAudioFile5"
         data = {
             "character": character,
             "emotion": "Contextual",
-            "text": text,
+            "text": text + "." if text[-1] not in [".", "!"] else "",
         }
         files = []
 
         async with ctx.typing():
-            resp = await self.bot.client_session.post(url, json=data)
+            resp = await self.bot.client_session.post(url, json=data, timeout=60)
+            if resp.status != 404:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description=f"```Api cannot be reached [{resp.status}]```",
+                    )
+                )
             data = await resp.json(content_type=None)
+
+            if "wavNames" not in data:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description=f"```Failed to process request"
+                        f" [{data['message']}]```",
+                    )
+                )
 
             for audiofile in data["wavNames"]:
                 audio = await self.bot.client_session.get(
@@ -577,7 +604,9 @@ class misc(commands.Cog):
     @commands.guild_only()
     async def youtube(self, ctx):
         """Starts a YouTube Together."""
-        if (code := self.DB.main.get(b"youtube_together")) and discord.utils.get(
+        key = f"{ctx.guild.id}-youtube_together".encode()
+
+        if (code := self.DB.main.get(key)) and discord.utils.get(
             await ctx.guild.invites(), code=code.decode()
         ):
             return await ctx.send(
@@ -588,30 +617,7 @@ class misc(commands.Cog):
                 )
             )
 
-        if not ctx.author.voice:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```You aren't connected to a voice channel.```",
-                )
-            )
-
-        headers = {"Authorization": f"Bot {config.token}"}
-        json = {
-            "max_age": 300,
-            "target_type": 2,
-            "target_application_id": 755600276941176913,
-        }
-
-        async with self.bot.client_session.post(
-            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
-            json=json,
-            headers=headers,
-        ) as response:
-            data = await response.json()
-
-        await ctx.send(f"https://discord.gg/{data['code']}")
-        self.DB.main.put(b"youtube_together", data["code"].encode())
+        self.bot.game_invite(755600276941176913, ctx, key)
 
     @commands.command(name="8ball")
     async def eightball(self, ctx):
