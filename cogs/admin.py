@@ -35,6 +35,7 @@ class admin(commands.Cog):
         ctx.message.channel = channel
         ctx.message.content = f"{ctx.prefix}{command}"
         new_ctx = await self.bot.get_context(ctx.message, cls=type(ctx))
+        new_ctx.reply = new_ctx.send  # Can't reply to messages in other channels
         await self.bot.invoke(new_ctx)
 
     @commands.command(name="removereact")

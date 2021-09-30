@@ -75,6 +75,7 @@ class owner(commands.Cog):
         """
         ctx.message.content = f"{ctx.prefix}{command}"
         new_ctx = await self.bot.get_context(ctx.message, cls=type(ctx))
+        new_ctx.reply = new_ctx.send  # Reply ignores the PerformanceMocker
 
         new_ctx._state = PerformanceMocker()
         new_ctx.channel = PerformanceMocker()
@@ -545,6 +546,7 @@ class owner(commands.Cog):
         """
         ctx.message.content = f"{ctx.prefix}{command}"
         new_ctx = await self.bot.get_context(ctx.message, cls=type(ctx))
+        new_ctx.reply = new_ctx.send  # Reply ignores the PerformanceMocker
 
         # Intercepts the Messageable interface a bit
         new_ctx._state = PerformanceMocker()
@@ -605,6 +607,7 @@ class owner(commands.Cog):
         ctx.message.author = member
         ctx.message.content = f"{ctx.prefix}{command}"
         new_ctx = await self.bot.get_context(ctx.message, cls=type(ctx))
+        new_ctx.reply = new_ctx.send  # Can't reply to messages in other channels
         await self.bot.invoke(new_ctx)
 
     @commands.command()
