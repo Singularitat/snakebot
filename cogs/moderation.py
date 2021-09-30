@@ -26,7 +26,7 @@ class moderation(commands.Cog):
         self.DB = bot.DB
         self.loop = bot.loop
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def inactive(self, ctx, days: int = 7):
         """Gets how many people can be pruned.
 

@@ -595,7 +595,7 @@ class owner(commands.Cog):
         """Run a command as another user in another channel.
 
         channel: discord.TextChannel
-            The channel to run the command.
+            The channel to run the command in.
         member: discord.Member
             The member to run the command as.
         command: str
