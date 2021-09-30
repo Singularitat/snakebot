@@ -320,6 +320,45 @@ class games(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def word(self, ctx):
+        """Starts a game of Word Snacks."""
+        if (code := self.DB.main.get(b"snacks")) and discord.utils.get(
+            await ctx.guild.invites(), code=code.decode()
+        ):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="There is another active Word Snacks game",
+                    description=f"https://discord.gg/{code.decode()}",
+                )
+            )
+
+        if not ctx.author.voice:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You aren't connected to a voice channel.```",
+                )
+            )
+
+        headers = {"Authorization": f"Bot {config.token}"}
+        json = {
+            "max_age": 300,
+            "target_type": 2,
+            "target_application_id": 879863976006127627,
+        }
+
+        async with self.bot.client_session.post(
+            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
+            json=json,
+            headers=headers,
+        ) as response:
+            data = await response.json()
+
+        await ctx.send(f"https://discord.gg/{data['code']}")
+        self.DB.main.put(b"snacks", data["code"].encode())
+
+    @commands.command()
     async def scrabble(self, ctx):
         """Starts a game of Letter Tile."""
         if (code := self.DB.main.get(b"tile")) and discord.utils.get(
