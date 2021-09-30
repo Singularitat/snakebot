@@ -10,8 +10,6 @@ import discord
 import lxml.html
 import orjson
 
-import config
-
 
 CHARACTERS = (
     "Miss Pauling",
@@ -606,7 +604,9 @@ class misc(commands.Cog):
     @commands.guild_only()
     async def youtube(self, ctx):
         """Starts a YouTube Together."""
-        if (code := self.DB.main.get(b"youtube_together")) and discord.utils.get(
+        key = f"{ctx.guild.id}-youtube_together".encode()
+
+        if (code := self.DB.main.get(key)) and discord.utils.get(
             await ctx.guild.invites(), code=code.decode()
         ):
             return await ctx.send(
@@ -617,30 +617,7 @@ class misc(commands.Cog):
                 )
             )
 
-        if not ctx.author.voice:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```You aren't connected to a voice channel.```",
-                )
-            )
-
-        headers = {"Authorization": f"Bot {config.token}"}
-        json = {
-            "max_age": 300,
-            "target_type": 2,
-            "target_application_id": 755600276941176913,
-        }
-
-        async with self.bot.client_session.post(
-            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
-            json=json,
-            headers=headers,
-        ) as response:
-            data = await response.json()
-
-        await ctx.send(f"https://discord.gg/{data['code']}")
-        self.DB.main.put(b"youtube_together", data["code"].encode())
+        self.bot.game_invite(755600276941176913, ctx, key)
 
     @commands.command(name="8ball")
     async def eightball(self, ctx):
