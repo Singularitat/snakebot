@@ -70,7 +70,7 @@ class CookieClickerButton(discord.ui.Button["CookieClicker"]):
                     / 0.15
                 )
             else:
-                cost = self.cost * 1.15 ** cookies[self.name]
+                cost = self.cost * 1.15 ** current
 
             if cookies["cookies"] < cost:
                 return await interaction.response.edit_message(
@@ -211,7 +211,7 @@ class CookieClicker(discord.ui.View):
                 cookies = orjson.loads(cookies)
 
             cookies["cookies"] += (
-                3 * (cookies["cps"] + 1)
+                10 * (cookies["cps"] + 1)
                 + (time.time() - cookies["start"]) * cookies["cps"]
             )
             cookies["start"] = time.time()
@@ -318,6 +318,45 @@ class games(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.DB = bot.DB
+
+    @commands.command()
+    async def doodle(self, ctx):
+        """Starts a game of Doodle Crew."""
+        if (code := self.DB.main.get(b"doodle")) and discord.utils.get(
+            await ctx.guild.invites(), code=code.decode()
+        ):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="There is another active Doodle Crew game",
+                    description=f"https://discord.gg/{code.decode()}",
+                )
+            )
+
+        if not ctx.author.voice:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You aren't connected to a voice channel.```",
+                )
+            )
+
+        headers = {"Authorization": f"Bot {config.token}"}
+        json = {
+            "max_age": 300,
+            "target_type": 2,
+            "target_application_id": 878067389634314250,
+        }
+
+        async with self.bot.client_session.post(
+            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
+            json=json,
+            headers=headers,
+        ) as response:
+            data = await response.json()
+
+        await ctx.send(f"https://discord.gg/{data['code']}")
+        self.DB.main.put(b"doodle", data["code"].encode())
 
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.command()
