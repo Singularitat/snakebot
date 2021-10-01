@@ -51,6 +51,30 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def synth(self, ctx, *, prompt: str):
+        """Completes a text promt using GPT-J 6B."""
+        url = "https://bellard.org/textsynth/api/v1/engines/gptj_6B/completions"
+
+        data = {
+            "prompt": prompt,
+            "seed": 0,
+            "stream": False,
+            "temperature": 1,
+            "top_k": 40,
+            "top_p": 0.9,
+        }
+
+        async with ctx.typing(), self.bot.client_session.post(url, json=data) as resp:
+            resp = await resp.json()
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```\n{prompt}{resp['text']}```",
+            )
+        )
+
+    @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def tts(self, ctx, character=None, *, text=None):
         """Uses 15.ai to convert text to an audio file."""
@@ -104,7 +128,7 @@ class misc(commands.Cog):
 
         async with ctx.typing():
             resp = await self.bot.client_session.post(url, json=data, timeout=60)
-            if resp.status != 404:
+            if resp.status != 200:
                 return await ctx.send(
                     embed=discord.Embed(
                         color=discord.Color.blurple(),
