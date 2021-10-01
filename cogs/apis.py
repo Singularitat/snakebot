@@ -132,7 +132,7 @@ class apis(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def country(self, ctx, *, name):
+    async def country(self, ctx, *, name="New Zealand"):
         """Show information about a given country.
 
         name: str
@@ -149,7 +149,7 @@ class apis(commands.Cog):
 
             data = data[0]
 
-            embed.set_author(name=data["name"]["common"], icon_url=data["flags"][-1])
+            embed.set_author(name=data["name"]["common"], icon_url=data["flags"]["png"])
             embed.add_field(
                 name="Capital", value=data.get("capital", ["No Capital"])[0]
             )
@@ -159,6 +159,7 @@ class apis(commands.Cog):
                 name="Total Area",
                 value=f"{data['area']:,.0f}km²" if "area" in data else "NaN",
             )
+            embed.add_field(name="Population", value=f"{data['population']:,}")
             embed.add_field(name="TLD(s)", value=", ".join(data["tld"]))
 
         await ctx.send(embed=embed)
@@ -896,7 +897,7 @@ class apis(commands.Cog):
         if cache_search in cache:
             defin = cache[cache_search].pop()
 
-            if len(cache[cache_search]) == 0:
+            if not cache[cache_search]:
                 cache.pop(cache_search)
         else:
             url = f"https://api.urbandictionary.com/v0/define?term={search}"
@@ -916,6 +917,8 @@ class apis(commands.Cog):
 
             defin = urban["list"].pop()
             cache[cache_search] = urban["list"]
+            self.DB.main.put(b"cache", orjson.dumps(cache))
+            self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
 
         embed.description = (
             "```diff\nDefinition of {}:\n"
@@ -929,8 +932,6 @@ class apis(commands.Cog):
             defin["thumbs_up"],
         )
 
-        self.DB.main.put(b"cache", orjson.dumps(cache))
-        self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -1116,7 +1117,7 @@ class apis(commands.Cog):
             url = random.choice(cache[cache_search])
             cache[cache_search].remove(url)
 
-            if len(cache[cache_search]) == 0:
+            if not cache[cache_search]:
                 cache.pop(cache_search)
 
             self.DB.main.put(b"cache", orjson.dumps(cache))

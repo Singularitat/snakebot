@@ -5,6 +5,8 @@ from discord.ext import commands
 import discord
 import orjson
 
+import config
+
 
 BIG_NUMS = (
     "",
@@ -317,59 +319,85 @@ class games(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
-    @commands.command()
-    async def word(self, ctx):
-        """Starts a game of Word Snacks."""
-        key = f"{ctx.guild.id}-snacks".encode()
+    async def game_invite(
+        self, game_id: int, ctx: commands.Context, key: bytes, msg: str
+    ):
+        """Creates an invite for a discord game interaction.
 
+        game_id: int
+            ID of the discord game interation.
+        ctx: commands.Contex
+            Context to send the invite link.
+        key: bytes
+            Key to put invite codes in the db.
+        msg: str
+            The message to send if there is another active game
+        """
         if (code := self.DB.main.get(key)) and discord.utils.get(
             await ctx.guild.invites(), code=code.decode()
         ):
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
-                    title="There is another active Word Snacks game",
+                    title=msg,
                     description=f"https://discord.gg/{code.decode()}",
                 )
             )
 
-        self.bot.game_invite(879863976006127627, ctx, key)
+        if not ctx.author.voice:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```You aren't connected to a voice channel.```",
+                )
+            )
+
+        headers = {"Authorization": f"Bot {config.token}"}
+        json = {
+            "max_age": 300,
+            "target_type": 2,
+            "target_application_id": game_id,
+        }
+
+        async with self.bot.client_session.post(
+            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
+            json=json,
+            headers=headers,
+        ) as response:
+            data = await response.json()
+
+        await ctx.send(f"https://discord.gg/{data['code']}")
+        self.DB.main.put(key, data["code"].encode())
+
+    @commands.command()
+    async def word(self, ctx):
+        """Starts a game of Word Snacks."""
+        await self.bot.game_invite(
+            879863976006127627,
+            ctx,
+            f"{ctx.guild.id}-snacks".encode(),
+            "There is another active Word Snacks game",
+        )
 
     @commands.command()
     async def scrabble(self, ctx):
         """Starts a game of Letter Tile."""
-        key = f"{ctx.guild.id}-tile".encode()
-
-        if (code := self.DB.main.get(key)) and discord.utils.get(
-            await ctx.guild.invites(), code=code.decode()
-        ):
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    title="There is another active Letter Tile game",
-                    description=f"https://discord.gg/{code.decode()}",
-                )
-            )
-
-        self.bot.game_invite(879863686565621790, ctx, key)
+        await self.bot.game_invite(
+            879863686565621790,
+            ctx,
+            f"{ctx.guild.id}-tile".encode(),
+            "There is another active Letter Tile game",
+        )
 
     @commands.command()
     async def doodle(self, ctx):
         """Starts a game of Doodle Crew."""
-        key = f"{ctx.guild.id}-doodle".encode()
-
-        if (code := self.DB.main.get(key)) and discord.utils.get(
-            await ctx.guild.invites(), code=code.decode()
-        ):
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    title="There is another active Doodle Crew game",
-                    description=f"https://discord.gg/{code.decode()}",
-                )
-            )
-
-        self.bot.game_invite(878067389634314250, ctx, key)
+        await self.bot.game_invite(
+            878067389634314250,
+            ctx,
+            f"{ctx.guild.id}-doodle".encode(),
+            "There is another active Doodle Crew game",
+        )
 
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.command()
@@ -564,77 +592,56 @@ class games(commands.Cog):
     @commands.guild_only()
     async def chess(self, ctx):
         """Starts a Chess In The Park game."""
-        key = f"{ctx.guild.id}-chess".encode()
-
-        if (code := self.DB.main.get(key)) and discord.utils.get(
-            await ctx.guild.invites(), code=code.decode()
-        ):
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    title="There is another active Chess In The Park game",
-                    description=f"https://discord.gg/{code.decode()}",
-                )
-            )
-
-        self.bot.game_invite(832012774040141894, ctx, key)
+        await self.bot.game_invite(
+            832012774040141894,
+            ctx,
+            f"{ctx.guild.id}-chess".encode(),
+            "There is another active Chess In The Park game",
+        )
 
     @commands.command()
     @commands.guild_only()
     async def poker(self, ctx):
         """Starts a Discord Poke Night."""
-        key = f"{ctx.guild.id}-poker_night".encode()
-
-        if (code := self.DB.main.get(key)) and discord.utils.get(
-            await ctx.guild.invites(), code=code.decode()
-        ):
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    title="There is another active Poker Night game",
-                    description=f"https://discord.gg/{code.decode()}",
-                )
-            )
-
-        self.bot.game_invite(755827207812677713, ctx, key)
+        await self.bot.game_invite(
+            755827207812677713,
+            ctx,
+            f"{ctx.guild.id}-poker_night".encode(),
+            "There is another active Poker Night game",
+        )
 
     @commands.command()
     @commands.guild_only()
     async def betrayal(self, ctx):
         """Starts a Betrayal.io game."""
-        key = f"{ctx.guild.id}-betrayal_io".encode()
-
-        if (code := self.DB.main.get(key)) and discord.utils.get(
-            await ctx.guild.invites(), code=code.decode()
-        ):
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    title="There is another active Betrayal.io game",
-                    description=f"https://discord.gg/{code.decode()}",
-                )
-            )
-
-        self.bot.game_invite(773336526917861400, ctx, key)
+        await self.bot.game_invite(
+            773336526917861400,
+            ctx,
+            f"{ctx.guild.id}-betrayal_io".encode(),
+            "There is another active Betrayal.io game",
+        )
 
     @commands.command()
     @commands.guild_only()
     async def fishing(self, ctx):
         """Starts a Fishington.io game."""
-        key = f"{ctx.guild.id}-fishington".encode()
+        await self.bot.game_invite(
+            814288819477020702,
+            ctx,
+            f"{ctx.guild.id}-fishington".encode(),
+            "There is another active Fishington.io game",
+        )
 
-        if (code := self.DB.main.get(key)) and discord.utils.get(
-            await ctx.guild.invites(), code=code.decode()
-        ):
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    title="There is another active Fishington.io game",
-                    description=f"https://discord.gg/{code.decode()}",
-                )
-            )
-
-        self.bot.game_invite(814288819477020702, ctx, key)
+    @commands.command()
+    @commands.guild_only()
+    async def youtube(self, ctx):
+        """Starts a YouTube Together."""
+        await self.bot.game_invite(
+            755600276941176913,
+            ctx,
+            f"{ctx.guild.id}-youtube_together".encode(),
+            "There is another active Youtube Together",
+        )
 
 
 def setup(bot: commands.Bot) -> None:

@@ -170,7 +170,7 @@ class events(commands.Cog):
             return
 
         time_since = (
-            datetime.utcnow() - reaction.message.created_at.replace(tzinfo=None)
+            discord.utils.utcnow() - reaction.message.created_at
         ).total_seconds()
 
         if time_since > 1800:
@@ -195,7 +195,7 @@ class events(commands.Cog):
             return
 
         time_since = (
-            datetime.utcnow() - reaction.message.created_at.replace(tzinfo=None)
+            discord.utils.utcnow() - reaction.message.created_at
         ).total_seconds()
 
         if time_since > 1800:

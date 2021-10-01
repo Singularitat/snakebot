@@ -154,12 +154,12 @@ class useful(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def tempmessage(self, ctx, id):
+    async def tempmessage(self, ctx, message_id):
         """Gets a tempmail message by its id.
 
         id: str
         """
-        url = f"https://api.mail.tm/messages/{id}"
+        url = f"https://api.mail.tm/messages/{message_id}"
         key = f"tempmail-{ctx.author.id}".encode()
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -663,7 +663,7 @@ class useful(commands.Cog):
                 )
             )
 
-        if len(ctx.message.attachments) == 0:
+        if not ctx.message.attachments:
             return await ctx.send(
                 "```You need to attach the emoji image to the message```"
             )
@@ -858,7 +858,7 @@ class useful(commands.Cog):
         cache = orjson.loads(self.DB.main.get(b"cache"))
 
         if search in cache:
-            if len(cache[search]) == 0:
+            if not cache[search]:
                 return {}
 
             url, title = random.choice(list(cache[search].items()))

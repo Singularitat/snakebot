@@ -51,6 +51,104 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def reddit(self, ctx, subreddit: str = "all"):
+        """Gets a random post from a subreddit.
+
+        subreddit: str
+        """
+        subreddit_cache = f"reddit-{subreddit}"
+        cache = orjson.loads(self.DB.main.get(b"cache"))
+
+        if subreddit_cache in cache:
+            post = random.choice(cache[subreddit_cache])
+            cache[subreddit_cache].remove(post)
+
+            if not cache[subreddit_cache]:
+                cache.pop(subreddit_cache)
+
+            self.DB.main.put(b"cache", orjson.dumps(cache))
+        else:
+            url = f"https://old.reddit.com/r/{subreddit}/hot/.json"
+            posts = (await self.bot.get_json(url))["data"]["children"]
+            post = random.choice(posts)
+
+            clean_posts = []
+
+            for post in posts:
+                if post["data"]["over_18"]:
+                    continue
+                post = post["data"]
+                clean_posts.append(
+                    {
+                        "title": post["title"],
+                        "video": post["secure_media"]["reddit_video"]["fallback_url"]
+                        if post["secure_media"]
+                        else None,
+                        "url": post["url"],
+                        "link": post["permalink"],
+                        "sub": post["subreddit_name_prefixed"],
+                    }
+                )
+
+            if not clean_posts:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description="Couldn't find any SFW posts",
+                    )
+                )
+
+            cache[subreddit_cache] = clean_posts
+            self.DB.main.put(b"cache", orjson.dumps(cache))
+            self.bot.loop.call_later(300, self.DB.delete_cache, subreddit_cache, cache)
+
+            post = random.choice(clean_posts)
+
+        if post["video"]:
+            return await ctx.send(
+                f"**{post['title']}**\n{post['sub']}\n{post['video']}"
+            )
+
+        if post["url"][-4:] in [".jpg", ".png"]:
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                title=post["title"],
+                description=f"{post['sub']} "
+                f"[Post](https://reddit.com{post['link']})",
+            )
+            embed.set_image(url=post["url"])
+            return await ctx.send(embed=embed)
+
+        await ctx.send(f"**{post['title']}**\n{post['sub']}\n{post['url']}")
+
+    @commands.cooldown(1, 15, commands.BucketType.user)
+    @commands.command()
+    async def synth(self, ctx, *, prompt: str):
+        """Completes a text promt using GPT-J 6B."""
+        url = "https://bellard.org/textsynth/api/v1/engines/gptj_6B/completions"
+
+        data = {
+            "prompt": prompt,
+            "seed": 0,
+            "stream": False,
+            "temperature": 1,
+            "top_k": 40,
+            "top_p": 0.9,
+        }
+
+        async with ctx.typing(), self.bot.client_session.post(
+            url, json=data, timeout=30
+        ) as resp:
+            resp = await resp.json()
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```\n{prompt}{resp['text']}```",
+            )
+        )
+
+    @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def tts(self, ctx, character=None, *, text=None):
         """Uses 15.ai to convert text to an audio file."""
@@ -104,7 +202,7 @@ class misc(commands.Cog):
 
         async with ctx.typing():
             resp = await self.bot.client_session.post(url, json=data, timeout=60)
-            if resp.status != 404:
+            if resp.status != 200:
                 return await ctx.send(
                     embed=discord.Embed(
                         color=discord.Color.blurple(),
@@ -599,25 +697,6 @@ class misc(commands.Cog):
             color=discord.Color.blurple(), description=f"```{results}```"
         )
         await ctx.send(embed=embed)
-
-    @commands.command()
-    @commands.guild_only()
-    async def youtube(self, ctx):
-        """Starts a YouTube Together."""
-        key = f"{ctx.guild.id}-youtube_together".encode()
-
-        if (code := self.DB.main.get(key)) and discord.utils.get(
-            await ctx.guild.invites(), code=code.decode()
-        ):
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    title="There is another active Youtube Together",
-                    description=f"https://discord.gg/{code.decode()}",
-                )
-            )
-
-        self.bot.game_invite(755600276941176913, ctx, key)
 
     @commands.command(name="8ball")
     async def eightball(self, ctx):
