@@ -624,25 +624,6 @@ class misc(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command()
-    @commands.guild_only()
-    async def youtube(self, ctx):
-        """Starts a YouTube Together."""
-        key = f"{ctx.guild.id}-youtube_together".encode()
-
-        if (code := self.DB.main.get(key)) and discord.utils.get(
-            await ctx.guild.invites(), code=code.decode()
-        ):
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    title="There is another active Youtube Together",
-                    description=f"https://discord.gg/{code.decode()}",
-                )
-            )
-
-        self.bot.game_invite(755600276941176913, ctx, key)
-
     @commands.command(name="8ball")
     async def eightball(self, ctx):
         """Seek advice or fortune-telling."""

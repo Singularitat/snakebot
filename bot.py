@@ -79,41 +79,6 @@ class Bot(commands.Bot):
         ):
             return None
 
-    async def game_invite(self, id: int, ctx: commands.Contex, key: bytes) -> None:
-        """Creates an invite for a discord game interaction.
-
-        id: int
-            ID of the discord game interation.
-        ctx: commands.Contex
-            Context to send the invite link.
-        key: bytes
-            Key to put invite codes in the db.
-        """
-        if not ctx.author.voice:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```You aren't connected to a voice channel.```",
-                )
-            )
-
-        headers = {"Authorization": f"Bot {config.token}"}
-        json = {
-            "max_age": 300,
-            "target_type": 2,
-            "target_application_id": id,
-        }
-
-        async with self.bot.client_session.post(
-            f"https://discord.com/api/v9/channels/{ctx.author.voice.channel.id}/invites",
-            json=json,
-            headers=headers,
-        ) as response:
-            data = await response.json()
-
-        await ctx.send(f"https://discord.gg/{data['code']}")
-        self.DB.main.put(key, data["code"].encode())
-
     async def close(self) -> None:
         """Close the Discord connection and the aiohttp session."""
         for ext in list(self.extensions):
