@@ -109,7 +109,7 @@ class misc(commands.Cog):
                 f"**{post['title']}**\n{post['sub']}\n{post['video']}"
             )
 
-        elif post["url"][-4:] in [".jpg", ".png"]:
+        if post["url"][-4:] in [".jpg", ".png"]:
             embed = discord.Embed(
                 color=discord.Color.blurple(),
                 title=post["title"],

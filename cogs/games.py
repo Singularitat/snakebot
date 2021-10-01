@@ -319,11 +319,12 @@ class games(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
-    @staticmethod
-    async def game_invite(self, id: int, ctx: commands.Context, key: bytes, msg: str):
+    async def game_invite(
+        self, game_id: int, ctx: commands.Context, key: bytes, msg: str
+    ):
         """Creates an invite for a discord game interaction.
 
-        id: int
+        game_id: int
             ID of the discord game interation.
         ctx: commands.Contex
             Context to send the invite link.
@@ -355,7 +356,7 @@ class games(commands.Cog):
         json = {
             "max_age": 300,
             "target_type": 2,
-            "target_application_id": id,
+            "target_application_id": game_id,
         }
 
         async with self.bot.client_session.post(

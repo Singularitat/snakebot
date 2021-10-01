@@ -154,12 +154,12 @@ class useful(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def tempmessage(self, ctx, id):
+    async def tempmessage(self, ctx, message_id):
         """Gets a tempmail message by its id.
 
         id: str
         """
-        url = f"https://api.mail.tm/messages/{id}"
+        url = f"https://api.mail.tm/messages/{message_id}"
         key = f"tempmail-{ctx.author.id}".encode()
         embed = discord.Embed(color=discord.Color.blurple())
 
