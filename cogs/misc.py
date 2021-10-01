@@ -121,6 +121,7 @@ class misc(commands.Cog):
 
         await ctx.send(f"**{post['title']}**\n{post['sub']}\n{post['url']}")
 
+    @commands.cooldown(1, 15, commands.BucketType.user)
     @commands.command()
     async def synth(self, ctx, *, prompt: str):
         """Completes a text promt using GPT-J 6B."""
@@ -135,7 +136,9 @@ class misc(commands.Cog):
             "top_p": 0.9,
         }
 
-        async with ctx.typing(), self.bot.client_session.post(url, json=data) as resp:
+        async with ctx.typing(), self.bot.client_session.post(
+            url, json=data, timeout=30
+        ) as resp:
             resp = await resp.json()
 
         await ctx.send(
