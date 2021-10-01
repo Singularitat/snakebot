@@ -266,7 +266,7 @@ class information(commands.Cog):
     async def ping(self, ctx):
         """Check how the bot is doing."""
         latency = (
-            datetime.utcnow() - ctx.message.created_at.replace(tzinfo=None)
+            discord.utils.utcnow() - ctx.message.created_at
         ).total_seconds() * 1000
 
         if latency <= 0.05:
