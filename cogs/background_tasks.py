@@ -292,14 +292,14 @@ class background_tasks(commands.Cog):
         data = await self.bot.get_json(url)
 
         aliases = set()
-        languages = []
+        languages = set()
 
         for language in data:
             aliases.update(language["aliases"])
             aliases.add(language["language"])
-            languages.append(language["language"])
+            languages.add(language["language"])
 
-        self.DB.main.put(b"languages", orjson.dumps(languages))
+        self.DB.main.put(b"languages", orjson.dumps(list(languages)))
         self.DB.main.put(b"aliases", orjson.dumps(list(aliases)))
 
         url = "https://tio.run/languages.json"
