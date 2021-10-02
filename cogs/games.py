@@ -26,15 +26,14 @@ BIG_NUMS = (
 )
 
 
-IMAGE_BASE = "https://upload.wikimedia.org/wikipedia/commons/thumb/"
 HANGMAN_IMAGES = {
-    0: f"{IMAGE_BASE}8/8b/Hangman-0.png/60px-Hangman-0.png",
-    1: f"{IMAGE_BASE}3/30/Hangman-1.png/60px-Hangman-1.png",
-    2: f"{IMAGE_BASE}7/70/Hangman-2.png/60px-Hangman-2.png",
-    3: f"{IMAGE_BASE}9/97/Hangman-3.png/60px-Hangman-3.png",
-    4: f"{IMAGE_BASE}2/27/Hangman-4.png/60px-Hangman-4.png",
-    5: f"{IMAGE_BASE}6/6b/Hangman-5.png/60px-Hangman-5.png",
-    6: f"{IMAGE_BASE}d/d6/Hangman-6.png/60px-Hangman-6.png",
+    0: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Hangman-0.png/60px-Hangman-0.png",
+    1: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Hangman-1.png/60px-Hangman-1.png",
+    2: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Hangman-2.png/60px-Hangman-2.png",
+    3: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Hangman-3.png/60px-Hangman-3.png",
+    4: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Hangman-4.png/60px-Hangman-4.png",
+    5: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Hangman-5.png/60px-Hangman-5.png",
+    6: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Hangman-6.png/60px-Hangman-6.png",
 }
 
 
@@ -372,7 +371,7 @@ class games(commands.Cog):
     @commands.command()
     async def word(self, ctx):
         """Starts a game of Word Snacks."""
-        await self.bot.game_invite(
+        await self.game_invite(
             879863976006127627,
             ctx,
             f"{ctx.guild.id}-snacks".encode(),
@@ -382,7 +381,7 @@ class games(commands.Cog):
     @commands.command()
     async def scrabble(self, ctx):
         """Starts a game of Letter Tile."""
-        await self.bot.game_invite(
+        await self.game_invite(
             879863686565621790,
             ctx,
             f"{ctx.guild.id}-tile".encode(),
@@ -392,7 +391,7 @@ class games(commands.Cog):
     @commands.command()
     async def doodle(self, ctx):
         """Starts a game of Doodle Crew."""
-        await self.bot.game_invite(
+        await self.game_invite(
             878067389634314250,
             ctx,
             f"{ctx.guild.id}-doodle".encode(),
@@ -592,7 +591,7 @@ class games(commands.Cog):
     @commands.guild_only()
     async def chess(self, ctx):
         """Starts a Chess In The Park game."""
-        await self.bot.game_invite(
+        await self.game_invite(
             832012774040141894,
             ctx,
             f"{ctx.guild.id}-chess".encode(),
@@ -603,7 +602,7 @@ class games(commands.Cog):
     @commands.guild_only()
     async def poker(self, ctx):
         """Starts a Discord Poke Night."""
-        await self.bot.game_invite(
+        await self.game_invite(
             755827207812677713,
             ctx,
             f"{ctx.guild.id}-poker_night".encode(),
@@ -614,7 +613,7 @@ class games(commands.Cog):
     @commands.guild_only()
     async def betrayal(self, ctx):
         """Starts a Betrayal.io game."""
-        await self.bot.game_invite(
+        await self.game_invite(
             773336526917861400,
             ctx,
             f"{ctx.guild.id}-betrayal_io".encode(),
@@ -625,7 +624,7 @@ class games(commands.Cog):
     @commands.guild_only()
     async def fishing(self, ctx):
         """Starts a Fishington.io game."""
-        await self.bot.game_invite(
+        await self.game_invite(
             814288819477020702,
             ctx,
             f"{ctx.guild.id}-fishington".encode(),
@@ -636,7 +635,7 @@ class games(commands.Cog):
     @commands.guild_only()
     async def youtube(self, ctx):
         """Starts a YouTube Together."""
-        await self.bot.game_invite(
+        await self.game_invite(
             755600276941176913,
             ctx,
             f"{ctx.guild.id}-youtube_together".encode(),

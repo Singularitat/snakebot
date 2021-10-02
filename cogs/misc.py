@@ -38,8 +38,6 @@ ALT_NAMES = {
     "Spongebob Squarepants": "SpongeBob SquarePants",
 }
 
-NUM_REGEX = re.compile(r"\d")
-
 opcodes = opcode.opmap
 
 
@@ -152,15 +150,6 @@ class misc(commands.Cog):
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def tts(self, ctx, character=None, *, text=None):
         """Uses 15.ai to convert text to an audio file."""
-        if re.search(NUM_REGEX, text):
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```Text cannot include numbers "
-                    "spell out the numbers instead```",
-                )
-            )
-
         if not character or not text:
             return await ctx.send(
                 embed=discord.Embed(
@@ -168,6 +157,15 @@ class misc(commands.Cog):
                     description="```.tts [character] [text]"
                     f"\n\nOptions: {', '.join(CHARACTERS)}\n\n"
                     "Use quotes around characters with a space```",
+                )
+            )
+
+        if re.search(r"\d", text):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```Text cannot include numbers "
+                    "spell out the numbers instead```",
                 )
             )
 

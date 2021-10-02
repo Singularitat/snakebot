@@ -13,6 +13,21 @@ import orjson
 
 from cogs.utils.calculation import safe_eval, hex_float, oct_float, bin_float
 
+TIO_MAPPING = {
+    "asm": "assembly-nasm",
+    "c": "c-gcc",
+    "cpp": "cpp-gcc",
+    "c++": "cpp-gcc",
+    "cs": "cs-core",
+    "java": "java-openjdk",
+    "js": "javascript-node",
+    "javascript": "javascript-node",
+    "ts": "typescript",
+    "py": "python3",
+    "python": "python3",
+    "prolog": "prolog-ciao",
+    "swift": "swift4",
+}
 
 CODE_REGEX = re.compile(
     r"(?:(?P<lang>^[a-z0-9]+[\ \n])?)(?P<delim>(?P<block>```)|``?)(?(block)"
@@ -337,9 +352,7 @@ class useful(commands.Cog):
             )
 
         lang = lang.strip()
-
-        if lang == "python":  # tio doesn't default python to python3 it
-            lang = "python3"
+        lang = TIO_MAPPING.get(lang, lang)  # tio doesn't have defaults
 
         if lang not in orjson.loads(self.DB.main.get(b"tiolanguages")):
             return await ctx.reply(
