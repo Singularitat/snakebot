@@ -18,6 +18,33 @@ class apis(commands.Cog):
         self.DB = bot.DB
         self.loop = bot.loop
 
+    @commands.cooldown(1, 15, commands.BucketType.user)
+    @commands.command()
+    async def synth(self, ctx, *, prompt: str):
+        """Completes a text prompt using GPT-J 6B."""
+        url = "https://bellard.org/textsynth/api/v1/engines/gptj_6B/completions"
+
+        data = {
+            "prompt": prompt,
+            "seed": 0,
+            "stream": False,
+            "temperature": 1,
+            "top_k": 40,
+            "top_p": 0.9,
+        }
+
+        async with ctx.typing(), self.bot.client_session.post(
+            url, json=data, timeout=30
+        ) as resp:
+            resp = await resp.json()
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```\n{prompt}{resp['text']}```",
+            )
+        )
+
     @commands.command()
     async def art(self, ctx):
         """Gets an ai generated painting."""
@@ -26,7 +53,7 @@ class apis(commands.Cog):
         async with self.bot.client_session.post(url) as resp:
             text = await resp.text()
 
-        link = re.search(r'<img src=\"(.*)\" alt=', text).group(1)
+        link = re.search(r"<img src=\"(.*)\" alt=", text).group(1)
         await ctx.send(link)
 
     @commands.command()

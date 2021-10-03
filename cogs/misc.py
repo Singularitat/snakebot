@@ -119,33 +119,6 @@ class misc(commands.Cog):
 
         await ctx.send(f"**{post['title']}**\n{post['sub']}\n{post['url']}")
 
-    @commands.cooldown(1, 15, commands.BucketType.user)
-    @commands.command()
-    async def synth(self, ctx, *, prompt: str):
-        """Completes a text promt using GPT-J 6B."""
-        url = "https://bellard.org/textsynth/api/v1/engines/gptj_6B/completions"
-
-        data = {
-            "prompt": prompt,
-            "seed": 0,
-            "stream": False,
-            "temperature": 1,
-            "top_k": 40,
-            "top_p": 0.9,
-        }
-
-        async with ctx.typing(), self.bot.client_session.post(
-            url, json=data, timeout=30
-        ) as resp:
-            resp = await resp.json()
-
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```\n{prompt}{resp['text']}```",
-            )
-        )
-
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def tts(self, ctx, character=None, *, text=None):
