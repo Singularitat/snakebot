@@ -19,6 +19,17 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def art(self, ctx):
+        """Gets an ai generated painting."""
+        url = "https://boredhumans.com/api_art.php"
+
+        async with self.bot.client_session.post(url) as resp:
+            text = await resp.text()
+
+        link = re.search(r'<img src=\"(.*)\" alt=', text).group(1)
+        await ctx.send(link)
+
+    @commands.command()
     async def coffee(self, ctx):
         """Gets a random image of coffee."""
         url = "https://coffee.alexflipnote.dev/random.json"
