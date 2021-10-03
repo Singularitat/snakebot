@@ -19,6 +19,32 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def noise(self, ctx, *, search):
+        """Uses everynoise.com to search spotify."""
+        url = f"https://everynoise.com/spotproxy.cgi?q={search}"
+        data = await self.bot.get_json(url)
+
+        output = ""
+        count = 0
+
+        for track in data["tracks"]["items"]:
+            if count == 5:
+                break
+            if track["type"] == "track":
+                output += track["external_urls"]["spotify"] + "\n"
+                count += 1
+
+        if output:
+            return await ctx.send(output)
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description="```Couldn't find any results```",
+            )
+        )
+
+    @commands.command()
     async def insult(self, ctx):
         """Insults you."""
         url = "https://evilinsult.com/generate_insult.php?lang=en&type=json"
