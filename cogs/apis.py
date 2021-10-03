@@ -18,6 +18,78 @@ class apis(commands.Cog):
         self.DB = bot.DB
         self.loop = bot.loop
 
+    @commands.cooldown(1, 15, commands.BucketType.user)
+    @commands.command()
+    async def synth(self, ctx, *, prompt: str):
+        """Completes a text prompt using GPT-J 6B."""
+        url = "https://bellard.org/textsynth/api/v1/engines/gptj_6B/completions"
+
+        data = {
+            "prompt": prompt,
+            "seed": 0,
+            "stream": False,
+            "temperature": 1,
+            "top_k": 40,
+            "top_p": 0.9,
+        }
+
+        async with ctx.typing(), self.bot.client_session.post(
+            url, json=data, timeout=30
+        ) as resp:
+            resp = await resp.json()
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```\n{prompt}{resp['text']}```",
+            )
+        )
+
+    @commands.command()
+    async def art(self, ctx):
+        """Gets an ai generated painting."""
+        url = "https://boredhumans.com/api_art.php"
+
+        async with self.bot.client_session.post(url) as resp:
+            text = await resp.text()
+
+        link = re.search(r"<img src=\"(.*)\" alt=", text).group(1)
+        await ctx.send(link)
+
+    @commands.command()
+    async def coffee(self, ctx):
+        """Gets a random image of coffee."""
+        url = "https://coffee.alexflipnote.dev/random.json"
+        data = await self.bot.get_json(url)
+
+        await ctx.send(data["file"])
+
+    @commands.command()
+    async def noise(self, ctx, *, search):
+        """Uses everynoise.com to search spotify."""
+        url = f"https://everynoise.com/spotproxy.cgi?q={search}"
+        data = await self.bot.get_json(url)
+
+        output = ""
+        count = 0
+
+        for track in data["tracks"]["items"]:
+            if count == 5:
+                break
+            if track["type"] == "track":
+                output += track["external_urls"]["spotify"] + "\n"
+                count += 1
+
+        if output:
+            return await ctx.send(output)
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description="```Couldn't find any results```",
+            )
+        )
+
     @commands.command()
     async def insult(self, ctx):
         """Insults you."""
