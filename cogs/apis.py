@@ -19,6 +19,14 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def coffee(self, ctx):
+        """Gets a random image of coffee."""
+        url = "https://coffee.alexflipnote.dev/random.json"
+        data = await self.bot.get_json(url)
+
+        await ctx.send(data["file"])
+
+    @commands.command()
     async def noise(self, ctx, *, search):
         """Uses everynoise.com to search spotify."""
         url = f"https://everynoise.com/spotproxy.cgi?q={search}"
