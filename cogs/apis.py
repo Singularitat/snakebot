@@ -19,6 +19,17 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def surreal(self, ctx):
+        """Gets a surreal ai generated image."""
+        url = "https://boredhumans.com/api_dreams.php"
+
+        async with ctx.typing(), self.bot.client_session.post(url) as resp:
+            text = await resp.text()
+
+        link = re.search(r"<img src=\"(.*)\" alt=", text).group(1)
+        await ctx.send(link)
+
+    @commands.command()
     async def song(self, ctx):
         """Gets an ai generated song."""
         url = "https://boredhumans.com/api_lyrics.php"
