@@ -124,6 +124,7 @@ class misc(commands.Cog):
     async def tts(self, ctx, character=None, *, text=None):
         """Uses 15.ai to convert text to an audio file."""
         if not character or not text:
+            ctx.command.reset_cooldown(ctx)
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
@@ -134,6 +135,7 @@ class misc(commands.Cog):
             )
 
         if re.search(r"\d", text):
+            ctx.command.reset_cooldown(ctx)
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
@@ -146,6 +148,7 @@ class misc(commands.Cog):
         character = ALT_NAMES.get(character, character)
 
         if character not in CHARACTERS:
+            ctx.command.reset_cooldown(ctx)
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
@@ -155,6 +158,7 @@ class misc(commands.Cog):
             )
 
         if (length := len(text)) > 200:
+            ctx.command.reset_cooldown(ctx)
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
@@ -174,6 +178,7 @@ class misc(commands.Cog):
         async with ctx.typing():
             resp = await self.bot.client_session.post(url, json=data, timeout=60)
             if resp.status != 200:
+                ctx.command.reset_cooldown(ctx)
                 return await ctx.send(
                     embed=discord.Embed(
                         color=discord.Color.blurple(),
@@ -183,6 +188,7 @@ class misc(commands.Cog):
             data = await resp.json(content_type=None)
 
             if "wavNames" not in data:
+                ctx.command.reset_cooldown(ctx)
                 return await ctx.send(
                     embed=discord.Embed(
                         color=discord.Color.blurple(),
