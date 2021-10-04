@@ -19,6 +19,24 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def poetry(self, ctx):
+        """Gets ai generated poetry."""
+        url = "https://boredhumans.com/api_poetry.php"
+
+        async with ctx.typing(), self.bot.client_session.post(
+            url, data={"lyrics1": True}
+        ) as resp:
+            data = await resp.json(content_type=None)
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                title=data["title"],
+                description=">>> " + data["lyrics"],
+            )
+        )
+
+    @commands.command()
     async def surreal(self, ctx):
         """Gets a surreal ai generated image."""
         url = "https://boredhumans.com/api_dreams.php"
