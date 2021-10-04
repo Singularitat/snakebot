@@ -18,6 +18,19 @@ class apis(commands.Cog):
         self.DB = bot.DB
         self.loop = bot.loop
 
+    @commands.command()
+    async def song(self, ctx):
+        """Gets an ai generated song."""
+        url = "https://boredhumans.com/api_lyrics.php"
+
+        async with ctx.typing(), self.bot.client_session.post(url) as resp:
+            text = await resp.text()
+
+        text = text.partition("<BR><BR>")[0]
+        text = re.sub(r"<[^<]+?>", "\n", text).replace("\n\n", "\n")
+
+        await ctx.send(f">>> {text.lstrip()}")
+
     @commands.cooldown(1, 15, commands.BucketType.user)
     @commands.command()
     async def synth(self, ctx, *, prompt: str):
@@ -50,7 +63,7 @@ class apis(commands.Cog):
         """Gets an ai generated painting."""
         url = "https://boredhumans.com/api_art.php"
 
-        async with self.bot.client_session.post(url) as resp:
+        async with ctx.typing(), self.bot.client_session.post(url) as resp:
             text = await resp.text()
 
         link = re.search(r"<img src=\"(.*)\" alt=", text).group(1)
