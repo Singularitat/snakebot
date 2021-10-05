@@ -13,6 +13,18 @@ class animals(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    async def horse(self, ctx):
+        """This horse doesn't exist."""
+        url = "https://thishorsedoesnotexist.com"
+
+        async with ctx.typing(), self.bot.client_session.get(
+            url
+        ) as resp:
+            with BytesIO((await resp.read())) as image_binary:
+                image_binary.seek(0)
+                await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
+
+    @commands.command()
     async def axolotl(self, ctx):
         """Gets a random axolotl image."""
         url = "https://axoltlapi.herokuapp.com/"
@@ -206,8 +218,8 @@ class animals(commands.Cog):
 
         async with ctx.typing(), self.bot.client_session.get(
             url
-        ) as response:
-            with BytesIO((await response.read())) as image_binary:
+        ) as resp:
+            with BytesIO((await resp.read())) as image_binary:
                 image_binary.seek(0)
                 await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
 
