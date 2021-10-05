@@ -19,6 +19,19 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def city(self, ctx):
+        """This city doesn't exist."""
+        url = "https://thiscitydoesnotexist.com/"
+
+        async with ctx.typing(), self.bot.client_session.get(
+            url
+        ) as resp:
+            text = await resp.text()
+            link = re.search(r"<img src=\"\.(.*)\" alt=", text).group(1)
+
+        await ctx.send(f"http://thiscitydoesnotexist.com{link}")
+
+    @commands.command()
     async def story(self, ctx):
         """Gets an ai generated story."""
         url = "https://boredhumans.com/api_story.php"
