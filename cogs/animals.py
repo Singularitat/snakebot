@@ -1,4 +1,7 @@
 import random
+from io import BytesIO
+
+import discord
 
 from discord.ext import commands
 
@@ -8,6 +11,16 @@ class animals(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    @commands.command()
+    async def horse(self, ctx):
+        """This horse doesn't exist."""
+        url = "https://thishorsedoesnotexist.com"
+
+        async with ctx.typing(), self.bot.client_session.get(url) as resp:
+            with BytesIO((await resp.read())) as image_binary:
+                image_binary.seek(0)
+                await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
 
     @commands.command()
     async def axolotl(self, ctx):
@@ -198,6 +211,16 @@ class animals(commands.Cog):
 
     @commands.command()
     async def cat(self, ctx):
+        """This cat doesn't exist."""
+        url = "https://thiscatdoesnotexist.com"
+
+        async with ctx.typing(), self.bot.client_session.get(url) as resp:
+            with BytesIO((await resp.read())) as image_binary:
+                image_binary.seek(0)
+                await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
+
+    @commands.command()
+    async def cat2(self, ctx):
         """Gets a random cat image."""
         url = "https://api.thecatapi.com/v1/images/search"
 
@@ -207,7 +230,7 @@ class animals(commands.Cog):
         await ctx.send(image[0]["url"])
 
     @commands.command()
-    async def cat2(self, ctx):
+    async def cat3(self, ctx):
         """Gets a random cat image."""
         url = "https://cataas.com/cat?json=true"
 
@@ -217,7 +240,7 @@ class animals(commands.Cog):
         await ctx.send(f"https://cataas.com{image['url']}")
 
     @commands.command()
-    async def cat3(self, ctx):
+    async def cat4(self, ctx):
         """Gets a random cat image."""
         url = "https://thatcopy.pw/catapi/rest"
 
@@ -227,7 +250,7 @@ class animals(commands.Cog):
         await ctx.send(image["webpurl"])
 
     @commands.command()
-    async def cat4(self, ctx):
+    async def cat5(self, ctx):
         """Gets a random cat image."""
         url = "http://shibe.online/api/cats"
 
