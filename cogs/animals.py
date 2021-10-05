@@ -17,9 +17,7 @@ class animals(commands.Cog):
         """This horse doesn't exist."""
         url = "https://thishorsedoesnotexist.com"
 
-        async with ctx.typing(), self.bot.client_session.get(
-            url
-        ) as resp:
+        async with ctx.typing(), self.bot.client_session.get(url) as resp:
             with BytesIO((await resp.read())) as image_binary:
                 image_binary.seek(0)
                 await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
@@ -216,9 +214,7 @@ class animals(commands.Cog):
         """This cat doesn't exist."""
         url = "https://thiscatdoesnotexist.com"
 
-        async with ctx.typing(), self.bot.client_session.get(
-            url
-        ) as resp:
+        async with ctx.typing(), self.bot.client_session.get(url) as resp:
             with BytesIO((await resp.read())) as image_binary:
                 image_binary.seek(0)
                 await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))

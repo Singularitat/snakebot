@@ -23,9 +23,7 @@ class apis(commands.Cog):
         """This city doesn't exist."""
         url = "https://thiscitydoesnotexist.com/"
 
-        async with ctx.typing(), self.bot.client_session.get(
-            url
-        ) as resp:
+        async with ctx.typing(), self.bot.client_session.get(url) as resp:
             text = await resp.text()
             link = re.search(r"<img src=\"\.(.*)\" alt=", text).group(1)
 
