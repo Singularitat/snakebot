@@ -1002,20 +1002,17 @@ class useful(commands.Cog):
             A str of arguments to calculate.
         """
         num_bases = {
-            "h": (16, hex_float),
-            "o": (8, oct_float),
-            "b": (2, bin_float),
+            "h": (16, hex_float, "0x"),
+            "o": (8, oct_float, "0o"),
+            "b": (2, bin_float, "0b"),
         }
-        base, method = num_bases.get(num_base.lower()[:1], ("unknown", int))
+        base, method, prefix = num_bases.get(num_base.lower()[:1], (None, None, None))
 
-        if base == "unknown":
+        if not base:
             base = 10
             args = f"{num_base} {args}"
-
-        if base == 8:
-            args = args.replace("0o", "")
-        elif base == 2:
-            args = args.replace("0b", "")
+        elif base == 8 or base == 2:
+            args = args.replace(prefix, "")
 
         regex = r"(?:0[xX])?[0-9a-fA-F]+" if base == 16 else r"\d+"
         numbers = [int(num, base) for num in re.findall(regex, args)]
@@ -1023,12 +1020,16 @@ class useful(commands.Cog):
         expr = re.sub(regex, "{}", args).format(*numbers)
         result = safe_eval(compile(expr, "<calc>", "eval", flags=1024).body)
 
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```ml\n{expr}\n\n{method(result)}\n\nDecimal: {result}```",
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if method:
+            embed.description = (
+                f"```py\n{expr}\n\n>>> {prefix}{method(result)}\n\nDecimal: {result}```"
             )
-        )
+            return await ctx.send(embed=embed)
+
+        embed.description = f"```py\n{expr}\n\n>>> {result}```"
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["ch", "cht"])
     async def cheatsheet(self, ctx, *search):
