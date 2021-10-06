@@ -1071,7 +1071,7 @@ class useful(commands.Cog):
         if not base:
             base = 10
             args = f"{num_base} {args}"
-        elif base == 8 or base == 2:
+        elif base in (2, 8):
             args = args.replace(prefix, "")
 
         regex = r"(?:0[xX])?[0-9a-fA-F]+" if base == 16 else r"\d+"
