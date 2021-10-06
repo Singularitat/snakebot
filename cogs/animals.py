@@ -19,7 +19,6 @@ class animals(commands.Cog):
 
         async with ctx.typing(), self.bot.client_session.get(url) as resp:
             with BytesIO((await resp.read())) as image_binary:
-                image_binary.seek(0)
                 await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
 
     @commands.command()
@@ -216,7 +215,6 @@ class animals(commands.Cog):
 
         async with ctx.typing(), self.bot.client_session.get(url) as resp:
             with BytesIO((await resp.read())) as image_binary:
-                image_binary.seek(0)
                 await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
 
     @commands.command()

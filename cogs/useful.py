@@ -1,4 +1,4 @@
-from io import StringIO
+import io
 import random
 import re
 import time
@@ -86,6 +86,64 @@ class useful(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
         self.loop = bot.loop
+
+    @commands.cooldown(1, 30, commands.BucketType.user)
+    @commands.cooldown(10, 60, commands.BucketType.default)
+    @commands.command()
+    async def screenshot(self, ctx, website: str):
+        """Takes a screenshot of a website and sends the image.
+
+        url: str
+        """
+        if not website.startswith("http"):
+            website = "https://" + website
+
+        url = "https://onlinescreenshot.com/"
+
+        headers = {
+            "authority": "onlinescreenshot.com",
+            "accept": "*/*",
+            "x-requested-with": "XMLHttpRequest",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36",
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "origin": "https://onlinescreenshot.com",
+            "sec-fetch-site": "same-origin",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+            "referer": "https://onlinescreenshot.com/",
+            "accept-language": "en-US,en;q=0.9",
+        }
+
+        data = {
+            "url": website,
+            "cookies": 0,
+            "proxy": 0,
+            "delay": 0,
+            "captchaToken": False,
+            "device": 1,
+            "platform": 1,
+            "browser": 1,
+            "fFormat": 1,
+            "width": 1920,
+            "height": 1080,
+            "uid": "NaN",
+        }
+
+        async with ctx.typing(), self.bot.client_session.post(
+            url, headers=headers, data=data, timeout=40
+        ) as resp:
+            data = await resp.json()
+
+        if data["imgUrl"]:
+            message = await ctx.send(data["imgUrl"])
+            await self.wait_for_deletion(ctx.author, message)
+        elif data["error"]:
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```Another request is being processed```",
+                )
+            )
 
     @commands.command()
     async def tempmail(self, ctx):
@@ -192,7 +250,7 @@ class useful(commands.Cog):
         ) as resp:
             message = await resp.json()
 
-        await ctx.send(file=discord.File(StringIO(message["text"]), "email.txt"))
+        await ctx.send(file=discord.File(io.StringIO(message["text"]), "email.txt"))
 
     @commands.command()
     async def text(self, ctx):
@@ -253,7 +311,9 @@ class useful(commands.Cog):
             formatted = (await response.json())["formatted_code"]
 
         if len(formatted) > 1991:
-            return await ctx.reply(file=discord.File(StringIO(formatted), "output.py"))
+            return await ctx.reply(
+                file=discord.File(io.StringIO(formatted), "output.py")
+            )
 
         await ctx.reply(f"```py\n{formatted}```")
 
@@ -790,7 +850,7 @@ class useful(commands.Cog):
             )
 
         if len(f"```\n{output}```") > 2000:
-            return await ctx.reply(file=discord.File(StringIO(output), "output.txt"))
+            return await ctx.reply(file=discord.File(io.StringIO(output), "output.txt"))
 
         await ctx.reply(f"```\n{output}```")
 
@@ -1002,20 +1062,17 @@ class useful(commands.Cog):
             A str of arguments to calculate.
         """
         num_bases = {
-            "h": (16, hex_float),
-            "o": (8, oct_float),
-            "b": (2, bin_float),
+            "h": (16, hex_float, "0x"),
+            "o": (8, oct_float, "0o"),
+            "b": (2, bin_float, "0b"),
         }
-        base, method = num_bases.get(num_base.lower()[:1], ("unknown", int))
+        base, method, prefix = num_bases.get(num_base.lower()[:1], (None, None, None))
 
-        if base == "unknown":
+        if not base:
             base = 10
             args = f"{num_base} {args}"
-
-        if base == 8:
-            args = args.replace("0o", "")
-        elif base == 2:
-            args = args.replace("0b", "")
+        elif base in (2, 8):
+            args = args.replace(prefix, "")
 
         regex = r"(?:0[xX])?[0-9a-fA-F]+" if base == 16 else r"\d+"
         numbers = [int(num, base) for num in re.findall(regex, args)]
@@ -1023,12 +1080,16 @@ class useful(commands.Cog):
         expr = re.sub(regex, "{}", args).format(*numbers)
         result = safe_eval(compile(expr, "<calc>", "eval", flags=1024).body)
 
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```ml\n{expr}\n\n{method(result)}\n\nDecimal: {result}```",
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if method:
+            embed.description = (
+                f"```py\n{expr}\n\n>>> {prefix}{method(result)}\n\nDecimal: {result}```"
             )
-        )
+            return await ctx.send(embed=embed)
+
+        embed.description = f"```py\n{expr}\n\n>>> {result}```"
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["ch", "cht"])
     async def cheatsheet(self, ctx, *search):
