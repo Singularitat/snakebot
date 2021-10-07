@@ -66,13 +66,8 @@ class apis(commands.Cog):
     @commands.command()
     async def surreal(self, ctx):
         """Gets a surreal ai generated image."""
-        url = "https://boredhumans.com/api_dreams.php"
-
-        async with ctx.typing(), self.bot.client_session.post(url) as resp:
-            text = await resp.text()
-
-        link = re.search(r"<img src=\"(.*)\" alt=", text).group(1)
-        await ctx.send(link)
+        num = random.randint(1, 125)
+        await ctx.send(f"https://boredhumans.b-cdn.net/dreams/{num}.jpg")
 
     @commands.command()
     async def song(self, ctx):
@@ -853,7 +848,7 @@ class apis(commands.Cog):
 
         def check(reaction: discord.Reaction, user: discord.User) -> bool:
             return (
-                user.id == ctx.author.id
+                user == ctx.author
                 and reaction.message.channel == ctx.channel
                 and reaction.emoji in reactions
             )
