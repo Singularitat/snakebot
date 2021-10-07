@@ -745,7 +745,7 @@ class misc(commands.Cog):
         embed.description = f"```{bin(int(number))}```"
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(aliases = ["socialcredit"])
     async def karma(self, ctx, user: discord.User = None):
         """Gets a users karma.
 
