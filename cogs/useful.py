@@ -39,6 +39,8 @@ RAW_CODE_REGEX = re.compile(
     r"(?:(?P<lang>^[a-z0-9]+[\ \n])?)(?P<code>(?s).*)", re.DOTALL | re.IGNORECASE
 )
 
+ANSI = re.compile(r"\x1b\[.*?m")
+
 
 class InviteMenu(menus.ListPageSource):
     def __init__(self, data):
@@ -1047,7 +1049,7 @@ class useful(commands.Cog):
 
         await self.wait_for_deletion(ctx.author, message)
 
-    @commands.command()
+    @commands.command(aliases=["c"])
     async def calc(self, ctx, num_base, *, args=""):
         """Does math.
 
@@ -1066,7 +1068,7 @@ class useful(commands.Cog):
             "o": (8, oct_float, "0o"),
             "b": (2, bin_float, "0b"),
         }
-        base, method, prefix = num_bases.get(num_base.lower()[:1], (None, None, None))
+        base, method, prefix = num_bases.get(num_base[0].lower(), (None, None, None))
 
         if not base:
             base = 10
@@ -1103,18 +1105,16 @@ class useful(commands.Cog):
         url = f"https://cheat.sh/python/{search}"
         headers = {"User-Agent": "curl/7.68.0"}
 
-        escape = str.maketrans({"`": "\\`"})
-        ansi = re.compile(r"\x1b\[.*?m")
-
         async with ctx.typing(), self.bot.client_session.get(
             url, headers=headers
         ) as page:
-            result = ansi.sub("", await page.text()).translate(escape)
+            result = ANSI.sub("", await page.text()).translate({96: "\\`"})
 
         embed = discord.Embed(
-            title=f"https://cheat.sh/python/{search}", color=discord.Color.blurple()
+            title=f"https://cheat.sh/python/{search}",
+            color=discord.Color.blurple(),
+            description=f"```py\n{result}```",
         )
-        embed.description = f"```py\n{result}```"
 
         await ctx.send(embed=embed)
 
