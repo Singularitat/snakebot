@@ -129,38 +129,25 @@ class apis(commands.Cog):
         await ctx.send(data["file"])
 
     @commands.command()
-    async def noise(self, ctx, *, search):
-        """Uses everynoise.com to search spotify."""
-        url = f"https://everynoise.com/spotproxy.cgi?q={search}"
-        data = await self.bot.get_json(url)
-
-        output = ""
-        count = 0
-
-        for track in data["tracks"]["items"]:
-            if count == 5:
-                break
-            if track["type"] == "track":
-                output += track["external_urls"]["spotify"] + "\n"
-                count += 1
-
-        if output:
-            return await ctx.send(output)
-
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description="```Couldn't find any results```",
-            )
-        )
-
-    @commands.command()
     async def insult(self, ctx):
         """Insults you."""
         url = "https://evilinsult.com/generate_insult.php?lang=en&type=json"
         data = await self.bot.get_json(url)
 
         await ctx.send(data["insult"])
+
+    @commands.command()
+    async def inspiration(self, ctx):
+        """Uses zenquotes.io to get an inspirational quote."""
+        url = "https://zenquotes.io/api/random"
+
+        async with ctx.typing(), self.bot.client_session.get(url) as resp:
+            data = (await resp.json(content_type=None))[0]
+
+        embed = discord.Embed(color=discord.Color.blurple(), description=data["q"])
+        embed.set_footer(text=f"― {data['a']}")
+
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def inspiro(self, ctx):

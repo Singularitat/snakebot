@@ -4,6 +4,7 @@ import inspect
 import os
 import textwrap
 import typing
+import platform
 
 from discord.ext import commands
 import discord
@@ -76,7 +77,12 @@ class information(commands.Cog):
         embed.add_field(
             name="Source", value="[github](https://github.com/Singularitat/snakebot)"
         )
+        embed.add_field(name="Uptime", value=f"Since **<t:{self.bot.uptime:.0f}:R>**")
         embed.add_field(name="discord.py version", value=discord.__version__)
+        embed.add_field(name="Python version", value=platform.python_version())
+        embed.add_field(
+            name="OS", value=f"{platform.system()} {platform.release()}({os.name})"
+        )
         await ctx.send(embed=embed)
 
     @commands.command(name="oldest", aliases=["accdate", "newest"])

@@ -89,6 +89,28 @@ class useful(commands.Cog):
         self.DB = bot.DB
         self.loop = bot.loop
 
+    @commands.command()
+    async def holidays(self, ctx, country_code="NZ"):
+        """Gets the holidays in a country.
+
+        country_code: str
+        """
+        url = (
+            "https://date.nager.at/api/v3/PublicHolidays"
+            f"/{discord.utils.utcnow().year}/NZ"
+        )
+
+        with ctx.typing():
+            data = await self.bot.get_json(url)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        for holiday in data:
+            epoch = time.mktime(time.strptime(holiday["date"], "%Y-%m-%d"))
+            embed.add_field(name=holiday["name"], value=f"<t:{epoch:.0f}:R>")
+
+        await ctx.send(embed=embed)
+
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.cooldown(10, 60, commands.BucketType.default)
     @commands.command()
@@ -871,9 +893,11 @@ class useful(commands.Cog):
             embed.description = "```No command found```"
             return await ctx.send(embed=embed)
 
-        start = time.time()
+        start = time.perf_counter()
         await ctx.command.invoke(ctx)
-        embed.description = f"`Time: {(time.time() - start) * 1000:.2f}ms`"
+        end = time.perf_counter()
+
+        embed.description = f"`Time: {(end - start) * 1000:.2f}ms`"
         await ctx.send(embed=embed)
 
     @commands.command()
