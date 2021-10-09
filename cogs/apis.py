@@ -19,6 +19,16 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def sky(self, ctx):
+        """Gets an ai generated night sky."""
+        num = random.randint(1, 5000)
+        url = (
+            "https://firebasestorage.googleapis.com/v0/b/thisnightskydoes"
+            f"notexist.appspot.com/o/images%2Fseed{num:0>4}.jpg?alt=media"
+        )
+        await ctx.send(url)
+
+    @commands.command()
     async def beach(self, ctx):
         """Uses thisbeachdoesnotexist.com to gets an ai generated beach."""
         num = random.randint(1, 9999)
