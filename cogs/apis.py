@@ -19,6 +19,12 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def beach(self, ctx):
+        """Uses thisbeachdoesnotexist.com to gets an ai generated beach."""
+        num = random.randint(1, 9999)
+        await ctx.send(f"https://thisbeachdoesnotexist.com/data/seeds-075/{num}.jpg")
+
+    @commands.command()
     async def wojak(self, ctx):
         """This wojak does not exist."""
         num = random.randint(1, 1576)  # This how how they do it on their website
@@ -1103,7 +1109,7 @@ class apis(commands.Cog):
                 f"`{index}` [{title}]({url})"
                 for index, (title, url) in enumerate(zip(titles[1], titles[3]), start=1)
             )
-            embed.timestamp = datetime.utcnow()
+            embed.timestamp = discord.utils.utcnow()
 
             await ctx.send(embed=embed)
 
@@ -1145,7 +1151,7 @@ class apis(commands.Cog):
                 ```
             """
         )
-        embed.timestamp = datetime.utcnow()
+        embed.timestamp = discord.utils.utcnow()
 
         await ctx.send(embed=embed)
 
