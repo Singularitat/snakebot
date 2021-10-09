@@ -10,6 +10,8 @@ import discord
 import lxml.html
 import orjson
 
+from cogs.utils.time import parse_date
+
 
 CHARACTERS = (
     "Miss Pauling",
@@ -47,6 +49,30 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.DB = bot.DB
+
+    @commands.command()
+    async def diff(self, ctx, start, end=None):
+        """Gets the difference between two times.
+
+        Although the arguments have been named start-end
+        it doesn't matter if the start is greater than the end
+
+        Supported Date Formats:
+            13/10/2021    2021/10/13
+            13.10.2021    2021.10.13
+            13-10-2021    2021-10-13
+
+        start: str
+            The start time
+        end: str
+            The ending time
+        """
+        if end:
+            date = parse_date(end) - parse_date(start) + discord.utils.utcnow()
+        else:
+            date = parse_date(start)
+
+        await ctx.send(f"<t:{date.timestamp():.0f}:R>")
 
     @commands.command()
     async def reddit(self, ctx, subreddit: str = "all"):
