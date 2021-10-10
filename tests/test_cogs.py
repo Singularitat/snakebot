@@ -74,6 +74,14 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def sky_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="sky"):
+            await self.cog.sky(self.cog, context)
+
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
     async def dad_joke_command(self):
         context = helpers.MockContext()
 
