@@ -90,6 +90,14 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
 
+    async def wojak_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="wojak"):
+            await self.cog.wojak(self.cog, context)
+
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
     async def dad_joke_command(self):
         context = helpers.MockContext()
 
