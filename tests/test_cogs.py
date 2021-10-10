@@ -82,6 +82,14 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
 
+    async def beach_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="beach"):
+            await self.cog.beach(self.cog, context)
+
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
     async def dad_joke_command(self):
         context = helpers.MockContext()
 
