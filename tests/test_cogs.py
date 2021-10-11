@@ -124,6 +124,14 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def surreal_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="surreal"):
+            await self.cog.surreal(self.cog, context)
+
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
     async def dad_joke_command(self):
         context = helpers.MockContext()
 
