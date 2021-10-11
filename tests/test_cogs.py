@@ -98,6 +98,40 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
 
+    async def city_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="city"):
+            await self.cog.city(self.cog, context)
+
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
+    async def story_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="story"):
+            await self.cog.story(self.cog, context)
+
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
+    async def poetry_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="poetry"):
+            await self.cog.poetry(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+    async def surreal_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="surreal"):
+            await self.cog.surreal(self.cog, context)
+
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
     async def dad_joke_command(self):
         context = helpers.MockContext()
 
