@@ -132,6 +132,16 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
 
+    async def synth_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="synth"):
+            await self.cog.synth(self.cog, context, prompt="reverse a binary tree")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def dad_joke_command(self):
         context = helpers.MockContext()
 
