@@ -1459,22 +1459,21 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(
             context.send.call_args.kwargs["embed"].description,
-            "```ml\n125 * 125\n\n3d09\n\nDecimal: 15625```",
+            "```py\n125 * 125\n\n>>> 0x3d09\n\nDecimal: 15625```",
         )
 
         await self.cog.calc(self.cog, context, "sin(10) ** 10")
 
         self.assertEqual(
             context.send.call_args.kwargs["embed"].description,
-            "```ml\nsin(10) ** 10 \n\n0\n\nDecimal: 0.0022706883377346374```",
+            "```py\nsin(10) ** 10 \n\n>>> 0.0022706883377346374```",
         )
 
         await self.cog.calc(self.cog, context, "fact(10) ** pi")
 
         self.assertEqual(
             context.send.call_args.kwargs["embed"].description,
-            "```ml\nfact(10) ** pi \n\n405605049829938429952"
-            "\n\nDecimal: 4.056050498299384e+20```",
+            "```py\nfact(10) ** pi \n\n>>> 4.056050498299384e+20```",
         )
 
     async def test_hello_command(self):
