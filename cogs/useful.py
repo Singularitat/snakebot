@@ -175,7 +175,7 @@ class useful(commands.Cog):
         url = "https://api.mail.tm/accounts"
         password = secrets.token_urlsafe()
         account = {
-            "address": f"{secrets.token_urlsafe(16)}@uniromax.com",
+            "address": f"{secrets.token_urlsafe(16)}@pussport.com",
             "password": password,
         }
 

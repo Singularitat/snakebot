@@ -166,6 +166,16 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
 
+    async def inspiration_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="inspiration"):
+            await self.cog.inspiration(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def dad_joke_command(self):
         context = helpers.MockContext()
 
@@ -1449,22 +1459,21 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(
             context.send.call_args.kwargs["embed"].description,
-            "```ml\n125 * 125\n\n3d09\n\nDecimal: 15625```",
+            "```py\n125 * 125\n\n>>> 0x3d09\n\nDecimal: 15625```",
         )
 
         await self.cog.calc(self.cog, context, "sin(10) ** 10")
 
         self.assertEqual(
             context.send.call_args.kwargs["embed"].description,
-            "```ml\nsin(10) ** 10 \n\n0\n\nDecimal: 0.0022706883377346374```",
+            "```py\nsin(10) ** 10 \n\n>>> 0.0022706883377346374```",
         )
 
         await self.cog.calc(self.cog, context, "fact(10) ** pi")
 
         self.assertEqual(
             context.send.call_args.kwargs["embed"].description,
-            "```ml\nfact(10) ** pi \n\n405605049829938429952"
-            "\n\nDecimal: 4.056050498299384e+20```",
+            "```py\nfact(10) ** pi \n\n>>> 4.056050498299384e+20```",
         )
 
     async def test_hello_command(self):
