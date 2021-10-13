@@ -166,6 +166,16 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
 
+    async def inspiration_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="inspiration"):
+            await self.cog.inspiration(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def dad_joke_command(self):
         context = helpers.MockContext()
 
