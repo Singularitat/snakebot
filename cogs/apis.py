@@ -368,14 +368,14 @@ class apis(commands.Cog):
     @commands.command()
     async def quote(self, ctx):
         """Gets a random quote."""
-        url = "https://api.fisenko.net/quotes?l=en"
+        url = "https://api.fisenko.net/v1/quotes/en/random"
 
         async with ctx.typing():
             quote = await self.bot.get_json(url)
             embed = discord.Embed(
                 color=discord.Color.blurple(), description=quote["text"]
             )
-            embed.set_footer(text=f"― {quote['author']}")
+            embed.set_footer(text=f"― {quote['name']}")
             await ctx.send(embed=embed)
 
     @commands.command()
