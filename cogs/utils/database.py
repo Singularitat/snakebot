@@ -75,13 +75,6 @@ class Database:
 
         return 1000.0
 
-    async def get_baltop(self, amount: int):
-        """Gets the top [amount] balances.
-
-        amount: int
-        """
-        return sorted([(float(b), int(m)) for m, b in self.bal], reverse=True)[:amount]
-
     async def put_bal(self, member_id, amount: float):
         """Sets the balance of an member.
 
