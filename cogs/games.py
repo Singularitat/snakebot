@@ -446,17 +446,18 @@ class games(commands.Cog):
             if cps:
                 data["cookies"] += round((time.time() - data["start"]) * cps)
 
-            cookietop.append((data["cookies"], int(member)))
+            member = self.bot.get_user(int(member))
+            if member:
+                cookietop.append((data["cookies"], member.display_name))
 
         cookietop = sorted(cookietop, reverse=True)[:10]
 
-        embed = discord.Embed(color=discord.Color.blurple())
-        embed.title = f"Top {len(cookietop)} members"
-        embed.description = "\n".join(
-            [
-                f"**{self.bot.get_user(member).display_name}:** `{bal:,.0f}` 🍪"
-                for bal, member in cookietop
-            ]
+        embed = discord.Embed(
+            color=discord.Color.blurple(),
+            title=f"Top {len(cookietop)} members",
+            description="\n".join(
+                [f"**{member}:** `{bal:,.0f}` 🍪" for bal, member in cookietop]
+            ),
         )
         await ctx.send(embed=embed)
 
