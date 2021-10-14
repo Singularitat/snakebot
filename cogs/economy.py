@@ -212,22 +212,27 @@ class economy(commands.Cog):
         embed.set_footer(text=f"Balance: ${bal:,}")
         await ctx.send(embed=embed)
 
-    @commands.command(name="baltop")
-    async def top_balances(self, ctx, amount: int = 10):
+    @commands.command()
+    async def baltop(self, ctx, amount: int = 10):
         """Gets members with the highest balances.
 
         amount: int
-            The amount of balances to get defaulting to 3.
+            The amount of balances to get defaulting to 10.
         """
-        topbal = await self.DB.get_baltop(amount)
+        baltop = []
+        for member, bal in self.DB.bal:
+            member = self.bot.get_user(int(member))
+            if member:
+                baltop.append((float(bal), member.display_name))
 
-        embed = discord.Embed(color=discord.Color.blurple())
-        embed.title = f"Top {len(topbal)} Balances"
-        embed.description = "\n".join(
-            [
-                f"**{self.bot.get_user(member).display_name}:** ${bal:,.2f}"
-                for bal, member in topbal
-            ]
+        baltop = sorted(baltop, reverse=True)[:amount]
+
+        embed = discord.Embed(
+            color=discord.Color.blurple(),
+            title=f"Top {len(baltop)} Balances",
+            description="\n".join(
+                [f"**{member}:** ${bal:,.2f}" for bal, member in baltop]
+            ),
         )
         await ctx.send(embed=embed)
 
