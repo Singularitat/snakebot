@@ -804,6 +804,16 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = misc(bot=bot)
 
+    async def test_color_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="color"):
+            await self.cog.color(self.cog, context, color="f542e3")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def test_justin_command(self):
         context = helpers.MockContext()
 

@@ -1024,7 +1024,7 @@ class useful(commands.Cog):
 
     @commands.command(aliases=["img"])
     async def image(self, ctx, *, search):
-        """Searchs and finds a random image from bing.
+        """Searchs and finds a random image from yandex.
 
         search: str
             The term to search for.
@@ -1043,7 +1043,7 @@ class useful(commands.Cog):
             return await self.wait_for_deletion(ctx.author, message)
 
         async with ctx.typing():
-            url = f"https://www.bing.com/images/search?q={search}&first=1"
+            url = f"https://yandex.com/images/search?family=yes&text={search}"
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36"
             }
@@ -1051,12 +1051,13 @@ class useful(commands.Cog):
                 soup = lxml.html.fromstring(await page.text())
 
             images = {}
-            for a in soup.xpath('.//a[@class="iusc"]'):
-                data = orjson.loads(a.attrib["m"])
-                images[data["turl"]] = data["desc"]
+            for a in soup.xpath('.//div[@role="listitem"]'):
+                data = orjson.loads(a.attrib["data-bem"])["serp-item"]
+                images[data["dups"][0]["url"]] = data["snippet"]["title"]
 
-            if images == {}:
+            if not images:
                 embed.description = "```No images found```"
+                embed.set_footer(text="Safe search is enabled.")
                 return await ctx.send(embed=embed)
 
             url, title = random.choice(list(images.items()))

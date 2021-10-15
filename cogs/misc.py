@@ -51,6 +51,23 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def color(self, ctx, color):
+        """Gets information about a hex color."""
+        color = color.lstrip("0x")
+        color_value = int(color, 16)
+
+        embed = discord.Embed(color=color_value)
+        r, g, b = int(color[:2], 16), int(color[2:4], 16), int(color[4:], 16)
+        embed.add_field(name="RGB", value=f"{r}, {g}, {b}")
+        embed.set_image(
+            url=(
+                "https://app.pixelencounter.com/api/basic/svgmonsters"
+                f"/image/png?primaryColor=%23{color}&size=500&format=webp"
+            )
+        )
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def diff(self, ctx, start, end=None):
         """Gets the difference between two times.
 
