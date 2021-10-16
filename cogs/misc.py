@@ -52,8 +52,35 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def bots(self, ctx, amount=12):
+        """Shows a little information about the top bots.
+
+        amount: int
+            Amount of bots to get.
+        """
+        url = "https://topbots.advaith.workers.dev/"
+
+        bots = await self.bot.get_json(url)
+        embed = discord.Embed(color=discord.Color.og_blurple())
+
+        for i, bot in enumerate(bots):
+            if i == amount:
+                break
+            embed.add_field(name=bot["name"], value=(
+                f"```ahk\nID:\n{bot['id']}\n\n"
+                f"Servers:\n{bot['servers']}\n\n"
+                f"Discord library:\n{bot['lib']}```"
+            ))
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def color(self, ctx, color):
-        """Gets information about a hex color."""
+        """Gets information about a hex color.
+
+        color: str
+            Hex color value.
+        """
         color = color.lstrip("#").lstrip("0x")
         color_value = int(color, 16)
         embed = discord.Embed(color=color_value)
