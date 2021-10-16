@@ -11,6 +11,7 @@ import lxml.html
 import orjson
 
 from cogs.utils.time import parse_date
+from cogs.utils.color import hsslv
 
 
 CHARACTERS = (
@@ -53,16 +54,28 @@ class misc(commands.Cog):
     @commands.command()
     async def color(self, ctx, color):
         """Gets information about a hex color."""
-        color = color.lstrip("0x")
+        color = color.lstrip("#").lstrip("0x")
         color_value = int(color, 16)
-
         embed = discord.Embed(color=color_value)
+
         r, g, b = int(color[:2], 16), int(color[2:4], 16), int(color[4:], 16)
         embed.add_field(name="RGB", value=f"{r}, {g}, {b}")
+
+        r, g, b = r / 255, g / 255, b / 255
+
+        hue, satv, satl, lum, val = hsslv(r, g, b)
+        embed.add_field(
+            name="HSL", value=f"{hue*360:.0f}°, {satl*100:.0f}%, {lum*100:.0f}%"
+        )
+
+        embed.add_field(
+            name="HSV", value=f"{hue*360:.0f}°, {satv*100:.0f}%, {val*100:.0f}%"
+        )
+
         embed.set_image(
             url=(
                 "https://app.pixelencounter.com/api/basic/svgmonsters"
-                f"/image/png?primaryColor=%23{color}&size=500&format=webp"
+                f"/image/png?primaryColor=%23{color}&size=500&format=png"
             )
         )
         await ctx.send(embed=embed)
