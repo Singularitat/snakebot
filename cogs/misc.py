@@ -52,6 +52,28 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def dehash(self, ctx, search_hash):
+        """Uses dehash.lt to decrypt hashes.
+
+        Supported Types - MD5, SHA1, SHA3, SHA256, SHA384, SHA512
+
+        search_hash: str
+        """
+        url = f"https://api.dehash.lt/api.php?search={search_hash}"
+
+        async with ctx.typing(), self.bot.client_session.get(url) as resp:
+            result = await resp.text()
+
+        if result == "Error":
+            return await ctx.send(
+                embed=discord.Embed(description="Decryption failed"),
+                color=discord.Color.blurple(),
+            )
+
+        result = result.split(":")[1]
+        await ctx.send(result)
+
+    @commands.command()
     async def bots(self, ctx, amount=12):
         """Shows a little information about the top bots.
 
@@ -61,16 +83,19 @@ class misc(commands.Cog):
         url = "https://topbots.advaith.workers.dev/"
 
         bots = await self.bot.get_json(url)
-        embed = discord.Embed(color=discord.Color.og_blurple())
+        embed = discord.Embed(color=discord.Color.blurple())
 
         for i, bot in enumerate(bots):
             if i == amount:
                 break
-            embed.add_field(name=bot["name"], value=(
-                f"```ahk\nID:\n{bot['id']}\n\n"
-                f"Servers:\n{bot['servers']}\n\n"
-                f"Discord library:\n{bot['lib']}```"
-            ))
+            embed.add_field(
+                name=bot["name"],
+                value=(
+                    f"```ahk\nID:\n{bot['id']}\n\n"
+                    f"Servers:\n{bot['servers']}\n\n"
+                    f"Discord library:\n{bot['lib']}```"
+                ),
+            )
 
         await ctx.send(embed=embed)
 
