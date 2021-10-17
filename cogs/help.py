@@ -1,24 +1,9 @@
-import asyncio
 import difflib
 
-from discord.ext import commands, menus
+from discord import ui
+from discord.ext import menus
+from discord.ext import commands
 import discord
-
-# Taken From https://github.com/Rapptz/RoboDanny
-
-
-class RoboPages(menus.MenuPages):
-    def __init__(self, source):
-        super().__init__(source=source, check_embeds=True)
-
-    async def finalize(self, timed_out):
-        try:
-            if timed_out:
-                await self.message.clear_reactions()
-            else:
-                await self.message.delete()
-        except discord.HTTPException:
-            pass
 
 
 class BotHelpPageSource(menus.ListPageSource):
@@ -118,44 +103,63 @@ class GroupHelpPageSource(menus.ListPageSource):
         return embed
 
 
-class HelpMenu(RoboPages):
-    def __init__(self, source):
-        super().__init__(source)
+class HelpMenu(ui.View, menus.MenuPages):
+    def __init__(self, source, *, delete_message_after=True):
+        super().__init__(timeout=60)
+        self._source = source
+        self.current_page = 0
+        self.ctx = None
+        self.message = None
+        self.delete_message_after = delete_message_after
 
-    @menus.button("\N{WHITE QUESTION MARK ORNAMENT}", position=menus.Last(5))
-    async def show_bot_help(self, payload):
-        """Shows how to use the bot."""
-        embed = discord.Embed(colour=discord.Colour.blurple())
-        embed.title = "How Interpret The Help Pages"
+    async def start(self, ctx, *, channel=None, wait=False):
+        await self._source._prepare_once()
+        self.ctx = ctx
+        self.message = await self.send_initial_message(ctx, ctx.channel)
 
-        entries = (
-            ("<argument>", "This means the argument is __**required**__."),
-            ("[argument]", "This means the argument is __**optional**__."),
-            ("[A|B]", "This means that it can be __**either A or B**__."),
-            (
-                "[argument...]",
-                "This means you can have multiple arguments.\n"
-                "Now that you know the basics, it should be noted that...\n"
-                "__**You do not type in the brackets!**__",
-            ),
-        )
+    async def _get_kwargs_from_page(self, page):
+        """This method calls ListPageSource.format_page class"""
+        value = await super()._get_kwargs_from_page(page)
+        if "view" not in value:
+            value.update({"view": self})
+        return value
 
-        for name, value in entries:
-            embed.add_field(name=name, value=value, inline=False)
+    async def interaction_check(self, interaction):
+        """Only allow the author that invoke the command to be able to use the interaction"""
+        return interaction.user == self.ctx.author
 
-        embed.set_footer(
-            text=f"We were on page {self.current_page + 1} before this message."
-        )
-        await self.message.edit(embed=embed)
+    @ui.button(
+        emoji="<:before_fast_check:754948796139569224>",
+        style=discord.ButtonStyle.blurple,
+    )
+    async def first_page(self, button, interaction):
+        await self.show_page(0)
 
-        async def go_back_to_current_page():
-            await asyncio.sleep(30.0)
-            try:
-                await self.show_page(self.current_page)
-            except discord.errors.NotFound:
-                return
+    @ui.button(
+        emoji="<:before_check:754948796487565332>", style=discord.ButtonStyle.blurple
+    )
+    async def before_page(self, button, interaction):
+        await self.show_checked_page(self.current_page - 1)
 
-        self.bot.loop.create_task(go_back_to_current_page())
+    @ui.button(
+        emoji="<:stop_check:754948796365930517>", style=discord.ButtonStyle.blurple
+    )
+    async def stop_page(self, button, interaction):
+        self.stop()
+        if self.delete_message_after:
+            await self.message.delete(delay=0)
+
+    @ui.button(
+        emoji="<:next_check:754948796361736213>", style=discord.ButtonStyle.blurple
+    )
+    async def next_page(self, button, interaction):
+        await self.show_checked_page(self.current_page + 1)
+
+    @ui.button(
+        emoji="<:next_fast_check:754948796391227442>", style=discord.ButtonStyle.blurple
+    )
+    async def last_page(self, button, interaction):
+        await self.show_page(self._source.get_max_pages() - 1)
 
 
 class PaginatedHelpCommand(commands.HelpCommand):
