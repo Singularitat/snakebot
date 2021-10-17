@@ -66,8 +66,9 @@ class misc(commands.Cog):
 
         if result == "Error":
             return await ctx.send(
-                embed=discord.Embed(description="Decryption failed"),
-                color=discord.Color.blurple(),
+                embed=discord.Embed(
+                    description="Dehashing failed", color=discord.Color.blurple()
+                ),
             )
 
         result = result.split(":")[1]

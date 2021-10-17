@@ -1075,18 +1075,19 @@ class useful(commands.Cog):
         await self.wait_for_deletion(ctx.author, message)
 
     @commands.command(aliases=["c"])
-    async def calc(self, ctx, num_base, *, args=""):
+    async def calc(self, ctx, num_base, *, expr=""):
         """Does math.
 
-        Has access to some basic math functions such as
-        comb, factorial, gcd, log, perm, cos, sin, tan
-        and constants like pi, e, tau.
+        It access to the following basic math functions
+        ceil, comb, [fact]orial, gcd, lcm, perm, log, log2,
+        log10, sqrt, acos, asin, atan, cos, sin, tain
+        and the constants pi, e, tau.
 
         num_base: str
             The base you want to calculate in.
             Can be hex, oct, bin and for decimal ignore this argument
-        args: str
-            A str of arguments to calculate.
+        expr: str
+            A expression to calculate.
         """
         num_bases = {
             "h": (16, hex_float, "0x"),
@@ -1097,14 +1098,14 @@ class useful(commands.Cog):
 
         if not base:
             base = 10
-            args = f"{num_base} {args}"
+            expr = f"{num_base} {expr}"
         elif base in (2, 8):
-            args = args.replace(prefix, "")
+            expr = expr.replace(prefix, "")
 
         regex = r"(?:0[xX])?[0-9a-fA-F]+" if base == 16 else r"\d+"
-        numbers = [int(num, base) for num in re.findall(regex, args)]
+        numbers = [int(num, base) for num in re.findall(regex, expr)]
 
-        expr = re.sub(regex, "{}", args).format(*numbers)
+        expr = re.sub(regex, "{}", expr).format(*numbers)
         result = safe_eval(compile(expr, "<calc>", "eval", flags=1024).body)
 
         embed = discord.Embed(color=discord.Color.blurple())
