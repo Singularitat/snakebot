@@ -79,7 +79,7 @@ class misc(commands.Cog):
         embed.set_image(
             url=(
                 "https://app.pixelencounter.com/api/basic/svgmonsters"
-                f"/image/png?primaryColor=%23{color}&size=500&format=png"
+                f"/image/png?primaryColor=%23{color}&size=256&format=png"
             )
         )
         await ctx.send(embed=embed)

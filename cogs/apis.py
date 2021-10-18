@@ -3,6 +3,7 @@ import random
 import re
 import textwrap
 from html import unescape
+from io import BytesIO
 
 from datetime import datetime
 from discord.ext import commands
@@ -177,13 +178,11 @@ class apis(commands.Cog):
     @commands.command()
     async def art(self, ctx):
         """Gets an ai generated painting."""
-        url = "https://boredhumans.com/api_art.php"
+        url = "https://thisartworkdoesnotexist.com"
 
-        async with ctx.typing(), self.bot.client_session.post(url) as resp:
-            text = await resp.text()
-
-        link = re.search(r"<img src=\"(.*)\" alt=", text).group(1)
-        await ctx.send(link)
+        async with ctx.typing(), self.bot.client_session.get(url) as resp:
+            with BytesIO((await resp.read())) as image_binary:
+                await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
 
     @commands.command()
     async def coffee(self, ctx):
