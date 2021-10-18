@@ -888,16 +888,16 @@ class useful(commands.Cog):
         command: str
             The command to run including arguments.
         """
-        ctx.content = f"{ctx.prefix}{command}"
-        ctx = await self.bot.get_context(ctx, cls=type(ctx))
+        ctx.message.content = f"{ctx.prefix}{command}"
+        new_ctx = await self.bot.get_context(ctx.message, cls=type(ctx))
         embed = discord.Embed(color=discord.Color.blurple())
 
-        if not ctx.command:
-            embed.description = "```No command found```"
+        if not new_ctx.command:
+            embed.description = "```Command not found```"
             return await ctx.send(embed=embed)
 
         start = time.perf_counter()
-        await ctx.command.invoke(ctx)
+        await new_ctx.command.invoke(new_ctx)
         end = time.perf_counter()
 
         embed.description = f"`Time: {(end - start) * 1000:.2f}ms`"
