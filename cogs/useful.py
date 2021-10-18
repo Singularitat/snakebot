@@ -339,6 +339,7 @@ class useful(commands.Cog):
                 file=discord.File(io.StringIO(formatted), "output.py")
             )
 
+        formatted = formatted.replace("`", "`\u200b")
         await ctx.reply(f"```py\n{formatted}```")
 
     @commands.command()
@@ -840,6 +841,7 @@ class useful(commands.Cog):
         lang = lang.strip()
 
         if lang not in orjson.loads(self.DB.main.get(b"aliases")):
+            lang = lang.replace("`", "`\u200b")
             return await ctx.reply(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
@@ -876,6 +878,7 @@ class useful(commands.Cog):
         if len(f"```\n{output}```") > 2000:
             return await ctx.reply(file=discord.File(io.StringIO(output), "output.txt"))
 
+        output = output.replace("`", "`\u200b")
         await ctx.reply(f"```\n{output}```")
 
     @commands.command()
