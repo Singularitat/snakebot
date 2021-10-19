@@ -74,6 +74,17 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def reddit_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="reddit"):
+            await self.cog.reddit(self.cog, context)
+
+            if context.send.call_args.kwargs:
+                self.assertNotEqual(
+                    context.send.call_args.kwargs["embed"].color.value, 10038562
+                )
+
     async def bots_command(self):
         context = helpers.MockContext()
 
