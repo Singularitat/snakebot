@@ -74,6 +74,17 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def reddit_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="reddit"):
+            await self.cog.reddit(self.cog, context)
+
+            if context.send.call_args.kwargs:
+                self.assertNotEqual(
+                    context.send.call_args.kwargs["embed"].color.value, 10038562
+                )
+
     async def bots_command(self):
         context = helpers.MockContext()
 
@@ -813,6 +824,14 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
         cls.cog = misc(bot=bot)
+
+    async def test_diff_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="diff"):
+            await self.cog.diff(self.cog, context, "13/10/2021")
+
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
     async def test_color_command(self):
         context = helpers.MockContext()
