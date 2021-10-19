@@ -825,6 +825,14 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = misc(bot=bot)
 
+    async def test_diff_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="diff"):
+            await self.cog.diff(self.cog, context, "13/10/2021")
+
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
     async def test_color_command(self):
         context = helpers.MockContext()
 
