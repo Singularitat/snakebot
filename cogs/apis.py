@@ -20,6 +20,30 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def t0(self, ctx, *, prompt: str):
+        """Uses the T0 model to do natural language processing on a prompt.
+
+        prompt: str
+        """
+        url = "https://api-inference.huggingface.co/models/bigscience/T0pp"
+
+        data = {
+            "inputs": prompt,
+        }
+
+        async with ctx.typing(), self.bot.client_session.post(
+            url, json=data, timeout=30
+        ) as resp:
+            resp = await resp.json()
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```\n{resp[0]['generated_text']}```",
+            )
+        )
+
+    @commands.command()
     async def reddit(self, ctx, subreddit: str = "all"):
         """Gets a random post from a subreddit.
 
@@ -219,19 +243,17 @@ class apis(commands.Cog):
 
         await ctx.send(f">>> {text.lstrip()}")
 
-    @commands.cooldown(1, 15, commands.BucketType.user)
-    @commands.command()
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    @commands.command(aliases=["complete"])
     async def synth(self, ctx, *, prompt: str):
         """Completes a text prompt using GPT-J 6B."""
-        url = "https://bellard.org/textsynth/api/v1/engines/gptj_6B/completions"
+        url = "https://api.eleuther.ai/completion"
 
         data = {
-            "prompt": prompt,
-            "seed": 0,
-            "stream": False,
-            "temperature": 1,
-            "top_k": 40,
-            "top_p": 0.9,
+            "context": prompt,
+            "remove_input": False,
+            "temp": 0.8,
+            "topP": 0.9,
         }
 
         async with ctx.typing(), self.bot.client_session.post(
@@ -242,7 +264,7 @@ class apis(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 color=discord.Color.blurple(),
-                description=f"```\n{prompt}{resp['text']}```",
+                description=f"```\n{resp[0]['generated_text']}```",
             )
         )
 
