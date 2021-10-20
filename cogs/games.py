@@ -651,7 +651,7 @@ class games(commands.Cog):
             852509694341283871,
             ctx,
             f"{ctx.guild.id}-spellcast".encode(),
-            "There is another active SpellCast game"
+            "There is another active SpellCast game",
         )
 
 

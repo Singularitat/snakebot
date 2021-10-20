@@ -20,6 +20,30 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def t0(self, ctx, *, prompt: str):
+        """Uses the T0 model to do natural language processing on a prompt.
+
+        prompt: str
+        """
+        url = "https://api-inference.huggingface.co/models/bigscience/T0pp"
+
+        data = {
+            "inputs": prompt,
+        }
+
+        async with ctx.typing(), self.bot.client_session.post(
+            url, json=data, timeout=30
+        ) as resp:
+            resp = await resp.json()
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```\n{resp[0]['generated_text']}```",
+            )
+        )
+
+    @commands.command()
     async def reddit(self, ctx, subreddit: str = "all"):
         """Gets a random post from a subreddit.
 
