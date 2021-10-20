@@ -643,6 +643,17 @@ class games(commands.Cog):
             "There is another active Youtube Together",
         )
 
+    @commands.command()
+    @commands.guild_only()
+    async def spell(self, ctx):
+        """Starts a game of Spell Cast."""
+        await self.game_invite(
+            852509694341283871,
+            ctx,
+            f"{ctx.guild.id}-spellcast".encode(),
+            "There is another active SpellCast game"
+        )
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the games cog."""
