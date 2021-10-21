@@ -424,7 +424,7 @@ class owner(commands.Cog):
     @cache.command()
     async def wipe(self, ctx):
         """Wipes cache from the db."""
-        self.DB.main.delete(b"cache")
+        self.DB.main.put(b"cache", b"{}")
 
         await ctx.send(
             embed=discord.Embed(

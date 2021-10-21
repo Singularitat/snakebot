@@ -71,12 +71,17 @@ class apis(commands.Cog):
                 if post["data"]["over_18"]:
                     continue
                 post = post["data"]
+                video = post["secure_media"]
+                if video:
+                    if "oembed" in video:
+                        video = video["oembed"]["thumbnail_url"]
+                    else:
+                        video = video["reddit_video"]["fallback_url"]
+
                 clean_posts.append(
                     {
                         "title": post["title"],
-                        "video": post["secure_media"]["reddit_video"]["fallback_url"]
-                        if post["secure_media"]
-                        else None,
+                        "video": video,
                         "url": post["url"],
                         "link": post["permalink"],
                         "sub": post["subreddit_name_prefixed"],

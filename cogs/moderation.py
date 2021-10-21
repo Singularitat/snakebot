@@ -341,7 +341,7 @@ class moderation(commands.Cog):
         else:
             embed.title = f"Banned {member.display_name}"
 
-        await member.ban(reason=reason)
+        await member.ban(delete_message_days=0, reason=reason)
 
         member_id = f"{ctx.guild.id}-{member.id}".encode()
         infractions = self.DB.infractions.get(member_id)
@@ -551,7 +551,7 @@ class moderation(commands.Cog):
         """
 
         def check(msg):
-            return msg.author.id == user.id
+            return msg.author == user
 
         await ctx.channel.purge(limit=num_messages, check=check, before=None)
 
