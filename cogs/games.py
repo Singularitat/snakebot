@@ -318,6 +318,28 @@ class games(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
+    @commands.command()
+    async def games(self, ctx):
+        """Shows the discord games you can play."""
+        embed = discord.Embed(
+            color=discord.Color.blurple(),
+            title="Currently supported games from discord",
+        )
+
+        embed.description = """
+        `.chess`     (Chess in the Park)
+        `.poker`     (Poker Night)
+        `.betrayal`  (Betrayal.io)
+        `.fishing`   (Fishington.io)
+        `.youtube`   (Watch YouTube)
+        `.spell`     (SpellCast) - A scrabble like game
+        `.word`      (Word Snacks) - A word wheel like game
+        `.scrabble`  (Letter Tile)
+        `.doodle`    (Doodle Crew) - Basically skribblio
+        """
+        embed.set_footer(text="Games are still in beta and may be broken")
+        await ctx.send(embed=embed)
+
     async def game_invite(
         self, game_id: int, ctx: commands.Context, key: bytes, msg: str
     ):
@@ -367,36 +389,6 @@ class games(commands.Cog):
 
         await ctx.send(f"https://discord.gg/{data['code']}")
         self.DB.main.put(key, data["code"].encode())
-
-    @commands.command()
-    async def word(self, ctx):
-        """Starts a game of Word Snacks."""
-        await self.game_invite(
-            879863976006127627,
-            ctx,
-            f"{ctx.guild.id}-snacks".encode(),
-            "There is another active Word Snacks game",
-        )
-
-    @commands.command()
-    async def scrabble(self, ctx):
-        """Starts a game of Letter Tile."""
-        await self.game_invite(
-            879863686565621790,
-            ctx,
-            f"{ctx.guild.id}-tile".encode(),
-            "There is another active Letter Tile game",
-        )
-
-    @commands.command()
-    async def doodle(self, ctx):
-        """Starts a game of Doodle Crew."""
-        await self.game_invite(
-            878067389634314250,
-            ctx,
-            f"{ctx.guild.id}-doodle".encode(),
-            "There is another active Doodle Crew game",
-        )
 
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.command()
@@ -652,6 +644,36 @@ class games(commands.Cog):
             ctx,
             f"{ctx.guild.id}-spellcast".encode(),
             "There is another active SpellCast game",
+        )
+
+    @commands.command()
+    async def word(self, ctx):
+        """Starts a game of Word Snacks."""
+        await self.game_invite(
+            879863976006127627,
+            ctx,
+            f"{ctx.guild.id}-snacks".encode(),
+            "There is another active Word Snacks game",
+        )
+
+    @commands.command()
+    async def scrabble(self, ctx):
+        """Starts a game of Letter Tile."""
+        await self.game_invite(
+            879863686565621790,
+            ctx,
+            f"{ctx.guild.id}-tile".encode(),
+            "There is another active Letter Tile game",
+        )
+
+    @commands.command()
+    async def doodle(self, ctx):
+        """Starts a game of Doodle Crew."""
+        await self.game_invite(
+            878067389634314250,
+            ctx,
+            f"{ctx.guild.id}-doodle".encode(),
+            "There is another active Doodle Crew game",
         )
 
 
