@@ -516,7 +516,7 @@ class apis(commands.Cog):
         async with ctx.typing():
             quote = await self.bot.get_json(url)
             embed = discord.Embed(
-                color=discord.Color.blurple(), description=quote["quote"]
+                color=discord.Color.blurple(), description="> " + quote["quote"]
             )
             embed.set_footer(text="― Kayne West")
             await ctx.send(embed=embed)
@@ -529,9 +529,9 @@ class apis(commands.Cog):
         async with ctx.typing():
             quote = await self.bot.get_json(url)
             embed = discord.Embed(
-                color=discord.Color.blurple(), description=quote["text"]
+                color=discord.Color.blurple(), description="> " + quote["text"]
             )
-            embed.set_footer(text=f"― {quote['name']}")
+            embed.set_footer(text=f"― {quote['author']['name']}")
             await ctx.send(embed=embed)
 
     @commands.command()
@@ -542,7 +542,7 @@ class apis(commands.Cog):
         async with ctx.typing():
             quote = await self.bot.get_json(url)
             embed = discord.Embed(
-                color=discord.Color.blurple(), description=quote["quote"]
+                color=discord.Color.blurple(), description="> " + quote["quote"]
             )
             embed.set_footer(text="― Sun Tzu, Art Of War")
             await ctx.send(embed=embed)
