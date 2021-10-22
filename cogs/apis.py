@@ -20,6 +20,16 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def advice(self, ctx):
+        """Uses adviceslip.com to send you advice."""
+        url = "https://api.adviceslip.com/advice"
+
+        async with self.bot.client_session.get(url) as resp:
+            data = await resp.json(content_type=None)
+
+        await ctx.send("> " + data["slip"]["advice"])
+
+    @commands.command()
     async def t0(self, ctx, *, prompt: str):
         """Uses the T0 model to do natural language processing on a prompt.
 
