@@ -20,6 +20,16 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def advice(self, ctx):
+        """Uses adviceslip.com to send you advice."""
+        url = "https://api.adviceslip.com/advice"
+
+        async with self.bot.client_session.get(url) as resp:
+            data = await resp.json(content_type=None)
+
+        await ctx.send("> " + data["slip"]["advice"])
+
+    @commands.command()
     async def t0(self, ctx, *, prompt: str):
         """Uses the T0 model to do natural language processing on a prompt.
 
@@ -506,7 +516,7 @@ class apis(commands.Cog):
         async with ctx.typing():
             quote = await self.bot.get_json(url)
             embed = discord.Embed(
-                color=discord.Color.blurple(), description=quote["quote"]
+                color=discord.Color.blurple(), description="> " + quote["quote"]
             )
             embed.set_footer(text="― Kayne West")
             await ctx.send(embed=embed)
@@ -519,9 +529,9 @@ class apis(commands.Cog):
         async with ctx.typing():
             quote = await self.bot.get_json(url)
             embed = discord.Embed(
-                color=discord.Color.blurple(), description=quote["text"]
+                color=discord.Color.blurple(), description="> " + quote["text"]
             )
-            embed.set_footer(text=f"― {quote['name']}")
+            embed.set_footer(text=f"― {quote['author']['name']}")
             await ctx.send(embed=embed)
 
     @commands.command()
@@ -532,7 +542,7 @@ class apis(commands.Cog):
         async with ctx.typing():
             quote = await self.bot.get_json(url)
             embed = discord.Embed(
-                color=discord.Color.blurple(), description=quote["quote"]
+                color=discord.Color.blurple(), description="> " + quote["quote"]
             )
             embed.set_footer(text="― Sun Tzu, Art Of War")
             await ctx.send(embed=embed)
