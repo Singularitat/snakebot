@@ -74,6 +74,14 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def advice_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="advice"):
+            await self.cog.advice(self.cog, context)
+
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
     async def reddit_command(self):
         context = helpers.MockContext()
 
