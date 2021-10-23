@@ -74,6 +74,24 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def t0_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="t0"):
+            await self.cog.t0(self.cog, context, "What is life")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+    async def advice_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="advice"):
+            await self.cog.advice(self.cog, context)
+
+            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+
     async def reddit_command(self):
         context = helpers.MockContext()
 
@@ -824,6 +842,14 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
         cls.cog = misc(bot=bot)
+
+    async def test_epoch_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="epoch"):
+            await self.cog.epoch(self.cog, context, 1634895114179)
+
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
     async def test_diff_command(self):
         context = helpers.MockContext()
