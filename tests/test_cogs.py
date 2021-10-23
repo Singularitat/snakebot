@@ -833,6 +833,14 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = misc(bot=bot)
 
+    async def test_epoch_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="epoch"):
+            await self.cog.epoch(self.cog, context, 1634895114179)
+
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
     async def test_diff_command(self):
         context = helpers.MockContext()
 
