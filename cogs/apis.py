@@ -20,6 +20,21 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def puzzle(self, ctx):
+        """Gets a random chess puzzle."""
+        url = "https://api.chess.com/pub/puzzle/random"
+        data = await self.bot.get_json(url)
+        embed = discord.Embed(
+            color=discord.Color.blurple(), title=data["title"], url=data["url"]
+        )
+        embed.add_field(name="Publish Time", value=f"<t:{data['publish_time']}:R>")
+        embed.set_image(url=data["image"])
+        embed.set_footer(
+            text="url will take you to the daily puzzle unless you have premium D:"
+        )
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def advice(self, ctx):
         """Uses adviceslip.com to send you advice."""
         url = "https://api.adviceslip.com/advice"
