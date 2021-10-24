@@ -320,8 +320,7 @@ class background_tasks(commands.Cog):
     async def update_crypto(self):
         """Updates crypto currency data every 10 minutes."""
         url = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing?limit=50000&convert=NZD&cryptoType=coins"
-        async with self.bot.client_session.get(url) as response:
-            crypto = await response.json()
+        crypto = await self.bot.get_json(url)
 
         with self.DB.crypto.write_batch() as wb:
             for coin in crypto["data"]["cryptoCurrencyList"]:
@@ -343,6 +342,16 @@ class background_tasks(commands.Cog):
                         }
                     ),
                 )
+
+    @tasks.loop(hours=24)
+    async def update_domain(self):
+        """Updates the domain used for the tempmail command."""
+        url = "https://api.mail.tm/domains?page=1"
+        async with self.bot.client_session.get(url) as resp:
+            data = await resp.json()
+
+        domain = data["hydra:member"][0]["domain"]
+        self.DB.main.put(b"tempdomain", domain.encode())
 
 
 def setup(bot):
