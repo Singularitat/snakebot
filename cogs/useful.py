@@ -174,8 +174,9 @@ class useful(commands.Cog):
         """Creates a random tempmail account for you."""
         url = "https://api.mail.tm/accounts"
         password = secrets.token_urlsafe()
+        domain = self.DB.main.get(b"tempdomain").decode()
         account = {
-            "address": f"{secrets.token_urlsafe(16)}@pussport.com",
+            "address": f"{secrets.token_urlsafe(16)}@{domain}",
             "password": password,
         }
 
@@ -184,7 +185,7 @@ class useful(commands.Cog):
 
         embed = discord.Embed(
             color=discord.Color.blurple(),
-            title="Temp Mail Created",
+            title="Temp Mail Account Created",
         )
         embed.add_field(
             name="Email Address", value=f"```yaml\n{data['address']}```", inline=False
