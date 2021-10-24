@@ -52,6 +52,49 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def md(self, ctx, *, text):
+        """Shows text inside a variety of different code block markdown.
+
+        text: str
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+        if len(text) > 236:
+            embed.description = "```Text must be shorter than 236 characters```"
+            return await ctx.send(embed=embed)
+
+        languages = (
+            "asciidoc",
+            "ahk",
+            "bash",
+            "coffee",
+            "cpp",
+            "cs",
+            "css",
+            "diff",
+            "fix",
+            "glsl",
+            "ini",
+            "json",
+            "md",
+            "ml",
+            "prolog",
+            "py",
+            "tex",
+            "xl",
+            "xml",
+            "clj",
+            "dst",
+            "fs",
+            "f95",
+            "go",
+        )
+
+        for lang in languages:
+            embed.add_field(name=lang, value=f"```{lang}\n{text}```")
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def fen(self, ctx, *, fen: str):
         """Converts a chess fen to an image.
 
