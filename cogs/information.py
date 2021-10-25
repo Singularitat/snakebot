@@ -403,7 +403,7 @@ class information(commands.Cog):
     ):
         """Sends info about a member.
 
-        member: discord.Member
+        member: typing.Union[discord.Member, discord.User]
             The member to get info of defulting to the invoker.
         """
         user = user or ctx.author
@@ -411,28 +411,38 @@ class information(commands.Cog):
 
         embed = discord.Embed(
             title=(str(user) + (" `[BOT]`" if user.bot else "")),
-            color=discord.Color.blurple(),
+            color=discord.Color.random(),
         )
 
         embed.add_field(
             name="User information",
-            value=f"Created: **{created}**\nProfile: {user.mention}\nID: {user.id}",
+            value=f"Created: **{created}**\nProfile: {user.mention}\nID: `{user.id}`",
             inline=False,
         )
 
         if hasattr(user, "guild"):
             roles = ", ".join(role.mention for role in user.roles[1:])
             joined = f"**<t:{user.joined_at.timestamp():.0f}:R>**"
-            embed.color = user.top_role.colour if roles else embed.color
+            if roles and user.top_role.colour.value != 0:
+                embed.color = user.top_role.colour
             embed.title = f"{user.nick} ({user})" if user.nick else embed.title
 
             embed.add_field(
                 name="Member information",
-                value=f"Joined: {joined}\nRoles: {roles or None}",
+                value=f"Joined: {joined}\nRoles: {roles or None}\n",
                 inline=False,
             )
+            des = "ini" if user.desktop_status.value != "offline" else "css"
+            mob = "ini" if user.mobile_status.value != "offline" else "css"
+            web = "ini" if user.web_status.value != "offline" else "css"
 
-        embed.set_thumbnail(url=user.avatar)
+            embed.add_field(
+                name="Desktop", value=f"```{des}\n[{user.desktop_status}]```"
+            )
+            embed.add_field(name="Mobile", value=f"```{mob}\n[{user.mobile_status}]```")
+            embed.add_field(name="Web", value=f"```{web}\n[{user.web_status}]```")
+
+        embed.set_thumbnail(url=user.avatar or user.default_avatar)
 
         await ctx.send(embed=embed)
 
@@ -444,7 +454,7 @@ class information(commands.Cog):
             The member to show the avatar of.
         """
         user = user or ctx.author
-        await ctx.send(user.avatar)
+        await ctx.send(user.avatar or user.default_avatar)
 
 
 def setup(bot: commands.Bot) -> None:

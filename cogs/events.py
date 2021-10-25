@@ -303,23 +303,21 @@ class events(commands.Cog):
             not message.guild
             or self.DB.main.get(f"{message.guild.id}-logging".encode())
             or message.author == self.bot.user
-            or not message.content
-            and (
-                not message.attachments
-                or message.attachments[0].content_type.startswith("image/")
-            )
         ):
             return
 
-        image_urls = [
-            attachment.url
-            for attachment in message.attachments
-            if attachment.content_type.startswith("image/")
+        attachments = [
+            attach.url
+            for attach in message.attachments
+            if attach.content_type.startswith("image/")
         ]
+
+        if not message.content and not attachments:
+            return
 
         content = "{}\n{}".format(
             (message.content.replace("`", "`\u200b") if message.content else ""),
-            "\n".join(image_urls),
+            "\n".join(attachments),
         )
 
         member_id = f"{message.guild.id}-{message.author.id}".encode()

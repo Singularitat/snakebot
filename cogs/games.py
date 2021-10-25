@@ -629,7 +629,7 @@ class games(commands.Cog):
     async def youtube(self, ctx):
         """Starts a YouTube Together."""
         await self.game_invite(
-            755600276941176913,
+            880218394199220334,
             ctx,
             f"{ctx.guild.id}-youtube_together".encode(),
             "There is another active Youtube Together",

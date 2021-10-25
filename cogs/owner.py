@@ -565,11 +565,9 @@ class owner(commands.Cog):
         except commands.CommandError:
             end = time.perf_counter()
             result = "Failed"
+            error = traceback.format_exc().replace("`", "`\u200b")
 
-            try:
-                await ctx.send(f"```py\n{traceback.format_exc()}\n```")
-            except discord.HTTPException:
-                pass
+            await ctx.send(f"```py\n{error}\n```")
         else:
             end = time.perf_counter()
             result = "Success"
