@@ -59,7 +59,7 @@ class apis(commands.Cog):
         async with ctx.typing(), self.bot.client_session.post(
             url, json=data, timeout=30
         ) as resp:
-            resp = await resp.json()
+            resp = await resp.json(content_type=None)
 
         await ctx.send(
             embed=discord.Embed(
