@@ -52,6 +52,22 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def code(self, ctx):
+        embed = discord.Embed(
+            color=discord.Color.random(), title="Discord Code Block formatting"
+        )
+        embed.description = """
+        You can format code like this
+        \\`\\`\\`py
+        print("test")
+        \\`\\`\\`
+
+        Which renders in discord as
+        ```py\nprint("test")```
+        """
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def md(self, ctx, *, text):
         """Shows text inside a variety of different code block markdown.
 

@@ -24,8 +24,12 @@ class apis(commands.Cog):
         """Gets a random chess puzzle."""
         url = "https://api.chess.com/pub/puzzle/random"
         data = await self.bot.get_json(url)
+        next_to_move = "white" if " w " in data["fen"] else "black"
         embed = discord.Embed(
-            color=discord.Color.blurple(), title=data["title"], url=data["url"]
+            color=discord.Color.blurple(),
+            title=data["title"],
+            url=data["url"],
+            description=f"It is {next_to_move}'s turn to move.",
         )
         embed.add_field(name="Publish Time", value=f"<t:{data['publish_time']}:R>")
         embed.set_image(url=data["image"])
@@ -59,7 +63,7 @@ class apis(commands.Cog):
         async with ctx.typing(), self.bot.client_session.post(
             url, json=data, timeout=30
         ) as resp:
-            resp = await resp.json()
+            resp = await resp.json(content_type=None)
 
         await ctx.send(
             embed=discord.Embed(
