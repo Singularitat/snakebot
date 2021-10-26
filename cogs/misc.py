@@ -53,7 +53,9 @@ class misc(commands.Cog):
 
     @commands.command()
     async def code(self, ctx):
-        embed = discord.Embed(color=discord.Color.random(), title="Discord Code Block formatting")
+        embed = discord.Embed(
+            color=discord.Color.random(), title="Discord Code Block formatting"
+        )
         embed.description = """
         You can format code like this
         \\`\\`\\`py
