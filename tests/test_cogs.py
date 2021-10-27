@@ -49,8 +49,7 @@ class AnimalsCogTests(unittest.IsolatedAsyncioTestCase):
     @unittest.skip("Really Slow.")
     async def test_animal_commands(self):
         bot.client_session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=6),
-            connector=aiohttp.TCPConnector(ssl=False),
+            timeout=aiohttp.ClientTimeout(total=6)
         )
 
         await asyncio.gather(
@@ -66,13 +65,22 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
     @unittest.skip("Really Slow.")
     async def test_api_commands(self):
         bot.client_session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=6),
-            connector=aiohttp.TCPConnector(ssl=False),
+            timeout=aiohttp.ClientTimeout(total=6)
         )
 
         await asyncio.gather(
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
+
+    async def puzzle_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="puzzle"):
+            await self.cog.puzzle(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
 
     async def t0_command(self):
         context = helpers.MockContext()
@@ -843,6 +851,24 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = misc(bot=bot)
 
+    async def test_code_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.code(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_md_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.md(self.cog, context, text="!@#$%^&*()")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
     async def test_epoch_command(self):
         context = helpers.MockContext()
 
@@ -1361,8 +1387,7 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
     @unittest.skip("Really Slow.")
     async def test_useful_cog_api_commands(self):
         bot.client_session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=6),
-            connector=aiohttp.TCPConnector(ssl=False),
+            timeout=aiohttp.ClientTimeout(total=6)
         )
 
         await asyncio.gather(
