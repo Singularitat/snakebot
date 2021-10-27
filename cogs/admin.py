@@ -404,11 +404,6 @@ class admin(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not member:
-            if list(self.DB.blacklist) == []:
-                embed.title = "No downvoted users"
-                return await ctx.send(embed=embed)
-
-            embed.title = "Downvoted users"
             for member_id in self.DB.blacklist.iterator(include_value=False):
                 member_id = member_id.decode().split("-")
 
@@ -422,7 +417,11 @@ class admin(commands.Cog):
                     name="User:",
                     value=f"{guild}: {member_id}",
                 )
+            if not embed.fields:
+                embed.title = "No downvoted users"
+                return await ctx.send(embed=embed)
 
+            embed.title = "Downvoted users"
             return await ctx.send(embed=embed)
 
         if member.bot:
@@ -470,11 +469,6 @@ class admin(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
         if not user:
-            if list(self.DB.blacklist) == []:
-                embed.title = "No blacklisted users"
-                return await ctx.send(embed=embed)
-
-            embed.title = "Blacklisted users"
             for member_id in self.DB.blacklist.iterator(include_value=False):
                 member_id = member_id.decode().split("-")
 
@@ -488,7 +482,11 @@ class admin(commands.Cog):
                     name="User:",
                     value=f"{guild}: {member_id}",
                 )
+            if not embed.fields:
+                embed.title = "No blacklisted users"
+                return await ctx.send(embed=embed)
 
+            embed.title = "Blacklisted users"
             return await ctx.send(embed=embed)
 
         user_id = f"{ctx.guild.id}-{str(user.id)}".encode()
