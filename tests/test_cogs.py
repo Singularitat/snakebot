@@ -851,6 +851,15 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = misc(bot=bot)
 
+    async def test_md_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.md(self.cog, context, text="!@#$%^&*()")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
     async def test_epoch_command(self):
         context = helpers.MockContext()
 
