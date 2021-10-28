@@ -72,6 +72,16 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def validate_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="validate"):
+            await self.cog.validate(self.cog, context, "google.com")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def puzzle_command(self):
         context = helpers.MockContext()
 
@@ -850,6 +860,18 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
         cls.cog = misc(bot=bot)
+
+    async def test_fen_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="fen"):
+            await self.cog.fen(
+                self.cog,
+                context,
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            )
+
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
     async def test_code_command(self):
         context = helpers.MockContext()
