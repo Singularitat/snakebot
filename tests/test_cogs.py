@@ -72,6 +72,16 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def validate_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="validate"):
+            await self.cog.validate(self.cog, context, "google.com")
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def puzzle_command(self):
         context = helpers.MockContext()
 
