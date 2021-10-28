@@ -20,6 +20,30 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def validate(self, ctx, domain):
+        """Checks if domains are disposable used to check if tempmail is fine.
+
+        domain: str
+        """
+        # This makes it so even if an email is passed in it is fine
+        domain = domain.split("@")[-1]
+
+        url = f"https://www.validator.pizza/domain/{domain}"
+        data = await self.bot.get_json(url)
+        embed = discord.Embed(color=discord.Color.blurple(), title=domain)
+
+        if "error" in data:
+            embed.description = f"```{data['error']}```"
+            await ctx.send(embed=embed)
+
+        if data["did_you_mean"]:
+            embed.add_field(name="Did you mean?", value=data["did_you_mean"])
+        embed.add_field(name="Disposable", value=data["disposable"])
+        embed.add_field(name="MX records", value=data["mx"])
+        embed.add_field(name="Status", value=data["status"])
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def puzzle(self, ctx):
         """Gets a random chess puzzle."""
         url = "https://api.chess.com/pub/puzzle/random"
