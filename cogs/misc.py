@@ -183,10 +183,9 @@ class misc(commands.Cog):
         end: str
             The ending time
         """
+        date = parse_date(start)
         if end:
-            date = parse_date(end) - parse_date(start) + discord.utils.utcnow()
-        else:
-            date = parse_date(start)
+            date = parse_date(end) - date + discord.utils.utcnow()
 
         await ctx.send(f"<t:{date.timestamp():.0f}:R>")
 
