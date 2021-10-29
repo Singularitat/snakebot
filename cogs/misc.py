@@ -183,10 +183,9 @@ class misc(commands.Cog):
         end: str
             The ending time
         """
+        date = parse_date(start)
         if end:
-            date = parse_date(end) - parse_date(start) + discord.utils.utcnow()
-        else:
-            date = parse_date(start)
+            date = parse_date(end) - date + discord.utils.utcnow()
 
         await ctx.send(f"<t:{date.timestamp():.0f}:R>")
 
@@ -380,7 +379,7 @@ class misc(commands.Cog):
 
         if not message.embeds:
             embed.description = "```Message has no embed```"
-            await ctx.send(embed=embed)
+            return await ctx.send(embed=embed)
 
         message_embed = message.embeds[0]
 
@@ -389,6 +388,7 @@ class misc(commands.Cog):
             .replace("'", '"')
             .replace("True", "true")
             .replace("False", "false")
+            .replace("`", "`\u200b")
         )
 
         if len(json) > 2000:
@@ -485,7 +485,7 @@ class misc(commands.Cog):
 
         number: int
         """
-        table = str.maketrans({"1": "0", "0": "1"})
+        table = {49: "0", 48: "1"}
         return await ctx.send(
             embed=discord.Embed(
                 color=discord.Color.blurple(),
@@ -550,7 +550,8 @@ class misc(commands.Cog):
 
     @staticmethod
     def format_op(op):
-        return f"{hex(opcodes[op])[2:]:<5}{opcodes[op]:<5}{op}"
+        code = opcodes[op]
+        return f"{code:<5x}{code:<5}{repr(chr(code)):<8}{op}"
 
     @commands.command()
     async def opcode(self, ctx, search):
@@ -558,11 +559,9 @@ class misc(commands.Cog):
 
         search: str
         """
-        matches = difflib.get_close_matches(
-            search.upper(), list(opcodes), cutoff=0, n=5
-        )
+        matches = difflib.get_close_matches(search.upper(), [*opcodes], cutoff=0, n=5)
         msg = "\n".join([self.format_op(match) for match in matches])
-        await ctx.send(f"```py\nHex: Num: Name:\n\n{msg}```")
+        await ctx.send(f"```py\nHex: Num: BC: Name:\n\n{msg}```")
 
     @commands.group()
     async def binary(self, ctx):
