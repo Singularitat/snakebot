@@ -379,7 +379,7 @@ class misc(commands.Cog):
 
         if not message.embeds:
             embed.description = "```Message has no embed```"
-            await ctx.send(embed=embed)
+            return await ctx.send(embed=embed)
 
         message_embed = message.embeds[0]
 
@@ -388,6 +388,7 @@ class misc(commands.Cog):
             .replace("'", '"')
             .replace("True", "true")
             .replace("False", "false")
+            .replace("`", "`\u200b")
         )
 
         if len(json) > 2000:
