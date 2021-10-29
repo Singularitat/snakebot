@@ -485,7 +485,7 @@ class misc(commands.Cog):
 
         number: int
         """
-        table = str.maketrans({"1": "0", "0": "1"})
+        table = {49: "0", 48: "1"}
         return await ctx.send(
             embed=discord.Embed(
                 color=discord.Color.blurple(),
