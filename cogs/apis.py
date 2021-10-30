@@ -4,6 +4,7 @@ import re
 import textwrap
 from html import unescape
 from io import BytesIO
+import base64
 
 from datetime import datetime
 from discord.ext import commands
@@ -20,7 +21,40 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
-    async def validate(self, ctx, domain):
+    async def deepfry(self, ctx, image: str):
+        """Deepfrys an image.
+
+        url: str
+        """
+        url = "https://dagpi.xyz/api/routes/dagpi-manip"
+        data = {
+            "method": "deepfry",
+            "token": "",
+            "url": image,
+        }
+        headers = {
+            "content-type": "text/plain;charset=UTF-8",
+        }
+
+        async with self.bot.client_session.post(
+            url, json=data, headers=headers
+        ) as resp:
+            resp = await resp.json()
+
+            if "response" in resp:
+                await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description=f"```\n{resp['response']}```",
+                    )
+                )
+
+            with BytesIO(base64.b64decode(resp["image"][22:])) as image:
+                filename = f"image.{resp['format']}"
+                await ctx.send(file=discord.File(fp=image, filename=filename))
+
+    @commands.command()
+    async def validate(self, ctx, domain: str):
         """Checks if domains are disposable used to check if tempmail is fine.
 
         domain: str
