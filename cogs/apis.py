@@ -370,7 +370,14 @@ class apis(commands.Cog):
         url = "https://inspirobot.me/api?generate=true"
 
         async with ctx.typing(), self.bot.client_session.get(url) as quote:
-            await ctx.send(await quote.text())
+            await ctx.send(
+                embed=discord.Embed(color=discord.Color.random())
+                .set_image(url=(await quote.text()))
+                .set_footer(
+                    icon_url="https://inspirobot.me/website/images/inspirobot-dark-green.png",
+                    text="inspirobot.me",
+                )
+            )
 
     @commands.command()
     async def wikipath(self, ctx, source: str, *, target: str):
