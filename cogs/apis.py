@@ -21,16 +21,17 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
-    async def deepfry(self, ctx, image: str):
+    async def deepfry(self, ctx, image_url: str = None):
         """Deepfrys an image.
 
-        url: str
+        image_url: str
         """
+        image_url = image_url or ctx.message.attachments[0].url
         url = "https://dagpi.xyz/api/routes/dagpi-manip"
         data = {
             "method": "deepfry",
             "token": "",
-            "url": image,
+            "url": image_url,
         }
         headers = {
             "content-type": "text/plain;charset=UTF-8",
