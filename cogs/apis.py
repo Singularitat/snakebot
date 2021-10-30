@@ -4,6 +4,7 @@ import re
 import textwrap
 from html import unescape
 from io import BytesIO
+import base64
 
 from datetime import datetime
 from discord.ext import commands
@@ -20,7 +21,41 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
-    async def validate(self, ctx, domain):
+    async def deepfry(self, ctx, image_url: str = None):
+        """Deepfrys an image.
+
+        image_url: str
+        """
+        image_url = image_url or ctx.message.attachments[0].url
+        url = "https://dagpi.xyz/api/routes/dagpi-manip"
+        data = {
+            "method": "deepfry",
+            "token": "",
+            "url": image_url,
+        }
+        headers = {
+            "content-type": "text/plain;charset=UTF-8",
+        }
+
+        async with self.bot.client_session.post(
+            url, json=data, headers=headers
+        ) as resp:
+            resp = await resp.json()
+
+            if "response" in resp:
+                await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description=f"```\n{resp['response']}```",
+                    )
+                )
+
+            with BytesIO(base64.b64decode(resp["image"][22:])) as image:
+                filename = f"image.{resp['format']}"
+                await ctx.send(file=discord.File(fp=image, filename=filename))
+
+    @commands.command()
+    async def validate(self, ctx, domain: str):
         """Checks if domains are disposable used to check if tempmail is fine.
 
         domain: str
@@ -370,7 +405,14 @@ class apis(commands.Cog):
         url = "https://inspirobot.me/api?generate=true"
 
         async with ctx.typing(), self.bot.client_session.get(url) as quote:
-            await ctx.send(await quote.text())
+            await ctx.send(
+                embed=discord.Embed(color=discord.Color.random())
+                .set_image(url=(await quote.text()))
+                .set_footer(
+                    icon_url="https://inspirobot.me/website/images/inspirobot-dark-green.png",
+                    text="inspirobot.me",
+                )
+            )
 
     @commands.command()
     async def wikipath(self, ctx, source: str, *, target: str):

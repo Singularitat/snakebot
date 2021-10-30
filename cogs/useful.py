@@ -467,7 +467,7 @@ class useful(commands.Cog):
             response = (await response.read()).decode("utf-8")
             response = response.replace(response[:16], "")
 
-        await ctx.send(response)
+        await ctx.reply(f"```{lang}\n{response}```")
 
     @commands.command()
     async def news(self, ctx):
@@ -876,11 +876,11 @@ class useful(commands.Cog):
                 )
             )
 
-        if len(f"```\n{output}```") > 2000:
+        if len(output) + len(lang) > 1993:
             return await ctx.reply(file=discord.File(io.StringIO(output), "output.txt"))
 
         output = output.replace("`", "`\u200b")
-        await ctx.reply(f"```\n{output}```")
+        await ctx.reply(f"```{lang}\n{output}```")
 
     @commands.command()
     async def time(self, ctx, *, command):
