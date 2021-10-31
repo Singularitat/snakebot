@@ -80,6 +80,22 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "ascii", url)
 
+    @commands.command()
+    async def sketch(self, ctx, url: str = None):
+        """Make a gif of sketching the image.
+
+        url: str
+        """
+        await self.dagpi(ctx, "sketch", url)
+
+    @commands.command()
+    async def sobel(self, ctx, url: str = None):
+        """Gets an image with the sobel effect.
+
+        url: str
+        """
+        await self.dagpi(ctx, "sobel", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
