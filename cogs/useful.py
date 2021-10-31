@@ -13,7 +13,7 @@ import orjson
 
 from cogs.utils.calculation import safe_eval, hex_float, oct_float, bin_float
 
-TIO_MAPPING = {
+TIO_ALIASES = {
     "asm": "assembly-nasm",
     "c": "c-gcc",
     "cpp": "cpp-gcc",
@@ -389,6 +389,7 @@ class useful(commands.Cog):
 
         language: str
         """
+        language = TIO_ALIASES.get(language, language)
         data = orjson.loads(self.DB.main.get(b"helloworlds"))
         code = data.get(language)
 
@@ -438,7 +439,7 @@ class useful(commands.Cog):
             )
 
         lang = lang.strip()
-        lang = TIO_MAPPING.get(lang, lang)  # tio doesn't have defaults
+        lang = TIO_ALIASES.get(lang, lang)  # tio doesn't have defaults
 
         if lang not in orjson.loads(self.DB.main.get(b"tiolanguages")):
             return await ctx.reply(
