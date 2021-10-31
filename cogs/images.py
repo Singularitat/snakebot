@@ -64,6 +64,22 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "deepfry", url)
 
+    @commands.command()
+    async def pixelate(self, ctx, url: str = None):
+        """Pixelates an image.
+
+        url: str
+        """
+        await self.dagpi(ctx, "pixel", url)
+
+    @commands.command()
+    async def ascii(self, ctx, url: str = None):
+        """Turns an image into ascii text.
+
+        url: str
+        """
+        await self.dagpi(ctx, "ascii", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
