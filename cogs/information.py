@@ -397,10 +397,8 @@ class information(commands.Cog):
         embed.set_thumbnail(url=ctx.guild.icon)
         await ctx.send(embed=embed)
 
-    @commands.command(name="user", aliases=["member"])
-    async def user_info(
-        self, ctx, user: typing.Union[discord.Member, discord.User] = None
-    ):
+    @commands.command(aliases=["member"])
+    async def user(self, ctx, user: typing.Union[discord.Member, discord.User] = None):
         """Sends info about a member.
 
         member: typing.Union[discord.Member, discord.User]
@@ -442,7 +440,7 @@ class information(commands.Cog):
             embed.add_field(name="Mobile", value=f"```{mob}\n[{user.mobile_status}]```")
             embed.add_field(name="Web", value=f"```{web}\n[{user.web_status}]```")
 
-        embed.set_thumbnail(url=user.avatar or user.default_avatar)
+        embed.set_thumbnail(url=user.display_avatar)
 
         await ctx.send(embed=embed)
 
