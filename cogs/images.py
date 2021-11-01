@@ -32,7 +32,7 @@ class images(commands.Cog):
             url, json=data, headers=headers, timeout=30
         ) as resp:
             if resp.content_type == "text/plain":
-                return await ctx.send(
+                return await ctx.reply(
                     embed=discord.Embed(
                         color=discord.Color.blurple(),
                         description=f"```ml\n{(await resp.text())}```",
@@ -41,7 +41,7 @@ class images(commands.Cog):
             resp = await resp.json()
 
             if "response" in resp:
-                return await ctx.send(
+                return await ctx.reply(
                     embed=discord.Embed(
                         color=discord.Color.blurple(),
                         description=f"```\n{resp['response']}```",
@@ -50,7 +50,7 @@ class images(commands.Cog):
 
             with BytesIO(base64.b64decode(resp["image"][22:])) as image:
                 filename = f"image.{resp['format']}"
-                await ctx.send(file=discord.File(fp=image, filename=filename))
+                await ctx.reply(file=discord.File(fp=image, filename=filename))
 
     @commands.command()
     async def deepfry(self, ctx, url: str = None):
@@ -91,6 +91,14 @@ class images(commands.Cog):
         url: str
         """
         await self.dagpi(ctx, "sobel", url)
+
+    @commands.command()
+    async def magik(self, ctx, url: str = None):
+        """Does magik on an image.
+
+        url: str
+        """
+        await self.dagpi(ctx, "magik", url)
 
 
 def setup(bot: commands.Bot) -> None:
