@@ -14,14 +14,10 @@ class images(commands.Cog):
 
     async def dagpi(self, ctx, method, image_url):
         if not image_url:
-            if not ctx.message.attachments:
-                return await ctx.send(
-                    embed=discord.Embed(
-                        color=discord.Color.blurple(),
-                        description="```Attach an image or add a url as an argument```",
-                    )
-                )
-            image_url = ctx.message.attachments[0].url
+            if ctx.message.attachments:
+                image_url = ctx.message.attachments[0].url
+            else:
+                image_url = ctx.author.display_avatar.url
         url = "https://dagpi.xyz/api/routes/dagpi-manip"
         data = {
             "method": method,
