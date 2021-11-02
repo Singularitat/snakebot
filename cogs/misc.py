@@ -457,13 +457,13 @@ class misc(commands.Cog):
     @rle.command()
     async def en(self, ctx, *, text):
         """Encodes a string with run length encoding."""
-        text = re.sub(r"(.)\1*", lambda m: str(len(m.group(0))) + m.group(1), text)
+        text = re.sub(r"(.)\1*", lambda m: m.group(1) + str(len(m.group(0))), text)
         await ctx.send(text)
 
     @rle.command()
     async def de(self, ctx, *, text):
         """Decodes a string with run length encoding."""
-        text = re.sub(r"(\d+)(\D)", lambda m: m.group(2) * int(m.group(1)), text)
+        text = re.sub(r"(\D)(\d+)", lambda m: int(m.group(2)) * m.group(1), text)
         await ctx.send(text)
 
     @commands.command()
@@ -573,7 +573,7 @@ class misc(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @binary.command(name="encode")
+    @binary.command(name="en")
     async def binary_encode(self, ctx, *, text):
         """Encodes ascii text as binary.
 
@@ -581,7 +581,7 @@ class misc(commands.Cog):
         """
         await ctx.send(" ".join([f"{bin(ord(letter))[2:]:0>8}" for letter in text]))
 
-    @binary.command(name="decode")
+    @binary.command(name="de")
     async def binary_decode(self, ctx, *, binary):
         """Decodes binary as ascii text.
 
