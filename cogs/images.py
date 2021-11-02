@@ -16,6 +16,10 @@ class images(commands.Cog):
         if not image_url:
             if ctx.message.attachments:
                 image_url = ctx.message.attachments[0].url
+            elif ctx.message.reference:
+                message = ctx.message.reference.cached_message
+                if message and message.attachments:
+                    image_url = message.attachments[0].url
             else:
                 image_url = ctx.author.display_avatar.url
         url = "https://dagpi.xyz/api/routes/dagpi-manip"
