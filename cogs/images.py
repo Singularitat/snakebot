@@ -100,6 +100,14 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "magik", url)
 
+    @commands.command()
+    async def colors(self, ctx, url: str = None):
+        """Shows the colors present in the image.
+
+        url: str
+        """
+        await self.dagpi(ctx, "colors", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
