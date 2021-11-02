@@ -16,6 +16,10 @@ class images(commands.Cog):
         if not image_url:
             if ctx.message.attachments:
                 image_url = ctx.message.attachments[0].url
+            elif ctx.message.reference:
+                message = ctx.message.reference.cached_message
+                if message and message.attachments:
+                    image_url = message.attachments[0].url
             else:
                 image_url = ctx.author.display_avatar.url
         url = "https://dagpi.xyz/api/routes/dagpi-manip"
@@ -99,6 +103,14 @@ class images(commands.Cog):
         url: str
         """
         await self.dagpi(ctx, "magik", url)
+
+    @commands.command()
+    async def colors(self, ctx, url: str = None):
+        """Shows the colors present in the image.
+
+        url: str
+        """
+        await self.dagpi(ctx, "colors", url)
 
 
 def setup(bot: commands.Bot) -> None:
