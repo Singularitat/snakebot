@@ -140,11 +140,14 @@ class misc(commands.Cog):
         color: str
             Hex color value.
         """
-        color = color.lstrip("#").lstrip("0x")
+        color = color.removeprefix("#").removeprefix("0x")
         color_value = int(color, 16)
         embed = discord.Embed(color=color_value)
 
-        r, g, b = int(color[:2], 16), int(color[2:4], 16), int(color[4:], 16)
+        r = (color_value & 0xFF0000) >> 16
+        g = (color_value & 0x00FF00) >> 8
+        b = color_value & 0x0000FF
+
         embed.add_field(name="RGB", value=f"{r}, {g}, {b}")
 
         r, g, b = r / 255, g / 255, b / 255
@@ -153,16 +156,20 @@ class misc(commands.Cog):
         embed.add_field(
             name="HSL", value=f"{hue*360:.0f}°, {satl*100:.0f}%, {lum*100:.0f}%"
         )
-
         embed.add_field(
             name="HSV", value=f"{hue*360:.0f}°, {satv*100:.0f}%, {val*100:.0f}%"
         )
-
-        embed.set_image(
+        embed.set_thumbnail(
             url=(
                 "https://app.pixelencounter.com/api/basic/svgmonsters"
                 f"/image/png?primaryColor=%23{color}&size=256&format=png"
             )
+        )
+        embed.set_image(
+            url=f"https://api.alexflipnote.dev/color/image/gradient/{color}"
+        )
+        embed.set_footer(
+            text=f"Above is shades/tints, top-right is a svg monster of the color #{color}"
         )
         await ctx.send(embed=embed)
 
