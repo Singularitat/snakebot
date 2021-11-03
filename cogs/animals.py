@@ -160,13 +160,23 @@ class animals(commands.Cog):
 
     @commands.command()
     async def bird3(self, ctx):
-        """Gets a rnadom bird image."""
+        """Gets a random bird image."""
         url = "https://api.monkedev.com/attachments/bird"
 
         with ctx.typing():
             bird = await self.bot.get_json(url)
 
         await ctx.send(bird["url"])
+
+    @commands.command()
+    async def bird4(self, ctx):
+        """Gets a random bird image"""
+        url = "https://api.alexflipnote.dev/birb"
+
+        with ctx.typing():
+            image = await self.bot.get_json(url)
+
+        await ctx.send(image["file"])
 
     @commands.command()
     async def redpanda(self, ctx):

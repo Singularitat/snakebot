@@ -452,7 +452,26 @@ class information(commands.Cog):
             The member to show the avatar of.
         """
         user = user or ctx.author
-        await ctx.send(user.avatar or user.default_avatar)
+        await ctx.send(user.display_avatar)
+
+    @commands.command()
+    async def banner(self, ctx, user: discord.User = None):
+        """Sends a members banner url.
+
+        user: discord.User
+            The member to show the banner of.
+        """
+        user = user or ctx.author
+
+        if not user.banner:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```User doesn't have a banner```",
+                )
+            )
+
+        await ctx.send(user.banner.url)
 
 
 def setup(bot: commands.Bot) -> None:
