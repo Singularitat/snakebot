@@ -162,14 +162,15 @@ class misc(commands.Cog):
         embed.set_thumbnail(
             url=(
                 "https://app.pixelencounter.com/api/basic/svgmonsters"
-                f"/image/png?primaryColor=%23{color}&size=256&format=png"
+                f"/image/png?primaryColor=%23{color:0>6}&size=256&format=png"
             )
         )
         embed.set_image(
-            url=f"https://api.alexflipnote.dev/color/image/gradient/{color}"
+            url=f"https://api.alexflipnote.dev/color/image/gradient/{color:0>6}"
         )
         embed.set_footer(
-            text=f"Above is shades/tints, top-right is a svg monster of the color #{color}"
+            text="Above is shades/tints, top-right is"
+            f" a svg monster of the color #{color:0>6}"
         )
         await ctx.send(embed=embed)
 
