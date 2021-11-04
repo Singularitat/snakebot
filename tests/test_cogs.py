@@ -772,7 +772,9 @@ class ImagesCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         with self.subTest(command=command.name):
-            await command._callback(self.cog, context, url="https://i.imgur.com/oMdVph0.jpeg")
+            await command._callback(
+                self.cog, context, url="https://i.imgur.com/oMdVph0.jpeg"
+            )
 
             self.assertRegex(context.send.call_args.args[0], url_regex)
 
