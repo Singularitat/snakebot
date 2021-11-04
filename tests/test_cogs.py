@@ -16,6 +16,7 @@ from cogs.apis import apis
 from cogs.information import information
 from cogs.moderation import moderation
 from cogs.economy import economy
+from cogs.images import images
 
 
 bot = Bot(helpers.MockBot())
@@ -760,6 +761,30 @@ class EventsCogTests(unittest.IsolatedAsyncioTestCase):
 
 class HelpCogTests(unittest.IsolatedAsyncioTestCase):
     pass
+
+
+class ImagesCogTests(unittest.IsolatedAsyncioTestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.cog = images(bot=bot)
+
+    async def run_command(self, command):
+        context = helpers.MockContext()
+
+        with self.subTest(command=command.name):
+            await command._callback(self.cog, context, url="https://i.imgur.com/oMdVph0.jpeg")
+
+            self.assertRegex(context.send.call_args.args[0], url_regex)
+
+    @unittest.skip("Really Slow.")
+    async def test_image_commands(self):
+        bot.client_session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=6)
+        )
+
+        await asyncio.gather(
+            *[self.run_command(command) for command in self.cog.walk_commands()]
+        )
 
 
 class InformationCogTests(unittest.IsolatedAsyncioTestCase):
