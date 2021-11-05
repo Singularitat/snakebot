@@ -676,6 +676,16 @@ class games(commands.Cog):
             "There is another active Doodle Crew game",
         )
 
+    @commands.command()
+    async def checkers(self, ctx):
+        """Starts a game of Checkers In The Park."""
+        await self.game_invite(
+            832013003968348200,
+            ctx,
+            f"{ctx.guild.id}-checkers".encode(),
+            "There is another active Checkers In The Park game",
+        )
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the games cog."""
