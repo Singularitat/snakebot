@@ -120,6 +120,14 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "petpet", url)
 
+    @commands.command()
+    async def invert(self, ctx, url: str = None):
+        """Inverts the colors of an image.
+
+        url: str
+        """
+        await self.dagpi(ctx, "invert", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
