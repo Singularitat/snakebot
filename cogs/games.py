@@ -287,22 +287,19 @@ class TicTacToe(discord.ui.View):
                 self.add_item(TicTacToeButton(x, y))
 
     def check_for_win(self, label):
-        for across in self.board:
-            value = sum(across)
-            if value == -self.current_player * 3:
+        win = -self.current_player * 3
+        for row in self.board:
+            if sum(row) == win:
                 return f"{label} won!"
 
         for line in range(3):
-            value = self.board[0][line] + self.board[1][line] + self.board[2][line]
-            if value == -self.current_player * 3:
+            if self.board[0][line] + self.board[1][line] + self.board[2][line] == win:
                 return f"{label} won!"
 
-        diag = self.board[0][2] + self.board[1][1] + self.board[2][0]
-        if diag == -self.current_player * 3:
+        if self.board[0][2] + self.board[1][1] + self.board[2][0] == win:
             return f"{label} won!"
 
-        diag = self.board[0][0] + self.board[1][1] + self.board[2][2]
-        if diag == -self.current_player * 3:
+        if sum(self.board[i][i] for i in range(3)) == win:
             return f"{label} won!"
 
         if all(i != 0 for row in self.board for i in row):
