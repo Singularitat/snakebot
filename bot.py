@@ -16,11 +16,7 @@ log.setLevel(logging.WARNING)
 
 handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="a")
 
-handler.setFormatter(
-    logging.Formatter(
-        '{"message": "%(message)s", "level": "%(levelname)s", "time": "%(asctime)s"}'
-    )
-)
+handler.setFormatter(logging.Formatter("%(message)s, %(levelname)s, %(asctime)s"))
 
 log.addHandler(handler)
 
@@ -34,6 +30,13 @@ class Bot(commands.Bot):
         self.client_session = None
         self.DB = Database()
 
+    async def get_prefix(self, message):
+        prefix = self.DB.main.get(f"{message.guild.id}-prefix".encode())
+        if not prefix:
+            return "."
+
+        return prefix.decode()
+
     @classmethod
     def create(cls) -> commands.Bot:
         """Create and return an instance of a Bot."""
@@ -46,7 +49,7 @@ class Bot(commands.Bot):
 
         return cls(
             loop=loop,
-            command_prefix=commands.when_mentioned_or("."),
+            command_prefix=commands.when_mentioned_or(cls.get_prefix),
             activity=discord.Game(name="Tax Evasion Simulator"),
             case_insensitive=True,
             allowed_mentions=discord.AllowedMentions(everyone=False),

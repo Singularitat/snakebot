@@ -428,7 +428,7 @@ class owner(commands.Cog):
 
         await ctx.send(
             embed=discord.Embed(
-                color=discord.Color.blurple(), description="```Wiped Cache```"
+                color=discord.Color.blurple(), description="```prolog\nWiped Cache```"
             )
         )
 
@@ -573,19 +573,6 @@ class owner(commands.Cog):
             result = "Success"
 
         embed.description = f"```css\n{result}: {(end - start) * 1000:.2f}ms```"
-        await ctx.send(embed=embed)
-
-    @commands.command()
-    async def prefix(self, ctx, prefix: str):
-        """Changes the bots command prefix.
-
-        prefix: str
-            The new prefix.
-        """
-        self.bot.command_prefix = prefix
-
-        embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = f"```Prefix changed to {prefix}```"
         await ctx.send(embed=embed)
 
     @commands.command()

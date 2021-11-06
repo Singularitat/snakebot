@@ -21,6 +21,20 @@ class admin(commands.Cog):
         return ctx.author.guild_permissions.administrator
 
     @commands.command()
+    async def prefix(self, ctx, prefix):
+        """Changes the bot prefix in a guild.
+
+        prefix: str
+        """
+        self.DB.main.put(f"{ctx.guild.id}-prefix".encode(), prefix.encode())
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```prolog\nChanged prefix to {prefix}```",
+            )
+        )
+
+    @commands.command()
     async def unsnipe(self, ctx):
         """Unsnipes the last deleted message."""
         self.DB.main.delete(f"{ctx.guild.id}-snipe_message".encode())
@@ -253,7 +267,7 @@ class admin(commands.Cog):
             embed.description = "```Command not found.```"
             return await ctx.send(embed=embed)
 
-        key = f"{ctx.guild.id}-{command}".encode()
+        key = f"{ctx.guild.id}-t-{command}".encode()
         state = self.DB.main.get(key)
 
         if not state:
