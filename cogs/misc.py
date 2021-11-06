@@ -52,6 +52,25 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def tiles(self, ctx, sat: float = 0.25):
+        """Generates tiles of a random color with a deafult 25% saturation.
+
+        sat: float
+            Saturation of the random color.
+        """
+        color = discord.Color.from_hsv(random.random(), sat, 1)
+        url = (
+            f"https://php-noise.com/noise.php?hex={color.value:X}"
+            "&tileSize=20&borderWidth=2&json"
+        )
+
+        tile = await self.bot.get_json(url)
+
+        embed = discord.Embed(color=color)
+        embed.set_image(url=tile["uri"])
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def code(self, ctx):
         embed = discord.Embed(
             color=discord.Color.random(), title="Discord Code Block formatting"
