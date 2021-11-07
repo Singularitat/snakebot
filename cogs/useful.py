@@ -68,19 +68,6 @@ class LanguageMenu(menus.ListPageSource):
         return discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
 
 
-class PoiMenu(menus.ListPageSource):
-    def __init__(self, data):
-        super().__init__(data, per_page=9)
-
-    async def format_page(self, menu, entries):
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        for location, poi in entries:
-            embed.add_field(name=location, value=poi)
-
-        return embed
-
-
 class useful(commands.Cog):
     """Actually useful commands."""
 
@@ -344,34 +331,6 @@ class useful(commands.Cog):
         await ctx.reply(f"```py\n{formatted}```")
 
     @commands.command()
-    async def poi(self, ctx):
-        """Gets the auckland places of interest for covid."""
-        url = (
-            "https://raw.githubusercontent.com/minhealthnz/nz-covid-data/main"
-            "/locations-of-interest/august-2021/locations-of-interest.geojson"
-        )
-
-        async with self.bot.client_session.get(url) as page:
-            data = orjson.loads(await page.read())
-
-        pois = []
-
-        for poi in data["features"]:
-            prop = poi["properties"]
-            information = (
-                f"{prop['Location']}\n{prop['Start'][11:]} - {prop['End'][11:]}"
-            )
-            if prop["City"] == "Auckland":
-                pois.append((prop["Event"], information))
-
-        pages = menus.MenuPages(
-            source=PoiMenu(pois),
-            clear_reactions_after=True,
-            delete_message_after=True,
-        )
-        await pages.start(ctx)
-
-    @commands.command()
     async def tiolanguages(self, ctx):
         """Shows all the languages that tio.run can handle."""
         languages = orjson.loads(self.DB.main.get(b"tiolanguages"))
@@ -505,7 +464,7 @@ class useful(commands.Cog):
 
     @commands.command(name="float")
     async def _float(self, ctx, number: float):
-        """Converts a float a half-precision floating-point format.
+        """Converts a float to half-precision floating-point format.
 
         number: float
         """
