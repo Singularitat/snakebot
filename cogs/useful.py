@@ -382,10 +382,10 @@ class useful(commands.Cog):
             file = ctx.message.attachments[0]
             lang = file.filename.split(".")[-1]
             code = (await file.read()).decode()
-        elif match := list(CODE_REGEX.finditer(code)):
+        elif match := [*CODE_REGEX.finditer(code)]:
             code, lang, alang = match[0].group("code", "lang", "alang")
             lang = lang or alang
-        elif match := list(RAW_CODE_REGEX.finditer(code)):
+        elif match := [*RAW_CODE_REGEX.finditer(code)]:
             code, lang = match[0].group("code", "lang")
 
         if not lang:
@@ -398,7 +398,7 @@ class useful(commands.Cog):
             )
 
         lang = lang.strip()
-        lang = TIO_ALIASES.get(lang, lang)  # tio doesn't have defaults
+        lang = TIO_ALIASES.get(lang, lang)  # tio doesn't have default aliases
 
         if lang not in orjson.loads(self.DB.main.get(b"tiolanguages")):
             return await ctx.reply(
@@ -411,13 +411,7 @@ class useful(commands.Cog):
         url = "https://tio.run/cgi-bin/run/api/"
 
         data = compress(
-            b"Vlang\x001\x00"
-            + lang.encode()
-            + b"\x00F.code.tio\x00"
-            + str(len(code)).encode()
-            + b"\0"
-            + code.encode()
-            + b"\x00R",
+            f"Vlang\x001\x00{lang}\x00F.code.tio\x00{len(code)}\x00{code}\x00R".encode(),
             9,
         )[2:-4]
 
@@ -441,16 +435,16 @@ class useful(commands.Cog):
             async with self.bot.client_session.get(url, headers=headers) as page:
                 soup = lxml.html.fromstring(await page.text())
 
-            embed = discord.Embed(color=discord.Color.blurple())
+        embed = discord.Embed(color=discord.Color.blurple())
 
-            for article in soup.xpath(
-                './/article[@class=" MQsxIb xTewfe R7GTQ keNKEd j7vNaf Cc0Z5d EjqUne"]'
-            ):
-                a_tag = article.xpath('.//a[@class="DY5T1d RZIKme"]')[0]
-                embed.add_field(
-                    name=a_tag.text,
-                    value=f"[Link](https://news.google.com{a_tag.attrib['href'][1:]})",
-                )
+        for article in soup.xpath(
+            './/article[@class=" MQsxIb xTewfe R7GTQ keNKEd j7vNaf Cc0Z5d EjqUne"]'
+        ):
+            a_tag = article.xpath('.//a[@class="DY5T1d RZIKme"]')[0]
+            embed.add_field(
+                name=a_tag.text,
+                value=f"[Link](https://news.google.com{a_tag.attrib['href'][1:]})",
+            )
 
         await ctx.send(embed=embed)
 

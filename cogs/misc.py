@@ -160,12 +160,19 @@ class misc(commands.Cog):
             Hex color value.
         """
         color = color.removeprefix("#").removeprefix("0x")
-        color_value = int(color, 16)
-        embed = discord.Embed(color=color_value)
+        url = f"https://api.alexflipnote.dev/color/{color:0>6}"
+        data = await self.bot.get_json(url)
 
-        r = (color_value & 0xFF0000) >> 16
-        g = (color_value & 0x00FF00) >> 8
-        b = color_value & 0x0000FF
+        if "description" in data:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"```prolog\n{data['description']}```",
+                )
+            )
+        embed = discord.Embed(title=data["name"], color=data["int"])
+
+        r, g, b = data["rgb_values"].values()
 
         embed.add_field(name="RGB", value=f"{r}, {g}, {b}")
 
@@ -184,9 +191,7 @@ class misc(commands.Cog):
                 f"/image/png?primaryColor=%23{color:0>6}&size=256&format=png"
             )
         )
-        embed.set_image(
-            url=f"https://api.alexflipnote.dev/color/image/gradient/{color:0>6}"
-        )
+        embed.set_image(url=data["image_gradient"])
         embed.set_footer(
             text="Above is shades/tints, top-right is"
             f" a svg monster of the color #{color:0>6}"
