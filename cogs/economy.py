@@ -189,7 +189,7 @@ class economy(commands.Cog):
         if choice not in ("h", "t"):
             embed.title = "Must be [h]eads or [t]ails"
             return await ctx.send(embed=embed)
-        
+
         member = str(ctx.author.id).encode()
         bal = await self.DB.get_bal(member)
         bet = self.get_amount(bal, bet)
