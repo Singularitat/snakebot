@@ -85,20 +85,34 @@ class economy(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
+    @staticmethod
+    def get_amount(bal, bet):
+        try:
+            if bet[-1] == "%":
+                return bal * ((float(bet[:-1])) / 100)
+            return float(bet.replace(",", ""))
+        except ValueError:
+            return None
+
     @commands.command()
-    async def blackjack(self, ctx, bet: float):
+    async def blackjack(self, ctx, bet):
         """Starts a game of blackjack.
 
         bet: float
         """
         embed = discord.Embed(color=discord.Color.blurple())
 
+        member = str(ctx.author.id).encode()
+        bal = await self.DB.get_bal(member)
+        bet = self.get_amount(bal, bet)
+
+        if bet is None:
+            embed.description = f"```Invalid bet. e.g {ctx.prefix}blackjack 1000```"
+            return await ctx.send(embed=embed)
+
         if bet < 0:
             embed.title = "Bet must be positive"
             return await ctx.send(embed=embed)
-
-        member = str(ctx.author.id).encode()
-        bal = await self.DB.get_bal(member)
 
         if bal < bet:
             embed.title = "You don't have enough cash"
@@ -164,7 +178,7 @@ class economy(commands.Cog):
         await self.DB.put_bal(member, bal)
 
     @commands.command(aliases=["flip", "fcoin", "coinf"])
-    async def coinflip(self, ctx, choice, bet: float):
+    async def coinflip(self, ctx, choice, bet):
         """Flips a coin.
 
         choice: str
@@ -175,13 +189,18 @@ class economy(commands.Cog):
         if choice not in ("h", "t"):
             embed.title = "Must be [h]eads or [t]ails"
             return await ctx.send(embed=embed)
+        
+        member = str(ctx.author.id).encode()
+        bal = await self.DB.get_bal(member)
+        bet = self.get_amount(bal, bet)
+
+        if bet is None:
+            embed.description = f"```Invalid bet. e.g {ctx.prefix}coinflip 1000```"
+            return await ctx.send(embed=embed)
 
         if bet < 0:
             embed.title = "Bet must be positive"
             return await ctx.send(embed=embed)
-
-        member = str(ctx.author.id).encode()
-        bal = await self.DB.get_bal(member)
 
         if bal <= 1:
             bal += 1
@@ -237,7 +256,7 @@ class economy(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def lottery(self, ctx, bet: float):
+    async def lottery(self, ctx, bet):
         """Lottery with a 1/99 chance of winning 99 times the bet.
 
         bet: float
@@ -245,12 +264,17 @@ class economy(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
 
+        member = str(ctx.author.id).encode()
+        bal = await self.DB.get_bal(member)
+        bet = self.get_amount(bal, bet)
+
+        if bet is None:
+            embed.description = f"```Invalid bet. e.g {ctx.prefix}lottery 1000```"
+            return await ctx.send(embed=embed)
+
         if bet <= 0:
             embed.title = "Bet must be positive"
             return await ctx.send(embed=embed)
-
-        member = str(ctx.author.id).encode()
-        bal = await self.DB.get_bal(member)
 
         if bal < bet:
             embed.title = "You don't have enough cash"
@@ -309,15 +333,11 @@ class economy(commands.Cog):
 
         member = str(ctx.author.id).encode()
         bal = await self.DB.get_bal(member)
+        bet = self.get_amount(bal, bet)
 
-        if bet[-1] == "%":
-            bet = bal * ((float(bet[:-1])) / 100)
-        else:
-            try:
-                bet = float(bet.replace(",", ""))
-            except ValueError:
-                embed.description = f"```Invalid bet. e.g {ctx.prefix}slot 1000```"
-                return await ctx.send(embed=embed)
+        if bet is None:
+            embed.description = f"```Invalid bet. e.g {ctx.prefix}slot 1000```"
+            return await ctx.send(embed=embed)
 
         if bet < 0:
             embed.title = "Bet must be positive"
