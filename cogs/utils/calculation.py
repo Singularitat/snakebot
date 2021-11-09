@@ -46,6 +46,18 @@ def xor(a, b):
     return a ^ b
 
 
+def invert(a):
+    return ~a
+
+
+def negate(a):
+    return -a
+
+
+def pos(a):
+    return +a
+
+
 def safe_comb(n, k):
     if n > 10000:
         raise ValueError("Too large to calculate")
@@ -77,6 +89,12 @@ OPERATIONS = {
     ast.BitOr: or_,
     ast.BitAnd: and_,
     ast.BitXor: xor,
+}
+
+UNARYOPS = {
+    ast.Invert: invert,
+    ast.USub: negate,
+    ast.UAdd: pos,
 }
 
 CONSTANTS = {
@@ -153,6 +171,9 @@ def oct_float(number: float):
 def safe_eval(node):
     if isinstance(node, ast.Num):
         return node.n
+
+    if isinstance(node, ast.UnaryOp):
+        return UNARYOPS[node.op.__class__](safe_eval(node.operand))
 
     if isinstance(node, ast.BinOp):
         left = safe_eval(node.left)
