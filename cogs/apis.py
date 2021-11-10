@@ -1448,41 +1448,6 @@ class apis(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def tenor(self, ctx, *, search):
-        """Gets a random gif from tenor based off a search.
-
-        search: str
-            The gif search term.
-        """
-        cache_search = f"tenor-{search}"
-        cache = orjson.loads(self.DB.main.get(b"cache"))
-
-        if cache_search in cache:
-            url = random.choice(cache[cache_search])
-            cache[cache_search].remove(url)
-
-            if not cache[cache_search]:
-                cache.pop(cache_search)
-
-            self.DB.main.put(b"cache", orjson.dumps(cache))
-
-            return await ctx.send(url)
-
-        url = f"https://api.tenor.com/v1/search?q={search}&limit=50"
-
-        async with ctx.typing():
-            tenor = await self.bot.get_json(url)
-
-        tenor = [image["media"][0]["gif"]["url"] for image in tenor["results"]]
-        image = random.choice(tenor)
-        tenor.remove(image)
-        cache[cache_search] = tenor
-
-        self.DB.main.put(b"cache", orjson.dumps(cache))
-        self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
-        await ctx.send(image)
-
 
 def setup(bot: commands.Bot) -> None:
     """Starts apis cog."""

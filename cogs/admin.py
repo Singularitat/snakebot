@@ -21,18 +21,21 @@ class admin(commands.Cog):
         return ctx.author.guild_permissions.administrator
 
     @commands.command()
-    async def prefix(self, ctx, prefix):
+    async def prefix(self, ctx, prefix=None):
         """Changes the bot prefix in a guild.
 
         prefix: str
         """
-        self.DB.main.put(f"{ctx.guild.id}-prefix".encode(), prefix.encode())
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```prolog\nChanged prefix to {prefix}```",
+        embed = discord.Embed(color=discord.Color.blurple())
+        key = f"{ctx.guild.id}-prefix".encode()
+        if not prefix:
+            embed.description = (
+                f"```xl\nCurrent prefix is: {self.DB.main.get(key, b'.').decode()}```"
             )
-        )
+            return await ctx.send(embed=embed)
+        self.DB.main.put(key, prefix.encode())
+        embed.description = f"```prolog\nChanged prefix to {prefix}```"
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def unsnipe(self, ctx):
