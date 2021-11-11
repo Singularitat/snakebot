@@ -33,7 +33,7 @@ class apis(commands.Cog):
         if "message" in data:
             embed.description = "```No matching domains found```"
             return await ctx.send(embed=embed)
-        for i, domain in enumerate(data["domains"][page * 24: (page + 1) * 24]):
+        for i, domain in enumerate(data["domains"][page * 24 : (page + 1) * 24]):
             if i == 24:
                 break
             alive = "Inactive" if domain["isDead"] == "True" else "Active"
