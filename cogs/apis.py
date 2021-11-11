@@ -20,6 +20,30 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def domains(self, ctx, domain_name, page=1):
+        """Looks up domains similar to given search e.g facebook.
+
+        domain_name: str
+        """
+        page = max(1, page) - 1
+        url = f"https://api.domainsdb.info/v1/domains/search?domain={domain_name}"
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        data = await self.bot.get_json(url)
+        if "message" in data:
+            embed.description = "```No matching domains found```"
+            return await ctx.send(embed=embed)
+        for i, domain in enumerate(data["domains"][page * 24 : (page + 1) * 24]):
+            if i == 24:
+                break
+            alive = "Inactive" if domain["isDead"] == "True" else "Active"
+            embed.add_field(
+                name=f"{domain['domain']}",
+                value=f"{domain['country'] or 'NA'}/{alive}",
+            )
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def validate(self, ctx, domain: str):
         """Checks if domains are disposable used to check if tempmail is fine.
 
