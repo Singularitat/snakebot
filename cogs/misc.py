@@ -12,6 +12,7 @@ import orjson
 
 from cogs.utils.time import parse_date
 from cogs.utils.color import hsslv
+from cogs.utils.calculation import hex_float, oct_float, bin_float
 
 
 CHARACTERS = (
@@ -800,7 +801,7 @@ class misc(commands.Cog):
         await ctx.reply(random.choice(responses))
 
     @commands.command(name="hex")
-    async def _hex(self, ctx, number, convert: bool = False):
+    async def _hex(self, ctx, number: float, convert: bool = False):
         """Shows a number in hexadecimal prefixed with “0x”.
 
         number: str
@@ -812,11 +813,11 @@ class misc(commands.Cog):
         if convert:
             embed.description = f"```{int(number, 16)}```"
             return await ctx.send(embed=embed)
-        embed.description = f"```{hex(int(number))}```"
+        embed.description = f"```{hex_float(number)}```"
         await ctx.send(embed=embed)
 
     @commands.command(name="oct")
-    async def _oct(self, ctx, number, convert: bool = False):
+    async def _oct(self, ctx, number: float, convert: bool = False):
         """Shows a number in octal prefixed with “0o”.
 
         number: str
@@ -828,11 +829,11 @@ class misc(commands.Cog):
         if convert:
             embed.description = f"```{int(number, 8)}```"
             return await ctx.send(embed=embed)
-        embed.description = f"```{oct(int(number))}```"
+        embed.description = f"```{oct_float(number)}```"
         await ctx.send(embed=embed)
 
     @commands.command(name="bin")
-    async def _bin(self, ctx, number, convert: bool = False):
+    async def _bin(self, ctx, number: float, convert: bool = False):
         """Shows a number in binary prefixed with “0b”.
 
         number: str
@@ -844,7 +845,7 @@ class misc(commands.Cog):
         if convert:
             embed.description = f"```{int(number, 2)}```"
             return await ctx.send(embed=embed)
-        embed.description = f"```{bin(int(number))}```"
+        embed.description = f"```{bin_float(number)}```"
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["socialcredit"])
