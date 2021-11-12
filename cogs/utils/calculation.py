@@ -1,5 +1,6 @@
 import ast
 import math
+from decimal import Decimal
 
 
 def add(a, b):
@@ -170,7 +171,7 @@ def oct_float(number: float):
 
 def safe_eval(node):
     if isinstance(node, ast.Num):
-        return node.n
+        return node.n if isinstance(node.n, int) else Decimal(str(node.n))
 
     if isinstance(node, ast.UnaryOp):
         return UNARYOPS[node.op.__class__](safe_eval(node.operand))
