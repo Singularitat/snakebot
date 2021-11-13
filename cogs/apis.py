@@ -39,7 +39,7 @@ class apis(commands.Cog):
         start = page * 24
         end = start + 24
 
-        for i, domain in enumerate(data["domains"][start:end]):
+        for domain in data["domains"][start:end]:
             alive = "Inactive" if domain["isDead"] == "True" else "Active"
             embed.add_field(
                 name=f"http://{domain['domain']}",
