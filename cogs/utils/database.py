@@ -3,27 +3,33 @@ import plyvel
 import orjson
 
 
+prefixed_dbs = (
+    "infractions",
+    "karma",
+    "blacklist",
+    "rrole",
+    "deleted",
+    "edited",
+    "invites",
+    "nicks",
+    "cryptobal",
+    "crypto",
+    "stocks",
+    "stockbal",
+    "bal",
+    "wins",
+    "message_count",
+    "cookies",
+)
+
+
 class Database:
     def __init__(self):
         self.main = plyvel.DB(
             f"{pathlib.Path(__file__).parent.parent.parent}/db", create_if_missing=True
         )
-        self.infractions = self.main.prefixed_db(b"infractions-")
-        self.karma = self.main.prefixed_db(b"karma-")
-        self.blacklist = self.main.prefixed_db(b"blacklist-")
-        self.rrole = self.main.prefixed_db(b"rrole-")
-        self.deleted = self.main.prefixed_db(b"deleted-")
-        self.edited = self.main.prefixed_db(b"edited-")
-        self.invites = self.main.prefixed_db(b"invites-")
-        self.nicks = self.main.prefixed_db(b"nicks-")
-        self.cryptobal = self.main.prefixed_db(b"cryptobal-")
-        self.crypto = self.main.prefixed_db(b"crypto-")
-        self.stocks = self.main.prefixed_db(b"stocks-")
-        self.stockbal = self.main.prefixed_db(b"stockbal-")
-        self.bal = self.main.prefixed_db(b"bal-")
-        self.wins = self.main.prefixed_db(b"wins-")
-        self.message_count = self.main.prefixed_db(b"message_count-")
-        self.cookies = self.main.prefixed_db(b"cookies-")
+        for db in prefixed_dbs:
+            setattr(self, db, self.main.prefixed_db(f"{db}-".encode()))
 
     def delete_cache(self, search, cache):
         """Deletes a search from the cache.
