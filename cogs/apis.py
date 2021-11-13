@@ -29,18 +29,23 @@ class apis(commands.Cog):
         url = f"https://api.domainsdb.info/v1/domains/search?domain={domain_name}"
         embed = discord.Embed(color=discord.Color.blurple())
 
-        data = await self.bot.get_json(url)
+        with ctx.typing():
+            data = await self.bot.get_json(url)
+
         if "message" in data:
             embed.description = "```No matching domains found```"
             return await ctx.send(embed=embed)
-        for i, domain in enumerate(data["domains"][page * 24 : (page + 1) * 24]):
-            if i == 24:
-                break
+
+        start = page * 24
+        end = start + 24
+
+        for i, domain in enumerate(data["domains"][start:end]):
             alive = "Inactive" if domain["isDead"] == "True" else "Active"
             embed.add_field(
-                name=f"{domain['domain']}",
-                value=f"{domain['country'] or 'NA'}/{alive}",
+                name=f"http://{domain['domain']}",
+                value=f"```prolog\n{domain['country'] or 'N/A'} : {alive}```",
             )
+        embed.set_footer(text="Most sites will not work as they might be apis, etc.")
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -1152,7 +1157,7 @@ class apis(commands.Cog):
 
         word: str
         """
-        url = f"https://api.dictionaryapi.dev/api/v2/entries/en_US/{word}"
+        url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
 
         async with ctx.typing():
             definition = await self.bot.get_json(url)
@@ -1176,6 +1181,35 @@ class apis(commands.Cog):
                     value=f"```{meaning['definitions'][0]['definition']}```",
                 )
 
+            await ctx.send(embed=embed)
+
+    @commands.command(aliases=["syn"])
+    async def synonyms(self, ctx, *, word):
+        url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+        synonyms = set()
+
+        async with ctx.typing():
+            data = await self.bot.get_json(url)
+
+            embed = discord.Embed(color=discord.Color.blurple())
+            if isinstance(data, dict):
+                embed.description = "```Word not found```"
+                return await ctx.send(embed=embed)
+
+            data = data[0]
+
+            for meaning in data["meanings"]:
+                if "synonyms" in meaning["definitions"][0]:
+                    synonyms.update(meaning["definitions"][0]["synonyms"])
+
+            if not synonyms:
+                embed.description = "```No synonyms found```"
+                return await ctx.send(embed=embed)
+
+            synonyms = "\n".join(synonyms).title()
+            embed.url = f"https://www.dictionary.com/browse/{word}"
+            embed.title = f"{word.title()} Synonyms"
+            embed.description = f"```prolog\n{synonyms}```"
             await ctx.send(embed=embed)
 
     @commands.command()
