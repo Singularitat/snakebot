@@ -10,7 +10,6 @@ import aiohttp
 import config
 from cogs.utils.database import Database
 
-
 log = logging.getLogger("discord")
 log.setLevel(logging.WARNING)
 
@@ -31,9 +30,15 @@ class Bot(commands.Bot):
         self.DB = Database()
 
     async def get_prefix(self, message):
+        default = "."
+
+        if not message.guild:
+            return default
+
         prefix = self.DB.main.get(f"{message.guild.id}-prefix".encode())
+
         if not prefix:
-            return "."
+            return default
 
         return prefix.decode()
 
