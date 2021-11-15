@@ -4,8 +4,6 @@ from discord.ext import commands, tasks
 import discord
 import orjson
 
-from cogs.utils.useful import run_process
-
 
 class background_tasks(commands.Cog):
     """Commands related to the background tasks of the bot."""
@@ -46,24 +44,25 @@ class background_tasks(commands.Cog):
             embed = discord.Embed(color=discord.Color.blurple())
             task_name = ctx.subcommand_passed
 
-            if task_name in self.tasks:
-                task = self.tasks[task_name]
-                embed.title = f"{task_name.replace('_', ' ').title()} Task"
-                embed.add_field(name="Running", value=task.is_running())
-                embed.add_field(name="Failed", value=task.failed())
-                embed.add_field(name="Count", value=task.current_loop)
+            if task_name not in self.tasks:
+                embed.description = (
+                    f"```Usage: {ctx.prefix}task [restart/start/stop/list]```"
+                )
+                return await ctx.send(embed=embed)
+
+            task = self.tasks[task_name]
+            embed.title = f"{task_name.replace('_', ' ').title()} Task"
+            embed.add_field(name="Running", value=task.is_running())
+            embed.add_field(name="Failed", value=task.failed())
+            embed.add_field(name="Count", value=task.current_loop)
+            if task.next_iteration:
                 embed.add_field(
                     name="Next Loop",
                     value=f"**<t:{task.next_iteration.timestamp():.0f}:R>**",
                 )
-                embed.add_field(
-                    name="Interval",
-                    value=f"{task.hours:.0f}h {task.minutes:.0f}m {task.seconds:.0f}s",
-                )
-                return await ctx.send(embed=embed)
-
-            embed.description = (
-                f"```Usage: {ctx.prefix}task [restart/start/stop/list]```"
+            embed.add_field(
+                name="Interval",
+                value=f"{task.hours:.0f}h {task.minutes:.0f}m {task.seconds:.0f}s",
             )
             await ctx.send(embed=embed)
 
@@ -193,7 +192,7 @@ class background_tasks(commands.Cog):
                 task.current_loop,
             )
 
-        embed.description = f"```\n{msg}```"
+        embed.description = f"```prolog\n{msg}```"
         await ctx.send(embed=embed)
 
     @tasks.loop(minutes=10)
@@ -227,15 +226,15 @@ class background_tasks(commands.Cog):
     @tasks.loop(minutes=5)
     async def update_bot(self):
         """Tries to update every 5 minutes and then reloads if needed."""
-        pull = await run_process("git pull")
+        pull = await self.bot.run_process("git pull")
 
         if pull[:4] == ["Already", "up", "to", "date."]:
             return
 
-        diff = await run_process("git diff --name-only HEAD@{0} HEAD@{1}")
+        diff = await self.bot.run_process("git diff --name-only HEAD@{0} HEAD@{1}")
 
         if "requirements.txt" in diff:
-            await run_process("pip install -r ./requirements.txt")
+            await self.bot.run_process("pip install -r ./requirements.txt")
 
         for ext in (
             file.removesuffix(".py")
