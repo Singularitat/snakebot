@@ -206,6 +206,9 @@ class background_tasks(commands.Cog):
         async with self.bot.client_session.get(url, headers=headers) as response:
             stocks = await response.json()
 
+        if not stocks:
+            return
+
         with self.DB.stocks.write_batch() as wb:
             for stock in stocks["data"]["table"]["rows"]:
                 stock_data = {
@@ -290,19 +293,23 @@ class background_tasks(commands.Cog):
         url = "https://emkc.org/api/v2/piston/runtimes"
         data = await self.bot.get_json(url)
 
-        aliases = set()
-        languages = set()
+        if data:
+            aliases = set()
+            languages = set()
 
-        for language in data:
-            aliases.update(language["aliases"])
-            aliases.add(language["language"])
-            languages.add(language["language"])
+            for language in data:
+                aliases.update(language["aliases"])
+                aliases.add(language["language"])
+                languages.add(language["language"])
 
-        self.DB.main.put(b"languages", orjson.dumps(list(languages)))
-        self.DB.main.put(b"aliases", orjson.dumps(list(aliases)))
+            self.DB.main.put(b"languages", orjson.dumps(list(languages)))
+            self.DB.main.put(b"aliases", orjson.dumps(list(aliases)))
 
         url = "https://tio.run/languages.json"
         data = await self.bot.get_json(url)
+
+        if not data:
+            return
 
         self.DB.main.put(b"tiolanguages", orjson.dumps([*data]))
 
@@ -320,6 +327,9 @@ class background_tasks(commands.Cog):
         """Updates crypto currency data every 10 minutes."""
         url = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing?limit=50000&convert=NZD&cryptoType=coins"
         crypto = await self.bot.get_json(url)
+
+        if not crypto:
+            return
 
         with self.DB.crypto.write_batch() as wb:
             for coin in crypto["data"]["cryptoCurrencyList"]:
