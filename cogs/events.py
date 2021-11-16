@@ -403,9 +403,7 @@ class events(commands.Cog):
             files = []
 
             for file in data["files"].values():
-                files.append(
-                    discord.File(StringIO(file["content"]), file["filename"])
-                )
+                files.append(discord.File(StringIO(file["content"]), file["filename"]))
 
             await message.channel.send(files=files)
 
