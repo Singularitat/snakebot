@@ -20,6 +20,16 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def food(self, ctx):
+        """Posts a random picture of food."""
+        url = "https://foodish-api.herokuapp.com/api/"
+
+        with ctx.typing():
+            data = await self.bot.get_json(url)
+
+        await ctx.send(data["image"])
+
+    @commands.command()
     async def domains(self, ctx, domain_name, page=1):
         """Looks up domains similar to given search e.g facebook.
 
@@ -180,7 +190,7 @@ class apis(commands.Cog):
 
             cache[subreddit_cache] = clean_posts
             self.DB.main.put(b"cache", orjson.dumps(cache))
-            self.bot.loop.call_later(300, self.DB.delete_cache, subreddit_cache, cache)
+            self.loop.call_later(300, self.DB.delete_cache, subreddit_cache, cache)
 
             post = random.choice(clean_posts)
 
