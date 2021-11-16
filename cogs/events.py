@@ -1,15 +1,22 @@
 from datetime import datetime
-from io import BytesIO
+from io import BytesIO, StringIO
 import difflib
 import logging
 import os
 import platform
+import re
 
 from PIL import Image
 from discord.ext import commands
 import discord
 import orjson
 import psutil
+
+
+GIST_REGEX = re.compile(
+    r"(?P<host>(http(s)?://gist.github.com))/"
+    r"(?P<owner>[\w,\-,\_]+)/(?P<id>[\w,\-,\_]+)((/){0,1})"
+)
 
 
 class events(commands.Cog):
@@ -382,6 +389,25 @@ class events(commands.Cog):
                 await message.add_reaction("<:downvote:766414744730206228>")
             except discord.errors.HTTPException:
                 pass
+
+        match = GIST_REGEX.search(message.content)
+
+        if not message.author.bot and match:
+            gist_id = match.group(5)
+            url = f"https://api.github.com/gists/{gist_id}"
+            data = await self.bot.get_json(url)
+
+            if not data:
+                return
+
+            files = []
+
+            for file in data["files"].values():
+                files.append(
+                    discord.File(StringIO(file["content"]), file["filename"])
+                )
+
+            await message.channel.send(files=files)
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
