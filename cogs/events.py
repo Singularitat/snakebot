@@ -14,7 +14,7 @@ import psutil
 
 
 GIST_REGEX = re.compile(
-    r"(?P<host>(http(s)?://gist.github.com))/"
+    r"(?P<host>(http(s)?://gist\.github\.com))/"
     r"(?P<owner>[\w,\-,\_]+)/(?P<id>[\w,\-,\_]+)((/){0,1})"
 )
 
