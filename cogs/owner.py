@@ -12,8 +12,6 @@ from discord.ext import commands
 import discord
 import orjson
 
-from cogs.utils.useful import run_process
-
 
 class PerformanceMocker:
     """A mock object that can also be used in await expressions."""
@@ -611,8 +609,8 @@ class owner(commands.Cog):
 
     @commands.command()
     async def status(self, ctx):
-        await run_process("git fetch")
-        status = await run_process("git status", True)
+        await self.bot.run_process("git fetch")
+        status = await self.bot.run_process("git status", True)
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.description = f"```ahk\n{' '.join(status)}```"

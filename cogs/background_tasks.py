@@ -101,9 +101,12 @@ class background_tasks(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not task_name:
-            for task in self.tasks.values():
-                task.start()
-            embed.description = "```Started all tasks```"
+            for name, task in self.tasks.items():
+                task.cancel()
+                embed.add_field(
+                    name=name, value=f">>> ```ahk\nRunning: {task.is_running()}```"
+                )
+            embed.description = "```Tried to start all tasks```"
             return await ctx.send(embed=embed)
 
         if task_name not in self.tasks:
@@ -127,9 +130,12 @@ class background_tasks(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not task_name:
-            for task in self.tasks.values():
-                task.stop()
-            embed.description = "```Stopped all tasks```"
+            for name, task in self.tasks.items():
+                task.cancel()
+                embed.add_field(
+                    name=name, value=f">>> ```ahk\nRunning: {task.is_running()}```"
+                )
+            embed.description = "```Tried to stop all tasks```"
             return await ctx.send(embed=embed)
 
         if task_name not in self.tasks:
@@ -153,9 +159,12 @@ class background_tasks(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not task_name:
-            for task in self.tasks.values():
+            for name, task in self.tasks.items():
                 task.cancel()
-            embed.description = "```Canceled all tasks```"
+                embed.add_field(
+                    name=name, value=f">>> ```ahk\nRunning: {task.is_running()}```"
+                )
+            embed.description = "```Tried to cancel all tasks```"
             return await ctx.send(embed=embed)
 
         if task_name not in self.tasks:
@@ -182,22 +191,24 @@ class background_tasks(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
 
-        msg = "Name:               Interval:      Running/Failed/Count:\n\n"
+        msg = "Name:               Interval:    Running: Failed: Count:\n\n"
         for name, task in self.tasks.items():
-            msg += "{:<20}{:<15}{}/{}/{}\n".format(
+            msg += "{:<20}{:<4}{:<4}{:<5}{:<9}{:<8}{}\n".format(
                 name,
-                f"{task.hours:.0f}h {task.minutes:.0f}m {task.seconds:.0f}s",
-                task.is_running(),
-                task.failed(),
+                f"{task.hours:.0f}h",
+                f"{task.minutes:.0f}m",
+                f"{task.seconds:.0f}s",
+                str(task.is_running()),
+                str(task.failed()),
                 task.current_loop,
             )
 
         embed.description = f"```prolog\n{msg}```"
         await ctx.send(embed=embed)
 
-    @tasks.loop(minutes=10)
-    async def update_stocks(self):
-        """Updates stock data every 10 minutes."""
+    @tasks.loop(minutes=30)
+    async def get_stocks(self):
+        """Updates stock data every 30 minutes."""
         url = "https://api.nasdaq.com/api/screener/stocks?limit=50000"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36",
@@ -288,7 +299,7 @@ class background_tasks(commands.Cog):
             file.write(str(database))
 
     @tasks.loop(count=1)
-    async def update_languages(self):
+    async def get_languages(self):
         """Updates pistons supported languages for the run command."""
         url = "https://emkc.org/api/v2/piston/runtimes"
         data = await self.bot.get_json(url)
@@ -322,9 +333,9 @@ class background_tasks(commands.Cog):
 
         self.DB.main.put(b"helloworlds", orjson.dumps(hello_worlds))
 
-    @tasks.loop(minutes=10)
-    async def update_crypto(self):
-        """Updates crypto currency data every 10 minutes."""
+    @tasks.loop(minutes=30)
+    async def get_crypto(self):
+        """Updates crypto currency data every 30 minutes."""
         url = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing?limit=50000&convert=NZD&cryptoType=coins"
         crypto = await self.bot.get_json(url)
 
@@ -353,7 +364,7 @@ class background_tasks(commands.Cog):
                 )
 
     @tasks.loop(hours=24)
-    async def update_domain(self):
+    async def get_domain(self):
         """Updates the domain used for the tempmail command."""
         url = "https://api.mail.tm/domains?page=1"
         async with self.bot.client_session.get(url) as resp:
