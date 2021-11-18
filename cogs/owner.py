@@ -7,6 +7,8 @@ import pstats
 import re
 import time
 import traceback
+from contextlib import redirect_stdout
+import textwrap
 
 from discord.ext import commands
 import discord
@@ -64,6 +66,54 @@ class owner(commands.Cog):
         ctx: commands.Context
         """
         return ctx.author.id in self.bot.owner_ids
+
+    @commands.command(pass_context=True, hidden=True, name="eval")
+    async def _eval(self, ctx, *, code: str):
+        """Evaluates code.
+
+        code: str
+        """
+
+        env = {
+            "bot": self.bot,
+            "ctx": ctx,
+            "channel": ctx.channel,
+            "author": ctx.author,
+            "guild": ctx.guild,
+            "message": ctx.message,
+        }
+
+        env.update(globals())
+
+        if code.startswith("```") and code.endswith("```"):
+            code = "\n".join(code.split("\n")[1:-1])
+        else:
+            code = code.strip("` \n")
+
+        stdout = StringIO()
+
+        func = f'async def func():\n{textwrap.indent(code, "  ")}'
+
+        try:
+            exec(func, env)
+        except Exception as e:
+            return await ctx.send(f"```ml\n{e.__class__.__name__}: {e}\n```")
+
+        func = env["func"]
+
+        try:
+            with redirect_stdout(stdout):
+                ret = await func()
+        except Exception:
+            value = stdout.getvalue()
+            return await ctx.send(f"```py\n{value}{traceback.format_exc()}\n```")
+
+        value = stdout.getvalue()
+
+        if ret:
+            await ctx.send(f"```py\n{value}{ret}\n```")
+        elif value:
+            await ctx.send(f"```py\n{value}\n```")
 
     @commands.command()
     async def profile(self, ctx, *, command):
