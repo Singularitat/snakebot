@@ -3,6 +3,7 @@ import difflib
 import opcode
 import random
 import re
+import unicodedata
 
 from discord.ext import commands
 import aiohttp
@@ -51,6 +52,22 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.DB = bot.DB
+
+    @commands.command()
+    async def char(self, ctx, *, characters: str):
+        """Shows you information about some unicode characters."""
+
+        def to_string(c):
+            digit = f"{ord(c):x}"
+            return (
+                f"`\\U{digit:>08}`: {unicodedata.name(c, 'Name not found.')} - {c}\n"
+                f"<http://www.fileformat.info/info/unicode/char/{digit}/index.htm>"
+            )
+
+        msg = "\n".join(map(to_string, characters))
+        if len(msg) > 2000:
+            return await ctx.send("Output too long to display.")
+        await ctx.send(msg)
 
     @commands.command()
     async def tiles(self, ctx, sat: float = 0.25):
