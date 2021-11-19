@@ -128,6 +128,14 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "invert", url)
 
+    @commands.command()
+    async def hog(self, ctx, url: str = None):
+        """Histogram of Oriented Gradients of an image.
+
+        url: str
+        """
+        await self.dagpi(ctx, "hog", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""

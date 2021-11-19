@@ -4,6 +4,7 @@ import opcode
 import random
 import re
 import unicodedata
+from datetime import datetime
 
 from discord.ext import commands
 import aiohttp
@@ -52,6 +53,32 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.DB = bot.DB
+
+    @commands.command(aliases=["commits"])
+    async def dcommits(self, ctx):
+        """Gets all the urls of discord commits with comments."""
+        url = "https://api.github.com/repos/Discord-Datamining/Discord-Datamining/commits?per_page=100"
+        data = await self.bot.get_json(url)
+        embed = discord.Embed(color=discord.Color.og_blurple())
+        count = 0
+
+        for commit in data:
+            comment_count = commit["commit"]["comment_count"]
+            if comment_count:
+                timestamp = int(
+                    datetime.strptime(
+                        commit["commit"]["author"]["date"], "%Y-%m-%dT%H:%M:%SZ"
+                    ).timestamp()
+                )
+                embed.add_field(
+                    name=f"<t:{timestamp}:R>",
+                    value=f"[Link](<{commit['html_url']}#comments>) - {comment_count} comments",
+                )
+                count += 1
+                if count == 24:
+                    return await ctx.send(embed=embed)
+
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def char(self, ctx, *, characters: str):
