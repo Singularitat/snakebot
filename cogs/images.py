@@ -136,6 +136,22 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "hog", url)
 
+    @commands.command()
+    async def mirror(self, ctx, url: str = None):
+        """Mirror an image on the y axis.
+
+        url: str
+        """
+        await self.dagpi(ctx, "mirror", url)
+
+    @commands.command()
+    async def lego(self, ctx, url: str = None):
+        """Makes an image like lego.
+
+        url: str
+        """
+        await self.dagpi(ctx, "lego", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
