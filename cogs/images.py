@@ -20,6 +20,8 @@ class images(commands.Cog):
                 message = ctx.message.reference.cached_message
                 if message and message.attachments:
                     image_url = message.attachments[0].url
+                else:
+                    image_url = message.content.split()[-1]
             else:
                 image_url = ctx.author.display_avatar.url
         url = "https://dagpi.xyz/api/routes/dagpi-manip"
@@ -146,11 +148,19 @@ class images(commands.Cog):
 
     @commands.command()
     async def lego(self, ctx, url: str = None):
-        """Makes an image like lego.
+        """Makes an image look like it is made out of lego.
 
         url: str
         """
         await self.dagpi(ctx, "lego", url)
+
+    @commands.command()
+    async def flip(self, ctx, url: str = None):
+        """Flips an image upsidedown.
+
+        url: str
+        """
+        await self.dagpi(ctx, "flip", url)
 
 
 def setup(bot: commands.Bot) -> None:
