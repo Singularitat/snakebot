@@ -162,6 +162,14 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "flip", url)
 
+    @commands.command()
+    async def mosaic(self, ctx, url: str = None):
+        """Makes an image look like an roman mosaic.
+
+        url: str
+        """
+        await self.dagpi(ctx, "mosiac", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
