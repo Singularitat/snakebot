@@ -169,6 +169,14 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "mosiac", url)
 
+    @commands.command()
+    async def charcoal(self, ctx, url: str = None):
+        """Makes an image look like a charcoal drawing.
+
+        url: str
+        """
+        await self.dagpi(ctx, "charcoal", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
