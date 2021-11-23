@@ -286,6 +286,9 @@ class background_tasks(commands.Cog):
                 b"crypto",
                 b"stocks",
                 b"boot_times",
+                b"tiolanguages",
+                b"helloworlds",
+                b"docs",
             )
 
             for key, value in self.DB.main:

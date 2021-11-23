@@ -444,7 +444,7 @@ class information(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(aliases=["avatar"])
     async def icon(self, ctx, user: discord.User = None):
         """Sends a members avatar url.
 
