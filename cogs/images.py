@@ -177,6 +177,14 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "charcoal", url)
 
+    @commands.command()
+    async def rgb(self, ctx, url: str = None):
+        """Get an RGB graph of an image's colors.
+
+        url: str
+        """
+        await self.dagpi(ctx, "rgb", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
