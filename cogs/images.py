@@ -185,6 +185,14 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "rgb", url)
 
+    @commands.command()
+    async def shatter(self, ctx, url: str = None):
+        """Puts a broken glass overlay on an image.
+
+        url: str
+        """
+        await self.dagpi(ctx, "shatter", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
