@@ -1,8 +1,10 @@
 import os
+import asyncio
 
 from discord.ext import commands, tasks
 import discord
 import orjson
+import lxml
 
 
 class background_tasks(commands.Cog):
@@ -181,13 +183,14 @@ class background_tasks(commands.Cog):
 
         Example
 
-        Name:               Interval:      Running/Failed/Count:
+        Name:               Interval:    Running: Failed: Count:
 
-        update_stocks       0h 10m 0s      True/False/146
-        update_bot          0h 5m 0s       True/False/291
-        backup              6h 0m 0s       True/False/5
-        update_languages    0h 0m 0s       False/False/0
-        update_crypto       0h 10m 0s      True/False/146
+        get_stocks          0h  30m 0s   True     False   161
+        update_bot          0h  5m  0s   True     False   970
+        backup              6h  0m  0s   True     False   13
+        get_languages       0h  0m  0s   False    False   0
+        get_crypto          0h  30m 0s   True     False   161
+        get_domain          24h 0m  0s   True     False   3
         """
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -206,15 +209,32 @@ class background_tasks(commands.Cog):
         embed.description = f"```prolog\n{msg}```"
         await ctx.send(embed=embed)
 
-    @tasks.loop(minutes=30)
+    @tasks.loop(hours=12)
+    async def get_proxy(self):
+        """Gets a proxy mainly for the get_stocks task."""
+        url = "https://www.sslproxies.org/"
+
+        async with self.bot.client_session.get(url) as page:
+            soup = lxml.html.fromstring(await page.text())
+
+        item = soup.xpath(".//tr")[1]
+
+        ip, port = item[0].text, item[1].text
+        self.DB.main.put(b"ssl_proxy", f"http://{ip}:{port}".encode())
+
+    @tasks.loop(hours=1)
     async def get_stocks(self):
-        """Updates stock data every 30 minutes."""
+        """Updates stock data every hour."""
         url = "https://api.nasdaq.com/api/screener/stocks?limit=50000"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36",
             "accept-language": "en-US,en;q=0.9",
         }
-        async with self.bot.client_session.get(url, headers=headers) as response:
+        proxy = self.DB.main.get(b"ssl_proxy").decode()
+
+        async with self.bot.client_session.get(
+            url, headers=headers, proxy=proxy
+        ) as response:
             stocks = await response.json()
 
         if not stocks:
@@ -375,6 +395,12 @@ class background_tasks(commands.Cog):
 
         domain = data["hydra:member"][0]["domain"]
         self.DB.main.put(b"tempdomain", domain.encode())
+
+    @get_stocks.before_loop
+    async def wait_for_proxy(self):
+        """Make sure we have proxy before we request stocks."""
+        if self.tasks["get_stocks"].current_loop == 0:
+            await asyncio.sleep(3)
 
 
 def setup(bot):

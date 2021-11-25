@@ -193,6 +193,14 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "shatter", url)
 
+    @commands.command()
+    async def paint(self, ctx, url: str = None):
+        """Makes an image look like a painting.
+
+        url: str
+        """
+        await self.dagpi(ctx, "paint", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
