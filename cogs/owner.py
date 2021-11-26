@@ -67,6 +67,14 @@ class owner(commands.Cog):
         """
         return ctx.author.id in self.bot.owner_ids
 
+    @commands.command(aliases=["doc", "d"])
+    async def docs(self, ctx, name):
+        docs = self.DB.docs.get(name.encode())
+        if not docs:
+            return
+
+        await ctx.send(file=discord.File(StringIO(docs.decode()), "doc.txt"))
+
     @commands.command(pass_context=True, hidden=True, name="eval")
     async def _eval(self, ctx, *, code: str):
         """Evaluates code.
