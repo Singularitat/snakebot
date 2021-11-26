@@ -209,7 +209,7 @@ class background_tasks(commands.Cog):
         embed.description = f"```prolog\n{msg}```"
         await ctx.send(embed=embed)
 
-    @tasks.loop(hours=12)
+    @tasks.loop(minutes=59, seconds=59)
     async def get_proxy(self):
         """Gets a proxy mainly for the get_stocks task."""
         url = "https://www.sslproxies.org/"
@@ -217,9 +217,11 @@ class background_tasks(commands.Cog):
         async with self.bot.client_session.get(url) as page:
             soup = lxml.html.fromstring(await page.text())
 
-        item = soup.xpath(".//tr")[1]
+        for item in soup.xpath(".//tr"):
+            if item[3].text == "United States":
+                ip, port = item[0].text, item[1].text
+                break
 
-        ip, port = item[0].text, item[1].text
         self.DB.main.put(b"ssl_proxy", f"http://{ip}:{port}".encode())
 
     @tasks.loop(hours=1)
