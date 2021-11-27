@@ -70,7 +70,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.url = data.get("webpage_url")
         self.views = self.parse_number(data["view_count"])
         self.likes = self.parse_number(data["like_count"])
-        self.dislikes = self.parse_number(data["dislike_count"])
         self.stream_url = data.get("url")
 
     def __str__(self):
@@ -312,10 +311,6 @@ class Song:
             )
             .add_field(name="URL", value=f"[Click]({self.source.url})")
             .add_field(name="Views", value=self.source.views)
-            .add_field(
-                name="Likes/Dislikes",
-                value=f"{self.source.likes}/{self.source.dislikes}",
-            )
             .add_field(name="Queue:", value=queue, inline=False)
         )
         return embed

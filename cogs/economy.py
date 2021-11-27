@@ -177,7 +177,7 @@ class economy(commands.Cog):
         await message.edit(embed=deck.get_embed(bet, False))
         await self.DB.put_bal(member, bal)
 
-    @commands.command(aliases=["flip", "fcoin", "coinf"])
+    @commands.command(aliases=["coinf"])
     async def coinflip(self, ctx, choice, bet):
         """Flips a coin.
 

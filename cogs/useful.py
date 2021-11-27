@@ -13,6 +13,97 @@ import orjson
 
 from cogs.utils.calculation import safe_eval, hex_float, oct_float, bin_float
 
+
+STATUS_CODES = {
+    "1": {
+        "title": "1xx informational response",
+        "message": "An informational response indicates that the request was received and understood.",
+        "100": "Continue",
+        "101": "Switching Protocols",
+        "102": "Processing",
+        "103": "Early Hints",
+    },
+    "2": {
+        "title": "2xx success",
+        "message": "Action requested by the client was received, understood, and accepted.",
+        "200": "OK",
+        "201": "Created",
+        "202": "Accepted",
+        "203": "Non-Authoritative Information",
+        "204": "No Content",
+        "205": "Reset Content",
+        "206": "Partial Content",
+        "207": "Multi-Status",
+        "208": "Already Reported",
+    },
+    "3": {
+        "title": "3xx redirection",
+        "message": "Client must take additional action to complete the request.",
+        "300": "Multiple Choices",
+        "301": "Moved Permanently",
+        "302": "Found (Previously 'Moved temporarily')",
+        "303": "See Other",
+        "304": "Not Modified",
+        "305": "Use Proxy",
+        "306": "Switch Proxy",
+        "307": "Temporary Redirect",
+        "308": "Permanent Redirect",
+    },
+    "4": {
+        "title": "4xx client errors",
+        "message": "Errors that seem to have been caused by the client.",
+        "400": "Bad Request",
+        "401": "Unauthorized",
+        "402": "Payment Required",
+        "403": "Forbidden",
+        "404": "Not Found",
+        "405": "Method Not Allowed",
+        "406": "Not Acceptable",
+        "407": "Proxy Authentication Required",
+        "408": "Request Timeout",
+        "409": "Conflict",
+        "410": "Gone",
+        "411": "Length Required",
+        "412": "Precondition Failed",
+        "413": "Payload Too Large",
+        "414": "URI Too Long",
+        "415": "Unsupported Media Type",
+        "416": "Range Not Satisfiable",
+        "417": "Expectation Failed",
+        "418": "Im A Teapot",
+        "420": "Enhance Your Calm",
+        "421": "Misdirected Request",
+        "422": "Unprocessable Entity",
+        "423": "Locked",
+        "424": "Failed Dependency",
+        "425": "Too Early",
+        "426": "Upgrade Required",
+        "428": "Precondition Required",
+        "429": "Too Many Requests",
+        "431": "Request Header Fields Too Large",
+        "444": "No Response",
+        "450": "Blocked By Windows Parental Controls",
+        "451": "Unavailable For Legal Reasons",
+        "499": "Client Closed Request",
+    },
+    "5": {
+        "title": "5xx server errors",
+        "message": "The server failed to fulfil a request.",
+        "500": "Internal Server Error",
+        "501": "Not Implemented",
+        "502": "Bad Gateway",
+        "503": "Service Unavailable",
+        "504": "Gateway Timeout",
+        "505": "HTTP Version Not Supported",
+        "506": "Variant Also Negotiates",
+        "507": "Insufficient Storage",
+        "508": "Loop Detected",
+        "510": "Not Extended",
+        "511": "Network Authentication Required",
+    },
+}
+
+
 TIO_ALIASES = {
     "asm": "assembly-nasm",
     "c": "c-gcc",
@@ -567,111 +658,39 @@ class useful(commands.Cog):
         """
         await ctx.send(f"http://wttr.in/{location.replace(' ', '+')}.png?2&m&q&n")
 
-    @commands.command(name="statuscodes")
-    async def status_codes(self, ctx):
-        """List of status codes for catstatus command."""
+    @commands.command(aliases=["statuscode"])
+    async def statuscodes(self, ctx, code=None):
+        """List of status codes for mainly for catstatus command."""
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.add_field(
-            name="1xx informational response",
-            value=(
-                "```An informational response indicates that the request was received and understood.\n\n"
-                "100 Continue\n"
-                "101 Switching Protocols\n"
-                "102 Processing\n"
-                "103 Early Hints```"
-            ),
-            inline=False,
-        )
-        embed.add_field(
-            name="2xx success",
-            value=(
-                "```Action requested by the client was received, understood, and accepted.\n\n"
-                "200 OK\n"
-                "201 Created\n"
-                "202 Accepted\n"
-                "203 Non-Authoritative Information\n"
-                "204 No Content\n"
-                "205 Reset Content\n"
-                "206 Partial Content\n"
-                "207 Multi-Status\n"
-                "208 Already Reported```"
-            ),
-            inline=False,
-        )
-        embed.add_field(
-            name="3xx redirection",
-            value=(
-                "```Client must take additional action to complete the request.\n\n"
-                "300 Multiple Choices\n"
-                "301 Moved Permanently\n"
-                "302 Found (Previously 'Moved temporarily')\n"
-                "303 See Other\n"
-                "304 Not Modified\n"
-                "305 Use Proxy\n"
-                "306 Switch Proxy\n"
-                "307 Temporary Redirect\n"
-                "308 Permanent Redirect```"
-            ),
-            inline=False,
-        )
-        embed.add_field(
-            name="4xx client errors",
-            value=(
-                "```Errors that seem to have been caused by the client.\n\n"
-                "400 Bad Request\n"
-                "401 Unauthorized\n"
-                "402 Payment Required\n"
-                "403 Forbidden\n"
-                "404 Not Found\n"
-                "405 Method Not Allowed\n"
-                "406 Not Acceptable\n"
-                "407 Proxy Authentication Required\n"
-                "408 Request Timeout\n"
-                "409 Conflict\n"
-                "410 Gone\n"
-                "411 Length Required\n"
-                "412 Precondition Failed\n"
-                "413 Payload Too Large\n"
-                "414 URI Too Long\n"
-                "415 Unsupported Media Type\n"
-                "416 Range Not Satisfiable\n"
-                "417 Expectation Failed\n"
-                "418 I'm a teapot\n"
-                "420 Enhance Your Calm\n"
-                "421 Misdirected Request\n"
-                "422 Unprocessable Entity\n"
-                "423 Locked\n"
-                "424 Failed Dependency\n"
-                "425 Too Early\n"
-                "426 Upgrade Required\n"
-                "428 Precondition Required\n"
-                "429 Too Many Requests\n"
-                "431 Request Header Fields Too Large\n"
-                "444 No Response\n"
-                "450 Blocked by Windows Parental Controls\n"
-                "451 Unavailable For Legal Reasons\n"
-                "499 Client Closed Request```"
-            ),
-            inline=False,
-        )
-        embed.add_field(
-            name="5xx server errors",
-            value=(
-                "```The server failed to fulfil a request.\n\n"
-                "500 Internal Server Error\n"
-                "501 Not Implemented\n"
-                "502 Bad Gateway\n"
-                "503 Service Unavailable\n"
-                "504 Gateway Timeout\n"
-                "505 HTTP Version Not Supported\n"
-                "506 Variant Also Negotiates\n"
-                "507 Insufficient Storage\n"
-                "508 Loop Detected\n"
-                "510 Not Extended\n"
-                "511 Network Authentication Required```"
-            ),
-            inline=False,
-        )
+
+        if code:
+            group = code[0]
+            info = STATUS_CODES.get(group)
+            if not info:
+                embed.description = f"```No status code group for {group}xx```"
+                return await ctx.send(embed=embed)
+            if code not in info:
+                embed.description = (
+                    f"```No {code} status code found in the {group}xx group```"
+                )
+                return await ctx.send(embed=embed)
+            embed.title = info["title"]
+            embed.description = f"{info['message']}\n```prolog\n{code} {info[code]}```"
+            return await ctx.send(embed=embed)
+
+        for codes in STATUS_CODES.values():
+            message = ""
+
+            for code, info in codes.items():
+                if not code.isdigit():
+                    continue
+                message += f"\n{code} {info}"
+
+            embed.add_field(
+                name=codes["title"],
+                value=f"{codes['message']}\n```prolog\n{message}```",
+                inline=False,
+            )
         await ctx.send(embed=embed)
 
     @commands.command()
