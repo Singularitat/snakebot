@@ -536,7 +536,6 @@ class apis(commands.Cog):
         for digit in str(converted)[start:]:
             if digit == "0":
                 count += 1
-                continue
             else:
                 break
 
