@@ -427,6 +427,26 @@ class background_tasks(commands.Cog):
         with self.DB.docs.write_batch() as wb:
             self._get_documentation(discord, wb)
 
+    @tasks.loop(hours=2)
+    async def get_currencies(self):
+        url = "https://api.vatcomply.com/rates?base=NZD"
+        rates = await self.bot.get_json(url)
+
+        url = "https://api.vatcomply.com/currencies"
+        symbols = await self.bot.get_json(url)
+
+        if not symbols or not rates:
+            return
+
+        for key, rate in rates["rates"].items():
+            symbols[key]["rate"] = rate
+
+        symbols["NZD"]["symbol"] = "$"
+        symbols["CAD"]["symbol"] = "$"
+        symbols["AUD"]["symbol"] = "$"
+
+        self.DB.main.put(b"currencies", orjson.dumps(symbols))
+
     @get_stocks.before_loop
     async def wait_for_proxy(self):
         """Make sure we have proxy before we request stocks."""
