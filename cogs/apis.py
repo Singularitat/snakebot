@@ -491,28 +491,59 @@ class apis(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def currency(self, ctx, orginal, amount: float, new):
+    async def currency(self, ctx, *message):
         """Converts between currencies.
 
-        orginal: str
-            The orginal currency.
-        amount: int
-        new: str
-            The new currency.
-        """
-        new = new.upper()
-        orginal = orginal.upper()
+        Example usage:
+            .currency usd nzd
+            .currency 3 usd nzd
+            .currency usd to nzd
+            .currency 3 usd to nzd
 
-        url = f"https://api.frankfurter.app/latest?amount={amount}&from={orginal}&to={new}"
+        message: tuple
+        """
+        currencies = orjson.loads(self.DB.main.get(b"currencies"))
         embed = discord.Embed(color=discord.Color.blurple())
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
+        if len(message) == 2:
+            current, new = message
+            amount = "1"
+        else:
+            amount, current, *_, new = message
 
-            embed.description = (
-                f"```{amount} {orginal} is {data['rates'][new]} {new}```"
-            )
+        if not amount.isdigit():
+            current = amount
+            amount = 1
+        else:
+            amount = float(amount)
 
+        current = current.upper()
+        new = new.upper()
+        cprefix = currencies[current]["symbol"]
+        nprefix = currencies[new]["symbol"]
+
+        if new == "NZD":
+            converted = amount / currencies[current]["rate"]
+        elif current == "NZD":
+            converted = amount * currencies[new]["rate"]
+        else:
+            converted = (currencies[new]["rate"] * amount) / currencies[current]["rate"]
+
+        start = len(str(int(converted))) + 1
+        count = 2
+
+        # A shitty way to make sure we always have 2 significant *decimal* places
+        for digit in str(converted)[start:]:
+            if digit == "0":
+                count += 1
+                continue
+            else:
+                break
+
+        embed.description = (
+            f"```prolog\n{cprefix}{amount:.0f} {current}"
+            f" is {nprefix}{converted:.{count}f} {new}```"
+        )
         await ctx.send(embed=embed)
 
     @commands.command()
