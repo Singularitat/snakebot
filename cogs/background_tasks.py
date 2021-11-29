@@ -402,12 +402,9 @@ class background_tasks(commands.Cog):
         if not getattr(obj, "__doc__", None):
             return
         if not hasattr(obj, "__name__"):
-            if not hasattr(obj, "name"):
-                return
-            name = obj.name
-        else:
-            name = obj.__name__
+            return
 
+        name = getattr(obj, "__qualname__", None) or obj.__name__
         wb.put(name.encode(), obj.__doc__.encode())
 
         for name in dir(obj):
