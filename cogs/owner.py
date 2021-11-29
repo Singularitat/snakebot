@@ -9,6 +9,7 @@ import time
 import traceback
 from contextlib import redirect_stdout
 import textwrap
+import difflib
 
 from discord.ext import commands
 import discord
@@ -67,13 +68,38 @@ class owner(commands.Cog):
         """
         return ctx.author.id in self.bot.owner_ids
 
-    @commands.command(aliases=["doc", "d"])
-    async def docs(self, ctx, name):
+    @commands.command(aliases=["d"])
+    async def doc(self, ctx, name):
+        """Gets the shows the dunder doc attribute of a discord object.
+
+        name: str
+            The discord object.
+        """
         docs = self.DB.docs.get(name.encode())
         if not docs:
             return
 
         await ctx.send(file=discord.File(StringIO(docs.decode()), "doc.txt"))
+
+    @commands.command()
+    async def docs(self, ctx, search):
+        """Finds the closest matches to a search.
+
+        search: str
+        """
+        matches = "\n".join(
+            difflib.get_close_matches(
+                search,
+                [name.decode() for name in self.DB.docs.iterator(include_value=False)],
+                n=9,
+                cutoff=0.0,
+            )
+        )
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(), description=f"```{matches}```"
+            )
+        )
 
     @commands.command(pass_context=True, hidden=True, name="eval")
     async def _eval(self, ctx, *, code: str):
