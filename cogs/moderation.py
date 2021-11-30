@@ -119,7 +119,7 @@ class moderation(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
-    async def end_poll(self, ctx, message_id):
+    async def endpoll(self, ctx, message_id):
         """Ends a poll based off its message id."""
         polls = self.DB.main.get(b"polls")
 
@@ -131,14 +131,14 @@ class moderation(commands.Cog):
         if str(ctx.guild.id) not in polls:
             return await ctx.send(
                 embed=discord.Embed(
-                    color=discord.Colo.blurple(), description="No polls found"
+                    color=discord.Color.blurple(), description="No polls found"
                 )
             )
 
         if message_id not in polls[str(ctx.guild.id)]:
             return await ctx.send(
                 embed=discord.Embed(
-                    color=discord.Colo.blurple(), description="Poll not found"
+                    color=discord.Color.blurple(), description="Poll not found"
                 )
             )
 
