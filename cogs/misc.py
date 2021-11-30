@@ -689,6 +689,8 @@ class misc(commands.Cog):
     @commands.command()
     async def rand(self, ctx, a: int, b: int):
         """Gets a random number such that a <= N <= b"""
+        if a > b:
+            a, b = b, a
         await ctx.reply(random.randint(a, b))
 
     @staticmethod
