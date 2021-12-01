@@ -1212,7 +1212,7 @@ class apis(commands.Cog):
             if definition["phonetics"][0]:
                 embed.title = definition["phonetics"][0]["text"]
                 embed.description = (
-                    f"[pronunciation]({definition['phonetics'][0]['audio']})"
+                    f"[pronunciation](https:{definition['phonetics'][0]['audio']})"
                 )
 
             for meaning in definition["meanings"]:
@@ -1223,10 +1223,9 @@ class apis(commands.Cog):
 
             await ctx.send(embed=embed)
 
-    @commands.command(aliases=["syn"])
+    @commands.command(aliases=["syn", "synonym"])
     async def synonyms(self, ctx, *, word):
         url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
-        synonyms = set()
 
         async with ctx.typing():
             data = await self.bot.get_json(url)
@@ -1237,19 +1236,71 @@ class apis(commands.Cog):
                 return await ctx.send(embed=embed)
 
             data = data[0]
+            description = ""
 
             for meaning in data["meanings"]:
-                if "synonyms" in meaning["definitions"][0]:
-                    synonyms.update(meaning["definitions"][0]["synonyms"])
+                temp = meaning["partOfSpeech"] + "\n  "
+                seen = False
+                for definition in meaning["definitions"]:
+                    synonyms = definition["synonyms"]
+                    if synonyms:
+                        temp += (
+                            definition["definition"]
+                            + "\n    "
+                            + "\n    ".join(synonyms)
+                            + "\n\n  "
+                        )
+                        seen = True
+                if seen:
+                    description += temp[:-2]
 
-            if not synonyms:
+            if not description:
                 embed.description = "```No synonyms found```"
                 return await ctx.send(embed=embed)
 
-            synonyms = "\n".join(synonyms).title()
             embed.url = f"https://www.dictionary.com/browse/{word}"
             embed.title = f"{word.title()} Synonyms"
-            embed.description = f"```prolog\n{synonyms}```"
+            embed.description = f"```prolog\n{description.title().strip()}```"
+            await ctx.send(embed=embed)
+
+    @commands.command(aliases=["antonym"])
+    async def antonyms(self, ctx, *, word):
+        url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+
+        async with ctx.typing():
+            data = await self.bot.get_json(url)
+
+            embed = discord.Embed(color=discord.Color.blurple())
+            if isinstance(data, dict):
+                embed.description = "```Word not found```"
+                return await ctx.send(embed=embed)
+
+            data = data[0]
+            description = ""
+
+            for meaning in data["meanings"]:
+                temp = meaning["partOfSpeech"] + "\n  "
+                seen = False
+                for definition in meaning["definitions"]:
+                    antonyms = definition["antonyms"]
+                    if antonyms:
+                        temp += (
+                            definition["definition"]
+                            + "\n    "
+                            + "\n    ".join(antonyms)
+                            + "\n\n  "
+                        )
+                        seen = True
+                if seen:
+                    description += temp[:-2]
+
+            if not description:
+                embed.description = "```No antonyms found```"
+                return await ctx.send(embed=embed)
+
+            embed.url = f"https://www.dictionary.com/browse/{word}"
+            embed.title = f"{word.title()} Antonyms"
+            embed.description = f"```prolog\n{description.title().strip()}```"
             await ctx.send(embed=embed)
 
     @commands.command()
