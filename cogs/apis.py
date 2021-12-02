@@ -1177,13 +1177,13 @@ class apis(commands.Cog):
             "Mods:\n{}\n\n"
             "Motd:\n{}```"
         ).format(
-            data["hostname"],
+            data.get("hostname", "N/A"),
             data["ip"],
             data["port"],
             data["online"],
             data["players"]["online"],
             data["players"]["max"],
-            ", ".join(data["players"]["list"]) if "list" in data["players"] else "",
+            ", ".join(data["players"].get("list", "")),
             data["version"],
             len(data["mods"]["names"]) if "mods" in data else None,
             "\n".join([s.strip() for s in data["motd"]["clean"]]),
