@@ -20,7 +20,7 @@ from cogs.images import images
 
 
 bot = Bot(helpers.MockBot())
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+# asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 url_regex = re.compile(
@@ -887,6 +887,17 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
         cls.cog = misc(bot=bot)
+
+    async def test_num_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="num"):
+            await self.cog.num(
+                self.cog,
+                context,
+                "1000",
+            )
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
     async def test_fen_command(self):
         context = helpers.MockContext()
