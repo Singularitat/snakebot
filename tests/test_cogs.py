@@ -888,6 +888,17 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = misc(bot=bot)
 
+    async def test_char_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="char"):
+            await self.cog.char(
+                self.cog,
+                context,
+                "abcd",
+            )
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
     async def test_num_command(self):
         context = helpers.MockContext()
 
