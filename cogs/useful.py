@@ -659,38 +659,48 @@ class useful(commands.Cog):
         await ctx.send(f"http://wttr.in/{location.replace(' ', '+')}.png?2&m&q&n")
 
     @commands.command(aliases=["statuscode"])
-    async def statuscodes(self, ctx, code=None):
+    async def statuscodes(self, ctx, *, code=None):
         """List of status codes for mainly for catstatus command."""
         embed = discord.Embed(color=discord.Color.blurple())
 
-        if code:
-            group = code[0]
-            info = STATUS_CODES.get(group)
+        if not code:
+            for codes in STATUS_CODES.values():
+                message = ""
+
+                for code, tag in codes.items():
+                    if not code.isdigit():
+                        continue
+                    message += f"\n{code} {tag}"
+
+                embed.add_field(
+                    name=codes["title"],
+                    value=f"{codes['message']}\n```prolog\n{message}```",
+                    inline=False,
+                )
+            return await ctx.send(embed=embed)
+
+        group = code[0]
+        info = STATUS_CODES.get(group)
+        if not info:
+            code = code.lower()
+            for data in STATUS_CODES.values():
+                for scode, tag in data.items():
+                    if code == tag.lower():
+                        info = data
+                        code = scode
+                        break
+
             if not info:
                 embed.description = f"```No status code group for {group}xx```"
                 return await ctx.send(embed=embed)
-            if code not in info:
-                embed.description = (
-                    f"```No {code} status code found in the {group}xx group```"
-                )
-                return await ctx.send(embed=embed)
-            embed.title = info["title"]
-            embed.description = f"{info['message']}\n```prolog\n{code} {info[code]}```"
-            return await ctx.send(embed=embed)
 
-        for codes in STATUS_CODES.values():
-            message = ""
-
-            for code, info in codes.items():
-                if not code.isdigit():
-                    continue
-                message += f"\n{code} {info}"
-
-            embed.add_field(
-                name=codes["title"],
-                value=f"{codes['message']}\n```prolog\n{message}```",
-                inline=False,
+        if code not in info:
+            embed.description = (
+                f"```No {code} status code found in the {group}xx group```"
             )
+            return await ctx.send(embed=embed)
+        embed.title = info["title"]
+        embed.description = f"{info['message']}\n```prolog\n{code} {info[code]}```"
         await ctx.send(embed=embed)
 
     @commands.command()
