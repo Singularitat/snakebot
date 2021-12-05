@@ -650,7 +650,7 @@ class misc(commands.Cog):
             )
         )
 
-    @commands.command()
+    @commands.command(aliases=["id"])
     async def snowflake(self, ctx, snowflake: int):
         """Shows some information about a discord snowflake.
 
@@ -1008,7 +1008,7 @@ class misc(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(aliases=["element", "ele"])
     async def atom(self, ctx, element):
         """Displays information for a given atom.
 
@@ -1035,6 +1035,9 @@ class misc(commands.Cog):
         embed.add_field(name="Symbol", value=text[3])
         embed.add_field(name="Atomic Number", value=text[5])
         embed.add_field(name="Atomic Mass", value=text[7])
+        embed.add_field(name="Melting Point", value=text[9])
+        embed.add_field(name="Boiling Point", value=text[11])
+        embed.add_field(name="Protons/Electrons", value=text[13])
         embed.add_field(name="Neutrons", value=text[15])
         embed.add_field(name="Color", value=text[text.index("Color:") + 1])
         embed.add_field(name="Uses", value=text[text.index("Uses:") + 1])
