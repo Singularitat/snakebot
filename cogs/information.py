@@ -360,19 +360,22 @@ class information(commands.Cog):
         """Shows the bots uptime."""
         await ctx.send(f"Bot has been up since **<t:{self.bot.uptime:.0f}:R>**")
 
-    @commands.command(name="server")
-    async def server_info(self, ctx):
+    @commands.command()
+    async def server(self, ctx):
         """Shows information about the current server."""
-        offline_users, online_users, dnd_users, idle_users = 0, 0, 0, 0
-        for member in ctx.guild.members:
+        guild = ctx.guild
+        offline_u, online_u, dnd_u, idle_u, bots = 0, 0, 0, 0, 0
+        for member in guild.members:
+            if member.bot:
+                bots += 1
             if member.status is discord.Status.offline:
-                offline_users += 1
+                offline_u += 1
             elif member.status is discord.Status.online:
-                online_users += 1
+                online_u += 1
             elif member.status is discord.Status.dnd:
-                dnd_users += 1
+                dnd_u += 1
             elif member.status is discord.Status.idle:
-                idle_users += 1
+                idle_u += 1
 
         offline = "<:offline:766076363048222740>"
         online = "<:online:766076316512157768>"
@@ -380,21 +383,20 @@ class information(commands.Cog):
         idle = "<:idle:766197981955096608>"
 
         embed = discord.Embed(colour=discord.Colour.blurple())
-        embed.description = textwrap.dedent(
-            f"""
-                **Server Information**
-                Created: **<t:{ctx.guild.created_at.timestamp():.0f}:R>**
-                Region: {ctx.guild.region.name.title()}
-                Owner: {ctx.guild.owner}
+        embed.description = f"""
+            **Server Information**
+            Created: **<t:{guild.created_at.timestamp():.0f}:R>**
+            Owner: {guild.owner.mention}
 
-                **Member Counts**
-                Members: {ctx.guild.member_count:,} Roles: {len(ctx.guild.roles)}
+            **Member Counts**
+            Members: {guild.member_count:,} ({bots} bots)
+            Roles: {len(guild.roles)}
 
-                **Member Statuses**
-                {online} {online_users:,} {dnd} {dnd_users:,} {idle} {idle_users:,} {offline} {offline_users:,}
-            """
-        )
-        embed.set_thumbnail(url=ctx.guild.icon)
+            **Member Statuses**
+            {online} {online_u:,} {dnd} {dnd_u:,} {idle} {idle_u:,} {offline} {offline_u:,}
+        """
+
+        embed.set_thumbnail(url=guild.icon)
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["member"])
