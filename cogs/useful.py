@@ -5,6 +5,7 @@ import time
 import urllib
 from zlib import compress
 import secrets
+import difflib
 
 from discord.ext import commands, menus
 import discord
@@ -682,13 +683,19 @@ class useful(commands.Cog):
         group = code[0]
         info = STATUS_CODES.get(group)
         if not info:
-            code = code.lower()
+            statuses = {}
             for data in STATUS_CODES.values():
                 for scode, tag in data.items():
-                    if code == tag.lower():
-                        info = data
-                        code = scode
-                        break
+                    if scode.isdigit():
+                        statuses[tag] = scode
+            match = difflib.get_close_matches(
+                code,
+                [*statuses],
+                n=1,
+                cutoff=0.0,
+            )
+            code = statuses[match[0]]
+            info = STATUS_CODES.get(code[0])
 
             if not info:
                 embed.description = f"```No status code group for {group}xx```"
