@@ -1687,10 +1687,10 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
             context.channel.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
-    async def test_status_codes_command(self):
+    async def test_statuscodes_command(self):
         context = helpers.MockContext()
 
-        await self.cog.status_codes(self.cog, context)
+        await self.cog.statuscodes(self.cog, context, "418")
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
