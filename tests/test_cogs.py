@@ -914,6 +914,18 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
+    async def test_tiles_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="tiles"):
+            await self.cog.tiles(
+                self.cog,
+                context,
+            )
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def test_char_command(self):
         context = helpers.MockContext()
 
