@@ -888,39 +888,74 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = misc(bot=bot)
 
+    @unittest.skip("Really Slow.")
+    async def test_misc_commands(self):
+        bot.client_session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=6)
+        )
+
+        await asyncio.gather(
+            *[
+                getattr(self, name)()
+                for name in dir(self)
+                if not name.startswith("test_")
+            ]
+        )
+
+    async def test_dcommits_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="dcommits"):
+            await self.cog.dcommits(
+                self.cog,
+                context,
+            )
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+    async def test_tiles_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="tiles"):
+            await self.cog.tiles(
+                self.cog,
+                context,
+            )
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def test_char_command(self):
         context = helpers.MockContext()
 
-        with self.subTest(command="char"):
-            await self.cog.char(
-                self.cog,
-                context,
-                "abcd",
-            )
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        await self.cog.char(
+            self.cog,
+            context,
+            "abcd",
+        )
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
     async def test_num_command(self):
         context = helpers.MockContext()
 
-        with self.subTest(command="num"):
-            await self.cog.num(
-                self.cog,
-                context,
-                "1000",
-            )
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        await self.cog.num(
+            self.cog,
+            context,
+            "1000",
+        )
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
     async def test_fen_command(self):
         context = helpers.MockContext()
 
-        with self.subTest(command="fen"):
-            await self.cog.fen(
-                self.cog,
-                context,
-                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-            )
+        await self.cog.fen(
+            self.cog,
+            context,
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        )
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
     async def test_code_command(self):
         context = helpers.MockContext()
@@ -943,38 +978,34 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     async def test_epoch_command(self):
         context = helpers.MockContext()
 
-        with self.subTest(command="epoch"):
-            await self.cog.epoch(self.cog, context, 1634895114179)
+        await self.cog.epoch(self.cog, context, 1634895114179)
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
     async def test_diff_command(self):
         context = helpers.MockContext()
 
-        with self.subTest(command="diff"):
-            await self.cog.diff(self.cog, context, "13/10/2021")
+        await self.cog.diff(self.cog, context, "13/10/2021")
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
     async def test_color_command(self):
         context = helpers.MockContext()
 
-        with self.subTest(command="color"):
-            await self.cog.color(self.cog, context, color="f542e3")
+        await self.cog.color(self.cog, context, color="f542e3")
 
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
 
     async def test_justin_command(self):
         context = helpers.MockContext()
 
-        with self.subTest(command="justin"):
-            await self.cog.justin(self.cog, context)
+        await self.cog.justin(self.cog, context)
 
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
 
     async def test_yeah_command(self):
         context = helpers.MockContext()
