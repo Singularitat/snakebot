@@ -69,41 +69,48 @@ class owner(commands.Cog):
         return ctx.author.id in self.bot.owner_ids
 
     @commands.command(aliases=["type"])
-    async def findtype(self, ctx, id: discord.Object):
+    async def findtype(self, ctx, snowflake: int):
         async def found_message(type_id: str) -> None:
             await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
-                    description=f"**ID**: `{id.id}`\n"
+                    description=f"**ID**: `{snowflake}`\n"
                     f"**Type:** `{type_id.capitalize()}`\n"
-                    f"**Created:** `{id.created_at}`",
+                    f"**Created:** <t:{((snowflake >> 22) + 1420070400000)//1000}>",
                 )
             )
 
         m = await self.bot.client_session.head(
-            f"https://cdn.discordapp.com/emojis/{id.id}"
+            f"https://cdn.discordapp.com/emojis/{snowflake}"
         )
         if m.status == 200:
             return await found_message("emoji")
 
         try:
-            if await ctx.fetch_message(id.id):
+            if await ctx.fetch_message(snowflake):
                 return await found_message("message")
         except discord.NotFound:
             pass
 
-        for typeobj in ("channel", "user", "guild"):
+        for typeobj in ("channel", "user", "guild", "sticker", "stage_instance"):
             get = getattr(self.bot, f"get_{typeobj}")
-            if get(id.id):
+            if get(snowflake):
                 return await found_message(typeobj)
             fetch = getattr(self.bot, f"fetch_{typeobj}")
             try:
-                if await fetch(id.id):
+                if await fetch(snowflake):
                     return await found_message(typeobj)
             except discord.Forbidden:
                 return await found_message(typeobj)
             except discord.NotFound:
                 pass
+
+        try:
+            await self.bot.fetch_webhook(snowflake)
+        except discord.Forbidden:
+            return await found_message("webhook")
+        except discord.NotFound:
+            pass
 
         await ctx.reply("Cannot find type of object")
 
