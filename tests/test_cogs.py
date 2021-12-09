@@ -73,6 +73,24 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def food_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="food"):
+            await self.cog.food(self.cog)
+
+            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+
+    async def domains_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="domains"):
+            await self.cog.domains(self.cog)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def validate_command(self):
         context = helpers.MockContext()
 
