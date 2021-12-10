@@ -153,7 +153,6 @@ class owner(commands.Cog):
 
         code: str
         """
-
         env = {
             "bot": self.bot,
             "ctx": ctx,
@@ -251,7 +250,10 @@ class owner(commands.Cog):
             f"{nlocals=}, {stacksize=}, {flags=}"
         ).replace("`", "`\u200b")
 
-        await ctx.send(f"```py\n{args}\n\n``````fix\n{code_obj.co_code.hex()}```")
+        await ctx.send(
+            f"```py\n{args}\n\n```",
+            file=discord.File(StringIO(str(code_obj.co_code)), "bytecode.py"),
+        )
 
     @commands.command(name="wipeblacklist")
     async def wipe_blacklist(self, ctx):
