@@ -778,11 +778,6 @@ class misc(commands.Cog):
             "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51"
         )
 
-    @staticmethod
-    def starmap(iterable):
-        for num1, num2 in iterable:
-            yield num1 * num2
-
     @commands.group()
     async def cipher(self, ctx):
         """Solves or encodes a caesar cipher."""
@@ -874,6 +869,11 @@ class misc(commands.Cog):
         A: str
         B: str
         """
+
+        def starmap(iterable):
+            for num1, num2 in iterable:
+                yield num1 * num2
+
         if "a" < A:
             A = [[ord(letter) - 97 for letter in A]]
         else:
@@ -885,7 +885,7 @@ class misc(commands.Cog):
         results = ""
 
         for block in A:
-            results += f"{[sum(self.starmap(zip(block, col))) for col in zip(*B)]}\n"
+            results += f"{[sum(starmap(zip(block, col))) for col in zip(*B)]}\n"
 
         embed = discord.Embed(
             color=discord.Color.blurple(), description=f"```{results}```"
@@ -927,7 +927,7 @@ class misc(commands.Cog):
         if convert:
             embed.description = f"```{int(number, 16)}```"
             return await ctx.send(embed=embed)
-        embed.description = f"```{hex_float(number)}```"
+        embed.description = f"```fix\n{hex_float(number)}```"
         await ctx.send(embed=embed)
 
     @commands.command(name="oct")
@@ -943,7 +943,7 @@ class misc(commands.Cog):
         if convert:
             embed.description = f"```{int(number, 8)}```"
             return await ctx.send(embed=embed)
-        embed.description = f"```{oct_float(number)}```"
+        embed.description = f"```fix\n{oct_float(number)}```"
         await ctx.send(embed=embed)
 
     @commands.command(name="bin")
@@ -959,7 +959,7 @@ class misc(commands.Cog):
         if convert:
             embed.description = f"```{int(number, 2)}```"
             return await ctx.send(embed=embed)
-        embed.description = f"```{bin_float(number)}```"
+        embed.description = f"```fix\n{bin_float(number)}```"
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["socialcredit"])
