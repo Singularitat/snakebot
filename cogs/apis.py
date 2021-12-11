@@ -212,29 +212,6 @@ class apis(commands.Cog):
         await ctx.send(f"**{post['title']}**\n{post['sub']}\n{post['url']}")
 
     @commands.command()
-    async def dehash(self, ctx, search_hash):
-        """Uses dehash.lt to decrypt hashes.
-
-        Supported Types - MD5, SHA1, SHA3, SHA256, SHA384, SHA512
-
-        search_hash: str
-        """
-        url = f"https://api.dehash.lt/api.php?search={search_hash}"
-
-        async with ctx.typing(), self.bot.client_session.get(url) as resp:
-            result = await resp.text()
-
-        if result == "Error":
-            return await ctx.send(
-                embed=discord.Embed(
-                    description="Dehashing failed", color=discord.Color.blurple()
-                ),
-            )
-
-        result = result.split(":")[1]
-        await ctx.send(result)
-
-    @commands.command()
     async def bots(self, ctx, amount=12):
         """Shows a little information about the top bots.
 
