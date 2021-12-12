@@ -920,7 +920,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             ]
         )
 
-    async def test_dcommits_command(self):
+    async def dcommits_command(self):
         context = helpers.MockContext()
 
         with self.subTest(command="dcommits"):
@@ -932,7 +932,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
-    async def test_tiles_command(self):
+    async def tiles_command(self):
         context = helpers.MockContext()
 
         with self.subTest(command="tiles"):
