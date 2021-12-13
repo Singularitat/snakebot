@@ -1133,6 +1133,7 @@ class apis(commands.Cog):
 
         async with ctx.typing():
             data = await self.bot.get_json(url)
+            print(data)
 
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -1144,28 +1145,22 @@ class apis(commands.Cog):
             embed.description = "```Pinging failed.```"
             return await ctx.send(embed=embed)
 
-        embed.description = (
-            "```Hostname: {}\n"
-            "Ip: {}\n"
-            "Port: {}\n\n"
-            "Online: {}\n\n"
-            "Players:\n{}/{}\n{}\n"
-            "Version(s):\n{}\n\n"
-            "Mods:\n{}\n\n"
-            "Motd:\n{}```"
-        ).format(
-            data.get("hostname", "N/A"),
-            data["ip"],
-            data["port"],
-            data["online"],
-            data["players"]["online"],
-            data["players"]["max"],
-            ", ".join(data["players"].get("list", "")),
-            data["version"],
-            len(data["mods"]["names"]) if "mods" in data else None,
-            "\n".join([s.strip() for s in data["motd"]["clean"]]),
+        embed.add_field(name="Hostname", value=data.get("hostname", "N/A"))
+        embed.add_field(name="IP/Port", value=f"{data['ip']}:{data['port']}")
+        embed.add_field(name="Online", value=data["online"])
+        embed.add_field(
+            name="Players",
+            value=f"{data['players']['online']}/{data['players']['max']}\n{', '.join(data['players'].get('list', ''))}",
         )
-
+        embed.add_field(name="Version", value=data["version"])
+        embed.add_field(
+            name="Mods", value=len(data["mods"]["names"]) if "mods" in data else "N/A"
+        )
+        embed.add_field(
+            name="Motd", value="\n".join([s.strip() for s in data["motd"]["clean"]])
+        )
+        embed.add_field(name="Cached", value=f"<t:{data['debug']['cachetime']}:R>")
+        embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
         await ctx.send(embed=embed)
 
     @commands.command()
