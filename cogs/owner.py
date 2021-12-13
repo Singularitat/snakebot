@@ -114,38 +114,33 @@ class owner(commands.Cog):
 
         await ctx.reply("Cannot find type of object")
 
-    @commands.command(aliases=["d"])
-    async def doc(self, ctx, name):
+    @commands.command(aliases=["d", "docs"])
+    async def doc(self, ctx, search):
         """Gets the shows the dunder doc attribute of a discord object.
 
-        name: str
+        search: str
             The discord object.
         """
-        docs = self.DB.docs.get(name.encode())
+        docs = self.DB.docs.get(search.encode())
         if not docs:
-            return
+            matches = "\n".join(
+                difflib.get_close_matches(
+                    search,
+                    [
+                        name.decode()
+                        for name in self.DB.docs.iterator(include_value=False)
+                    ],
+                    n=9,
+                    cutoff=0.0,
+                )
+            )
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description=f"```{matches}```"
+                )
+            )
 
         await ctx.send(file=discord.File(StringIO(docs.decode()), "doc.txt"))
-
-    @commands.command()
-    async def docs(self, ctx, search):
-        """Finds the closest matches to a search.
-
-        search: str
-        """
-        matches = "\n".join(
-            difflib.get_close_matches(
-                search,
-                [name.decode() for name in self.DB.docs.iterator(include_value=False)],
-                n=9,
-                cutoff=0.0,
-            )
-        )
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(), description=f"```{matches}```"
-            )
-        )
 
     @commands.command(pass_context=True, hidden=True, name="eval")
     async def _eval(self, ctx, *, code: str):
