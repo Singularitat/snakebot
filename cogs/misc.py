@@ -513,15 +513,18 @@ class misc(commands.Cog):
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
-    @commands.command(name="embedjson")
-    async def embed_json(self, ctx, message: discord.Message):
+    @commands.command()
+    async def embedjson(self, ctx, message: discord.Message = None):
         """Converts the embed of a message to json.
 
         message: discord.Message
         """
+        if not message and ctx.message.reference:
+            message = ctx.message.reference.resolved
+
         embed = discord.Embed(color=discord.Color.blurple())
 
-        if not message.embeds:
+        if not message or not message.embeds:
             embed.description = "```Message has no embed```"
             return await ctx.send(embed=embed)
 
@@ -530,8 +533,8 @@ class misc(commands.Cog):
         json = (
             str(message_embed.to_dict())
             .replace("'", '"')
-            .replace("True", "true")
-            .replace("False", "false")
+            .replace('"inline": True', '"inline": true')
+            .replace('"inline": False', '"inline": false')
             .replace("`", "`\u200b")
         )
 
