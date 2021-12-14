@@ -1133,7 +1133,6 @@ class apis(commands.Cog):
 
         async with ctx.typing():
             data = await self.bot.get_json(url)
-            print(data)
 
         embed = discord.Embed(color=discord.Color.blurple())
 
@@ -1146,20 +1145,21 @@ class apis(commands.Cog):
             return await ctx.send(embed=embed)
 
         embed.add_field(name="Hostname", value=data.get("hostname", "N/A"))
-        embed.add_field(name="IP/Port", value=f"{data['ip']}:{data['port']}")
+        embed.add_field(name="IP/Port", value=f"{data['ip']}\n{data['port']}")
         embed.add_field(name="Online", value=data["online"])
+        players = ", ".join(data["players"].get("list", ""))
         embed.add_field(
             name="Players",
-            value=f"{data['players']['online']}/{data['players']['max']}\n{', '.join(data['players'].get('list', ''))}",
+            value=f"{data['players']['online']}/{data['players']['max']}\n{players}",
         )
         embed.add_field(name="Version", value=data["version"])
         embed.add_field(
             name="Mods", value=len(data["mods"]["names"]) if "mods" in data else "N/A"
         )
-        embed.add_field(
-            name="Motd", value="\n".join([s.strip() for s in data["motd"]["clean"]])
-        )
-        embed.add_field(name="Cached", value=f"<t:{data['debug']['cachetime']}:R>")
+        embed.add_field(name="Motd", value="\n".join(data["motd"]["clean"]))
+        cachetime = data["debug"]["cachetime"]
+        if cachetime:
+            embed.add_field(name="Cached", value=f"<t:{cachetime}:R>")
         embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{ip}")
         await ctx.send(embed=embed)
 
