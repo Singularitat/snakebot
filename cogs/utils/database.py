@@ -20,6 +20,7 @@ prefixed_dbs = (
     "wins",
     "message_count",
     "cookies",
+    "docs",
 )
 
 
