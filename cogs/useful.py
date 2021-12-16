@@ -1090,16 +1090,17 @@ class useful(commands.Cog):
         }
         base, method, prefix = num_bases.get(num_base[0].lower(), (None, None, None))
 
-        if not base:
+        if not base:  # If we haven't been given a base it is decimal
             base = 10
-            expr = f"{num_base} {expr}"
-        elif base in (2, 8):
-            expr = expr.replace(prefix, "")
+            expr = f"{num_base} {expr}"  # We want the whole expression
 
-        regex = r"(?:0[xX])?[0-9a-fA-F]+" if base == 16 else r"\d+"
-        numbers = [int(num, base) for num in re.findall(regex, expr)]
+        expr = expr.replace(prefix, "")  # Remove the prefix for a simple regex
+        regex = r"[0-9a-fA-F]+" if base == 16 else r"\d+"
 
-        expr = re.sub(regex, "{}", expr).format(*numbers)
+        if method:  # No need to extract numbers if we aren't converting
+            numbers = [int(num, base) for num in re.findall(regex, expr)]
+            expr = re.sub(regex, "{}", expr).format(*numbers)
+
         result = safe_eval(compile(expr, "<calc>", "eval", flags=1024).body)
 
         embed = discord.Embed(color=discord.Color.blurple())
