@@ -918,7 +918,7 @@ class misc(commands.Cog):
         await ctx.reply(random.choice(responses))
 
     @commands.command(name="hex")
-    async def _hex(self, ctx, number: float, convert: bool = False):
+    async def _hex(self, ctx, number, convert: bool = False):
         """Shows a number in hexadecimal prefixed with “0x”.
 
         number: str
@@ -928,13 +928,13 @@ class misc(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
         if convert:
-            embed.description = f"```{int(number, 16)}```"
+            embed.description = f"```py\n{int(number, 16)}```"
             return await ctx.send(embed=embed)
-        embed.description = f"```fix\n{hex_float(number)}```"
+        embed.description = f"```fix\n{hex_float(float(number))}```"
         await ctx.send(embed=embed)
 
     @commands.command(name="oct")
-    async def _oct(self, ctx, number: float, convert: bool = False):
+    async def _oct(self, ctx, number, convert: bool = False):
         """Shows a number in octal prefixed with “0o”.
 
         number: str
@@ -944,13 +944,13 @@ class misc(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
         if convert:
-            embed.description = f"```{int(number, 8)}```"
+            embed.description = f"```py\n{int(number, 8)}```"
             return await ctx.send(embed=embed)
-        embed.description = f"```fix\n{oct_float(number)}```"
+        embed.description = f"```fix\n{oct_float(float(number))}```"
         await ctx.send(embed=embed)
 
     @commands.command(name="bin")
-    async def _bin(self, ctx, number: float, convert: bool = False):
+    async def _bin(self, ctx, number, convert: bool = False):
         """Shows a number in binary prefixed with “0b”.
 
         number: str
@@ -960,9 +960,9 @@ class misc(commands.Cog):
         """
         embed = discord.Embed(color=discord.Color.blurple())
         if convert:
-            embed.description = f"```{int(number, 2)}```"
+            embed.description = f"```py\n{int(number, 2)}```"
             return await ctx.send(embed=embed)
-        embed.description = f"```fix\n{bin_float(number)}```"
+        embed.description = f"```fix\n{bin_float(float(number))}```"
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["socialcredit"])
