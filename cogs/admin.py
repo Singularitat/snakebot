@@ -2,6 +2,8 @@ from discord.ext import commands
 import discord
 import orjson
 
+from cogs.utils.time import parse_time
+
 
 class admin(commands.Cog):
     """Administrative commands."""
@@ -393,22 +395,6 @@ class admin(commands.Cog):
         """
         await ctx.send(embed=discord.Embed.from_dict(orjson.loads(json)))
 
-    async def end_date(self, duration):
-        """Converts a duration to an end date.
-
-        duration: str
-            How much to add onto the current date e.g 5d 10h 25m 5s
-        """
-        seconds = 0
-        times = {"s": 1, "m": 60, "h": 3600, "d": 86400}
-        try:
-            for time in duration.split():
-                seconds += int(time[:-1]) * times[time[-1]]
-        except ValueError:
-            return None
-
-        return seconds
-
     @commands.command()
     async def downvote(self, ctx, member: discord.Member = None, *, duration=None):
         """Automatically downvotes someone.
@@ -464,7 +450,7 @@ class admin(commands.Cog):
             embed.description = f"**{member}** has been added to the downvote list"
             return await ctx.send(embed=embed)
 
-        seconds = await self.end_date(duration)
+        seconds = (parse_time(duration) - discord.utils.utcnow()).total_seconds()
 
         if not seconds:
             embed.description = "```Invalid duration. Example: '3d 5h 10m'```"
