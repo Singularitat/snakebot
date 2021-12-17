@@ -232,7 +232,7 @@ class stocks(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @stock.command()
+    @stock.command(aliases=["p"])
     async def profile(self, ctx, member: discord.Member = None):
         """Gets someone's stock profile.
 
