@@ -70,12 +70,12 @@ class owner(commands.Cog):
 
     @commands.command(aliases=["type"])
     async def findtype(self, ctx, snowflake: int):
-        async def found_message(type_id: str) -> None:
+        async def found_message(type_name: str) -> None:
             await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
                     description=f"**ID**: `{snowflake}`\n"
-                    f"**Type:** `{type_id.capitalize()}`\n"
+                    f"**Type:** `{type_name.capitalize()}`\n"
                     f"**Created:** <t:{((snowflake >> 22) + 1420070400000)//1000}>",
                 )
             )
@@ -92,9 +92,19 @@ class owner(commands.Cog):
         except discord.NotFound:
             pass
 
-        for typeobj in ("channel", "user", "guild", "sticker", "stage_instance"):
-            get = getattr(self.bot, f"get_{typeobj}")
-            if get(snowflake):
+        types = (
+            "channel",
+            "user",
+            "guild",
+            "sticker",
+            "stage_instance",
+            "webhook",
+            "widget",
+        )
+
+        for typeobj in types:
+            get = getattr(self.bot, f"get_{typeobj}", None)
+            if get and get(snowflake):
                 return await found_message(typeobj)
             fetch = getattr(self.bot, f"fetch_{typeobj}")
             try:
@@ -104,13 +114,6 @@ class owner(commands.Cog):
                 return await found_message(typeobj)
             except discord.NotFound:
                 pass
-
-        try:
-            await self.bot.fetch_webhook(snowflake)
-        except discord.Forbidden:
-            return await found_message("webhook")
-        except discord.NotFound:
-            pass
 
         await ctx.reply("Cannot find type of object")
 
@@ -123,13 +126,13 @@ class owner(commands.Cog):
         """
         docs = self.DB.docs.get(search.encode())
         if not docs:
+            names = [
+                name.decode() for name in self.DB.docs.iterator(include_value=False)
+            ]
             matches = "\n".join(
                 difflib.get_close_matches(
                     search,
-                    [
-                        name.decode()
-                        for name in self.DB.docs.iterator(include_value=False)
-                    ],
+                    names,
                     n=9,
                     cutoff=0.0,
                 )
