@@ -209,6 +209,14 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "rainbow", url)
 
+    @commands.command()
+    async def burn(self, ctx, url: str = None):
+        """Burns an image.
+
+        url: str
+        """
+        await self.dagpi(ctx, "burn", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
