@@ -1121,7 +1121,9 @@ class useful(commands.Cog):
             base = 10
             expr = f"{num_base} {expr}"  # We want the whole expression
 
-        expr = expr.replace(prefix, "")  # Remove the prefix for a simple regex
+        if prefix:
+            expr = expr.replace(prefix, "")  # Remove the prefix for a simple regex
+
         regex = r"[0-9a-fA-F]+" if base == 16 else r"\d+"
 
         if method:  # No need to extract numbers if we aren't converting
