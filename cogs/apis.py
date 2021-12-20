@@ -77,7 +77,7 @@ class apis(commands.Cog):
         # This makes it so even if an email is passed in it is fine
         domain = domain.split("@")[-1]
 
-        url = f"https://www.validator.pizza/domain/{domain}"
+        url = f"https://api.mailcheck.ai/domain/{domain}"
         data = await self.bot.get_json(url)
         embed = discord.Embed(color=discord.Color.blurple(), title=domain)
 
