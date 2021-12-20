@@ -180,9 +180,14 @@ class apis(commands.Cog):
                     else:
                         video = video["reddit_video"]["fallback_url"]
 
+                title = post["title"]
+
+                if len(title) > 256:
+                    title = f"{title[:253]}..."
+
                 clean_posts.append(
                     {
-                        "title": post["title"],
+                        "title": title,
                         "video": video,
                         "url": post["url"],
                         "link": post["permalink"],
