@@ -496,6 +496,9 @@ class events(commands.Cog):
 
         member: discord.Member
         """
+        if self.DB.main.get(f"{member.guild.id}-logging".encode()):
+            return
+
         channel = discord.utils.get(member.guild.channels, name="logs")
 
         if not channel:
