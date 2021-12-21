@@ -93,25 +93,6 @@ class apis(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def puzzle(self, ctx):
-        """Gets a random chess puzzle."""
-        url = "https://api.chess.com/pub/puzzle/random"
-        data = await self.bot.get_json(url)
-        next_to_move = "white" if " w " in data["fen"] else "black"
-        embed = discord.Embed(
-            color=discord.Color.blurple(),
-            title=data["title"],
-            url=data["url"],
-            description=f"It is {next_to_move}'s turn to move.",
-        )
-        embed.add_field(name="Publish Time", value=f"<t:{data['publish_time']}:R>")
-        embed.set_image(url=data["image"])
-        embed.set_footer(
-            text="url will take you to the daily puzzle unless you have premium D:"
-        )
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def advice(self, ctx):
         """Uses adviceslip.com to send you advice."""
         url = "https://api.adviceslip.com/advice"
@@ -245,7 +226,7 @@ class apis(commands.Cog):
                 name=bot["name"],
                 value=(
                     f"```ahk\nID:\n{bot['id']}\n\n"
-                    f"Servers:\n{bot['servers']}\n\n"
+                    f"Servers:\n{bot['servers']:,}\n\n"
                     f"Discord library:\n{bot['lib']}```"
                 ),
             )
