@@ -1,15 +1,15 @@
-from datetime import datetime
-from io import StringIO
 import inspect
 import os
+import platform
 import textwrap
 import typing
-import platform
+from datetime import datetime
+from io import StringIO
 
-from discord.ext import commands
 import discord
 import orjson
 import psutil
+from discord.ext import commands
 
 
 class information(commands.Cog):

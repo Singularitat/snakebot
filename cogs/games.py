@@ -1,12 +1,10 @@
-import time
 import math
-
-from discord.ext import commands
-import discord
-import orjson
+import time
 
 import config
-
+import discord
+import orjson
+from discord.ext import commands
 
 BIG_NUMS = (
     "",

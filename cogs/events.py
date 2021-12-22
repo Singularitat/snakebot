@@ -1,17 +1,16 @@
-from datetime import datetime
-from io import BytesIO, StringIO
 import difflib
 import logging
 import os
 import platform
 import re
+from datetime import datetime
+from io import BytesIO, StringIO
 
-from PIL import Image
-from discord.ext import commands
 import discord
 import orjson
 import psutil
-
+from discord.ext import commands
+from PIL import Image
 
 GIST_REGEX = re.compile(
     r"(?P<host>(http(s)?://gist\.github\.com))/"
