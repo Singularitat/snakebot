@@ -822,67 +822,6 @@ class apis(commands.Cog):
                 )
             await ctx.send(embed=embed)
 
-    @commands.group()
-    async def game(self, ctx):
-        """Gets a random game that is free"""
-        if not ctx.invoked_subcommand:
-            url = "https://www.freetogame.com/api/games?platform=pc"
-
-            async with ctx.typing():
-                game = random.choice(await self.bot.get_json(url))
-
-                embed = discord.Embed(
-                    color=discord.Color.blurple(),
-                    title=game["title"],
-                    description=f"{game['short_description']}\n[Link]({game['game_url']})",
-                )
-                embed.add_field(name="Genre", value=game["genre"])
-                embed.add_field(name="Publisher", value=game["publisher"])
-                embed.add_field(name="Developer", value=game["developer"])
-                embed.set_image(url=game["thumbnail"])
-
-                await ctx.send(embed=embed)
-
-    @game.command()
-    async def category(self, ctx, category=None):
-        """Gets a random game that is free by category.
-
-        category: str
-        """
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if not category:
-            embed.description = textwrap.dedent(
-                """
-                ```mmorpg, shooter, strategy, moba, racing, sports
-                social, sandbox, open-world, survival, pvp, pve, pixel
-                voxel, zombie, turn-based, first-person, third-Person
-                top-down, tank, space, sailing, side-scroller, superhero
-                permadeath, card, battle-royale, mmo, mmofps, mmotps, 3d
-                2d, anime, fantasy, sci-fi, fighting, action-rpg, action
-                military, martial-arts, flight, low-spec, tower-defense
-                horror, mmorts```
-                """
-            )
-            return await ctx.send(embed=embed)
-
-        url = f"https://www.freetogame.com/api/games?platform=pc&category={category}"
-
-        async with ctx.typing():
-            game = random.choice(await self.bot.get_json(url))
-
-            embed.title = game["title"]
-            embed.description = (
-                f"{game['short_description']}\n[Link]({game['game_url']})"
-            )
-
-            embed.add_field(name="Genre", value=game["genre"])
-            embed.add_field(name="Publisher", value=game["publisher"])
-            embed.add_field(name="Developer", value=game["developer"])
-            embed.set_image(url=game["thumbnail"])
-
-            await ctx.send(embed=embed)
-
     @commands.command()
     async def apod(self, ctx):
         """Gets the NASA Astronomy Picture of the Day."""
