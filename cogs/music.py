@@ -2,10 +2,10 @@ import asyncio
 import functools
 import itertools
 
-from discord.ext import commands
-from async_timeout import timeout
 import discord
 import yt_dlp
+from async_timeout import timeout
+from discord.ext import commands
 
 try:
     import uvloop

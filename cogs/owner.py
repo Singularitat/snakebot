@@ -1,19 +1,19 @@
-from io import StringIO
 import asyncio
 import cProfile
+import difflib
 import logging
 import os
 import pstats
 import re
+import textwrap
 import time
 import traceback
 from contextlib import redirect_stdout
-import textwrap
-import difflib
+from io import StringIO
 
-from discord.ext import commands
 import discord
 import orjson
+from discord.ext import commands
 
 
 class PerformanceMocker:

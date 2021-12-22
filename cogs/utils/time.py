@@ -1,8 +1,7 @@
-import datetime
 import calendar
-from math import copysign
+import datetime
 import re
-
+from math import copysign
 
 TIME_REGEX = re.compile(
     "(?:(?P<years>[0-9])(?:years?|y))?"

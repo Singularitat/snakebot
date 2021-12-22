@@ -1,7 +1,7 @@
 import pathlib
-import plyvel
-import orjson
 
+import orjson
+import plyvel
 
 prefixed_dbs = (
     "infractions",
@@ -20,6 +20,7 @@ prefixed_dbs = (
     "wins",
     "message_count",
     "cookies",
+    "reminders",
     "docs",
 )
 

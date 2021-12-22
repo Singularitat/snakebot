@@ -2,7 +2,6 @@ import random
 from io import BytesIO
 
 import discord
-
 from discord.ext import commands
 
 

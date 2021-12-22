@@ -1,22 +1,21 @@
-import io
 import difflib
-import opcode
+import io
+import math
 import random
 import re
 import unicodedata
 from datetime import datetime
-import math
 
-from discord.ext import commands
 import aiohttp
 import discord
 import lxml.html
+import opcode
 import orjson
+from discord.ext import commands
 
-from cogs.utils.time import parse_date
+from cogs.utils.calculation import bin_float, hex_float, oct_float
 from cogs.utils.color import hsslv
-from cogs.utils.calculation import hex_float, oct_float, bin_float
-
+from cogs.utils.time import parse_date
 
 CHARACTERS = (
     "Miss Pauling",

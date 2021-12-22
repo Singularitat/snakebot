@@ -1,9 +1,8 @@
 import difflib
 
-from discord import ui
-from discord.ext import menus
-from discord.ext import commands
 import discord
+from discord import ui
+from discord.ext import commands, menus
 
 
 class BotHelpPageSource(menus.ListPageSource):

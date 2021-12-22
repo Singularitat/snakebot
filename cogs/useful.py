@@ -1,19 +1,18 @@
+import difflib
 import io
 import random
 import re
+import secrets
 import time
 import urllib
 from zlib import compress
-import secrets
-import difflib
 
-from discord.ext import commands, menus
 import discord
 import lxml.html
 import orjson
+from discord.ext import commands, menus
 
-from cogs.utils.calculation import safe_eval, hex_float, oct_float, bin_float
-
+from cogs.utils.calculation import bin_float, hex_float, oct_float, safe_eval
 
 STATUS_CODES = {
     "1": {
