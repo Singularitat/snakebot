@@ -718,15 +718,14 @@ class apis(commands.Cog):
 
             await ctx.send(embed=embed)
 
-    @commands.group()
+    @commands.group(invoke_without_command=True)
     async def apis(self, ctx):
         """Command group for the public apis api."""
-        if not ctx.invoked_subcommand:
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```Usage: {ctx.prefix}apis [categories/random/search]```",
-            )
-            await ctx.send(embed=embed)
+        embed = discord.Embed(
+            color=discord.Color.blurple(),
+            description=f"```Usage: {ctx.prefix}apis [categories/random/search]```",
+        )
+        await ctx.send(embed=embed)
 
     @apis.command()
     async def categories(self, ctx):
