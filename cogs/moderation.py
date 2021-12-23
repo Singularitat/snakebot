@@ -567,16 +567,15 @@ class moderation(commands.Cog):
         await channel.clone()
         await channel.delete()
 
-    @commands.group()
+    @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_messages=True)
     async def history(self, ctx):
         """Shows the edited message or deleted message history of a member."""
-        if not ctx.invoked_subcommand:
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```Usage: {ctx.prefix}history [deleted/edited]```",
-            )
-            await ctx.send(embed=embed)
+        embed = discord.Embed(
+            color=discord.Color.blurple(),
+            description=f"```Usage: {ctx.prefix}history [deleted/edited]```",
+        )
+        await ctx.send(embed=embed)
 
     @history.command(aliases=["d"])
     @commands.has_permissions(manage_messages=True)

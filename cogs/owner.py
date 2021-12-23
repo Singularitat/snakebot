@@ -259,15 +259,14 @@ class owner(commands.Cog):
         for member, value in self.DB.blacklist:
             self.DB.blacklist.delete(member)
 
-    @commands.group()
+    @commands.group(invoke_without_command=True)
     async def db(self, ctx):
-        if not ctx.invoked_subcommand:
-            await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description=f"```Usage: {ctx.prefix}db [del/show/get/put/pre]```",
-                )
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}db [del/show/get/put/pre]```",
             )
+        )
 
     @db.command()
     async def put(self, ctx, key, *, value=None):
@@ -538,16 +537,15 @@ class owner(commands.Cog):
         embed.description = f"```{msg}```"
         await ctx.send(embed=embed)
 
-    @commands.group()
+    @commands.group(invoke_without_command=True)
     async def cache(self, ctx):
         """Command group for interacting with the cache."""
-        if not ctx.invoked_subcommand:
-            await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description=f"```Usage: {ctx.prefix}cache [wipe/list]```",
-                )
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}cache [wipe/list]```",
             )
+        )
 
     @cache.command()
     async def wipe(self, ctx):
@@ -601,17 +599,16 @@ class owner(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.group()
+    @commands.group(invoke_without_command=True)
     async def presence(self, ctx):
         """Command group for changing the bots precence"""
-        if not ctx.invoked_subcommand:
-            embed = discord.Embed(color=discord.Color.blurple())
-            embed.description = (
-                "```Usage: {}presence [game/streaming/listening/watching]```".format(
-                    ctx.prefix
-                )
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = (
+            "```Usage: {}presence [game/streaming/listening/watching]```".format(
+                ctx.prefix
             )
-            await ctx.send(embed=embed)
+        )
+        await ctx.send(embed=embed)
 
     @presence.command()
     async def game(self, ctx, *, name):
@@ -822,15 +819,14 @@ class owner(commands.Cog):
         embed.title = "Extensions restarted."
         await ctx.send(embed=embed)
 
-    @commands.group()
+    @commands.group(invoke_without_command=True)
     async def rrole(self, ctx):
-        if not ctx.invoked_subcommand:
-            await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description=f"```Usage: {ctx.prefix}rrole [list/delete/start/edit]```",
-                )
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}rrole [list/delete/start/edit]```",
             )
+        )
 
     @rrole.command(name="list")
     async def rrole_list(self, ctx):
