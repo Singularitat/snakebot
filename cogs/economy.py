@@ -178,7 +178,7 @@ class economy(commands.Cog):
         await self.DB.put_bal(member, bal)
 
     @commands.command(aliases=["coinf"])
-    async def coinflip(self, ctx, choice, bet):
+    async def coinflip(self, ctx, choice="h", bet=0):
         """Flips a coin.
 
         choice: str
