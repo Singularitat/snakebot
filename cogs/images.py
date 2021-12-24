@@ -216,6 +216,36 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "burn", url)
 
+    @commands.command()
+    async def matrix(self, ctx, url: str = None):
+        """Adds a matrix overlay onto image.
+
+        url: str
+        """
+        if not url:
+            if ctx.message.attachments:
+                url = ctx.message.attachments[0].url
+            elif ctx.message.reference and (message := ctx.message.reference.resolved):
+                if message.attachments:
+                    url = message.attachments[0].url
+                elif message.embeds:
+                    url = message.embeds[0].url
+            else:
+                url = ctx.author.display_avatar.url
+
+        url = f"https://api.jeyy.xyz/image/matrix?image_url={url}"
+
+        async with ctx.typing(), self.bot.client_session.get(url, timeout=30) as resp:
+            if resp.status != 200:
+                return await ctx.reply(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description="```Couldn't process image```",
+                    )
+                )
+            with BytesIO(await resp.read()) as image:
+                await ctx.reply(file=discord.File(fp=image, filename="matrix.gif"))
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""

@@ -558,8 +558,8 @@ class owner(commands.Cog):
             )
         )
 
-    @cache.command()
-    async def list(self, ctx):
+    @cache.command(name="list")
+    async def _list(self, ctx):
         """Lists the cached items in the db."""
         embed = discord.Embed(color=discord.Color.blurple())
         cache = self.DB.main.get(b"cache")
