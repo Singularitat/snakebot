@@ -56,7 +56,7 @@ class images(commands.Cog):
                 filename = f"image.{resp['format']}"
                 await ctx.reply(file=discord.File(fp=image, filename=filename))
 
-    async def jeyy(self, ctx, endpoint, url, extension):
+    async def jeyy(self, ctx, endpoint, url):
         if not url:
             if ctx.message.attachments:
                 url = ctx.message.attachments[0].url
@@ -79,9 +79,7 @@ class images(commands.Cog):
                     )
                 )
             with BytesIO(await resp.read()) as image:
-                await ctx.reply(
-                    file=discord.File(fp=image, filename=f"{endpoint}.{extension}")
-                )
+                await ctx.reply(file=discord.File(fp=image, filename=f"{endpoint}.gif"))
 
     @commands.command()
     async def deepfry(self, ctx, url: str = None):
@@ -249,7 +247,15 @@ class images(commands.Cog):
 
         url: str
         """
-        await self.jeyy(ctx, "matrix", url, "gif")
+        await self.jeyy(ctx, "matrix", url)
+
+    @commands.command()
+    async def sensitive(self, ctx, url: str = None):
+        """Puts the instagram sensitive content filter over an image.
+
+        url: str
+        """
+        await self.jeyy(ctx, "sensitive", url)
 
 
 def setup(bot: commands.Bot) -> None:
