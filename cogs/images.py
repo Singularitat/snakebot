@@ -22,6 +22,17 @@ class images(commands.Cog):
                     image_url = message.embeds[0].url
             else:
                 image_url = ctx.author.display_avatar.url
+        elif image_url.isdigit():
+            user = self.bot.get_user(int(image_url))
+            if not user:
+                return await ctx.reply(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description="```Couldn't process id```",
+                    )
+                )
+            image_url = user.display_avatar.url
+
         url = "https://dagpi.xyz/api/routes/dagpi-manip"
         data = {
             "method": method,
@@ -67,6 +78,16 @@ class images(commands.Cog):
                     url = message.embeds[0].url
             else:
                 url = ctx.author.display_avatar.url
+        elif url.isdigit():
+            user = self.bot.get_user(int(url))
+            if not user:
+                return await ctx.reply(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description="```Couldn't process id```",
+                    )
+                )
+            url = user.display_avatar.url
 
         url = f"https://api.jeyy.xyz/image/{endpoint}?image_url={url}"
 
