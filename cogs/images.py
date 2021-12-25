@@ -22,6 +22,17 @@ class images(commands.Cog):
                     image_url = message.embeds[0].url
             else:
                 image_url = ctx.author.display_avatar.url
+        elif image_url.isdigit():
+            user = self.bot.get_user(int(image_url))
+            if not user:
+                return await ctx.reply(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description="```Couldn't process id```",
+                    )
+                )
+            image_url = user.display_avatar.url
+
         url = "https://dagpi.xyz/api/routes/dagpi-manip"
         data = {
             "method": method,
@@ -55,6 +66,41 @@ class images(commands.Cog):
             with BytesIO(base64.b64decode(resp["image"][22:])) as image:
                 filename = f"image.{resp['format']}"
                 await ctx.reply(file=discord.File(fp=image, filename=filename))
+
+    async def jeyy(self, ctx, endpoint, url):
+        if not url:
+            if ctx.message.attachments:
+                url = ctx.message.attachments[0].url
+            elif ctx.message.reference and (message := ctx.message.reference.resolved):
+                if message.attachments:
+                    url = message.attachments[0].url
+                elif message.embeds:
+                    url = message.embeds[0].url
+            else:
+                url = ctx.author.display_avatar.url
+        elif url.isdigit():
+            user = self.bot.get_user(int(url))
+            if not user:
+                return await ctx.reply(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description="```Couldn't process id```",
+                    )
+                )
+            url = user.display_avatar.url
+
+        url = f"https://api.jeyy.xyz/image/{endpoint}?image_url={url}"
+
+        async with ctx.typing(), self.bot.client_session.get(url, timeout=30) as resp:
+            if resp.status != 200:
+                return await ctx.reply(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description="```Couldn't process image```",
+                    )
+                )
+            with BytesIO(await resp.read()) as image:
+                await ctx.reply(file=discord.File(fp=image, filename=f"{endpoint}.gif"))
 
     @commands.command()
     async def deepfry(self, ctx, url: str = None):
@@ -222,29 +268,15 @@ class images(commands.Cog):
 
         url: str
         """
-        if not url:
-            if ctx.message.attachments:
-                url = ctx.message.attachments[0].url
-            elif ctx.message.reference and (message := ctx.message.reference.resolved):
-                if message.attachments:
-                    url = message.attachments[0].url
-                elif message.embeds:
-                    url = message.embeds[0].url
-            else:
-                url = ctx.author.display_avatar.url
+        await self.jeyy(ctx, "matrix", url)
 
-        url = f"https://api.jeyy.xyz/image/matrix?image_url={url}"
+    @commands.command()
+    async def sensitive(self, ctx, url: str = None):
+        """Puts the instagram sensitive content filter over an image.
 
-        async with ctx.typing(), self.bot.client_session.get(url, timeout=30) as resp:
-            if resp.status != 200:
-                return await ctx.reply(
-                    embed=discord.Embed(
-                        color=discord.Color.blurple(),
-                        description="```Couldn't process image```",
-                    )
-                )
-            with BytesIO(await resp.read()) as image:
-                await ctx.reply(file=discord.File(fp=image, filename="matrix.gif"))
+        url: str
+        """
+        await self.jeyy(ctx, "sensitive", url)
 
 
 def setup(bot: commands.Bot) -> None:
