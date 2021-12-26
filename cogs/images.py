@@ -278,6 +278,22 @@ class images(commands.Cog):
         """
         await self.jeyy(ctx, "sensitive", url)
 
+    @commands.command()
+    async def balls(self, ctx, url: str = None):
+        """Turns an image into balls that are dropped.
+
+        url: str
+        """
+        await self.jeyy(ctx, "balls", url)
+
+    @commands.command()
+    async def hearts(self, ctx, url: str = None):
+        """Puts a hearts gif overlay ontop of an image.
+
+        url: str
+        """
+        await self.jeyy(ctx, "hearts", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
