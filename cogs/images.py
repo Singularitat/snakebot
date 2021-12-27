@@ -294,6 +294,22 @@ class images(commands.Cog):
         """
         await self.jeyy(ctx, "hearts", url)
 
+    @commands.command()
+    async def glitch(self, ctx, url: str = None):
+        """Adds glitches to an image as a gif.
+
+        url: str
+        """
+        await self.jeyy(ctx, "glitch", url)
+
+    @commands.command()
+    async def lamp(self, ctx, url: str = None):
+        """Flickers an image like a lamp turning on and off.
+
+        url: str
+        """
+        await self.jeyy(ctx, "lamp", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
