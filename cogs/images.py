@@ -118,8 +118,8 @@ class images(commands.Cog):
         """
         await self.dagpi(ctx, "pixel", url)
 
-    @commands.command()
-    async def ascii(self, ctx, url: str = None):
+    @commands.command(name="ascii")
+    async def _ascii(self, ctx, url: str = None):
         """Turns an image into ascii text.
 
         url: str
@@ -309,6 +309,22 @@ class images(commands.Cog):
         url: str
         """
         await self.jeyy(ctx, "lamp", url)
+
+    @commands.command()
+    async def sob(self, ctx, url: str = None):
+        """Puts a picture of Melvin Lawson sobbing on the background of an image.
+
+        url: str
+        """
+        await self.jeyy(ctx, "sob", url)
+
+    @commands.command()
+    async def cartoon(self, ctx, url: str = None):
+        """Makes an image look like a cartoon image.
+
+        url: str
+        """
+        await self.jeyy(ctx, "cartoon", url)
 
 
 def setup(bot: commands.Bot) -> None:
