@@ -310,6 +310,13 @@ class images(commands.Cog):
         """
         await self.jeyy(ctx, "lamp", url)
 
+    @commands.command()
+    async def sob(self, ctx, url: str = None):
+        """Puts a picture of Melvin Lawson sobbing on the background of an image.
+
+        url: str
+        """
+        await self.jeyy(ctx, "sob", url)
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
