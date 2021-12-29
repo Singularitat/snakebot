@@ -1364,12 +1364,6 @@ class apis(commands.Cog):
             )
             embed = discord.Embed(color=discord.Color.blurple())
 
-            def check(message: discord.Message) -> bool:
-                return (
-                    message.author.id == ctx.author.id
-                    and message.channel == ctx.channel
-                )
-
             if not titles:
                 embed.description = "```Couldn't find any results```"
                 return await ctx.send(embed=embed)
