@@ -11,6 +11,9 @@ import orjson
 from discord.ext import commands
 
 
+URBAN_REGEX = re.compile(r"\[(.*?)\]")
+
+
 class apis(commands.Cog):
     """For commands related to apis."""
 
@@ -990,20 +993,15 @@ class apis(commands.Cog):
         for i in range(1, 16):
             if not drink[f"strIngredient{i}"]:
                 break
-            ingredients.append(
-                f"{drink[f'strIngredient{i}']}: {drink[f'strMeasure{i}']}"
-            )
+            amount = drink[f"strMeasure{i}"] or "N/A"
+            ingredients.append(f"{drink[f'strIngredient{i}']}: {amount}")
 
-        embed.description = textwrap.dedent(
-            f"""
-        ```Category: {drink["strCategory"]}
-        \nGlass: {drink["strGlass"]}
-        \nAlcohol: {drink["strAlcoholic"]}
-        \nInstructions: {drink["strInstructions"]}
-        \n\nIngredients:
-        \n{f"{chr(10)}".join(ingredients)}
-        ```"""
-        )
+        embed.add_field(name="Category", value=drink["strCategory"])
+        embed.add_field(name="Glass", value=drink["strGlass"])
+        embed.add_field(name="Alcohol", value=drink["strAlcoholic"])
+        embed.add_field(name="Instructions", value=drink["strInstructions"])
+        embed.add_field(name="Ingredients", value="\n".join(ingredients))
+
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -1295,7 +1293,7 @@ class apis(commands.Cog):
         embed = discord.Embed(colour=discord.Color.blurple())
 
         if cache_search in cache:
-            defin = cache[cache_search].pop()
+            item = cache[cache_search].pop()
 
             if not cache[cache_search]:
                 cache.pop(cache_search)
@@ -1313,23 +1311,24 @@ class apis(commands.Cog):
                 embed.title = "No results found"
                 return await ctx.send(embed=embed)
 
-            urban["list"].sort(key=lambda defin: defin["thumbs_up"])
+            urban["list"].sort(key=lambda item: item["thumbs_up"] - item["thumbs_down"])
 
-            defin = urban["list"].pop()
+            item = urban["list"].pop()
             cache[cache_search] = urban["list"]
             self.DB.main.put(b"cache", orjson.dumps(cache))
             self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
 
-        embed.description = (
-            "```diff\nDefinition of {}:\n"
-            "{}\n\n"
-            "Example:\n{}\n\n"
-            "Votes:\n{}\n\n```"
-        ).format(
-            search,
-            re.sub(r"\[(.*?)\]", r"\1", defin["definition"]),
-            re.sub(r"\[(.*?)\]", r"\1", defin["example"]),
-            defin["thumbs_up"],
+        embed.title = search.title()
+        embed.add_field(
+            name="Definition",
+            value=URBAN_REGEX.sub(r"\1", item["definition"]),
+            inline=False,
+        )
+        embed.add_field(
+            name="Example", value=URBAN_REGEX.sub(r"\1", item["example"]), inline=False
+        )
+        embed.add_field(
+            name="Votes", value=item["thumbs_up"] - item["thumbs_down"], inline=False
         )
 
         await ctx.send(embed=embed)
