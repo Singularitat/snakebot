@@ -334,6 +334,7 @@ class images(commands.Cog):
         """
         await self.jeyy(ctx, "canny", url)
 
+
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
     bot.add_cog(images(bot))
