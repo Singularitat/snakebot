@@ -189,9 +189,12 @@ class useful(commands.Cog):
         )
 
         await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(), description=description
-            ).set_footer(text="Vaccine data from health.govt.nz")
+            embed=discord.Embed(color=discord.Color.blurple(), description=description)
+            .set_footer(text="Vaccine data from health.govt.nz")
+            .set_image(
+                url="https://www.health.govt.nz/sites/default/files/images/our-work/"
+                "diseases-conditions/covid19/vaccine-data/uptake_summary_40_0.png"
+            )
         )
 
     @commands.command()

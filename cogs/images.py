@@ -326,6 +326,14 @@ class images(commands.Cog):
         """
         await self.jeyy(ctx, "cartoon", url)
 
+    @commands.command()
+    async def canny(self, ctx, url: str = None):
+        """Does canny edge detection on an image.
+
+        url: str
+        """
+        await self.jeyy(ctx, "canny", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
