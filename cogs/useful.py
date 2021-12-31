@@ -221,7 +221,7 @@ class useful(commands.Cog):
 
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.cooldown(10, 60, commands.BucketType.default)
-    @commands.command()
+    @commands.command(aliases=["ss"])
     async def screenshot(self, ctx, website: str):
         """Takes a screenshot of a website and sends the image.
 
@@ -250,7 +250,7 @@ class useful(commands.Cog):
             "url": website,
             "cookies": 0,
             "proxy": 0,
-            "delay": 0,
+            "delay": 1,
             "captchaToken": False,
             "device": 1,
             "platform": 1,
@@ -873,9 +873,6 @@ class useful(commands.Cog):
             "language": lang,
             "version": "*",
             "files": [{"content": code}],
-            "args": "",
-            "stdin": "",
-            "log": 0,
         }
 
         async with ctx.typing(), self.bot.client_session.post(
@@ -895,10 +892,10 @@ class useful(commands.Cog):
                 )
             )
 
+        output = output.replace("`", "`\u200b")
         if len(output) + len(lang) > 1993:
             return await ctx.reply(file=discord.File(io.StringIO(output), "output.txt"))
 
-        output = output.replace("`", "`\u200b")
         await ctx.reply(f"```{lang}\n{output}```")
 
     @commands.command()

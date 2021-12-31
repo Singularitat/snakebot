@@ -91,7 +91,7 @@ class images(commands.Cog):
 
         url = f"https://api.jeyy.xyz/image/{endpoint}?image_url={url}"
 
-        async with ctx.typing(), self.bot.client_session.get(url, timeout=30) as resp:
+        async with ctx.typing(), self.bot.client_session.get(url) as resp:
             if resp.status != 200:
                 return await ctx.reply(
                     embed=discord.Embed(
@@ -99,8 +99,13 @@ class images(commands.Cog):
                         description="```Couldn't process image```",
                     )
                 )
-            with BytesIO(await resp.read()) as image:
-                await ctx.reply(file=discord.File(fp=image, filename=f"{endpoint}.gif"))
+            image = BytesIO()
+
+            async for chunk in resp.content.iter_chunked(8 * 1024):
+                image.write(chunk)
+
+            image.seek(0)
+            await ctx.reply(file=discord.File(fp=image, filename=f"{endpoint}.gif"))
 
     @commands.command()
     async def deepfry(self, ctx, url: str = None):
