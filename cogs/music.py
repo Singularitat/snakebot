@@ -244,8 +244,7 @@ class VoiceState:
                     return
                 self.current.source.volume = self._volume
                 self.voice.play(self.current.source, after=self.play_next_song)
-
-            elif self.loop:
+            else:
                 self.now = discord.FFmpegPCMAudio(
                     self.current.source.stream_url, **YTDLSource.FFMPEG_OPTIONS
                 )
@@ -273,6 +272,7 @@ class VoiceState:
 
         if self.voice:
             await self.voice.disconnect()
+            self.voice.cleanup()
             self.voice = None
 
 
@@ -356,6 +356,13 @@ class music(commands.Cog):
 
     async def cog_command_error(self, ctx, error: commands.CommandError):
         ctx.voice_state.processing = False
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member: discord.Member, before, after):
+        """Gets when the bot has been disconnected from voice to do cleanup."""
+        if self.bot.user == member and not after.channel:
+            await self.voice_states[member.guild.id].stop()
+            del self.voice_states[member.guild.id]
 
     async def r_command_success(self, message):
         try:
