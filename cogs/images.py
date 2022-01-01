@@ -339,6 +339,14 @@ class images(commands.Cog):
         """
         await self.jeyy(ctx, "canny", url)
 
+    @commands.command()
+    async def bonk(self, ctx, url: str = None):
+        """Does a gif of an image getting whacked by news paper.
+
+        url: str
+        """
+        await self.jeyy(ctx, "bonks", url)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the image cog."""
