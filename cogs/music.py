@@ -361,8 +361,10 @@ class music(commands.Cog):
     async def on_voice_state_update(self, member: discord.Member, before, after):
         """Gets when the bot has been disconnected from voice to do cleanup."""
         if self.bot.user == member and not after.channel:
-            await self.voice_states[member.guild.id].stop()
-            del self.voice_states[member.guild.id]
+            guild = member.guild.id
+            if guild in self.voice_states:
+                await self.voice_states[guild].stop()
+                del self.voice_states[guild]
 
     async def r_command_success(self, message):
         try:
@@ -383,14 +385,49 @@ class music(commands.Cog):
             )
         )
 
-    @commands.command(name="seek")
-    async def _seek(self, ctx, seconds: int):
+    @commands.command()
+    async def volume(self, ctx, *, volume: int):
+        """Sets the volume of the player.
+
+        volume: int
+            The percentage volume
+        """
+        if not ctx.voice_state.voice:
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.red(),
+                    title="Not playing anything at the moment.",
+                ),
+                delete_after=20,
+            )
+            return await self.r_command_error(ctx.message)
+
+        if 0 > volume > 100:
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.red(), title="Volume must be between 0 and 100"
+                ),
+                delete_after=20,
+            )
+            return await self.r_command_error(ctx.message)
+
+        ctx.voice_state._volume = volume / 100
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                title=f"Volume of the player set to {volume}%",
+            ).set_footer(text="Volume will take effect at the next song")
+        )
+        await self.r_command_success(ctx.message)
+
+    @commands.command()
+    async def seek(self, ctx, seconds: int):
         """Seeks to a point in a song.
 
         Seeks from the begining of the song to the amount of seconds inputted.
         """
         if not ctx.voice_state.voice:
-            await ctx.send("Not connected to any voice channel.", delete_after=20)
+            await ctx.send("Not playing anything at the moment.", delete_after=20)
             return await self.r_command_error(ctx.message)
 
         data = ctx.voice_state.current.source.data
@@ -415,6 +452,7 @@ class music(commands.Cog):
         )
         ctx.voice_state.songs._queue.appendleft(song)
         ctx.voice_state.skip()
+        await self.r_command_success(ctx.message)
 
     @commands.command(name="leave")
     async def _leave(self, ctx):
