@@ -386,6 +386,42 @@ class music(commands.Cog):
         )
 
     @commands.command()
+    async def pause(self, ctx):
+        """Pauses the currently playing song."""
+        if not ctx.voice_state.voice:
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.red(),
+                    title="Not playing anything at the moment.",
+                ),
+                delete_after=20,
+            )
+            return await self.r_command_error(ctx.message)
+
+        if ctx.voice_state.is_playing and ctx.voice_state.voice.is_playing():
+            ctx.voice_state.voice.pause()
+            return await self.r_command_success(ctx.message)
+        await self.r_command_error(ctx.message)
+
+    @commands.command()
+    async def resume(self, ctx):
+        """Resumes a currently paused song."""
+        if not ctx.voice_state.voice:
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.red(),
+                    title="Not playing anything at the moment.",
+                ),
+                delete_after=20,
+            )
+            return await self.r_command_error(ctx.message)
+
+        if ctx.voice_state.is_playing and ctx.voice_state.voice.is_paused():
+            ctx.voice_state.voice.resume()
+            return await self.r_command_success(ctx.message)
+        await self.r_command_error(ctx.message)
+
+    @commands.command()
     async def volume(self, ctx, *, volume: int):
         """Sets the volume of the player.
 
@@ -427,7 +463,13 @@ class music(commands.Cog):
         Seeks from the begining of the song to the amount of seconds inputted.
         """
         if not ctx.voice_state.voice:
-            await ctx.send("Not playing anything at the moment.", delete_after=20)
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.red(),
+                    title="Not playing anything at the moment.",
+                ),
+                delete_after=20,
+            )
             return await self.r_command_error(ctx.message)
 
         data = ctx.voice_state.current.source.data
@@ -458,7 +500,13 @@ class music(commands.Cog):
     async def _leave(self, ctx):
         """Clears the queue and leaves the voice channel."""
         if not ctx.voice_state.voice:
-            await ctx.send("Not connected to any voice channel.", delete_after=20)
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.red(),
+                    title="Not playing anything at the moment.",
+                ),
+                delete_after=20,
+            )
             return await self.r_command_error(ctx.message)
 
         await ctx.voice_state.stop()
