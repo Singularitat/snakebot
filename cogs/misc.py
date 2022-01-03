@@ -430,31 +430,6 @@ class misc(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def euler(self, ctx, problem: int):
-        """Gets a solution to a project euler problem in python.
-
-        problem: int
-        """
-        url = (
-            "https://raw.githubusercontent.com/TheAlgorithms/Python"
-            f"/master/project_euler/problem_{problem:0>3}/sol1.py"
-        )
-
-        async with self.bot.client_session.get(url) as page:
-            content = await page.text()
-
-        content = re.sub(r'"""[\w\W]*?"""', "", content)
-        content = re.sub(r"\n\ \ \ \ \n", "", content)
-
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                title=f"Project Euler Problem {problem} Solution",
-                description=f"```py\n{content}```",
-            )
-        )
-
-    @commands.command()
     async def rate(self, ctx, user: discord.User = None):
         """Rates users out of 100.
 
