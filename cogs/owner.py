@@ -564,17 +564,13 @@ class owner(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
         cache = self.DB.main.get(b"cache")
 
-        if not cache or cache == b"{}":
+        if cache == b"{}":
             embed.description = "```Nothing has been cached```"
             return await ctx.send(embed=embed)
 
         cache = orjson.loads(cache)
-        msg = []
 
-        for item in cache:
-            msg.append(item)
-
-        embed.description = "```{}```".format("\n".join(msg))
+        embed.description = "```\n{}```".format("\n".join(cache))
         await ctx.send(embed=embed)
 
     @commands.command()
