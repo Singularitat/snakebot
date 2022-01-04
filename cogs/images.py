@@ -97,9 +97,7 @@ class images(commands.Cog):
                     embed=discord.Embed(
                         color=discord.Color.blurple(),
                         description="```Couldn't process image```",
-                    ).set_footer(
-                        text=f"Status code was {resp.status}"
-                    )
+                    ).set_footer(text=f"Status code was {resp.status}")
                 )
             image = BytesIO()
 
