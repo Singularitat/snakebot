@@ -97,6 +97,8 @@ class images(commands.Cog):
                     embed=discord.Embed(
                         color=discord.Color.blurple(),
                         description="```Couldn't process image```",
+                    ).set_footer(
+                        text=f"Status code was {resp.status}"
                     )
                 )
             image = BytesIO()
@@ -141,7 +143,7 @@ class images(commands.Cog):
 
     @commands.command()
     async def sobel(self, ctx, url: str = None):
-        """Gets an image with the sobel effect.
+        """Uses the Sobel operator on an image.
 
         url: str
         """
@@ -333,7 +335,7 @@ class images(commands.Cog):
 
     @commands.command()
     async def canny(self, ctx, url: str = None):
-        """Does canny edge detection on an image.
+        """Canny edge detection on an image.
 
         url: str
         """
@@ -341,11 +343,32 @@ class images(commands.Cog):
 
     @commands.command()
     async def bonk(self, ctx, url: str = None):
-        """Does a gif of an image getting whacked by news paper.
+        """A gif of an image getting whacked by news paper.
 
         url: str
         """
         await self.jeyy(ctx, "bonks", url)
+
+    @commands.command()
+    async def images(self, ctx):
+        """Shows all the image manipulation commands."""
+        image_commands = []
+        for item in dir(self):
+            item = getattr(self, item)
+            if isinstance(item, commands.core.Command):
+                image_commands.append(
+                    "`{}{}` ({})".format(
+                        ctx.prefix, item, item.help.rstrip("\nurl: str\n")
+                    )
+                )
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                title="Image Manipulation Commands",
+                description="\n".join(image_commands),
+            )
+        )
 
 
 def setup(bot: commands.Bot) -> None:
