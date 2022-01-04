@@ -331,6 +331,7 @@ class games(commands.Cog):
         `.word`      (Word Snacks) - A word wheel like game
         `.scrabble`  (Letter Tile)
         `.doodle`    (Doodle Crew) - Basically skribblio
+        `.awkword`   (Awkword) - A game where you create sentences and vote on the best sentence
         """
         embed.set_footer(text="Games are still in beta and may be broken")
         await ctx.send(embed=embed)
@@ -679,6 +680,16 @@ class games(commands.Cog):
             ctx,
             f"{ctx.guild.id}-checkers".encode(),
             "There is another active Checkers In The Park game",
+        )
+
+    @commands.command()
+    async def awkword(self, ctx):
+        """Starts a game of Awkword."""
+        await self.game_invite(
+            879863881349087252,
+            ctx,
+            f"{ctx.guild.id}-awkword".encode(),
+            "There is another active Awkword game",
         )
 
 
