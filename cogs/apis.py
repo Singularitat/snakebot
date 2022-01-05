@@ -841,35 +841,6 @@ class apis(commands.Cog):
                 embed.set_image(url=apod["hdurl"])
             await ctx.send(embed=embed)
 
-    @commands.command(name="githubtrending", aliases=["githubt", "tgithub"])
-    async def github_trending(self, ctx):
-        """Gets trending github repositories."""
-        url = "https://api.trending-github.com/github/repositories"
-
-        async with ctx.typing():
-            repositories = await self.bot.get_json(url)
-            embed = discord.Embed(
-                color=discord.Color.blurple(), title="5 Trending Github Repositories"
-            )
-
-            for index, repo in enumerate(repositories, start=1):
-                if index == 6:
-                    break
-                embed.add_field(
-                    name=repo["name"].title(),
-                    value=textwrap.dedent(
-                        f"""
-                    `Description:` {repo['description']}
-                    `Language:` {repo['language']}
-                    `Url:` {repo['url']}
-                    `Stars:` {repo['stars']:,}
-                    `Forks:` {repo['forks']:,}
-                    """
-                    ),
-                    inline=False,
-                )
-            await ctx.send(embed=embed)
-
     @commands.command()
     async def gender(self, ctx, first_name):
         """Estimates a gender from a first name.

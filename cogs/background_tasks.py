@@ -72,7 +72,7 @@ class background_tasks(commands.Cog):
     async def restart(self, ctx, task_name=None):
         """Restarts a background task.
 
-        task: str
+        task_name: str
             The name of the task to restart.
             If not passed in then all tasks are restarted
         """
@@ -96,7 +96,7 @@ class background_tasks(commands.Cog):
     async def start(self, ctx, task_name=None):
         """Starts a background task.
 
-        task: str
+        task_name: str
             The name of the task to start.
             If not passed in then all tasks are started
         """
@@ -125,7 +125,7 @@ class background_tasks(commands.Cog):
 
         Unlike cancel it waits for the task to finish its current loop
 
-        task: str
+        task_name: str
             The name of the task to stop.
             If not passed in then all tasks are stopped
         """
@@ -154,7 +154,7 @@ class background_tasks(commands.Cog):
 
         Unlike stop it ends the task immediately
 
-        task: str
+        task_name: str
             The name of the task to stop.
             If not passed in then all tasks are canceled
         """
@@ -175,6 +175,30 @@ class background_tasks(commands.Cog):
 
         self.tasks[task_name].cancel()
         embed.description = f"{task_name} canceled"
+        await ctx.send(embed=embed)
+
+    @task.command()
+    async def call(self, ctx, task_name=None):
+        """Directly calls the internal callback for the task.
+
+        task_name: str
+            The name of the task to stop.
+            If not passed in then all tasks are called
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not task_name:
+            for name, task in self.tasks.items():
+                task.__call__()
+            embed.description = "```Tried to call all tasks```"
+            return await ctx.send(embed=embed)
+
+        if task_name not in self.tasks:
+            embed.description = "```Task not found```"
+            return await ctx.send(embed=embed)
+
+        self.tasks[task_name].__call__()
+        embed.description = f"{task_name} called"
         await ctx.send(embed=embed)
 
     @task.command()
