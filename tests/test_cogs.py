@@ -20,7 +20,7 @@ from cogs.images import images
 
 
 bot = Bot(helpers.MockBot())
-# asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 url_regex = re.compile(
@@ -96,16 +96,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
         with self.subTest(command="validate"):
             await self.cog.validate(self.cog, context, "google.com")
-
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
-    async def puzzle_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="puzzle"):
-            await self.cog.puzzle(self.cog, context)
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -450,27 +440,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
-    async def game_command(self):
-        context = helpers.MockContext()
-        context.invoked_subcommand = None
-
-        with self.subTest(command="game"):
-            await self.cog.game(self.cog, context)
-
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
-    async def game_category_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="game category"):
-            await self.cog.category(self.cog, context, category="open-world")
-
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
     async def apod_command(self):
         context = helpers.MockContext()
 
@@ -626,14 +595,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
-
-    async def tenor_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="tenor"):
-            await self.cog.tenor(self.cog, context, search="cat")
-
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
 
 class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):

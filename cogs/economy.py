@@ -95,7 +95,7 @@ class economy(commands.Cog):
             return None
 
     @commands.command()
-    async def blackjack(self, ctx, bet=0):
+    async def blackjack(self, ctx, bet="0"):
         """Starts a game of blackjack.
 
         bet: float
@@ -178,7 +178,7 @@ class economy(commands.Cog):
         await self.DB.put_bal(member, bal)
 
     @commands.command(aliases=["coinf"])
-    async def coinflip(self, ctx, choice="h", bet=0):
+    async def coinflip(self, ctx, choice="h", bet="0"):
         """Flips a coin.
 
         choice: str
@@ -256,7 +256,7 @@ class economy(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def lottery(self, ctx, bet=0):
+    async def lottery(self, ctx, bet="0"):
         """Lottery with a 1/99 chance of winning 99 times the bet.
 
         bet: float
@@ -321,7 +321,7 @@ class economy(commands.Cog):
         self.DB.wins.put(member, orjson.dumps(data))
 
     @commands.command(aliases=["slots"])
-    async def slot(self, ctx, bet=0, silent: bool = False):
+    async def slot(self, ctx, bet="0", silent: bool = False):
         """Rolls the slot machine.
 
         bet: str
