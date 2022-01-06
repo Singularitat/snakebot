@@ -435,13 +435,14 @@ class apis(commands.Cog):
     @commands.command()
     async def wolfram(self, ctx, *, query):
         """Gets the output of a query from wolfram alpha."""
-        query = query.replace(" ", "+")
+        table = {33: "%21", 40: "%28", 41: "%29", 42: "%2B", 47: "%2F"}
+        query = query.translate(table).replace(" ", "+")
         url = (
-            "https://lin2jing4-cors-1.herokuapp.com/api.wolframalpha.com/v2/query"
-            "?&output=json&podstate=step-by-step+solution&podstate=step-by-step&podstate"
-            "=show+all+steps&scantimeout=30&podtimeout=30&formattimeout=30&parsetimeout"
-            "=30&totaltimeout=30&reinterpret=true&podstate=undefined&appid="
-            f"KQRKKJ-8WHPY395HA&input={query}&lang=en"
+            "https://lin2jing4-cors-4.herokuapp.com/api.wolframalpha.com/v2/query"
+            "?&output=json&podstate=step-by-step+solution&podstate=step-by-step&"
+            "podstate=show+all+steps&scantimeout=30&podtimeout=30&formattimeout=30"
+            "&parsetimeout=30&totaltimeout=30&reinterpret=true&podstate=undefined&"
+            f"appid=P7JH3K-27RHWR53JQ&input={query}&lang=en"
         )
 
         headers = {"Origin": "https://wolfreealpha.gitlab.io"}
