@@ -90,7 +90,7 @@ class animals(commands.Cog):
     @commands.command()
     async def monkey(self, ctx):
         """Gets a random monkey."""
-        url = "https://ntgc.ddns.net/mAPI/api"
+        url = "https://nachotoast.com/mAPI/api"
 
         with ctx.typing():
             monkey = await self.bot.get_json(url)
