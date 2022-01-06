@@ -23,6 +23,31 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def excuse(self, ctx, category=None):
+        """Gets a random excuse.
+
+        category: str
+            One of the following, family, office, children, college, party
+        """
+        if not category:
+            url = "https://excuser.herokuapp.com/v1/excuse"
+        else:
+            if category not in ("family", "office", "children", "college", "party"):
+                return await ctx.send(
+                    embed=discord.Embed(
+                        description="```Category must be one of the following,"
+                        " family, office, children, college, party```"
+                    )
+                )
+
+            url = f"https://excuser.herokuapp.com/v1/excuse/{category}"
+
+        with ctx.typing():
+            data = await self.bot.get_json(url)
+
+        await ctx.send(f"> {data[0]['excuse']}")
+
+    @commands.command()
     async def idea(self, ctx):
         """Gets a random idea from the itsthisforthat.com website."""
         url = "http://itsthisforthat.com/api.php?json"
