@@ -332,6 +332,8 @@ class games(commands.Cog):
         `.scrabble`  (Letter Tile)
         `.doodle`    (Doodle Crew) - Basically skribblio
         `.awkword`   (Awkword) - A game where you create sentences and vote on the best sentence
+        `.sketchy`   (Sketchy Artist)
+        `.putt`      (Putt Party) - Mini golf game
         """
         embed.set_footer(text="Games are still in beta and may be broken")
         await ctx.send(embed=embed)
@@ -690,6 +692,26 @@ class games(commands.Cog):
             ctx,
             f"{ctx.guild.id}-awkword".encode(),
             "There is another active Awkword game",
+        )
+
+    @commands.command()
+    async def sketchy(self, ctx):
+        """Starts a game of Sketchy Artist."""
+        await self.game_invite(
+            879864070101172255,
+            ctx,
+            f"{ctx.guild.id}-sketchy".encode(),
+            "There is another active Sketchy Artist game",
+        )
+
+    @commands.command()
+    async def putt(self, ctx):
+        """Starts a game of Putt Party."""
+        await self.game_invite(
+            763133495793942528,
+            ctx,
+            f"{ctx.guild.id}-putt".encode(),
+            "There is another active Putt Party game",
         )
 
 
