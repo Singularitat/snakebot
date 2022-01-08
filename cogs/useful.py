@@ -639,8 +639,18 @@ class useful(commands.Cog):
         return await ctx.send(embed=embed)
 
     @commands.command()
-    async def translate(self, ctx, *, text):
+    async def translate(self, ctx, *, text=None):
         """Translates text to english."""
+        if not text:
+            reference = ctx.message.reference
+            if not reference or not reference.resolved:
+                return await ctx.send(
+                    "Either reply to a message or use the text argument"
+                )
+            text = reference.resolved.content
+        if not text:
+            return await ctx.send("You need to reply to a message with text")
+
         headers = {
             "Referer": "http://translate.google.com/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) "
