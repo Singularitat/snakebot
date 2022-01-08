@@ -103,6 +103,57 @@ STATUS_CODES = {
     },
 }
 
+WWO_CODES = {
+    "113": "☀️",
+    "116": "⛅️",
+    "119": "☁️",
+    "122": "☁️",
+    "143": "🌫",
+    "176": "🌦",
+    "179": "🌧",
+    "182": "🌧",
+    "185": "🌧",
+    "200": "⛈",
+    "227": "🌨",
+    "230": "❄️",
+    "248": "🌫",
+    "260": "🌫",
+    "263": "🌦",
+    "266": "🌦",
+    "281": "🌧",
+    "284": "🌧",
+    "293": "🌦",
+    "296": "🌦",
+    "299": "🌧",
+    "302": "🌧",
+    "305": "🌧",
+    "308": "🌧",
+    "311": "🌧",
+    "314": "🌧",
+    "317": "🌧",
+    "320": "🌨",
+    "323": "🌨",
+    "326": "🌨",
+    "329": "❄️",
+    "332": "❄️",
+    "335": "❄️",
+    "338": "❄️",
+    "350": "🌧",
+    "353": "🌦",
+    "356": "🌧",
+    "359": "🌧",
+    "362": "🌧",
+    "365": "🌧",
+    "368": "🌨",
+    "371": "❄️",
+    "374": "🌧",
+    "377": "🌧",
+    "386": "⛈",
+    "389": "🌩",
+    "392": "⛈",
+    "395": "❄️",
+}
+
 
 TIO_ALIASES = {
     "asm": "assembly-nasm",
@@ -639,8 +690,18 @@ class useful(commands.Cog):
         return await ctx.send(embed=embed)
 
     @commands.command()
-    async def translate(self, ctx, *, text):
+    async def translate(self, ctx, *, text=None):
         """Translates text to english."""
+        if not text:
+            reference = ctx.message.reference
+            if not reference or not reference.resolved:
+                return await ctx.send(
+                    "Either reply to a message or use the text argument"
+                )
+            text = reference.resolved.content
+        if not text:
+            return await ctx.send("You need to reply to a message with text")
+
         headers = {
             "Referer": "http://translate.google.com/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) "
@@ -680,13 +741,48 @@ class useful(commands.Cog):
                 return await ctx.send(translate_text)
 
     @commands.command()
-    async def weather(self, ctx, *, location="auckland+cbd"):
-        """Gets the weather from wttr.in defaults location to auckland cbd.
+    async def weather(self, ctx, *, location="auckland"):
+        """Gets the weather from wttr.in defaults location to auckland.
 
         location: str
             The name of the location to get the weather of.
         """
-        await ctx.send(f"http://wttr.in/{location.replace(' ', '+')}.png?2&m&q&n")
+        url = f"http://wttr.in/{location}?format=j1"
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        async with ctx.typing():
+            data = await self.bot.get_json(url)
+
+            current = data["current_condition"][0]
+            location = data["nearest_area"][0]
+            emoji = WWO_CODES[current["weatherCode"]]
+
+            embed.description = f"{current['weatherDesc'][0]['value']}"
+            embed.title = (
+                f"{emoji} {location['areaName'][0]['value']}"
+                f", {location['country'][0]['value']}"
+            )
+
+            embed.add_field(
+                name="Temperature",
+                value=f"{current['temp_C']}°C / {current['temp_F']}°F",
+            )
+            embed.add_field(name="Humidity", value=f"{current['humidity']}%")
+            embed.add_field(
+                name="Wind Speed",
+                value=f"{current['windspeedKmph']}kmph {current['winddir16Point']}",
+            )
+            for day in data["weather"]:
+                embed.add_field(
+                    name=day["date"],
+                    value=f"**Max Temp:** {day['maxtempC']}°C\n**Sunrise:** "
+                    f"{day['astronomy'][0]['sunrise']}\n"
+                    f"**Sunset:** {day['astronomy'][0]['sunset']}",
+                )
+
+            embed.set_footer(text=f"Last Updated: {current['observation_time']}")
+
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["statuscode"])
     async def statuscodes(self, ctx, *, code=None):
