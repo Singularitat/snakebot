@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 import os
 
 import discord
@@ -396,6 +397,10 @@ class background_tasks(commands.Cog):
                 if "price" not in coin["quotes"][0]:
                     continue
 
+                timestamp = datetime.fromisoformat(
+                    coin["quotes"][0]["lastUpdated"][:-1]
+                ).timestamp()
+
                 wb.put(
                     coin["symbol"].encode(),
                     orjson.dumps(
@@ -403,11 +408,12 @@ class background_tasks(commands.Cog):
                             "name": coin["name"],
                             "id": coin["id"],
                             "price": coin["quotes"][0]["price"],
-                            "circulating_supply": coin["circulatingSupply"],
-                            "max_supply": coin.get("maxSupply", 0),
+                            "circulating_supply": int(coin["circulatingSupply"]),
+                            "max_supply": int(coin.get("maxSupply", 0)),
                             "market_cap": coin["quotes"][0].get("marketCap", 0),
                             "change_24h": coin["quotes"][0]["percentChange24h"],
                             "volume_24h": coin["quotes"][0].get("volume24h", 0),
+                            "timestamp": int(timestamp),
                         }
                     ),
                 )
