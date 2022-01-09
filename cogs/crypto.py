@@ -51,26 +51,17 @@ class crypto(commands.Cog):
             name=f"{crypto['name']} [{symbol}]",
             icon_url=f"https://s2.coinmarketcap.com/static/img/coins/64x64/{crypto['id']}.png",
         )
-        embed.description = textwrap.dedent(
-            f"""
-                ```diff
-                Price:
-                ${crypto['price']:,.2f}
-
-                Circulating/Max Supply:
-                {crypto['circulating_supply']:,}/{crypto['max_supply']:,}
-
-                Market Cap:
-                ${crypto['market_cap']:,.2f}
-
-                24h Change:
-                {sign}{crypto['change_24h']}%
-
-                24h Volume:
-                {crypto['volume_24h']:,.2f}
-                ```
-            """
+        embed.add_field(name="Price", value=f"```${crypto['price']:,.2f}```")
+        embed.add_field(
+            name="Circulating/Max Supply",
+            value=f"```{crypto['circulating_supply']:,}/{crypto['max_supply']:,}```",
         )
+        embed.add_field(name="Market Cap", value=f"```${crypto['market_cap']:,.2f}```")
+        embed.add_field(
+            name="24h Change", value=f"```diff\n{sign}{crypto['change_24h']}%```"
+        )
+        embed.add_field(name="24h Volume", value=f"```{crypto['volume_24h']:,.2f}```")
+        embed.add_field(name="Last updated", value=f"<t:{crypto['timestamp']}:R>")
         embed.set_image(
             url=f"https://s3.coinmarketcap.com/generated/sparklines/web/1d/usd/{crypto['id']}.png"
         )
