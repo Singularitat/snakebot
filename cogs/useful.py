@@ -1,4 +1,5 @@
 import difflib
+from datetime import datetime
 import io
 import random
 import re
@@ -773,14 +774,20 @@ class useful(commands.Cog):
                 value=f"{current['windspeedKmph']}kmph {current['winddir16Point']}",
             )
             for day in data["weather"]:
+                hourly = day["hourly"]
+                noon, night = hourly[4], hourly[7]
+
                 embed.add_field(
                     name=day["date"],
-                    value=f"**Max Temp:** {day['maxtempC']}°C\n**Sunrise:** "
-                    f"{day['astronomy'][0]['sunrise']}\n"
-                    f"**Sunset:** {day['astronomy'][0]['sunset']}",
+                    value=f"**Max Temp:** {day['maxtempC']}°C / {day['maxtempF']}°F\n"
+                    f"**Noon:** {WWO_CODES[noon['weatherCode']]} {noon['weatherDesc'][0]['value']}\n"
+                    f"**Night:** {WWO_CODES[night['weatherCode']]} {night['weatherDesc'][0]['value']}",
                 )
 
-            embed.set_footer(text=f"Last Updated: {current['observation_time']}")
+            embed.timestamp = datetime.strptime(
+                current["localObsDateTime"], "%Y-%m-%d %I:%M %p"
+            )
+            embed.set_footer(text="Last Updated")
 
         await ctx.send(embed=embed)
 
