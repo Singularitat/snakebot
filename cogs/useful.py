@@ -1,4 +1,5 @@
 import difflib
+from datetime import datetime
 import io
 import random
 import re
@@ -779,8 +780,8 @@ class useful(commands.Cog):
                     f"{day['astronomy'][0]['sunrise']}\n"
                     f"**Sunset:** {day['astronomy'][0]['sunset']}",
                 )
-
-            embed.set_footer(text=f"Last Updated: {current['observation_time']}")
+            embed.timestamp = datetime.strptime(current["localObsDateTime"], "%Y-%m-%d %I:%M %p")
+            embed.set_footer(text="Last Updated")
 
         await ctx.send(embed=embed)
 
