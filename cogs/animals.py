@@ -276,8 +276,8 @@ class animals(commands.Cog):
 
         await ctx.send(image["file"])
 
-    @commands.command(name="catstatus")
-    async def cat_status(self, ctx, status=404):
+    @commands.command()
+    async def catstatus(self, ctx, status=404):
         """Gets a cat image for a status e.g 404.
 
         status: str
@@ -317,13 +317,13 @@ class animals(commands.Cog):
 
         await ctx.send(image[0]["url"])
 
-    @commands.command(name="dogstatus")
-    async def dog_status(self, ctx, status=404):
+    @commands.command()
+    async def dogstatus(self, ctx, status=404):
         """Gets a dog image for a status e.g 404.
 
         status: str
         """
-        await ctx.send(f"https://httpstatusdogs.com/img/{status}.jpg")
+        await ctx.send(f"https://http.dog/{status}.jpg")
 
     @commands.command()
     async def shibe(self, ctx):
