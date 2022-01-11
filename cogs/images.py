@@ -347,6 +347,14 @@ class images(commands.Cog):
         """
         await self.jeyy(ctx, "bonks", url)
 
+    @commands.command(name="print")
+    async def _print(self, ctx, url: str = None):
+        """Shows a gif of an image getting printed.
+
+        url: str
+        """
+        await self.jeyy(ctx, "print", url)
+
     @commands.command()
     async def images(self, ctx):
         """Shows all the image manipulation commands."""

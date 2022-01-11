@@ -53,20 +53,13 @@ class stocks(commands.Cog):
         sign = "" if stock["change"][0] == "-" else "+"
 
         embed.title = f"{symbol} [{stock['name']}]"
-        embed.description = textwrap.dedent(
-            f"""
-                ```diff
-                Price: {stock['price']}
-
-                24h Change:
-                {sign}{stock['change']}
-
-                Percent 24h Change:
-                {sign}{stock['%change']}
-
-                Market Cap: {stock['cap']}
-                ```
-            """
+        embed.add_field(name="Price", value=f"```${stock['price']}```")
+        embed.add_field(name="Market Cap", value=f"```${stock['cap']}```", inline=False)
+        embed.add_field(
+            name="24h Change", value=f"```diff\n{sign}{stock['change']}%```"
+        )
+        embed.add_field(
+            name="Percent 24h Change", value=f"```diff\n{sign}{stock['%change']}%```"
         )
 
         await ctx.send(embed=embed)
