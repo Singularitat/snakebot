@@ -364,6 +364,14 @@ class images(commands.Cog):
         await self.jeyy(ctx, "warp", url)
 
     @commands.command()
+    async def boil(self, ctx, url: str = None):
+        """Boils an image.
+
+        url: str
+        """
+        await self.jeyy(ctx, "boil", url)
+
+    @commands.command()
     async def images(self, ctx):
         """Shows all the image manipulation commands."""
         image_commands = []
