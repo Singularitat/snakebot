@@ -44,7 +44,7 @@ class images(commands.Cog):
         }
 
         async with ctx.typing(), self.bot.client_session.post(
-            url, json=data, headers=headers, timeout=30
+            url, json=data, headers=headers, timeout=20
         ) as resp:
             if resp.content_type == "text/plain":
                 return await ctx.reply(
@@ -91,7 +91,7 @@ class images(commands.Cog):
 
         url = f"https://api.jeyy.xyz/image/{endpoint}?image_url={url}"
 
-        async with ctx.typing(), self.bot.client_session.get(url) as resp:
+        async with ctx.typing(), self.bot.client_session.get(url, timeout=20) as resp:
             if resp.status != 200:
                 return await ctx.reply(
                     embed=discord.Embed(
@@ -370,6 +370,22 @@ class images(commands.Cog):
         url: str
         """
         await self.jeyy(ctx, "boil", url)
+
+    @commands.command()
+    async def earthquake(self, ctx, url: str = None):
+        """Shakes an image like an earthquake.
+
+        url: str
+        """
+        await self.jeyy(ctx, "earthquake", url)
+
+    @commands.command(aliases=["bomb"])
+    async def nuke(self, ctx, url: str = None):
+        """Nukes an image.
+
+        url: str
+        """
+        await self.jeyy(ctx, "bomb", url)
 
     @commands.command()
     async def images(self, ctx):
