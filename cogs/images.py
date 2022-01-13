@@ -379,6 +379,14 @@ class images(commands.Cog):
         """
         await self.jeyy(ctx, "earthquake", url)
 
+    @commands.command(aliases=["bomb"])
+    async def nuke(self, ctx, url: str = None):
+        """Nukes an image.
+
+        url: str
+        """
+        await self.jeyy(ctx, "bomb", url)
+
     @commands.command()
     async def images(self, ctx):
         """Shows all the image manipulation commands."""
