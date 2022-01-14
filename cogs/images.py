@@ -44,7 +44,7 @@ class images(commands.Cog):
         }
 
         async with ctx.typing(), self.bot.client_session.post(
-            url, json=data, headers=headers, timeout=20
+            url, json=data, headers=headers, timeout=30
         ) as resp:
             if resp.content_type == "text/plain":
                 return await ctx.reply(
@@ -91,7 +91,7 @@ class images(commands.Cog):
 
         url = f"https://api.jeyy.xyz/image/{endpoint}?image_url={url}"
 
-        async with ctx.typing(), self.bot.client_session.get(url, timeout=20) as resp:
+        async with ctx.typing(), self.bot.client_session.get(url, timeout=30) as resp:
             if resp.status != 200:
                 return await ctx.reply(
                     embed=discord.Embed(
