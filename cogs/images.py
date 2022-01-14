@@ -388,6 +388,14 @@ class images(commands.Cog):
         await self.jeyy(ctx, "bomb", url)
 
     @commands.command()
+    async def shock(self, ctx, url: str = None):
+        """Pulses an image like a heartbeat.
+
+        url: str
+        """
+        await self.jeyy(ctx, "shock", url)
+
+    @commands.command()
     async def images(self, ctx):
         """Shows all the image manipulation commands."""
         image_commands = []
