@@ -221,7 +221,7 @@ class useful(commands.Cog):
 
     @commands.command(aliases=["vaccines"])
     async def vaccine(self, ctx):
-        """Gets curren NZ vaccine data from the health.govt.nz website."""
+        """Gets current NZ vaccine data from the health.govt.nz website."""
         url = (
             "https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19"
             "-novel-coronavirus/covid-19-data-and-statistics/covid-19-vaccine-data"
