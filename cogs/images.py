@@ -396,6 +396,14 @@ class images(commands.Cog):
         await self.jeyy(ctx, "shock", url)
 
     @commands.command()
+    async def pattern(self, ctx, url: str = None):
+        """Puts a pattern overlay gif on an image.
+
+        url: str
+        """
+        await self.jeyy(ctx, "pattern", url)
+
+    @commands.command()
     async def images(self, ctx):
         """Shows all the image manipulation commands."""
         image_commands = []
