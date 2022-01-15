@@ -36,9 +36,9 @@ STATUS_CODES = {
         "206": "Partial Content",
         "207": "Multi-Status",
         "208": "Already Reported",
-        "226": "IM Used",
         # Apache Web Server
         "218": "This is fine",
+        "226": "IM Used",
     },
     "3": {
         "title": "3xx redirection",
@@ -75,6 +75,8 @@ STATUS_CODES = {
         "416": "Range Not Satisfiable",
         "417": "Expectation Failed",
         "418": "Im A Teapot",
+        # Twitter
+        "420": "Enhance Your Calm",
         "421": "Misdirected Request",
         "422": "Unprocessable Entity",
         "423": "Locked",
@@ -84,13 +86,12 @@ STATUS_CODES = {
         "428": "Precondition Required",
         "429": "Too Many Requests",
         "431": "Request Header Fields Too Large",
-        "451": "Unavailable For Legal Reasons",
-        # Twitter
-        "420": "Enhance Your Calm",
-        # Windows
-        "450": "Blocked By Windows Parental Controls",
         # nginx
         "444": "No Response",
+        # Windows
+        "450": "Blocked By Windows Parental Controls",
+        "451": "Unavailable For Legal Reasons",
+        # nginx
         "494": "Request header too large",
         "495": "SSL Certificate Error",
         "496": "SSL Certificate Required",
