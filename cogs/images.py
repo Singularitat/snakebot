@@ -403,6 +403,14 @@ class images(commands.Cog):
         """
         await self.jeyy(ctx, "pattern", url)
 
+    @commands.command(aliases=["kill"])
+    async def shoot(self, ctx, url: str = None):
+        """Shoots someone.
+
+        url: str
+        """
+        await self.jeyy(ctx, "shoot", url)
+
     @commands.command()
     async def images(self, ctx):
         """Shows all the image manipulation commands."""
