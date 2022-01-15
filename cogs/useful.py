@@ -36,6 +36,9 @@ STATUS_CODES = {
         "206": "Partial Content",
         "207": "Multi-Status",
         "208": "Already Reported",
+        "226": "IM Used",
+        # Apache Web Server
+        "218": "This is fine",
     },
     "3": {
         "title": "3xx redirection",
@@ -72,7 +75,6 @@ STATUS_CODES = {
         "416": "Range Not Satisfiable",
         "417": "Expectation Failed",
         "418": "Im A Teapot",
-        "420": "Enhance Your Calm",
         "421": "Misdirected Request",
         "422": "Unprocessable Entity",
         "423": "Locked",
@@ -82,9 +84,17 @@ STATUS_CODES = {
         "428": "Precondition Required",
         "429": "Too Many Requests",
         "431": "Request Header Fields Too Large",
-        "444": "No Response",
-        "450": "Blocked By Windows Parental Controls",
         "451": "Unavailable For Legal Reasons",
+        # Twitter
+        "420": "Enhance Your Calm",
+        # Windows
+        "450": "Blocked By Windows Parental Controls",
+        # nginx
+        "444": "No Response",
+        "494": "Request header too large",
+        "495": "SSL Certificate Error",
+        "496": "SSL Certificate Required",
+        "497": "HTTP Request Sent to HTTPS Port",
         "499": "Client Closed Request",
     },
     "5": {
@@ -101,6 +111,15 @@ STATUS_CODES = {
         "508": "Loop Detected",
         "510": "Not Extended",
         "511": "Network Authentication Required",
+        # Cloudflare
+        "520": "Web Server Returned an Unknown Error",
+        "521": "Web Server is Down",
+        "522": "Connection Timed Out",
+        "523": "Origin is Unreachable",
+        "524": "A Timeout Occurred",
+        "525": "SSL Handshake Failed",
+        "526": "Invalid SSL Certificate",
+        "527": "Railgun Error",
     },
 }
 
