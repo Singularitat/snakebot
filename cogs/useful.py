@@ -1,19 +1,18 @@
 import difflib
-from datetime import datetime
 import io
 import random
 import re
 import secrets
 import time
 import urllib
+from datetime import datetime
 from zlib import compress
 
 import discord
 import lxml.html
 import orjson
-from discord.ext import commands, menus
-
 from cogs.utils.calculation import bin_float, hex_float, oct_float, safe_eval
+from discord.ext import commands, menus
 
 STATUS_CODES = {
     "1": {
@@ -75,8 +74,11 @@ STATUS_CODES = {
         "416": "Range Not Satisfiable",
         "417": "Expectation Failed",
         "418": "Im A Teapot",
+        # Laravel
+        "419": "Page Expired",
         # Twitter
         "420": "Enhance Your Calm",
+        # End
         "421": "Misdirected Request",
         "422": "Unprocessable Entity",
         "423": "Locked",
@@ -85,12 +87,16 @@ STATUS_CODES = {
         "426": "Upgrade Required",
         "428": "Precondition Required",
         "429": "Too Many Requests",
+        # Shopify
+        "430": "Request Header Fields Too Large",
         "431": "Request Header Fields Too Large",
         # nginx
         "444": "No Response",
         # Windows
         "450": "Blocked By Windows Parental Controls",
         "451": "Unavailable For Legal Reasons",
+        # AWS
+        "561": "Unauthorized",
         # nginx
         "494": "Request header too large",
         "495": "SSL Certificate Error",
@@ -110,6 +116,8 @@ STATUS_CODES = {
         "506": "Variant Also Negotiates",
         "507": "Insufficient Storage",
         "508": "Loop Detected",
+        # Apache Web Server
+        "509": "Bandwidth Limit Exceeded",
         "510": "Not Extended",
         "511": "Network Authentication Required",
         # Cloudflare
@@ -121,6 +129,13 @@ STATUS_CODES = {
         "525": "SSL Handshake Failed",
         "526": "Invalid SSL Certificate",
         "527": "Railgun Error",
+        # Qualys
+        "529": "Site is overloaded",
+        # Pantheon
+        "530": "Site is frozen",
+        # End
+        "598": "(Informal convention) Network read timeout error",
+        "599": "Network Connect Timeout Error",
     },
 }
 
@@ -403,17 +418,17 @@ class useful(commands.Cog):
         key = f"tempmail-{ctx.author.id}".encode()
         embed = discord.Embed(color=discord.Color.blurple())
 
-        acount = self.DB.main.get(key)
-        if not acount:
+        account = self.DB.main.get(key)
+        if not account:
             embed.description = (
                 "You don't have a tempmail account do `.tempmail` to create one"
             )
             return await ctx.send(embed=embed)
 
-        acount = orjson.loads(acount)
+        account = orjson.loads(account)
 
         async with self.bot.client_session.get(
-            url, headers={"Authorization": f"Bearer {acount['token']}"}
+            url, headers={"Authorization": f"Bearer {account['token']}"}
         ) as resp:
             messages = await resp.json()
 
@@ -441,17 +456,17 @@ class useful(commands.Cog):
         key = f"tempmail-{ctx.author.id}".encode()
         embed = discord.Embed(color=discord.Color.blurple())
 
-        acount = self.DB.main.get(key)
-        if not acount:
+        account = self.DB.main.get(key)
+        if not account:
             embed.description = (
                 "You don't have a tempmail account do `.tempmail` to create one"
             )
             return await ctx.send(embed=embed)
 
-        acount = orjson.loads(acount)
+        account = orjson.loads(account)
 
         async with self.bot.client_session.get(
-            url, headers={"Authorization": f"Bearer {acount['token']}"}
+            url, headers={"Authorization": f"Bearer {account['token']}"}
         ) as resp:
             message = await resp.json()
 
@@ -665,23 +680,23 @@ class useful(commands.Cog):
             return await ctx.send(embed=embed)
 
         exponent = 0
-        shifted_num = number
-        max_exponent = 9 - (len(bin(int(number))) - 2)
+        shifted_num = num
+        max_exponent = 9 - (len(bin(int(num))) - 2)
 
         while shifted_num != int(shifted_num) and exponent != max_exponent:
             shifted_num *= 2
             exponent += 1
 
         binary = f"{int(shifted_num):0{exponent + 1}b}"
+        whole, frac = binary[:-exponent], binary[-exponent:]
 
-        if index := binary.find("1"):
-            binary_exponent = f"{index-1:0>5b}"
-        elif not exponent:
-            binary_exponent = f"{len(binary)-1:0>5b}"
+        if whole == "0":
+            index = frac.find("1")
+            binary_exponent = f"{index if index != -1 else 0:0>5b}"
         else:
-            binary_exponent = f"{exponent-1:0>5b}"
+            binary_exponent = f"{len(whole or frac):0>5b}"
 
-        exponent_sign = str(int(bool(index)))
+        exponent_sign = str(int(bool(binary.find("1"))))
         mantissa = f"{binary.lstrip('0'):0<9}"[:9]
 
         binary_float = sign + mantissa + exponent_sign + binary_exponent
@@ -698,16 +713,19 @@ class useful(commands.Cog):
         embed.add_field(name="Decimal", value=number)
         embed.add_field(
             name="Binary",
-            value=f"{binary[:-exponent]}.{binary[-exponent:].rstrip('0')}",
+            value=f"{whole}{'.' if whole else ''}{frac}",
         )
+        embed.add_field(name="\u200b", value="\u200b")
         embed.add_field(
             name="Standard Form", value=f"{binary} x 2^{int(binary_exponent, 2)}"
         )
+        embed.add_field(name="Result", value=hexadecimal_float)
+        embed.add_field(name="\u200b", value="\u200b")
         embed.add_field(
             name="Sign of Mantissa  Mantissa  Sign of Exponent  Exponent",
             value=f"`{sign:^15s}{mantissa:^10s}{exponent_sign:^18s}{binary_exponent:^6s}`",
         )
-        embed.add_field(name="Result", value=hexadecimal_float)
+
         return await ctx.send(embed=embed)
 
     @commands.command()

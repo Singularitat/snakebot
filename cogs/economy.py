@@ -450,7 +450,7 @@ class economy(commands.Cog):
         """Gets a members balance.
 
         user: discord.User
-            The user whos balance will be returned.
+            The user whose balance will be returned.
         """
         user = user or ctx.author
 

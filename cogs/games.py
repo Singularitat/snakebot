@@ -399,7 +399,7 @@ class games(commands.Cog):
         """Gets a members cookies.
 
         user: discord.User
-            The user whos cookies will be returned.
+            The user whose cookies will be returned.
         """
         user = user or ctx.author
 

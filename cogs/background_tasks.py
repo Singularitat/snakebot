@@ -1,6 +1,6 @@
 import asyncio
-from datetime import datetime
 import os
+from datetime import datetime
 
 import discord
 import lxml
@@ -450,7 +450,7 @@ class background_tasks(commands.Cog):
 
     @tasks.loop(count=1)
     async def get_documentation(self):
-        """Gets the documentation of all discord objects from their __doc__ atribute."""
+        """Gets the documentation of all discord objects from their __doc__ attribute."""
         with self.DB.docs.write_batch() as wb:
             self._get_documentation(discord, wb)
 
@@ -482,5 +482,5 @@ class background_tasks(commands.Cog):
 
 
 def setup(bot):
-    """Starts the backgroud tasks cog"""
+    """Starts the background tasks cog"""
     bot.add_cog(background_tasks(bot))

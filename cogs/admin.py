@@ -1,8 +1,7 @@
 import discord
 import orjson
-from discord.ext import commands
-
 from cogs.utils.time import parse_time
+from discord.ext import commands
 
 
 class admin(commands.Cog):
@@ -83,13 +82,13 @@ class admin(commands.Cog):
         key = f"{ctx.guild.id}-logging".encode()
         if self.DB.main.get(key):
             self.DB.main.delete(key)
-            tenary = "Enabled"
+            state = "Enabled"
         else:
             self.DB.main.put(key, b"1")
-            tenary = "Disabled"
+            state = "Disabled"
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = f"```{tenary} logging```"
+        embed.description = f"```{state} logging```"
         await ctx.send(embed=embed)
 
     @commands.command(name="removerule")
@@ -164,13 +163,13 @@ class admin(commands.Cog):
 
         if channel.id in disabled[guild]:
             disabled[guild].remove(channel.id)
-            tenary = "enabled"
+            state = "enabled"
         else:
             disabled[guild].append(channel.id)
-            tenary = "disabled"
+            state = "disabled"
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = f"```Commands {tenary} in {channel}```"
+        embed.description = f"```Commands {state} in {channel}```"
 
         await ctx.send(embed=embed)
         self.DB.main.put(key, orjson.dumps(disabled))
@@ -178,7 +177,7 @@ class admin(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 86400, commands.BucketType.user)
     async def color_roles(self, ctx):
-        """Creates basiic color roles if they don't exist."""
+        """Creates basic color roles if they don't exist."""
         roles = {
             "Gold": (discord.Color.gold(), "⭐"),
             "Red": (discord.Color.from_rgb(255, 0, 0), "🔴"),
@@ -309,7 +308,7 @@ class admin(commands.Cog):
         embed.description = f"```{msg}```"
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["demoji"])
+    @commands.command(aliases=["demoji", "delemoji"])
     async def delete_emoji(self, ctx, message_id):
         """Deletes an emoji from the emojis being voted on.
 
@@ -330,7 +329,7 @@ class admin(commands.Cog):
 
         self.DB.main.put(b"emoji_submissions", orjson.dumps(emojis))
 
-    @commands.command(aliases=["aemoji"])
+    @commands.command(aliases=["aemoji", "addemoji"])
     async def add_emoji(self, ctx, message_id, name):
         """Adds a emoji to be voted on.
 

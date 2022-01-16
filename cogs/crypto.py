@@ -191,7 +191,7 @@ class crypto(commands.Cog):
         """Gets someone's crypto profile.
 
         member: discord.Member
-            The member whos crypto profile will be shown.
+            The member whose crypto profile will be shown.
         """
         member = member or ctx.author
 

@@ -542,7 +542,7 @@ class moderation(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     async def user(self, ctx, user: discord.User, num_messages: int = 100):
-        """Clear all messagges of <User> withing the last [n=100] messages.
+        """Clear all messages of <User> withing the last [n=100] messages.
 
         user: discord.User
             The user to purge the messages of.
