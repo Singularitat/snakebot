@@ -11,11 +11,10 @@ import discord
 import lxml.html
 import opcode
 import orjson
-from discord.ext import commands
-
 from cogs.utils.calculation import bin_float, hex_float, oct_float
 from cogs.utils.color import hsslv
 from cogs.utils.time import parse_date
+from discord.ext import commands
 
 CHARACTERS = (
     "Miss Pauling",
@@ -376,7 +375,7 @@ class misc(commands.Cog):
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
                     description=f"```Text must be longer than 4 characters "
-                    f"and shorter than 200 charcters[{length}]```",
+                    f"and shorter than 200 characters[{length}]```",
                 )
             )
 
@@ -767,7 +766,7 @@ class misc(commands.Cog):
 
     @cipher.command()
     async def encode(self, ctx, shift: int, *, message):
-        """Encodes a message using the ceasar cipher.
+        """Encodes a message using the caesar cipher.
 
         shift: int
             How much you want to shift the message.
@@ -976,10 +975,10 @@ class misc(commands.Cog):
         else:
             karma = karma.decode()
 
-        tenary = "+" if int(karma) > 0 else ""
+        prefix = "+" if int(karma) > 0 else ""
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = f"```diff\n{user.display_name}'s karma:\n{tenary}{karma}```"
+        embed.description = f"```diff\n{user.display_name}'s karma:\n{prefix}{karma}```"
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["kboard", "ktop", "karmatop"])
@@ -1075,7 +1074,7 @@ class misc(commands.Cog):
 
     @commands.command()
     async def choose(self, ctx, *options: str):
-        """Chooses between mulitple things.
+        """Chooses between multiple things.
 
         options: str
             The options to choose from.

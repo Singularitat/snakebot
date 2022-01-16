@@ -236,7 +236,7 @@ class information(commands.Cog):
         """Shows the bot's permissions in a specific channel.
 
         channel: discord.TextChannel
-            The channel to get the bots perrmissions in.
+            The channel to get the bots permissions in.
         """
         channel = channel or ctx.channel
         member = ctx.guild.me

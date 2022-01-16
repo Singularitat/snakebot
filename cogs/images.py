@@ -293,7 +293,7 @@ class images(commands.Cog):
 
     @commands.command()
     async def hearts(self, ctx, url: str = None):
-        """Puts a hearts gif overlay ontop of an image.
+        """Puts a hearts gif overlay onto an image.
 
         url: str
         """

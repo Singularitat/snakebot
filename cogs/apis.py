@@ -10,7 +10,6 @@ import discord
 import orjson
 from discord.ext import commands
 
-
 URBAN_REGEX = re.compile(r"\[(.*?)\]")
 
 
@@ -956,8 +955,8 @@ class apis(commands.Cog):
 
         async with ctx.typing(), self.bot.client_session.get(
             url, headers=headers
-        ) as reponse:
-            data = await reponse.json()
+        ) as resp:
+            data = await resp.json()
 
             await ctx.reply(data["joke"])
 

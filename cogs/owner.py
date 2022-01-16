@@ -194,7 +194,7 @@ class owner(commands.Cog):
 
     @commands.command()
     async def profile(self, ctx, *, command):
-        """Profiles a comamnd.
+        """Profiles a command.
 
         command: str
         """
@@ -591,13 +591,13 @@ class owner(commands.Cog):
         ternary = "enabled" if command.enabled else "disabled"
 
         embed.description = (
-            f"```Sucessfully {ternary} the {command.qualified_name} command```"
+            f"```Successfully {ternary} the {command.qualified_name} command```"
         )
         await ctx.send(embed=embed)
 
     @commands.group(invoke_without_command=True)
     async def presence(self, ctx):
-        """Command group for changing the bots precence"""
+        """Command group for changing the bots presence"""
         embed = discord.Embed(color=discord.Color.blurple())
         embed.description = (
             "```Usage: {}presence [game/streaming/listening/watching]```".format(
@@ -837,7 +837,7 @@ class owner(commands.Cog):
         """Deletes a reaction role message and removes it from the db.
 
         message: int
-            Id of the reaction role messgae to delete.
+            ID of the reaction role message to delete.
         """
         self.DB.rrole.delete(str(message_id).encode())
         message = ctx.channel.get_partial_message(message_id)
@@ -860,7 +860,7 @@ class owner(commands.Cog):
         channel = await self.await_for_message(
             ctx, "Send the channel you want the message to be in"
         )
-        breifs = await self.await_for_message(
+        briefs = await self.await_for_message(
             ctx, "Send an brief for every emote Seperated by |"
         )
         roles = await self.await_for_message(
@@ -879,8 +879,8 @@ class owner(commands.Cog):
 
         msg = "**Role Menu:**\nReact for a role.\n"
 
-        for emoji, breif in zip(emojis, breifs.content.split("|")):
-            msg += f"\n{emoji}: `{breif}`\n"
+        for emoji, brief in zip(emojis, briefs.content.split("|")):
+            msg += f"\n{emoji}: `{brief}`\n"
 
         channel_id = re.sub(r"[^\d.]+", "", channel.content)
 
@@ -924,7 +924,7 @@ class owner(commands.Cog):
 
         msg = message.content
 
-        breifs = await self.await_for_message(
+        briefs = await self.await_for_message(
             ctx, "Send an brief for every emote Seperated by |"
         )
         roles = await self.await_for_message(
@@ -942,8 +942,8 @@ class owner(commands.Cog):
 
         msg += "\n"
 
-        for emoji, breif in zip(emojis, breifs.content.split("|")):
-            msg += f"\n{emoji}: `{breif}`\n"
+        for emoji, brief in zip(emojis, briefs.content.split("|")):
+            msg += f"\n{emoji}: `{brief}`\n"
 
         await message.edit(content=msg)
 

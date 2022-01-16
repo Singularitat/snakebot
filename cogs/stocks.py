@@ -230,7 +230,7 @@ class stocks(commands.Cog):
         """Gets someone's stock profile.
 
         member: discord.Member
-            The member whos stockprofile will be shown
+            The member whose stockprofile will be shown
         """
         member = member or ctx.author
 
@@ -341,7 +341,7 @@ class stocks(commands.Cog):
         """Gets a members net worth.
 
         members: discord.Member
-            The member whos net worth will be returned.
+            The member whose net worth will be returned.
         """
         member = member or ctx.author
 

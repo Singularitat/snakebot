@@ -598,7 +598,7 @@ class music(commands.Cog):
         ctx.voice_state.songs.clear()
         await self.r_command_success(ctx.message)
 
-    @commands.command(name="loop", aliases=["loopn"])
+    @commands.command(name="loop")
     async def _loop(self, ctx):
         """Loops the currently playing song."""
         await self.r_command_success(ctx.message)
