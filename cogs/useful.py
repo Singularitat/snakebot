@@ -665,21 +665,23 @@ class useful(commands.Cog):
         """
         await ctx.send(f"http://v2d.wttr.in/{location.replace(' ', '+')}.png")
 
-    @commands.command(name="float")
+    @commands.group(name="float", invoke_without_command=True)
     async def _float(self, ctx, number: float):
-        """Converts a float to half-precision floating-point format.
+        """Converts a float to the half-precision floating-point format.
 
         number: float
         """
         decimal = abs(number)
 
         sign = 1 - (number >= 0)
-        mantissa = math.floor(decimal * 2 ** math.floor(math.log2(0b111111111 / decimal)))
+        mantissa = math.floor(
+            decimal * 2 ** math.floor(math.log2(0b111111111 / decimal))
+        )
         exponent = math.floor(math.log2(decimal) + 1)
         exponent_sign, exponent = 1 - (exponent >= 0), abs(exponent)
 
         binary = bin_float(number)
-        binary = binary[:max(binary.find("1") + 1, 12)]
+        binary = binary[: max(binary.find("1") + 1, 12)]
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(name="Decimal", value=number)
@@ -688,10 +690,11 @@ class useful(commands.Cog):
             value=binary,
         )
         embed.add_field(name="\u200b", value="\u200b")
+        embed.add_field(name="Standard Form", value=f"{binary} x 2^{exponent}")
         embed.add_field(
-            name="Standard Form", value=f"{binary} x 2^{exponent}"
+            name="Result",
+            value=f"{(sign << 15) | (mantissa << 6) | (exponent_sign << 5) | exponent:X}",
         )
-        embed.add_field(name="Result", value=f"{(sign << 15) | (mantissa << 6) | (exponent_sign << 5) | exponent:X}")
         embed.add_field(name="\u200b", value="\u200b")
 
         sign, mantissa, exponent_sign, exponent = (
@@ -706,6 +709,37 @@ class useful(commands.Cog):
             value=f"`{sign:^15s}{mantissa:^10s}{exponent_sign:^18s}{exponent:^6s}`",
         )
 
+        return await ctx.send(embed=embed)
+
+    @_float.command(aliases=["d"])
+    async def decode(self, ctx, number):
+        """Decodes a float from the half-precision floating-point format.
+
+        number: str
+        """
+        number = int(number, 16)
+
+        sign = (number & (2 ** 1 - 1) << 15) >> 15
+        mantissa = (number & (2 ** 9 - 1) << 6) >> 6
+        exponent_sign = (number & (2 ** 1 - 1) << 5) >> 5
+        exponent = number & (2 ** 5 - 1)
+        float_value = (
+            (sign * -2 + 1) * mantissa * 2 ** (-9 + (exponent_sign * -2 + 1) * exponent)
+        )
+        sign, mantissa, exponent_sign, exponent = (
+            f"{sign:b}",
+            f"{mantissa:0>9b}",
+            f"{exponent_sign:b}",
+            f"{exponent:0>5b}",
+        )
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.add_field(name="Decimal", value=float_value)
+        embed.add_field(name="Binary", value=bin_float(float_value))
+        embed.add_field(name="\u200b", value="\u200b")
+        embed.add_field(
+            name="Sign of Mantissa  Mantissa  Sign of Exponent  Exponent",
+            value=f"`{sign:^15s}{mantissa:^10s}{exponent_sign:^18s}{exponent:^6s}`",
+        )
         return await ctx.send(embed=embed)
 
     @commands.command()
