@@ -412,6 +412,22 @@ class images(commands.Cog):
         await self.jeyy(ctx, "shoot", url)
 
     @commands.command()
+    async def bubbles(self, ctx, url: str = None):
+        """Turns an image into a gif of bubbles.
+
+        url: str
+        """
+        await self.jeyy(ctx, "bubbles", url)
+
+    @commands.command()
+    async def cloth(self, ctx, url: str = None):
+        """Turns an image into a gif of a hanging cloth.
+
+        url: str
+        """
+        await self.jeyy(ctx, "cloth", url)
+
+    @commands.command()
     async def images(self, ctx):
         """Shows all the image manipulation commands."""
         image_commands = []
