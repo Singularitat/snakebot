@@ -268,6 +268,22 @@ class images(commands.Cog):
         await self.dagpi(ctx, "burn", url)
 
     @commands.command()
+    async def triggered(self, ctx, url: str = None):
+        """Makes a triggered gif with an image.
+
+        url: str
+        """
+        await self.dagpi(ctx, "triggered", url)
+
+    @commands.command()
+    async def delete(self, ctx, url: str = None):
+        """Creates an windows deletion dialog with the image inside it.
+
+        url: str
+        """
+        await self.dagpi(ctx, "delete", url)
+
+    @commands.command()
     async def matrix(self, ctx, url: str = None):
         """Adds a matrix overlay onto image.
 
@@ -417,7 +433,7 @@ class images(commands.Cog):
 
         url: str
         """
-        await self.jeyy(ctx, "bubbles", url)
+        await self.jeyy(ctx, "bubble", url)
 
     @commands.command()
     async def cloth(self, ctx, url: str = None):
