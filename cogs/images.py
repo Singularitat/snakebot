@@ -276,6 +276,14 @@ class images(commands.Cog):
         await self.dagpi(ctx, "triggered", url)
 
     @commands.command()
+    async def delete(self, ctx, url: str = None):
+        """Creates an windows deletion dialog with the image inside it.
+
+        url: str
+        """
+        await self.dagpi(ctx, "delete", url)
+
+    @commands.command()
     async def matrix(self, ctx, url: str = None):
         """Adds a matrix overlay onto image.
 
