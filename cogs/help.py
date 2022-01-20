@@ -8,7 +8,7 @@ from discord.ext import commands, menus
 class BotHelpPageSource(menus.ListPageSource):
     def __init__(self, help_command, commands):
         super().__init__(
-            entries=sorted(commands.keys(), key=lambda c: c.qualified_name), per_page=6
+            entries=sorted(commands.keys(), key=lambda c: c.qualified_name), per_page=4
         )
         self.commands = commands
         self.help_command = help_command
@@ -26,7 +26,8 @@ class BotHelpPageSource(menus.ListPageSource):
 
         page = []
         for command in commands:
-            value = f"`{command.name}`"
+            parent = getattr(command, "parent", None)
+            value = f"`{parent.name + ' ' if parent else ''}{command.name}`"
             count = len(value) + 1  # The space
             if count + current_count < 800:
                 current_count += count
@@ -54,11 +55,14 @@ class BotHelpPageSource(menus.ListPageSource):
             title="Categories", description=description, colour=discord.Colour.blurple()
         )
 
-        for cog in cogs:
+        for i, cog in enumerate(cogs):
             commands = self.commands.get(cog)
             if commands:
                 value = self.format_commands(cog, commands)
                 embed.add_field(name=cog.qualified_name, value=value)
+
+                if not i % 2:
+                    embed.add_field(name="\u200b", value="\u200b")
 
         maximum = self.get_max_pages()
         embed.set_footer(text=f"Page {menu.current_page + 1}/{maximum}")
@@ -208,7 +212,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
     async def send_bot_help(self, mapping):
         bot = self.context.bot
-        entries = await self.filter_commands(bot.commands, sort=True)
+        entries = await self.filter_commands([*bot.walk_commands()], sort=True)
 
         all_commands = {}
         for command in entries:
