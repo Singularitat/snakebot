@@ -334,6 +334,8 @@ class SongQueue(asyncio.Queue):
 
 
 class music(commands.Cog):
+    """Commands related to playing music."""
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.voice_states = {}

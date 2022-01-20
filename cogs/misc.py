@@ -11,10 +11,11 @@ import discord
 import lxml.html
 import opcode
 import orjson
+from discord.ext import commands
+
 from cogs.utils.calculation import bin_float, hex_float, oct_float
 from cogs.utils.color import hsslv
 from cogs.utils.time import parse_date
-from discord.ext import commands
 
 CHARACTERS = (
     "Miss Pauling",

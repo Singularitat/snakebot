@@ -12,8 +12,9 @@ from zlib import compress
 import discord
 import lxml.html
 import orjson
-from cogs.utils.calculation import bin_float, hex_float, oct_float, safe_eval
 from discord.ext import commands, menus
+
+from cogs.utils.calculation import bin_float, hex_float, oct_float, safe_eval
 
 STATUS_CODES = {
     "1": {
@@ -705,8 +706,8 @@ class useful(commands.Cog):
         )
 
         embed.add_field(
-            name="Sign of Mantissa  Mantissa  Sign of Exponent  Exponent",
-            value=f"`{sign:^15s}{mantissa:^10s}{exponent_sign:^18s}{exponent:^6s}`",
+            name="Mantissa Sign   Mantissa   Exponent Sign   Exponent",
+            value=f"`{sign:^13s}{mantissa:^11s}{exponent_sign:^13s} {exponent:^9s}`",
         )
 
         return await ctx.send(embed=embed)
@@ -737,8 +738,8 @@ class useful(commands.Cog):
         embed.add_field(name="Binary", value=bin_float(float_value))
         embed.add_field(name="\u200b", value="\u200b")
         embed.add_field(
-            name="Sign of Mantissa  Mantissa  Sign of Exponent  Exponent",
-            value=f"`{sign:^15s}{mantissa:^10s}{exponent_sign:^18s}{exponent:^6s}`",
+            name="Mantissa Sign   Mantissa   Exponent Sign   Exponent",
+            value=f"`{sign:^13s}{mantissa:^11s}{exponent_sign:^13s} {exponent:^9s}`",
         )
         return await ctx.send(embed=embed)
 
