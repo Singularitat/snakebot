@@ -330,8 +330,8 @@ class games(commands.Cog):
         `.youtube`   (Watch YouTube)
         `.spell`     (SpellCast) - A scrabble like game
         `.word`      (Word Snacks) - A word wheel like game
-        `.scrabble`  (Letter Tile)
-        `.doodle`    (Doodle Crew) - Basically skribblio
+        `.scrabble`  (Letter League)
+        `.doodle`    (Sketch Heads) - Basically skribblio
         `.awkword`   (Awkword) - A game where you create sentences and vote on the best sentence
         `.sketchy`   (Sketchy Artist)
         `.putt`      (Putt Party) - Mini golf game
@@ -657,22 +657,22 @@ class games(commands.Cog):
 
     @commands.command()
     async def scrabble(self, ctx):
-        """Starts a game of Letter Tile."""
+        """Starts a game of Letter League."""
         await self.game_invite(
             879863686565621790,
             ctx,
             f"{ctx.guild.id}-tile".encode(),
-            "There is another active Letter Tile game",
+            "There is another active Letter League game",
         )
 
     @commands.command()
     async def doodle(self, ctx):
-        """Starts a game of Doodle Crew."""
+        """Starts a game of Sketch Heads."""
         await self.game_invite(
             878067389634314250,
             ctx,
             f"{ctx.guild.id}-doodle".encode(),
-            "There is another active Doodle Crew game",
+            "There is another active Sketch Heads game",
         )
 
     @commands.command()
