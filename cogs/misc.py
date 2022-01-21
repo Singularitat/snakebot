@@ -17,6 +17,11 @@ from cogs.utils.calculation import bin_float, hex_float, oct_float
 from cogs.utils.color import hsslv
 from cogs.utils.time import parse_date
 
+try:
+    from cogs.utils.oneliner import onelinerize
+except ImportError:
+    onelinerize = None
+
 CHARACTERS = (
     "Miss Pauling",
     "Scout",
@@ -98,6 +103,32 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.DB = bot.DB
+
+    @commands.command()
+    async def oneline(self, ctx, *, code=None):
+        """Convert python 3 code into one line.
+
+        code: str
+        """
+        if not onelinerize:
+            return
+
+        if not code and ctx.message.attachments:
+            file = ctx.message.attachments[0]
+            if file.filename.split(".")[-1] != "py":
+                return
+            code = (await file.read()).decode()
+
+        code = re.sub(r"```\w+\n|```", "", code)
+        code = onelinerize(code)
+
+        if len(code) > 1991:
+            return await ctx.reply(
+                file=discord.File(io.StringIO(code), "output.py")
+            )
+
+        code = code.replace("`", "`\u200b")
+        await ctx.reply(f"```py\n{code}```")
 
     @commands.command()
     async def num(self, ctx, num: int):
