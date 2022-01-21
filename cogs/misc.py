@@ -123,9 +123,7 @@ class misc(commands.Cog):
         code = onelinerize(code)
 
         if len(code) > 1991:
-            return await ctx.reply(
-                file=discord.File(io.StringIO(code), "output.py")
-            )
+            return await ctx.reply(file=discord.File(io.StringIO(code), "output.py"))
 
         code = code.replace("`", "`\u200b")
         await ctx.reply(f"```py\n{code}```")
