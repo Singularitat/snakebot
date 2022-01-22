@@ -120,7 +120,7 @@ class misc(commands.Cog):
             code = (await file.read()).decode()
 
         code = re.sub(r"```\w+\n|```", "", code)
-        code = onelinerize(code)
+        code = await self.bot.loop.run_in_executor(None, onelinerize, code)
 
         if len(code) > 1991:
             return await ctx.reply(file=discord.File(io.StringIO(code), "output.py"))
