@@ -284,6 +284,14 @@ class images(commands.Cog):
         await self.dagpi(ctx, "delete", url)
 
     @commands.command()
+    async def america(self, ctx, url: str = None):
+        """Puts a gif of the america flag over an image.
+
+        url: str
+        """
+        await self.dagpi(ctx, "america", url)
+
+    @commands.command()
     async def matrix(self, ctx, url: str = None):
         """Adds a matrix overlay onto image.
 
