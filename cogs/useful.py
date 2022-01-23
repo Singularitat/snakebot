@@ -680,7 +680,21 @@ class useful(commands.Cog):
         exponent = math.floor(math.log2(decimal) + 1)
         exponent_sign, exponent = 1 - (exponent >= 0), abs(exponent)
 
-        binary = bin_float(number)
+        bin_exponent = 0
+        shifted_num = number
+
+        while shifted_num != int(shifted_num):
+            shifted_num *= 2
+            bin_exponent += 1
+
+        if not bin_exponent:
+            binary = standard = f"{int(number):b}"
+        else:
+            standard = f"{int(shifted_num):0{bin_exponent + 1}b}"
+            binary = (
+                f"{standard[:-bin_exponent]}.{standard[-bin_exponent:].rstrip('0')}"
+            )
+
         binary = binary[: max(binary.find("1") + 1, 12)]
 
         embed = discord.Embed(color=discord.Color.blurple())
@@ -690,7 +704,9 @@ class useful(commands.Cog):
             value=binary,
         )
         embed.add_field(name="\u200b", value="\u200b")
-        embed.add_field(name="Standard Form", value=f"{binary} x 2^{exponent}")
+        embed.add_field(
+            name="Standard Form", value=f"{standard.lstrip('0')[:9]:0>9} x 2^{exponent}"
+        )
         embed.add_field(
             name="Result",
             value=f"{(sign << 15) | (mantissa << 6) | (exponent_sign << 5) | exponent:X}",
@@ -719,10 +735,10 @@ class useful(commands.Cog):
         """
         number = int(number, 16)
 
-        sign = (number & (2 ** 1 - 1) << 15) >> 15
-        mantissa = (number & (2 ** 9 - 1) << 6) >> 6
-        exponent_sign = (number & (2 ** 1 - 1) << 5) >> 5
-        exponent = number & (2 ** 5 - 1)
+        sign = (number & 32768) >> 15
+        mantissa = (number & 32704) >> 6
+        exponent_sign = (number & 32) >> 5
+        exponent = number & 31
         float_value = (
             (sign * -2 + 1) * mantissa * 2 ** (-9 + (exponent_sign * -2 + 1) * exponent)
         )
