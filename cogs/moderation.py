@@ -524,15 +524,25 @@ class moderation(commands.Cog):
     @purge.command()
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
-    async def till(self, ctx, message_id: int):
+    async def till(self, ctx, message_id: int = None):
         """Clear messages in a channel until the given message_id. Given ID is not deleted."""
-        try:
-            message = await ctx.fetch_message(message_id)
-        except discord.errors.NotFound:
+        if message_id:
+            try:
+                message = await ctx.fetch_message(message_id)
+            except discord.errors.NotFound:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description="```Message could not be found in this channel```",
+                    )
+                )
+        elif ctx.message.reference and ctx.message.reference.resolved:
+            message = ctx.message.reference.resolved
+        else:
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.blurple(),
-                    description="```Message could not be found in this channel```",
+                    description="```Either supply a message id or reply to message```",
                 )
             )
 
@@ -566,6 +576,30 @@ class moderation(commands.Cog):
         channel = channel or ctx.channel
         await channel.clone()
         await channel.delete()
+
+    @purge.command(name="from")
+    @commands.has_permissions(manage_channels=True)
+    @commands.guild_only()
+    async def _from(self, ctx, start: int, end: int):
+        """Purges from [start] to [end] message without deleting said messages.
+
+        start: int
+        end: int
+        """
+        if start < end:
+            start, end = end, start
+        try:
+            start = await ctx.fetch_message(start)
+            end = await ctx.fetch_message(end)
+        except discord.errors.NotFound:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```One of the messages could not be found in this channel```",
+                )
+            )
+
+        await ctx.channel.purge(before=start, after=end)
 
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_messages=True)
