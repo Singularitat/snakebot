@@ -577,6 +577,30 @@ class moderation(commands.Cog):
         await channel.clone()
         await channel.delete()
 
+    @purge.command(name="from")
+    @commands.has_permissions(manage_channels=True)
+    @commands.guild_only()
+    async def _from(self, ctx, start: int, end: int):
+        """Purges from [start] to [end] message without deleting said messages.
+
+        start: int
+        end: int
+        """
+        if start < end:
+            start, end = end, start
+        try:
+            start = await ctx.fetch_message(start)
+            end = await ctx.fetch_message(end)
+        except discord.errors.NotFound:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```One of the messages could not be found in this channel```",
+                )
+            )
+
+        await ctx.channel.purge(before=start, after=end)
+
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_messages=True)
     async def history(self, ctx):
