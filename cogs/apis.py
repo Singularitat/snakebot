@@ -582,18 +582,19 @@ class apis(commands.Cog):
     @commands.command()
     async def fact(self, ctx):
         """Gets a random fact."""
-        url = "https://asli-fun-fact-api.herokuapp.com"
+        url = "https://ffa.aakhilv.me/image/dark"
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
-
-            text = data["data"]["fact"]
-
-            await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description=f"```{text}```"
+        async with ctx.typing(), self.bot.client_session.get(url, timeout=30) as resp:
+            if resp.status != 200:
+                return await ctx.reply(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        description="```Couldn't get a fact```",
+                    ).set_footer(text=f"Status code was {resp.status}")
                 )
-            )
+            image = BytesIO(await resp.content.read())
+
+        await ctx.reply(file=discord.File(fp=image, filename="fact.png"))
 
     @commands.command(aliases=["so"])
     async def stackoverflow(self, ctx, *, search):
