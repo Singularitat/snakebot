@@ -1,23 +1,22 @@
-import unittest
 import asyncio
-import re
 import datetime
+import re
+import unittest
 
 import aiohttp
 
-from bot import Bot
 import tests.helpers as helpers
+from bot import Bot
 from cogs.animals import animals
-from cogs.misc import misc
-from cogs.useful import useful
-from cogs.stocks import stocks
-from cogs.crypto import crypto
 from cogs.apis import apis
-from cogs.information import information
-from cogs.moderation import moderation
+from cogs.crypto import crypto
 from cogs.economy import economy
 from cogs.images import images
-
+from cogs.information import information
+from cogs.misc import misc
+from cogs.moderation import moderation
+from cogs.stocks import stocks
+from cogs.useful import useful
 
 bot = Bot(helpers.MockBot())
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -49,9 +48,7 @@ class AnimalsCogTests(unittest.IsolatedAsyncioTestCase):
 
     @unittest.skip("Really Slow.")
     async def test_animal_commands(self):
-        bot.client_session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=6)
-        )
+        bot.client_session = aiohttp.ClientSession()
 
         await asyncio.gather(
             *[self.run_command(command) for command in self.cog.walk_commands()]
@@ -65,9 +62,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
     @unittest.skip("Really Slow.")
     async def test_api_commands(self):
-        bot.client_session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=6)
-        )
+        bot.client_session = aiohttp.ClientSession()
 
         await asyncio.gather(
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
@@ -250,23 +245,15 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
 
-    async def github_trending_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="githubtrending"):
-            await self.cog.github_trending(self.cog, context)
-
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
     async def inspiro_command(self):
         context = helpers.MockContext()
 
         with self.subTest(command="inspiro"):
             await self.cog.inspiro(self.cog, context)
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
 
     async def wikipath_command(self):
         context = helpers.MockContext()
@@ -316,7 +303,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
         with self.subTest(command="currency"):
             await self.cog.currency(
-                self.cog, context, orginal="USD", amount=10, new="NZD"
+                self.cog, context, message=("3", "usd", "to", "nzd")
             )
 
             self.assertNotEqual(
@@ -681,7 +668,7 @@ class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
     async def test_coinflip_command(self):
         context = helpers.MockContext()
 
-        await self.cog.coinflip(self.cog, context, "heads", 0)
+        await self.cog.coinflip(self.cog, context, "heads", "0")
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -690,7 +677,7 @@ class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
     async def test_lottery_command(self):
         context = helpers.MockContext()
 
-        await self.cog.lottery(self.cog, context, 1)
+        await self.cog.lottery(self.cog, context, "1")
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -699,7 +686,7 @@ class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
     async def test_baltop_command(self):
         context = helpers.MockContext()
 
-        await self.cog.top_balances(self.cog, context)
+        await self.cog.baltop(self.cog, context)
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -759,9 +746,7 @@ class ImagesCogTests(unittest.IsolatedAsyncioTestCase):
 
     @unittest.skip("Really Slow.")
     async def test_image_commands(self):
-        bot.client_session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=6)
-        )
+        bot.client_session = aiohttp.ClientSession()
 
         await asyncio.gather(
             *[self.run_command(command) for command in self.cog.walk_commands()]
@@ -869,9 +854,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
     @unittest.skip("Really Slow.")
     async def test_misc_commands(self):
-        bot.client_session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=6)
-        )
+        bot.client_session = aiohttp.ClientSession()
 
         await asyncio.gather(
             *[
@@ -921,7 +904,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         await self.cog.num(
             self.cog,
             context,
-            "1000",
+            1000,
         )
         self.assertIs(context.send.call_args.kwargs.get("embed"), None)
 
@@ -1040,7 +1023,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     async def test_embedjson_command(self):
         context = helpers.MockContext()
 
-        await self.cog.embed_json(self.cog, context, message=helpers.MockMessage())
+        await self.cog.embedjson(self.cog, context, message=helpers.MockMessage())
 
         self.assertEqual(
             context.send.call_args.kwargs["embed"].description[:61],
@@ -1092,12 +1075,12 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.en(self.cog, context, text="aaaabbbccd")
 
-        context.send.assert_called_with("4a3b2c1d")
+        context.send.assert_called_with("a4b3c2d1")
 
     async def test_rle_de_command(self):
         context = helpers.MockContext()
 
-        await self.cog.de(self.cog, context, text="4a3b2c1d")
+        await self.cog.de(self.cog, context, text="a4b3c2d1")
 
         context.send.assert_called_with("aaaabbbccd")
 
@@ -1200,7 +1183,8 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
         self.assertEqual(
-            context.send.call_args.kwargs["embed"].description, "```0x411a```"
+            context.send.call_args.kwargs["embed"].description,
+            "```py\nhex: 0x411a\nint: 91750```",
         )
 
     async def test_oct_command(self):
@@ -1212,7 +1196,8 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
         self.assertEqual(
-            context.send.call_args.kwargs["embed"].description, "```0o3202```"
+            context.send.call_args.kwargs["embed"].description,
+            "```py\noct: 0o3202\nint: 950```",
         )
 
     async def test_bin_command(self):
@@ -1224,7 +1209,8 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
         self.assertEqual(
-            context.send.call_args.kwargs["embed"].description, "```0b11010000010```"
+            context.send.call_args.kwargs["embed"].description,
+            "```py\nbin: 0b11010000010\nint: failed```",
         )
 
     async def test_karma_command(self):
@@ -1467,9 +1453,7 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
     @unittest.skip("Really Slow.")
     async def test_useful_cog_api_commands(self):
-        bot.client_session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=6)
-        )
+        bot.client_session = aiohttp.ClientSession()
 
         await asyncio.gather(
             *[
@@ -1562,7 +1546,7 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
             await self.cog.run(self.cog, context, code="```py\nprint('Test')```")
 
             self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
-            self.assertEqual(context.reply.call_args.args[0], "```\nTest\n```")
+            self.assertEqual(context.reply.call_args.args[0], "```py\nTest\n```")
 
     async def translate_command(self):
         with self.subTest(command="translate"):
@@ -1590,16 +1574,6 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
             await self.cog.tio(self.cog, context, code="```python\nprint('Test')```")
 
             self.assertIs(context.send.call_args.kwargs.get("embed"), None)
-
-    async def poi_command(self):
-        with self.subTest(command="poi"):
-            context = helpers.MockContext()
-
-            await self.cog.poi(self.cog, context)
-
-            self.assertNotEqual(
-                context.channel.send.call_args.kwargs["embed"].color.value, 10038562
-            )
 
     async def google_command(self):
         with self.subTest(command="google"), self.assertRaises(ValueError):
