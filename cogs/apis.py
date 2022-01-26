@@ -22,6 +22,36 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def contests(self, ctx):
+        """Shows upcoming coding contests."""
+        url = "https://kontests.net/api/v1/all"
+
+        contests = await self.bot.get_json(url)
+        embed = discord.Embed(color=discord.Color.blurple())
+        count = 0
+
+        for contest in contests:
+            if contest["status"] != "BEFORE":
+                continue
+
+            try:
+                contest_time = datetime.strptime(contest["start_time"][:-5], "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                continue
+
+            count += 1
+
+            embed.add_field(
+                name=f"<t:{contest_time.timestamp():.0f}:R>",
+                value=f"[{contest['name']}]({contest['url']})",
+            )
+
+            if count == 12:
+                break
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def excuse(self, ctx, category=None):
         """Gets a random excuse.
 
