@@ -35,7 +35,9 @@ class apis(commands.Cog):
                 continue
 
             try:
-                contest_time = datetime.strptime(contest["start_time"][:-5], "%Y-%m-%dT%H:%M:%S")
+                contest_time = datetime.strptime(
+                    contest["start_time"][:-5], "%Y-%m-%dT%H:%M:%S"
+                )
             except ValueError:
                 continue
 
