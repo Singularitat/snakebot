@@ -292,6 +292,14 @@ class images(commands.Cog):
         await self.dagpi(ctx, "america", url)
 
     @commands.command()
+    async def grayscale(self, ctx, url: str = None):
+        """Grayscales an image.
+
+        url: str
+        """
+        await self.dagpi(ctx, "comic", url)
+
+    @commands.command()
     async def matrix(self, ctx, url: str = None):
         """Adds a matrix overlay onto image.
 
@@ -455,7 +463,7 @@ class images(commands.Cog):
     async def images(self, ctx):
         """Shows all the image manipulation commands."""
         image_commands = []
-        for item in dir(self):
+        for item in sorted(dir(self)):
             item = getattr(self, item)
             if isinstance(item, commands.core.Command):
                 image_commands.append(
