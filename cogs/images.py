@@ -292,6 +292,14 @@ class images(commands.Cog):
         await self.dagpi(ctx, "america", url)
 
     @commands.command()
+    async def grayscale(self, ctx, url: str = None):
+        """Grayscales an image.
+
+        url: str
+        """
+        await self.dagpi(ctx, "comic", url)
+
+    @commands.command()
     async def matrix(self, ctx, url: str = None):
         """Adds a matrix overlay onto image.
 
