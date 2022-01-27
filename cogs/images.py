@@ -455,7 +455,7 @@ class images(commands.Cog):
     async def images(self, ctx):
         """Shows all the image manipulation commands."""
         image_commands = []
-        for item in dir(self):
+        for item in sorted(dir(self)):
             item = getattr(self, item)
             if isinstance(item, commands.core.Command):
                 image_commands.append(
