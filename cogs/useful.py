@@ -1,20 +1,16 @@
 import difflib
 import io
-import math
 import random
 import re
 import secrets
 import time
 import urllib
 from datetime import datetime
-from zlib import compress
 
 import discord
 import lxml.html
 import orjson
 from discord.ext import commands, menus
-
-from cogs.utils.calculation import bin_float, hex_float, oct_float, safe_eval
 
 STATUS_CODES = {
     "1": {
@@ -193,32 +189,6 @@ WWO_CODES = {
 }
 
 
-TIO_ALIASES = {
-    "asm": "assembly-nasm",
-    "c": "c-gcc",
-    "cpp": "cpp-gcc",
-    "c++": "cpp-gcc",
-    "cs": "cs-core",
-    "java": "java-openjdk",
-    "js": "javascript-node",
-    "javascript": "javascript-node",
-    "ts": "typescript",
-    "py": "python3",
-    "python": "python3",
-    "prolog": "prolog-ciao",
-    "swift": "swift4",
-}
-
-CODE_REGEX = re.compile(
-    r"(?:(?P<lang>^[a-z0-9]+[\ \n])?)(?P<delim>(?P<block>```)|``?)(?(block)"
-    r"(?:(?P<alang>[a-z0-9]+)\n)?)(?:[ \t]*\n)*(?P<code>.*?)\s*(?P=delim)",
-    re.DOTALL | re.IGNORECASE,
-)
-
-RAW_CODE_REGEX = re.compile(
-    r"(?:(?P<lang>^[a-z0-9]+[\ \n])?)(?P<code>(?s).*)", re.DOTALL | re.IGNORECASE
-)
-
 ANSI = re.compile(r"\x1b\[.*?m")
 
 
@@ -230,22 +200,6 @@ class InviteMenu(menus.ListPageSource):
         return discord.Embed(
             color=discord.Color.blurple(), description=f"```{''.join(entries)}```"
         )
-
-
-class LanguageMenu(menus.ListPageSource):
-    def __init__(self, data):
-        super().__init__(data, per_page=60)
-
-    async def format_page(self, menu, entries):
-        msg = ""
-
-        for count, language in enumerate(sorted(entries), start=1):
-            if count % 2 == 0:
-                msg += f"{language}\n"
-            else:
-                msg += f"{language:<26}"
-
-        return discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
 
 
 class useful(commands.Cog):
@@ -540,99 +494,6 @@ class useful(commands.Cog):
         await ctx.reply(f"```py\n{formatted}```")
 
     @commands.command()
-    async def tiolanguages(self, ctx):
-        """Shows all the languages that tio.run can handle."""
-        languages = orjson.loads(self.DB.main.get(b"tiolanguages"))
-
-        pages = menus.MenuPages(
-            source=LanguageMenu(languages),
-            clear_reactions_after=True,
-            delete_message_after=True,
-        )
-        await pages.start(ctx)
-
-    @commands.command()
-    async def hello(self, ctx, language):
-        """Gets the code for hello world in a language.
-
-        language: str
-        """
-        language = TIO_ALIASES.get(language, language)
-        data = orjson.loads(self.DB.main.get(b"helloworlds"))
-        code = data.get(language)
-
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if not code:
-            embed.description = "```Language not found.```"
-            return await ctx.send(embed=embed)
-
-        embed.description = f"```{language}\n{code}```"
-        await ctx.send(embed=embed)
-
-    @commands.command()
-    async def tio(self, ctx, *, code):
-        """Uses tio.run to run code.
-
-        Examples:
-        .tio `\u200b`\u200b`\u200bpy
-        print("Example")`\u200b`\u200b`\u200b
-
-        .tio py print("Example")
-
-        .tio py `\u200bprint("Example")`\u200b
-
-        .tio py `\u200b`\u200b`\u200bprint("Example")`\u200b`\u200b`\u200b
-
-        code: str
-            The code to run.
-        """
-        if ctx.message.attachments:
-            file = ctx.message.attachments[0]
-            lang = file.filename.split(".")[-1]
-            code = (await file.read()).decode()
-        elif match := [*CODE_REGEX.finditer(code)]:
-            code, lang, alang = match[0].group("code", "lang", "alang")
-            lang = lang or alang
-        elif match := [*RAW_CODE_REGEX.finditer(code)]:
-            code, lang = match[0].group("code", "lang")
-
-        if not lang:
-            return await ctx.reply(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```You need to supply a language"
-                    " either as an arg or inside a codeblock```",
-                )
-            )
-
-        lang = lang.strip()
-        lang = TIO_ALIASES.get(lang, lang)  # tio doesn't have default aliases
-
-        if lang not in orjson.loads(self.DB.main.get(b"tiolanguages")):
-            return await ctx.reply(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description=f"```No support for language {lang}```",
-                )
-            )
-
-        url = "https://tio.run/cgi-bin/run/api/"
-
-        data = compress(
-            f"Vlang\x001\x00{lang}\x00F.code.tio\x00{len(code)}\x00{code}\x00R".encode(),
-            9,
-        )[2:-4]
-
-        async with ctx.typing(), self.bot.client_session.post(
-            url, data=data
-        ) as response:
-            response = (await response.read()).decode("utf-8")
-            response = response.replace(response[:16], "")
-
-        await ctx.reply(f"```{lang}\n{response}```")
-
-    @commands.command()
     async def news(self, ctx):
         """Gets top New Zealand stories from google."""
         async with ctx.typing():
@@ -664,99 +525,6 @@ class useful(commands.Cog):
         location: str
         """
         await ctx.send(f"http://v2d.wttr.in/{location.replace(' ', '+')}.png")
-
-    @commands.group(name="float", invoke_without_command=True)
-    async def _float(self, ctx, number: float):
-        """Converts a float to the half-precision floating-point format.
-
-        number: float
-        """
-        decimal = abs(number)
-
-        sign = 1 - (number >= 0)
-        mantissa = math.floor(
-            decimal * 2 ** math.floor(math.log2(0b111111111 / decimal))
-        )
-        exponent = math.floor(math.log2(decimal) + 1)
-        exponent_sign, exponent = 1 - (exponent >= 0), abs(exponent)
-
-        bin_exponent = 0
-        shifted_num = number
-
-        while shifted_num != int(shifted_num):
-            shifted_num *= 2
-            bin_exponent += 1
-
-        if not bin_exponent:
-            binary = standard = f"{int(number):b}"
-        else:
-            standard = f"{int(shifted_num):0{bin_exponent + 1}b}"
-            binary = (
-                f"{standard[:-bin_exponent]}.{standard[-bin_exponent:].rstrip('0')}"
-            )
-
-        binary = binary[: max(binary.find("1") + 1, 12)]
-
-        embed = discord.Embed(color=discord.Color.blurple())
-        embed.add_field(name="Decimal", value=number)
-        embed.add_field(
-            name="Binary",
-            value=binary,
-        )
-        embed.add_field(name="\u200b", value="\u200b")
-        embed.add_field(
-            name="Standard Form", value=f"{standard.lstrip('0')[:9]:0>9} x 2^{exponent}"
-        )
-        embed.add_field(
-            name="Result",
-            value=f"{(sign << 15) | (mantissa << 6) | (exponent_sign << 5) | exponent:X}",
-        )
-        embed.add_field(name="\u200b", value="\u200b")
-
-        sign, mantissa, exponent_sign, exponent = (
-            f"{sign:b}",
-            f"{mantissa:0>9b}",
-            f"{exponent_sign:b}",
-            f"{exponent:0>5b}",
-        )
-
-        embed.add_field(
-            name="Mantissa Sign   Mantissa   Exponent Sign   Exponent",
-            value=f"`{sign:^13s}{mantissa:^11s}{exponent_sign:^13s} {exponent:^9s}`",
-        )
-
-        return await ctx.send(embed=embed)
-
-    @_float.command(aliases=["d"])
-    async def decode(self, ctx, number):
-        """Decodes a float from the half-precision floating-point format.
-
-        number: str
-        """
-        number = int(number, 16)
-
-        sign = (number & 32768) >> 15
-        mantissa = (number & 32704) >> 6
-        exponent_sign = (number & 32) >> 5
-        exponent = number & 31
-        float_value = (
-            (sign * -2 + 1) * mantissa * 2 ** (-9 + (exponent_sign * -2 + 1) * exponent)
-        )
-        sign, mantissa, exponent_sign, exponent = (
-            f"{sign:b}",
-            f"{mantissa:0>9b}",
-            f"{exponent_sign:b}",
-            f"{exponent:0>5b}",
-        )
-        embed = discord.Embed(color=discord.Color.blurple())
-        embed.add_field(name="Decimal", value=float_value)
-        embed.add_field(name="Binary", value=bin_float(float_value))
-        embed.add_field(name="\u200b", value="\u200b")
-        embed.add_field(
-            name="Mantissa Sign   Mantissa   Exponent Sign   Exponent",
-            value=f"`{sign:^13s}{mantissa:^11s}{exponent_sign:^13s} {exponent:^9s}`",
-        )
-        return await ctx.send(embed=embed)
 
     @commands.command()
     async def translate(self, ctx, *, text=None):
@@ -994,82 +762,6 @@ class useful(commands.Cog):
         await pages.start(ctx)
 
     @commands.command()
-    async def run(self, ctx, *, code=None):
-        """Runs code.
-
-        Examples:
-        .run `\u200b`\u200b`\u200bpy
-        print("Example")`\u200b`\u200b`\u200b
-
-        .run py print("Example")
-
-        .run py `\u200bprint("Example")`\u200b
-
-        .run py `\u200b`\u200b`\u200bprint("Example")`\u200b`\u200b`\u200b
-
-        code: str
-            The code to run.
-        """
-        if ctx.message.attachments:
-            file = ctx.message.attachments[0]
-            lang = file.filename.split(".")[-1]
-            code = (await file.read()).decode()
-        elif match := list(CODE_REGEX.finditer(code)):
-            code, lang, alang = match[0].group("code", "lang", "alang")
-            lang = lang or alang
-        elif match := list(RAW_CODE_REGEX.finditer(code)):
-            code, lang = match[0].group("code", "lang")
-
-        if not lang:
-            return await ctx.reply(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```You need to supply a language"
-                    " either as an arg or inside a codeblock```",
-                )
-            )
-
-        lang = lang.strip()
-
-        if lang not in orjson.loads(self.DB.main.get(b"aliases")):
-            lang = lang.replace("`", "`\u200b")
-            return await ctx.reply(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description=f"```No support for language {lang}```",
-                )
-            )
-
-        data = {
-            "language": lang,
-            "version": "*",
-            "files": [{"content": code}],
-        }
-
-        async with ctx.typing(), self.bot.client_session.post(
-            "https://emkc.org/api/v2/piston/execute", data=orjson.dumps(data)
-        ) as response:
-            data = await response.json()
-
-        output = data["run"]["output"]
-
-        if "compile" in data and data["compile"]["stderr"]:
-            output = data["compile"]["stderr"] + "\n" + output
-
-        if not output:
-            return await ctx.reply(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description="```No output```"
-                )
-            )
-
-        output = output.replace("`", "`\u200b")
-        if len(output) + len(lang) > 1993:
-            return await ctx.reply(file=discord.File(io.StringIO(output), "output.txt"))
-
-        await ctx.reply(f"```{lang}\n{output}```")
-
-    @commands.command()
     async def time(self, ctx, *, command):
         """Runs a command whilst timing it.
 
@@ -1265,54 +957,6 @@ class useful(commands.Cog):
 
         await self.wait_for_deletion(ctx.author, message)
 
-    @commands.command(aliases=["c"])
-    async def calc(self, ctx, num_base, *, expr=""):
-        """Does math.
-
-        It access to the following basic math functions
-        ceil, comb, [fact]orial, gcd, lcm, perm, log, log2,
-        log10, sqrt, acos, asin, atan, cos, sin, tain
-        and the constants pi, e, tau.
-
-        num_base: str
-            The base you want to calculate in.
-            Can be hex, oct, bin and for decimal ignore this argument
-        expr: str
-            A expression to calculate.
-        """
-        num_bases = {
-            "h": (16, hex_float, "0x"),
-            "o": (8, oct_float, "0o"),
-            "b": (2, bin_float, "0b"),
-        }
-        base, method, prefix = num_bases.get(num_base[0].lower(), (None, None, None))
-
-        if not base:  # If we haven't been given a base it is decimal
-            base = 10
-            expr = f"{num_base} {expr}"  # We want the whole expression
-
-        if prefix:
-            expr = expr.replace(prefix, "")  # Remove the prefix for a simple regex
-
-        regex = r"[0-9a-fA-F]+" if base == 16 else r"\d+"
-
-        if method:  # No need to extract numbers if we aren't converting
-            numbers = [int(num, base) for num in re.findall(regex, expr)]
-            expr = re.sub(regex, "{}", expr).format(*numbers)
-
-        result = safe_eval(compile(expr, "<calc>", "eval", flags=1024).body)
-
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if method:
-            embed.description = (
-                f"```py\n{expr}\n\n>>> {prefix}{method(result)}\n\nDecimal: {result}```"
-            )
-            return await ctx.send(embed=embed)
-
-        embed.description = f"```py\n{expr}\n\n>>> {result}```"
-        await ctx.send(embed=embed)
-
     @commands.command(aliases=["ch", "cht"])
     async def cheatsheet(self, ctx, *search):
         """https://cheat.sh/python/ gets a cheatsheet.
@@ -1340,5 +984,5 @@ class useful(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    """Starts useful cog."""
+    """Starts the useful cog."""
     bot.add_cog(useful(bot))
