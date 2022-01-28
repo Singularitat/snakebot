@@ -13,7 +13,6 @@ import opcode
 import orjson
 from discord.ext import commands
 
-from cogs.utils.calculation import bin_float, hex_float, oct_float
 from cogs.utils.color import hsslv
 from cogs.utils.time import parse_date
 
@@ -594,28 +593,6 @@ class misc(commands.Cog):
 
         await ctx.send(text.lower().translate(table))
 
-    @commands.group()
-    async def rle(self, ctx):
-        """Encodes or decodes a string with run length encoding."""
-        if not ctx.invoked_subcommand:
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```Usage: {ctx.prefix}rle [de/en]```",
-            )
-            await ctx.send(embed=embed)
-
-    @rle.command()
-    async def en(self, ctx, *, text):
-        """Encodes a string with run length encoding."""
-        text = re.sub(r"(.)\1*", lambda m: m.group(1) + str(len(m.group(0))), text)
-        await ctx.send(text)
-
-    @rle.command()
-    async def de(self, ctx, *, text):
-        """Decodes a string with run length encoding."""
-        text = re.sub(r"(\D)(\d+)", lambda m: int(m.group(2)) * m.group(1), text)
-        await ctx.send(text)
-
     @commands.command()
     async def convert(self, ctx, number: int):
         """Converts fahrenheit to celsius
@@ -626,34 +603,6 @@ class misc(commands.Cog):
             embed=discord.Embed(
                 color=discord.Color.blurple(),
                 description=f"```{number}°F is {(number - 32) * (5/9):.2f}°C```",
-            )
-        )
-
-    @commands.command()
-    async def ones(self, ctx, number: int):
-        """Converts a decimal number to binary ones complement.
-
-        number: int
-        """
-        table = {49: "0", 48: "1"}
-        return await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```{bin(number)[2:].translate(table)}```",
-            )
-        )
-
-    @commands.command()
-    async def twos(self, ctx, number: int, bits: int):
-        """Converts a decimal number to binary twos complement.
-
-        number: int
-        bits: int
-        """
-        return await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```{bin(number & int('1'*bits, 2))[2:]:0>{bits}}```",
             )
         )
 
@@ -716,187 +665,12 @@ class misc(commands.Cog):
         msg = "\n".join([format_op(match) for match in matches])
         await ctx.send(f"```prolog\nHex: Num: BC:     Name:\n\n{msg}```")
 
-    @commands.group()
-    async def binary(self, ctx):
-        """Encoded or decodes binary as ascii text."""
-        if not ctx.invoked_subcommand:
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```Usage: {ctx.prefix}binary [decode/encode]```",
-            )
-            await ctx.send(embed=embed)
-
-    @binary.command(name="en")
-    async def binary_encode(self, ctx, *, text):
-        """Encodes ascii text as binary.
-
-        text: str
-        """
-        await ctx.send(" ".join([f"{bin(ord(letter))[2:]:0>8}" for letter in text]))
-
-    @binary.command(name="de")
-    async def binary_decode(self, ctx, *, binary):
-        """Decodes binary as ascii text.
-
-        binary: str
-        """
-        binary = binary.replace(" ", "")
-        # fmt: off
-        await ctx.send(
-            "".join([chr(int(binary[i: i + 8], 2)) for i in range(0, len(binary), 8)])
-        )
-        # fmt: on
-
-    @commands.command()
-    async def dashboard(self, ctx):
-        """Sends a link to Bryns dashboard."""
-        await ctx.send("https://web.tukib.org/uoa")
-
-    @commands.command()
-    async def notes(self, ctx):
-        """Sends a link to Joes notes."""
-        embed = discord.Embed(color=discord.Color.blurple(), title="Joes Notes")
-
-        embed.description = """
-        [Home Page](https://notes.joewuthrich.com)
-
-        [Compsci 101](https://notes.joewuthrich.com/compsci101)
-        Introduction to programming using the Python programming language.
-
-        [Compsci 110](https://notes.joewuthrich.com/compsci110)
-        This course explains how computers work and some of the things we can use them for.
-
-        [Compsci 120](https://notes.joewuthrich.com/compsci120)
-        Introduces basic mathematical tools and methods needed for computer science.
-
-        [Compsci 130](https://notes.joewuthrich.com/compsci130)
-        Entry course to Computer Science for students with prior programming knowledge in Python.
-
-        [Compsci 225](https://notes.joewuthrich.com/compsci225)
-        Discrete Structures in Mathematics and Computer Science.
-        """
-        await ctx.send(embed=embed)
-
     @commands.command()
     async def markdown(self, ctx):
         """Sends a link to a guide on markdown"""
         await ctx.send(
             "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51"
         )
-
-    @commands.group()
-    async def cipher(self, ctx):
-        """Solves or encodes a caesar cipher."""
-        if not ctx.invoked_subcommand:
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```Usage: {ctx.prefix}cipher [decode/encode]```",
-            )
-            await ctx.send(embed=embed)
-
-    @cipher.command()
-    async def encode(self, ctx, shift: int, *, message):
-        """Encodes a message using the caesar cipher.
-
-        shift: int
-            How much you want to shift the message.
-        message: str
-        """
-        if message.isupper():
-            chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        else:
-            message = message.lower()
-            chars = "abcdefghijklmnopqrstuvwxyz"
-
-        table = str.maketrans(chars, chars[shift:] + chars[:shift])
-
-        await ctx.send(message.translate(table))
-
-    @cipher.command(aliases=["solve", "brute"])
-    async def decode(self, ctx, *, message):
-        """Solves a caesar cipher via brute force.
-        Shows results sorted by the chi-square of letter frequencies
-
-        message: str
-        """
-        if message.isupper():
-            chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        else:
-            message = message.lower()
-            chars = "abcdefghijklmnopqrstuvwxyz"
-
-        # fmt: off
-
-        freq = {
-            "a": 8.04, "b": 1.48, "c": 3.34,
-            "d": 3.82, "e": 12.49, "f": 2.4,
-            "g": 1.87, "h": 5.05, "i": 7.57,
-            "j": 0.16, "k": 0.54, "l": 4.07,
-            "m": 2.51, "n": 7.23, "o": 7.64,
-            "p": 2.14, "q": 0.12, "r": 6.28,
-            "s": 6.51, "t": 9.28, "u": 2.73,
-            "v": 1.05, "w": 1.68, "x": 0.23,
-            "y": 1.66, "z": 0.09,
-        }
-
-        # fmt: on
-
-        msg_len = len(message)
-
-        rotate1 = str.maketrans(chars, chars[1:] + chars[0])
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        results = []
-
-        for i in range(25, 0, -1):
-            message = message.translate(rotate1)
-            chi = sum(
-                [
-                    (((message.count(char) / msg_len) - freq[char]) ** 2) / freq[char]
-                    for char in set(message.lower().replace(" ", ""))
-                ]
-            )
-            results.append((chi, (i, message)))
-
-        for chi, result in sorted(results, reverse=True):
-            embed.add_field(name=result[0], value=result[1])
-
-        embed.set_footer(text="Sorted by the chi-square of their letter frequencies")
-
-        await ctx.send(embed=embed)
-
-    @commands.command()
-    async def block(self, ctx, A, B):
-        """Solves a block cipher in the format of a python matrix.
-
-        e.g
-        "1 2 3" "3 7 15, 6 2 61, 2 5 1"
-
-        A: str
-        B: str
-        """
-
-        def starmap(iterable):
-            for num1, num2 in iterable:
-                yield num1 * num2
-
-        if "a" < A:
-            A = [[ord(letter) - 97 for letter in A]]
-        else:
-            A = A.split(",")
-            A = [[int(num) for num in block.split()] for block in A]
-        B = B.split(",")
-        B = [[int(num) for num in block.split()] for block in B]
-
-        results = ""
-
-        for block in A:
-            results += f"{[sum(starmap(zip(block, col))) for col in zip(*B)]}\n"
-
-        embed = discord.Embed(
-            color=discord.Color.blurple(), description=f"```{results}```"
-        )
-        await ctx.send(embed=embed)
 
     @commands.command(name="8ball")
     async def eightball(self, ctx):
@@ -919,75 +693,6 @@ class misc(commands.Cog):
             "Very doubtful.",
         ]
         await ctx.reply(random.choice(responses))
-
-    @commands.command(name="hex")
-    async def _hex(self, ctx, number):
-        """Shows a number in hexadecimal prefixed with “0x”.
-
-        number: str
-            The number you want to convert.
-        """
-        try:
-            hexadecimal = "0x" + hex_float(float(number))
-        except (ValueError, OverflowError):
-            hexadecimal = "failed"
-        try:
-            decimal = int(number, 16)
-        except ValueError:
-            decimal = "failed"
-
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```py\nhex: {hexadecimal}\nint: {decimal}```",
-            )
-        )
-
-    @commands.command(name="oct")
-    async def _oct(self, ctx, number):
-        """Shows a number in octal prefixed with “0o”.
-
-        number: str
-            The number you want to convert.
-        """
-        try:
-            octal = "0o" + oct_float(float(number))
-        except (ValueError, OverflowError):
-            octal = "failed"
-        try:
-            decimal = int(number, 8)
-        except ValueError:
-            decimal = "failed"
-
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```py\noct: {octal}\nint: {decimal}```",
-            )
-        )
-
-    @commands.command(name="bin")
-    async def _bin(self, ctx, number):
-        """Shows a number in binary prefixed with “0b”.
-
-        number: str
-            The number you want to convert.
-        """
-        try:
-            binary = "0b" + bin_float(float(number))
-        except (ValueError, OverflowError):
-            binary = "failed"
-        try:
-            decimal = int(number, 2)
-        except ValueError:
-            decimal = "failed"
-
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```py\nbin: {binary}\nint: {decimal}```",
-            )
-        )
 
     @commands.command(aliases=["socialcredit"])
     async def karma(self, ctx, user: discord.User = None):
