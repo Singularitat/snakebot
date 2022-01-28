@@ -335,6 +335,7 @@ class games(commands.Cog):
         `.awkword`   (Awkword) - A game where you create sentences and vote on the best sentence
         `.sketchy`   (Sketchy Artist)
         `.putt`      (Putt Party) - Mini golf game
+        `.ocho`      (Ocho) - A Crazy Eights variation
         """
         embed.set_footer(text="Games are still in beta and may be broken")
         await ctx.send(embed=embed)
@@ -713,6 +714,16 @@ class games(commands.Cog):
             ctx,
             f"{ctx.guild.id}-putt".encode(),
             "There is another active Putt Party game",
+        )
+
+    @commands.command()
+    async def ocho(self, ctx):
+        """Starts a game of Ocho."""
+        await self.game_invite(
+            832025144389533716,
+            ctx,
+            f"{ctx.guild.id}-ocho".encode(),
+            "There is another active Ocho game",
         )
 
 
