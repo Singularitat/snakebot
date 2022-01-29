@@ -189,9 +189,6 @@ WWO_CODES = {
 }
 
 
-ANSI = re.compile(r"\x1b\[.*?m")
-
-
 class InviteMenu(menus.ListPageSource):
     def __init__(self, data):
         super().__init__(data, per_page=20)
@@ -956,31 +953,6 @@ class useful(commands.Cog):
             self.DB.main.put(b"cache", orjson.dumps(cache))
 
         await self.wait_for_deletion(ctx.author, message)
-
-    @commands.command(aliases=["ch", "cht"])
-    async def cheatsheet(self, ctx, *search):
-        """https://cheat.sh/python/ gets a cheatsheet.
-
-        search: tuple
-            The search terms.
-        """
-        search = "+".join(search)
-
-        url = f"https://cheat.sh/python/{search}"
-        headers = {"User-Agent": "curl/7.68.0"}
-
-        async with ctx.typing(), self.bot.client_session.get(
-            url, headers=headers
-        ) as page:
-            result = ANSI.sub("", await page.text()).translate({96: "\\`"})
-
-        embed = discord.Embed(
-            title=f"https://cheat.sh/python/{search}",
-            color=discord.Color.blurple(),
-            description=f"```py\n{result}```",
-        )
-
-        await ctx.send(embed=embed)
 
 
 def setup(bot: commands.Bot) -> None:
