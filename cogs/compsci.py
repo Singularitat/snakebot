@@ -407,7 +407,7 @@ class compsci(commands.Cog):
             The number you want to convert.
         """
         try:
-            hexadecimal = "0x" + hex_float(float(number))
+            hexadecimal = hex_float(float(number))
         except (ValueError, OverflowError):
             hexadecimal = "failed"
         try:
@@ -430,7 +430,7 @@ class compsci(commands.Cog):
             The number you want to convert.
         """
         try:
-            octal = "0o" + oct_float(float(number))
+            octal = oct_float(float(number))
         except (ValueError, OverflowError):
             octal = "failed"
         try:
@@ -453,7 +453,7 @@ class compsci(commands.Cog):
             The number you want to convert.
         """
         try:
-            binary = "0b" + bin_float(float(number))
+            binary = bin_float(float(number))
         except (ValueError, OverflowError):
             binary = "failed"
         try:
@@ -564,7 +564,7 @@ class compsci(commands.Cog):
             for num1, num2 in iterable:
                 yield num1 * num2
 
-        if "a" < A:
+        if A > "a":
             A = [[ord(letter) - 97 for letter in A]]
         else:
             A = A.split(",")
@@ -614,16 +614,17 @@ class compsci(commands.Cog):
         # fmt: on
 
     @commands.command()
-    async def ones(self, ctx, number: int):
+    async def ones(self, ctx, number: int, bits: int):
         """Converts a decimal number to binary ones complement.
 
         number: int
         """
         table = {49: "0", 48: "1"}
+        sign = 1 - (number >= 0)
         return await ctx.send(
             embed=discord.Embed(
                 color=discord.Color.blurple(),
-                description=f"```{bin(number)[2:].translate(table)}```",
+                description=f"```{sign}{f'{abs(number):0>{bits-1}b}'.translate(table)}```",
             )
         )
 
@@ -637,7 +638,7 @@ class compsci(commands.Cog):
         return await ctx.send(
             embed=discord.Embed(
                 color=discord.Color.blurple(),
-                description=f"```{bin(number & int('1'*bits, 2))[2:]:0>{bits}}```",
+                description=f"```{number & (2 ** bits - 1):0>{bits}b}```",
             )
         )
 

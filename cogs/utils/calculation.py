@@ -133,7 +133,7 @@ def bin_float(number: float):
         exponent += 1
 
     if not exponent:
-        return bin(int(number)).removeprefix("0b")
+        return f"{int(number):b}"
 
     binary = f"{int(shifted_num):0{exponent + 1}b}"
     return f"{binary[:-exponent]}.{binary[-exponent:].rstrip('0')}"
@@ -148,7 +148,7 @@ def hex_float(number: float):
         exponent += 1
 
     if not exponent:
-        return hex(int(number)).removeprefix("0x")
+        return f"{int(number):X}"
 
     hexadecimal = f"{int(shifted_num):0{exponent + 1}x}"
     return f"{hexadecimal[:-exponent]}.{hexadecimal[-exponent:]}"
@@ -163,7 +163,7 @@ def oct_float(number: float):
         exponent += 1
 
     if not exponent:
-        return oct(int(number)).removeprefix("0o")
+        return f"{int(number):o}"
 
     octal = f"{int(shifted_num):0{exponent + 1}o}"
     return f"{octal[:-exponent]}.{octal[-exponent:]}"
