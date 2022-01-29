@@ -36,6 +36,8 @@ RAW_CODE_REGEX = re.compile(
     r"(?:(?P<lang>^[a-z0-9]+[\ \n])?)(?P<code>(?s).*)", re.DOTALL | re.IGNORECASE
 )
 
+ANSI = re.compile(r"\x1b\[.*?m")
+
 
 class LanguageMenu(menus.ListPageSource):
     def __init__(self, data):
@@ -663,6 +665,31 @@ class compsci(commands.Cog):
         """Decodes a string with run length encoding."""
         text = re.sub(r"(\D)(\d+)", lambda m: int(m.group(2)) * m.group(1), text)
         await ctx.send(text)
+
+    @commands.command(aliases=["ch", "cht"])
+    async def cheatsheet(self, ctx, *search):
+        """https://cheat.sh/python/ gets a cheatsheet.
+
+        search: tuple
+            The search terms.
+        """
+        search = "+".join(search)
+
+        url = f"https://cheat.sh/python/{search}"
+        headers = {"User-Agent": "curl/7.68.0"}
+
+        async with ctx.typing(), self.bot.client_session.get(
+            url, headers=headers
+        ) as page:
+            result = ANSI.sub("", await page.text()).translate({96: "\\`"})
+
+        embed = discord.Embed(
+            title=f"https://cheat.sh/python/{search}",
+            color=discord.Color.blurple(),
+            description=f"```py\n{result}```",
+        )
+
+        await ctx.send(embed=embed)
 
 
 def setup(bot: commands.Bot) -> None:
