@@ -535,8 +535,16 @@ class apis(commands.Cog):
 
         message: tuple
         """
-        currencies = orjson.loads(self.DB.main.get(b"currencies"))
         embed = discord.Embed(color=discord.Color.blurple())
+
+        if not message:
+            embed.description = (
+                "```ahk\nExample usage:\n  .currency usd nzd\n  .currency 3 "
+                "usd nzd\n  .currency usd to nzd\n  .currency 3 usd to nzd```"
+            )
+            return await ctx.send(embed=embed)
+
+        currencies = orjson.loads(self.DB.main.get(b"currencies"))
 
         if len(message) == 2:
             current, new = message
@@ -1432,7 +1440,7 @@ class apis(commands.Cog):
 
         embed.description = textwrap.dedent(
             f"""
-                ```
+                ```prolog
                 Total Cases:   Total Deaths:
                 {data['cases']:<15,}{data['deaths']:,}
 
