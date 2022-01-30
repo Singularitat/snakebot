@@ -64,11 +64,11 @@ class CookieClickerButton(discord.ui.Button["CookieClicker"]):
             if amount > 1:
                 cost = -(
                     self.cost
-                    * ((1.15 ** current) - (1.15 ** (current + amount)))
+                    * ((1.15**current) - (1.15 ** (current + amount)))
                     / 0.15
                 )
             else:
-                cost = self.cost * 1.15 ** current
+                cost = self.cost * 1.15**current
 
             if cookies["cookies"] < cost:
                 return await interaction.response.edit_message(
