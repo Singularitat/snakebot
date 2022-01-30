@@ -676,22 +676,6 @@ class useful(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def languages(self, ctx):
-        """Shows the languages that the run command can use."""
-        languages = orjson.loads(self.DB.main.get(b"languages"))
-
-        msg = ""
-
-        for count, language in enumerate(sorted(languages), start=1):
-            if count % 4 == 0:
-                msg += f"{language}\n"
-            else:
-                msg += f"{language:<13}"
-
-        embed = discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def emoji(self, ctx, *, name):
         """Does an emoji submission automatically.
 
