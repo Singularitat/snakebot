@@ -89,16 +89,6 @@ class apis(commands.Cog):
         await ctx.send(data["this"] + " for " + data["that"])
 
     @commands.command()
-    async def food(self, ctx):
-        """Posts a random picture of food."""
-        url = "https://foodish-api.herokuapp.com/api/"
-
-        with ctx.typing():
-            data = await self.bot.get_json(url)
-
-        await ctx.send(data["image"])
-
-    @commands.command()
     async def domains(self, ctx, domain_name, page=1):
         """Looks up domains similar to given search e.g facebook.
 
