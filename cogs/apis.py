@@ -89,16 +89,6 @@ class apis(commands.Cog):
         await ctx.send(data["this"] + " for " + data["that"])
 
     @commands.command()
-    async def food(self, ctx):
-        """Posts a random picture of food."""
-        url = "https://foodish-api.herokuapp.com/api/"
-
-        with ctx.typing():
-            data = await self.bot.get_json(url)
-
-        await ctx.send(data["image"])
-
-    @commands.command()
     async def domains(self, ctx, domain_name, page=1):
         """Looks up domains similar to given search e.g facebook.
 
@@ -535,8 +525,16 @@ class apis(commands.Cog):
 
         message: tuple
         """
-        currencies = orjson.loads(self.DB.main.get(b"currencies"))
         embed = discord.Embed(color=discord.Color.blurple())
+
+        if not message:
+            embed.description = (
+                "```ahk\nExample usage:\n  .currency usd nzd\n  .currency 3 "
+                "usd nzd\n  .currency usd to nzd\n  .currency 3 usd to nzd```"
+            )
+            return await ctx.send(embed=embed)
+
+        currencies = orjson.loads(self.DB.main.get(b"currencies"))
 
         if len(message) == 2:
             current, new = message
@@ -1432,7 +1430,7 @@ class apis(commands.Cog):
 
         embed.description = textwrap.dedent(
             f"""
-                ```
+                ```prolog
                 Total Cases:   Total Deaths:
                 {data['cases']:<15,}{data['deaths']:,}
 

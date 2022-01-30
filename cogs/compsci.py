@@ -60,6 +60,7 @@ class compsci(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.DB = bot.DB
 
     @commands.command(aliases=["c"])
     async def calc(self, ctx, num_base, *, expr=""):
@@ -184,6 +185,22 @@ class compsci(commands.Cog):
             return await ctx.reply(file=discord.File(io.StringIO(output), "output.txt"))
 
         await ctx.reply(f"```{lang}\n{output}```")
+
+    @commands.command()
+    async def languages(self, ctx):
+        """Shows the languages that the run command can use."""
+        languages = orjson.loads(self.DB.main.get(b"languages"))
+
+        msg = ""
+
+        for count, language in enumerate(sorted(languages), start=1):
+            if count % 4 == 0:
+                msg += f"{language}\n"
+            else:
+                msg += f"{language:<13}"
+
+        embed = discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def tio(self, ctx, *, code):
