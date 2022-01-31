@@ -425,37 +425,6 @@ class useful(commands.Cog):
         await ctx.send(file=discord.File(io.StringIO(message["text"]), "email.txt"))
 
     @commands.command()
-    async def text(self, ctx):
-        """Extracts the text out of an image that you attach."""
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if not ctx.message.attachments:
-            embed.description = "```You need to attach an image```"
-            return await ctx.send(embed=embed)
-
-        url = "https://api8.ocr.space/parse/image"
-
-        data = {
-            "url": ctx.message.attachments[0].url,
-            "language": "eng",
-            "isOverlayRequired": "true",
-            "apikey": "5a64d478-9c89-43d8-88e3-c65de9999580",
-            "OCREngine": 2,
-        }
-
-        async with self.bot.client_session.post(url, data=data) as response:
-            results = (await response.json())["ParsedResults"][0]
-
-        result = results["ParsedText"].replace("`", "`\u200b")
-
-        if not result:
-            embed.description = "```Failed to process image```"
-            return await ctx.send(embed=embed)
-
-        embed.description = f"```{result}```"
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def format(self, ctx, *, code=None):
         """Formats python code using the black formatter.
 

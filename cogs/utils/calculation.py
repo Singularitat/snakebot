@@ -150,7 +150,7 @@ def hex_float(number: float):
     if not exponent:
         return f"{int(number):X}"
 
-    hexadecimal = f"{int(shifted_num):0{exponent + 1}x}"
+    hexadecimal = f"{int(shifted_num):0{exponent + 1}X}"
     return f"{hexadecimal[:-exponent]}.{hexadecimal[-exponent:]}"
 
 

@@ -475,8 +475,17 @@ class compsci(commands.Cog):
             binary = bin_float(float(number))
         except (ValueError, OverflowError):
             binary = "failed"
+
+        whole, *frac = number.split(".")
         try:
-            decimal = int(number, 2)
+            decimal = int(whole, 2)
+
+            for i, digit in enumerate(frac[0], start=1):
+                if digit == "1":
+                    decimal += 0.5**i
+                elif digit != "0":
+                    decimal = "failed"
+                    break
         except ValueError:
             decimal = "failed"
 
