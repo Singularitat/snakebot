@@ -207,6 +207,78 @@ class useful(commands.Cog):
         self.DB = bot.DB
         self.loop = bot.loop
 
+    @commands.command()
+    async def currency(self, ctx, *message):
+        """Converts between currencies.
+
+        Example usage:
+            .currency usd
+            .currency usd nzd
+            .currency 3 usd nzd
+            .currency usd to nzd
+            .currency 3 usd to nzd
+
+        message: tuple
+        """
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not message:
+            embed.description = (
+                "```ahk\nExample usage:\n  .currency usd nzd\n  .currency 3 "
+                "usd nzd\n  .currency usd to nzd\n  .currency 3 usd to nzd```"
+            )
+            return await ctx.send(embed=embed)
+
+        currencies = orjson.loads(self.DB.main.get(b"currencies"))
+        length = len(message)
+
+        if length == 1:
+            new = "nzd"
+            current = message[0]
+            amount = 1
+        elif length == 2:
+            current, new = message
+            if current.isdigit():
+                new, current, amount = "nzd", new, float(current)
+            else:
+                amount = 1
+        else:
+            amount, current, *_, new = message
+
+            if not amount.isdigit():
+                current = amount
+                amount = 1
+            else:
+                amount = float(amount)
+
+        current = current.upper()
+        new = new.upper()
+        cprefix = currencies[current]["symbol"]
+        nprefix = currencies[new]["symbol"]
+
+        if new == "NZD":
+            converted = amount / currencies[current]["rate"]
+        elif current == "NZD":
+            converted = amount * currencies[new]["rate"]
+        else:
+            converted = (currencies[new]["rate"] * amount) / currencies[current]["rate"]
+
+        start = len(str(int(converted))) + 1
+        count = 2
+
+        # A shitty way to make sure we always have 2 significant *decimal* places
+        for digit in str(converted)[start:]:
+            if digit == "0":
+                count += 1
+            else:
+                break
+
+        embed.description = (
+            f"```prolog\n{cprefix}{amount:,.0f} {current}"
+            f" is {nprefix}{converted:,.{count}f} {new}```"
+        )
+        await ctx.send(embed=embed)
+
     @commands.command(aliases=["vaccines"])
     async def vaccine(self, ctx):
         """Gets current NZ vaccine data from the health.govt.nz website."""
