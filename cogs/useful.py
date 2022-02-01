@@ -212,6 +212,7 @@ class useful(commands.Cog):
         """Converts between currencies.
 
         Example usage:
+            .currency usd
             .currency usd nzd
             .currency 3 usd nzd
             .currency usd to nzd
@@ -229,18 +230,26 @@ class useful(commands.Cog):
             return await ctx.send(embed=embed)
 
         currencies = orjson.loads(self.DB.main.get(b"currencies"))
+        length = len(message)
 
-        if len(message) == 2:
+        if length == 1:
+            new = "nzd"
+            current = message[0]
+            amount = 1
+        elif length == 2:
             current, new = message
-            amount = "1"
+            if current.isdigit():
+                new, current, amount = "nzd", new, float(current)
+            else:
+                amount = 1
         else:
             amount, current, *_, new = message
 
-        if not amount.isdigit():
-            current = amount
-            amount = 1
-        else:
-            amount = float(amount)
+            if not amount.isdigit():
+                current = amount
+                amount = 1
+            else:
+                amount = float(amount)
 
         current = current.upper()
         new = new.upper()
@@ -265,8 +274,8 @@ class useful(commands.Cog):
                 break
 
         embed.description = (
-            f"```prolog\n{cprefix}{amount:.0f} {current}"
-            f" is {nprefix}{converted:.{count}f} {new}```"
+            f"```prolog\n{cprefix}{amount:,.0f} {current}"
+            f" is {nprefix}{converted:,.{count}f} {new}```"
         )
         await ctx.send(embed=embed)
 
