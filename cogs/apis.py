@@ -454,29 +454,42 @@ class apis(commands.Cog):
         description = ""
 
         async with ctx.typing(), self.bot.client_session.post(
-            url, json=json
+            url, json=json, timeout=60
         ) as response:
             paths = await response.json()
 
-            for num in paths["paths"][0]:
-                page = paths["pages"][str(num)]
-                description += (
-                    f"[{page['title']}]({page['url']}) - {page['description']}\n"
-                )
+        error = paths.get("error")
+        if error:
+            embed.description = error
+            return await ctx.send(embed=embed)
 
-            embed.description = description
-            embed.set_footer(text="In order of start to finish")
-            first_page = paths["pages"][str(paths["paths"][0][0])]
-            if "thumbnailUrl" in first_page:
-                embed.set_author(
-                    name=f"From {source} to {target}",
-                    icon_url=first_page["thumbnailUrl"],
-                )
-            else:
-                embed.title = f"From {source} to {target}"
-            if "thumbnailUrl" in page:
-                embed.set_thumbnail(url=page["thumbnailUrl"])
-            await ctx.send(embed=embed)
+        paths, pages = paths["paths"], paths["pages"]
+
+        if not paths or not pages:
+            embed.description = (
+                f"No path of Wikipedia links exists from {source} to {target}"
+            )
+            return await ctx.send(embed=embed)
+
+        for num in paths[0]:
+            page = pages[str(num)]
+            description += (
+                f"[{page['title']}]({page['url']}) - {page.get('description', 'N/A')}\n"
+            )
+
+        embed.description = description
+        embed.set_footer(text="In order of start to finish")
+        first_page = pages[str(paths[0][0])]
+        if "thumbnailUrl" in first_page:
+            embed.set_author(
+                name=f"From {source} to {target}",
+                icon_url=first_page["thumbnailUrl"],
+            )
+        else:
+            embed.title = f"From {source} to {target}"
+        if "thumbnailUrl" in page:
+            embed.set_thumbnail(url=page["thumbnailUrl"])
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def wolfram(self, ctx, *, query):
