@@ -115,7 +115,7 @@ class moderation(commands.Cog):
             await message.add_reaction(chr(127462 + i))
 
         self.DB.main.put(b"polls", orjson.dumps(polls))
-        self.loop.call_later(21600, asyncio.create_task, self.end_poll(guild, message))
+        self.loop.call_later(21600, asyncio.create_task, self._end_poll(guild, message))
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
@@ -513,7 +513,7 @@ class moderation(commands.Cog):
         """
         if not ctx.invoked_subcommand:
             try:
-                await ctx.channel.purge(limit=int(ctx.subcommand_passed) + 1)
+                await ctx.channel.purge(limit=min(int(ctx.subcommand_passed) + 1, 101))
             except ValueError:
                 embed = discord.Embed(
                     color=discord.Color.blurple(),
@@ -563,7 +563,7 @@ class moderation(commands.Cog):
         def check(msg):
             return msg.author == user
 
-        await ctx.channel.purge(limit=num_messages, check=check, before=None)
+        await ctx.channel.purge(limit=max(num_messages, 100), check=check, before=None)
 
     @purge.command()
     @commands.has_permissions(manage_channels=True)
