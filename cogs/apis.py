@@ -834,18 +834,24 @@ class apis(commands.Cog):
     async def apod(self, ctx):
         """Gets the NASA Astronomy Picture of the Day."""
         url = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
+        embed = discord.Embed(color=discord.Color.blurple())
 
-        async with ctx.typing():
-            apod = await self.bot.get_json(url)
+        async with ctx.typing(), self.bot.client_session.get(url, timeout=30) as resp:
+            apod = await resp.json()
 
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                title=apod["title"],
-                description="[Link](https://apod.nasa.gov/apod/astropix.html)",
+        if not apod:
+            embed.title = "Failed to get Astronomy Picture of the Day"
+            embed.set_footer(
+                text="NASA api might just be experiencing high amounts of trafic"
             )
-            if "hdurl" in apod:
-                embed.set_image(url=apod["hdurl"])
-            await ctx.send(embed=embed)
+            return await ctx.send(embed=embed)
+
+        embed.title = apod["title"]
+        embed.description = "[Link](https://apod.nasa.gov/apod/astropix.html)"
+
+        if "hdurl" in apod:
+            embed.set_image(url=apod["hdurl"])
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def gender(self, ctx, first_name):
