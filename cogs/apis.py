@@ -841,7 +841,9 @@ class apis(commands.Cog):
 
         if not apod:
             embed.title = "Failed to get Astronomy Picture of the Day"
-            embed.set_footer(text="NASA api might just be experiencing high amounts of trafic")
+            embed.set_footer(
+                text="NASA api might just be experiencing high amounts of trafic"
+            )
             return await ctx.send(embed=embed)
 
         embed.title = apod["title"]
