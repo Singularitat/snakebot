@@ -61,6 +61,7 @@ class stocks(commands.Cog):
         embed.add_field(
             name="Percent 24h Change", value=f"```diff\n{sign}{stock['%change']}%```"
         )
+        embed.set_image(url=f"https://charts2.finviz.com/chart.ashx?s=l&t={symbol}")
 
         await ctx.send(embed=embed)
 

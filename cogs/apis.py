@@ -1,10 +1,10 @@
 import html
+import io
 import random
 import re
 import textwrap
 from datetime import datetime
 from html import unescape
-from io import BytesIO
 
 import discord
 import orjson
@@ -20,6 +20,36 @@ class apis(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
         self.loop = bot.loop
+
+    @commands.command()
+    async def curl(self, ctx, *, code):
+        """Converts from a curl command to python requests.
+
+        code: str
+        """
+        if not code and ctx.message.attachments:
+            file = ctx.message.attachments[0]
+            if file.filename.split(".")[-1] != "py":
+                return
+            code = (await file.read()).decode()
+
+        url = "https://formatter.xyz:8000/api/v1/converter"
+        data = {
+            "from_language": "CURL",
+            "input_code": re.sub(r"```\w+\n|```", "", code),
+            "to_language": "PYTHON_REQUESTS",
+        }
+
+        async with self.bot.client_session.post(url, json=data) as response:
+            formatted = (await response.json())["output_code"]
+
+        if len(formatted) > 1991:
+            return await ctx.reply(
+                file=discord.File(io.StringIO(formatted), "output.py")
+            )
+
+        formatted = formatted.replace("`", "`\u200b")
+        await ctx.reply(f"```py\n{formatted}```")
 
     @commands.command()
     async def contests(self, ctx):
@@ -393,7 +423,7 @@ class apis(commands.Cog):
         url = "https://thisartworkdoesnotexist.com"
 
         async with ctx.typing(), self.bot.client_session.get(url) as resp:
-            with BytesIO((await resp.read())) as image_binary:
+            with io.BytesIO((await resp.read())) as image_binary:
                 await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
 
     @commands.command()
@@ -572,7 +602,7 @@ class apis(commands.Cog):
                         description="```Couldn't get a fact```",
                     ).set_footer(text=f"Status code was {resp.status}")
                 )
-            image = BytesIO(await resp.content.read())
+            image = io.BytesIO(await resp.content.read())
 
         await ctx.reply(file=discord.File(fp=image, filename="fact.png"))
 
