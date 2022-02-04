@@ -179,30 +179,6 @@ class background_tasks(commands.Cog):
         await ctx.send(embed=embed)
 
     @task.command()
-    async def call(self, ctx, task_name=None):
-        """Directly calls the internal callback for the task.
-
-        task_name: str
-            The name of the task to stop.
-            If not passed in then all tasks are called
-        """
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if not task_name:
-            for name, task in self.tasks.items():
-                task.__call__()
-            embed.description = "```Tried to call all tasks```"
-            return await ctx.send(embed=embed)
-
-        if task_name not in self.tasks:
-            embed.description = "```Task not found```"
-            return await ctx.send(embed=embed)
-
-        self.tasks[task_name].__call__()
-        embed.description = f"{task_name} called"
-        await ctx.send(embed=embed)
-
-    @task.command()
     async def list(self, ctx):
         """Lists background tasks.
 
@@ -265,6 +241,7 @@ class background_tasks(commands.Cog):
             stocks = await response.json()
 
         if not stocks:
+            print("FUCK")
             return
 
         with self.DB.stocks.write_batch() as wb:
