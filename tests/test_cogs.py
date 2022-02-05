@@ -1647,9 +1647,7 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         with self.subTest(command="currency"):
-            await self.cog.currency(
-                self.cog, context, ("3", "usd", "to", "nzd")
-            )
+            await self.cog.currency(self.cog, context, ("3", "usd", "to", "nzd"))
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
