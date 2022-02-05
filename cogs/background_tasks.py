@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 
 import discord
-import lxml
 import orjson
 from discord.ext import commands, tasks
 
@@ -210,38 +209,44 @@ class background_tasks(commands.Cog):
         embed.description = f"```prolog\n{msg}```"
         await ctx.send(embed=embed)
 
-    @tasks.loop(minutes=59, seconds=59)
-    async def get_proxy(self):
-        """Gets a proxy mainly for the get_stocks task."""
-        url = "https://www.sslproxies.org/"
-
-        async with self.bot.client_session.get(url) as page:
-            soup = lxml.html.fromstring(await page.text())
-
-        for item in soup.xpath(".//tr"):
-            if item[3].text == "United States":
-                ip, port = item[0].text, item[1].text
-                break
-
-        self.DB.main.put(b"ssl_proxy", f"http://{ip}:{port}".encode())
-
     @tasks.loop(hours=1)
     async def get_stocks(self):
         """Updates stock data every hour."""
         url = "https://api.nasdaq.com/api/screener/stocks?limit=50000"
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36",
+            "authority": "api.nasdaq.com",
+            "cache-control": "max-age=0",
+            "sec-ch-ua": '" Not A;Brand";v="99", "Chromium";v="96"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"Windows"',
+            "upgrade-insecure-requests": "1",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "sec-fetch-site": "none",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-user": "?1",
+            "sec-fetch-dest": "document",
             "accept-language": "en-US,en;q=0.9",
         }
-        proxy = self.DB.main.get(b"ssl_proxy").decode()
+        cookies = self.DB.main.get(b"stock-cookies")
+        if not cookies:
+            cookies = {}
+        else:
+            cookies = orjson.loads(cookies)
 
         async with self.bot.client_session.get(
-            url, headers=headers, proxy=proxy
-        ) as response:
-            stocks = await response.json()
+            url, headers=headers, cookies=cookies
+        ) as resp:
+            new_cookies = {}
+            for header, value in resp.raw_headers:
+                if header != b"Set-Cookie":
+                    continue
+                name, cookie = value.decode().split("=", 1)
+                new_cookies[name] = cookie.split(":", 1)[0]
+            self.DB.main.put(b"stock-cookies", orjson.dumps(cookies))
+            stocks = await resp.json()
 
         if not stocks:
-            print("FUCK")
             return
 
         with self.DB.stocks.write_batch() as wb:
