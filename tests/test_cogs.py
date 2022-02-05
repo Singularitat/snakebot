@@ -277,7 +277,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="fact"):
             await self.cog.fact(self.cog, context)
 
-            self.assertRegex(context.send.call_args.args[0], url_regex)
+            self.assertRegex(context.reply.call_args.args[0], url_regex)
 
     async def country_command(self):
         context = helpers.MockContext()
@@ -1647,9 +1647,7 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         with self.subTest(command="currency"):
-            await self.cog.currency(
-                self.cog, context, message=("3", "usd", "to", "nzd")
-            )
+            await self.cog.currency(self.cog, context, ("3", "usd", "to", "nzd"))
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
