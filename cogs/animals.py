@@ -89,16 +89,6 @@ class animals(commands.Cog):
 
     @commands.command()
     async def monkey(self, ctx):
-        """Gets a random monkey."""
-        url = "https://nachotoast.com/mAPI/api"
-
-        with ctx.typing():
-            monkey = await self.bot.get_json(url)
-
-        await ctx.send(monkey["image"])
-
-    @commands.command()
-    async def monkey2(self, ctx):
         """Gets a random monkey"""
         url = "https://api.monkedev.com/attachments/monkey"
 
@@ -249,15 +239,24 @@ class animals(commands.Cog):
     @commands.command()
     async def cat4(self, ctx):
         """Gets a random cat image."""
-        url = "http://shibe.online/api/cats"
+        url = "https://thatcopy.pw/catapi/rest"
 
         with ctx.typing():
             image = await self.bot.get_json(url)
 
-        await ctx.send(image[0])
+        await ctx.send(image["webpurl"])
 
     @commands.command()
     async def cat5(self, ctx):
+        """Gets a random cat image."""
+        url = "http://shibe.online/api/cats"
+
+        with ctx.typing():
+            image = await self.bot.get_json(url)
+        await ctx.send(image[0])
+
+    @commands.command()
+    async def cat6(self, ctx):
         """Gets a random cat image."""
         url = "https://aws.random.cat/meow"
 
