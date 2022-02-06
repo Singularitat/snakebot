@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import os
 import re
 import unittest
 
@@ -21,7 +22,8 @@ from cogs.useful import useful
 
 bot = Bot(helpers.MockBot(user=helpers.MockMember()))
 bot.uptime = 0
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+if os.name == "nt":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 url_regex = re.compile(
@@ -46,7 +48,10 @@ class AnimalsCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command=command.name):
             await command._callback(self.cog, context)
 
-            self.assertRegex(context.send.call_args.args[0], url_regex)
+            if context.send.call_args.args:
+                self.assertRegex(context.send.call_args.args[0], url_regex)
+            else:
+                self.assertIsNotNone(context.send.call_args.kwargs["file"])
 
     @unittest.skip("Really Slow.")
     async def test_animal_commands(self):
@@ -106,7 +111,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="advice"):
             await self.cog.advice(self.cog, context)
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def reddit_command(self):
         context = helpers.MockContext()
@@ -135,7 +140,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="sky"):
             await self.cog.sky(self.cog, context)
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def beach_command(self):
         context = helpers.MockContext()
@@ -143,7 +148,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="beach"):
             await self.cog.beach(self.cog, context)
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def wojak_command(self):
         context = helpers.MockContext()
@@ -151,7 +156,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="wojak"):
             await self.cog.wojak(self.cog, context)
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def city_command(self):
         context = helpers.MockContext()
@@ -159,7 +164,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="city"):
             await self.cog.city(self.cog, context)
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def story_command(self):
         context = helpers.MockContext()
@@ -167,7 +172,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="story"):
             await self.cog.story(self.cog, context)
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def poetry_command(self):
         context = helpers.MockContext()
@@ -185,7 +190,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="surreal"):
             await self.cog.surreal(self.cog, context)
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def synth_command(self):
         context = helpers.MockContext()
@@ -203,7 +208,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="art"):
             await self.cog.art(self.cog, context)
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def coffee_command(self):
         context = helpers.MockContext()
@@ -211,7 +216,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="coffee"):
             await self.cog.coffee(self.cog, context)
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def insult_command(self):
         context = helpers.MockContext()
@@ -219,7 +224,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="insult"):
             await self.cog.insult(self.cog, context)
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def inspiration_command(self):
         context = helpers.MockContext()
@@ -237,7 +242,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="dadjoke"):
             await self.cog.dad_joke(self.cog, context)
 
-            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.reply.call_args.kwargs.get("embed"))
 
     async def inspiro_command(self):
         context = helpers.MockContext()
@@ -277,7 +282,9 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="fact"):
             await self.cog.fact(self.cog, context)
 
-            self.assertRegex(context.reply.call_args.args[0], url_regex)
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
 
     async def country_command(self):
         context = helpers.MockContext()
@@ -496,7 +503,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="latex"):
             await self.cog.latex(self.cog, context, latex="Latex")
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def xkcd_command(self):
         context = helpers.MockContext()
@@ -504,7 +511,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="xkcd"):
             await self.cog.xkcd(self.cog, context)
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def urban_command(self):
         context = helpers.MockContext()
@@ -867,7 +874,7 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
 
             await self.cog.run(self.cog, context, code="```py\nprint('Test')```")
 
-            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.reply.call_args.kwargs.get("embed"))
             self.assertEqual(context.reply.call_args.args[0], "```py\nTest\n```")
 
     async def tio_command(self):
@@ -876,7 +883,7 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
 
             await self.cog.tio(self.cog, context, code="```python\nprint('Test')```")
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
 
 class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
@@ -961,7 +968,7 @@ class ImagesCogTests(unittest.IsolatedAsyncioTestCase):
                 self.cog, context, url="https://i.imgur.com/oMdVph0.jpeg"
             )
 
-            self.assertRegex(context.reply.call_args.args[0], url_regex)
+            self.assertIsNotNone(context.reply.call_args.kwargs["file"])
 
     @unittest.skip("Really Slow.")
     async def test_image_commands(self):
@@ -1040,7 +1047,7 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.invite(self.cog, context)
 
-        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_ping_command(self):
         context = helpers.MockContext()
@@ -1085,7 +1092,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             *[
                 getattr(self, name)()
                 for name in dir(self)
-                if not name.startswith("test_")
+                if name.endswith("command") and not name.startswith("test")
             ]
         )
 
@@ -1130,7 +1137,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context,
             characters="abcd",
         )
-        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_num_command(self):
         context = helpers.MockContext()
@@ -1140,7 +1147,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context,
             1000,
         )
-        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_fen_command(self):
         context = helpers.MockContext()
@@ -1151,7 +1158,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
         )
 
-        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_code_command(self):
         context = helpers.MockContext()
@@ -1176,14 +1183,14 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.epoch(self.cog, context, 1634895114179)
 
-        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_diff_command(self):
         context = helpers.MockContext()
 
         await self.cog.diff(self.cog, context, "13/10/2021")
 
-        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_justin_command(self):
         context = helpers.MockContext()
@@ -1240,7 +1247,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.rate(self.cog, context)
 
-        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_ship_command(self):
         context = helpers.MockContext(
@@ -1251,7 +1258,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.ship(self.cog, context)
 
-        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_match_command(self):
         context = helpers.MockContext()
@@ -1262,7 +1269,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             user1=helpers.MockMember(name="Snake Bot", id=744747000293228684),
         )
 
-        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_snowflake_command(self):
         context = helpers.MockContext()
@@ -1290,7 +1297,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.eightball(self.cog, context)
 
-        self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.reply.call_args.kwargs.get("embed"))
 
     async def test_karma_command(self):
         context = helpers.MockContext()
@@ -1324,21 +1331,21 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.choose(self.cog, context, 1, 2, 3)
 
-        self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.reply.call_args.kwargs.get("embed"))
 
     async def test_slap_command(self):
         context = helpers.MockContext()
 
         await self.cog.slap(self.cog, context, member=helpers.MockMember())
 
-        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_bar_command(self):
         context = helpers.MockContext()
 
         await self.cog.bar(self.cog, context, graph_data=(1, 2, 3))
 
-        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
         self.assertEqual(
             context.send.call_args.args[0],
             (
@@ -1357,7 +1364,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.opcode(self.cog, context, search="UNARY")
 
-        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_rand_command(self):
         context = helpers.MockContext()
@@ -1601,7 +1608,7 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="format"):
             await self.cog.format(self.cog, context, code=code)
 
-            self.assertIs(context.reply.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.reply.call_args.kwargs.get("embed"))
 
     async def translate_command(self):
         with self.subTest(command="translate"):
@@ -1609,7 +1616,7 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
             await self.cog.translate(self.cog, context, text="안녕하십니까")
 
-            self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
             self.assertEqual(context.send.call_args.args[0], "Hello ")
 
     async def news_command(self):
@@ -1647,7 +1654,7 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         with self.subTest(command="currency"):
-            await self.cog.currency(self.cog, context, ("3", "usd", "to", "nzd"))
+            await self.cog.currency(self.cog, context, "3", "usd", "to", "nzd")
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -1658,7 +1665,7 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.temp(self.cog, context)
 
-        self.assertIs(context.send.call_args.kwargs.get("embed"), None)
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_statuscodes_command(self):
         context = helpers.MockContext()
