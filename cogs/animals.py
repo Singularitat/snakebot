@@ -89,16 +89,6 @@ class animals(commands.Cog):
 
     @commands.command()
     async def monkey(self, ctx):
-        """Gets a random monkey."""
-        url = "https://nachotoast.com/mAPI/api"
-
-        with ctx.typing():
-            monkey = await self.bot.get_json(url)
-
-        await ctx.send(monkey["image"])
-
-    @commands.command()
-    async def monkey2(self, ctx):
         """Gets a random monkey"""
         url = "https://api.monkedev.com/attachments/monkey"
 
