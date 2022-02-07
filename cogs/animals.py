@@ -248,7 +248,9 @@ class animals(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.dark_red(), description="Failed to reach api"
-                ).set_footer(text="api may be temporarily down or experiencing high trafic")
+                ).set_footer(
+                    text="api may be temporarily down or experiencing high trafic"
+                )
             )
 
         await ctx.send(image["webpurl"])
@@ -275,7 +277,9 @@ class animals(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.dark_red(), description="Failed to reach api"
-                ).set_footer(text="api may be temporarily down or experiencing high trafic")
+                ).set_footer(
+                    text="api may be temporarily down or experiencing high trafic"
+                )
             )
 
         await ctx.send(image["file"])
