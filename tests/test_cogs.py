@@ -20,7 +20,7 @@ from cogs.moderation import moderation
 from cogs.stocks import stocks
 from cogs.useful import useful
 
-bot = Bot(helpers.MockBot(user=helpers.MockMember()))
+bot = Bot(helpers.MockBot())
 bot.uptime = 0
 if os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -756,11 +756,11 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
     async def test_ones_command(self):
         context = helpers.MockContext()
 
-        await self.cog.ones(self.cog, context, number=32, bits=6)
+        await self.cog.ones(self.cog, context, number=32, bits=7)
 
         self.assertEqual(
             context.send.call_args.kwargs["embed"].description,
-            "```011111```",
+            "```0011111```",
         )
 
     async def test_twos_command(self):
@@ -1051,7 +1051,7 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_ping_command(self):
         context = helpers.MockContext()
-        context.message.created_at = datetime.datetime.utcnow()
+        context.message.created_at = datetime.datetime.now(datetime.timezone.utc)
 
         await self.cog.ping(self.cog, context)
 
