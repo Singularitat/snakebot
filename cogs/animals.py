@@ -244,6 +244,13 @@ class animals(commands.Cog):
         with ctx.typing():
             image = await self.bot.get_json(url)
 
+        if not image:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.dark_red(), description="Failed to reach api"
+                ).set_footer(text="api may be temporarily down or experiencing high trafic")
+            )
+
         await ctx.send(image["webpurl"])
 
     @commands.command()
@@ -253,6 +260,7 @@ class animals(commands.Cog):
 
         with ctx.typing():
             image = await self.bot.get_json(url)
+
         await ctx.send(image[0])
 
     @commands.command()
@@ -262,6 +270,13 @@ class animals(commands.Cog):
 
         with ctx.typing():
             image = await self.bot.get_json(url)
+
+        if not image:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.dark_red(), description="Failed to reach api"
+                ).set_footer(text="api may be temporarily down or experiencing high trafic")
+            )
 
         await ctx.send(image["file"])
 
