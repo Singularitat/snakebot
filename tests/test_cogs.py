@@ -51,7 +51,13 @@ class AnimalsCogTests(unittest.IsolatedAsyncioTestCase):
             if context.send.call_args.args:
                 self.assertRegex(context.send.call_args.args[0], url_regex)
             else:
-                self.assertIsNotNone(context.send.call_args.kwargs["file"])
+                file = context.send.call_args.kwargs.get("file")
+                if file:
+                    self.assertIsNotNone(file)
+                else:
+                    self.assertNotEqual(
+                        context.send.call_args.kwargs["embed"].color.value, 10038562
+                    )
 
     @unittest.skip("Really Slow.")
     async def test_animal_commands(self):
