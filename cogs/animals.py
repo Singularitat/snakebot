@@ -80,11 +80,6 @@ class animals(commands.Cog):
         )
 
     @commands.command()
-    async def monkey(self, ctx):
-        """Gets a random monkey"""
-        await self.get(ctx, "https://api.monkedev.com/attachments/monkey", "url")
-
-    @commands.command()
     async def racoon(self, ctx):
         """Gets a random racoon image."""
         await self.get(ctx, "https://some-random-api.ml/img/racoon", "link")
@@ -108,11 +103,6 @@ class animals(commands.Cog):
     async def bird2(self, ctx):
         """Gets a random bird image."""
         await self.get(ctx, "http://shibe.online/api/birds", 0)
-
-    @commands.command()
-    async def bird3(self, ctx):
-        """Gets a random bird image."""
-        await self.get(ctx, "https://api.monkedev.com/attachments/bird", "url")
 
     @commands.command()
     async def bird4(self, ctx):
