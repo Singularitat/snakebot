@@ -8,9 +8,9 @@ from asyncio import AbstractEventLoop
 from typing import Iterable, Optional
 
 import discord
+from discord.ext.commands import Bot, Context
 
-from discord.ext.commands import Context
-from discord.ext.commands import Bot
+Bot.user = None
 
 for logger in logging.Logger.manager.loggerDict.values():
     if not isinstance(logger, logging.Logger):
@@ -104,6 +104,7 @@ class MockGuild(CustomMockMixin, unittest.mock.Mock, HashableMixin):
         self.roles = [MockRole(name="@everyone", position=1, id=0)]
         if roles:
             self.roles.extend(roles)
+        self.me = MockMember()
 
 
 role_data = {"name": "role", "id": 1}
@@ -157,6 +158,7 @@ class MockMember(CustomMockMixin, unittest.mock.Mock, ColourMixin, HashableMixin
             "id": next(self.discord_id),
             "bot": False,
             "pending": False,
+            "color": discord.Color.random(),
         }
         super().__init__(**collections.ChainMap(kwargs, default_kwargs))
 
@@ -168,8 +170,12 @@ class MockMember(CustomMockMixin, unittest.mock.Mock, ColourMixin, HashableMixin
             self.mention = f"@{self.name}"
 
 
+_user_data_mock = collections.defaultdict(unittest.mock.MagicMock, {"accent_color": 0})
 user_instance = discord.User(
-    data=unittest.mock.MagicMock(), state=unittest.mock.MagicMock()
+    data=unittest.mock.MagicMock(
+        get=unittest.mock.Mock(side_effect=_user_data_mock.get)
+    ),
+    state=unittest.mock.MagicMock(),
 )
 
 

@@ -3,7 +3,6 @@ import unittest
 import unittest.mock
 
 import discord
-
 import helpers
 
 
