@@ -19,8 +19,10 @@ from cogs.misc import misc
 from cogs.moderation import moderation
 from cogs.stocks import stocks
 from cogs.useful import useful
+from run_tests import SKIP_API_TESTS, SKIP_IMAGE_TESTS
 
 bot = Bot(helpers.MockBot())
+bot.user = helpers.MockUser()
 bot.uptime = 0
 if os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -59,7 +61,7 @@ class AnimalsCogTests(unittest.IsolatedAsyncioTestCase):
                         context.send.call_args.kwargs["embed"].color.value, 10038562
                     )
 
-    @unittest.skip("Really Slow.")
+    @unittest.skipIf(SKIP_API_TESTS, "Really Slow.")
     async def test_animal_commands(self):
         bot.client_session = aiohttp.ClientSession()
 
@@ -73,7 +75,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = apis(bot=bot)
 
-    @unittest.skip("Really Slow.")
+    @unittest.skipIf(SKIP_API_TESTS, "Really Slow.")
     async def test_api_commands(self):
         bot.client_session = aiohttp.ClientSession()
 
@@ -976,7 +978,7 @@ class ImagesCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertIsNotNone(context.reply.call_args.kwargs["file"])
 
-    @unittest.skip("Really Slow.")
+    @unittest.skipIf(SKIP_IMAGE_TESTS, "Really Slow.")
     async def test_image_commands(self):
         bot.client_session = aiohttp.ClientSession()
 
@@ -1090,7 +1092,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = misc(bot=bot)
 
-    @unittest.skip("Really Slow.")
+    @unittest.skipIf(SKIP_API_TESTS, "Really Slow.")
     async def test_misc_commands(self):
         bot.client_session = aiohttp.ClientSession()
 
@@ -1543,7 +1545,7 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = useful(bot=bot)
 
-    @unittest.skip("Really Slow.")
+    @unittest.skipIf(SKIP_API_TESTS, "Really Slow.")
     async def test_useful_cog_api_commands(self):
         bot.client_session = aiohttp.ClientSession()
 

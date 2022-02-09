@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import inspect
 import os
 import platform
 import textwrap
-import typing
 from datetime import datetime
 from io import StringIO
 
@@ -214,7 +215,7 @@ class information(commands.Cog):
             The channel to get the permissions in.
         """
         permissions = channel.permissions_for(member)
-        embed = discord.Embed(colour=member.colour)
+        embed = discord.Embed(color=member.color)
         embed.set_author(name=str(member), icon_url=member.avatar)
 
         allowed, denied = [], []
@@ -400,7 +401,7 @@ class information(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["member"])
-    async def user(self, ctx, user: typing.Union[discord.Member, discord.User] = None):
+    async def user(self, ctx, user: discord.Member | discord.User = None):
         """Sends info about a member.
 
         member: typing.Union[discord.Member, discord.User]
@@ -420,7 +421,7 @@ class information(commands.Cog):
             inline=False,
         )
 
-        if hasattr(user, "guild"):
+        if isinstance(user, discord.Member):
             roles = ", ".join(role.mention for role in user.roles[1:])
             joined = f"**<t:{user.joined_at.timestamp():.0f}:R>**"
             if roles and user.top_role.colour.value != 0:
