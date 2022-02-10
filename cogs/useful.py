@@ -10,7 +10,7 @@ from datetime import datetime
 import discord
 import lxml.html
 import orjson
-from discord.ext import commands, menus
+from discord.ext import commands, pages
 
 STATUS_CODES = {
     "1": {
@@ -187,16 +187,6 @@ WWO_CODES = {
     "392": "⛈",
     "395": "❄️",
 }
-
-
-class InviteMenu(menus.ListPageSource):
-    def __init__(self, data):
-        super().__init__(data, per_page=20)
-
-    async def format_page(self, menu, entries):
-        return discord.Embed(
-            color=discord.Color.blurple(), description=f"```{''.join(entries)}```"
-        )
 
 
 class useful(commands.Cog):
@@ -761,12 +751,19 @@ class useful(commands.Cog):
     async def invites(self, ctx):
         """Shows the invites that users joined from."""
         invite_list = []
+        invites = ""
+        count = 0
         for member, invite in self.DB.invites:
             if len(member) <= 18:
                 member = self.bot.get_user(int(member))
                 # I don't fetch the invite cause it takes 300ms per invite
                 if member:
-                    invite_list.append(f"{member.display_name}: {invite.decode()}\n")
+                    invites += f"{member.display_name}: {invite.decode()}\n"
+                    count += 1
+
+                    if count == 20:
+                        invite_list.append(f"```ahk\n{invites}```")
+                        invites = ""
 
         if not invite_list:
             return await ctx.send(
@@ -776,12 +773,8 @@ class useful(commands.Cog):
                 )
             )
 
-        pages = menus.MenuPages(
-            source=InviteMenu(invite_list),
-            clear_reactions_after=True,
-            delete_message_after=True,
-        )
-        await pages.start(ctx)
+        paginator = pages.Paginator(pages=invite_list)
+        await paginator.send(ctx)
 
     @commands.command()
     async def time(self, ctx, *, command):
