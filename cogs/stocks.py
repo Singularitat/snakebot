@@ -2,17 +2,7 @@ import textwrap
 
 import discord
 import orjson
-from discord.ext import commands, menus
-
-
-class StockMenu(menus.ListPageSource):
-    def __init__(self, data):
-        super().__init__(data, per_page=99)
-
-    async def format_page(self, menu, entries):
-        return discord.Embed(
-            color=discord.Color.blurple(), description=f"```{''.join(entries)}```"
-        )
+from discord.ext import commands, pages
 
 
 class stocks(commands.Cog):
@@ -277,20 +267,21 @@ class stocks(commands.Cog):
     async def list(self, ctx):
         """Shows the prices of stocks from the nasdaq api."""
         data = []
+        stocks = ""
         for i, (stock, price) in enumerate(self.DB.stocks, start=1):
             price = orjson.loads(price)["price"]
 
             if not i % 3:
-                data.append(f"{stock.decode():}: ${float(price):.2f}\n")
+                stocks += f"{stock.decode():}: ${float(price):.2f}\n"
             else:
-                data.append(f"{stock.decode():}: ${float(price):.2f}\t".expandtabs())
+                stocks += f"{stock.decode():}: ${float(price):.2f}\t".expandtabs()
 
-        pages = menus.MenuPages(
-            source=StockMenu(data),
-            clear_reactions_after=True,
-            delete_message_after=True,
-        )
-        await pages.start(ctx)
+            if not i % 99:
+                data.append(f"```prolog\n{stocks}```")
+                stocks = ""
+
+        paginator = pages.Paginator(pages=data)
+        await paginator.send(ctx)
 
     @commands.command(name="nettop")
     async def top_net_worths(self, ctx, amount: int = 10):
