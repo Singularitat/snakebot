@@ -2,20 +2,7 @@ import asyncio
 
 import discord
 import orjson
-from discord.ext import commands, menus
-
-
-class HistoryMenu(menus.ListPageSource):
-    def __init__(self, data):
-        super().__init__(data, per_page=10)
-
-    async def format_page(self, menu, entries):
-        embed = discord.Embed(color=discord.Color.blurple())
-        for date, message in entries:
-            if not message:
-                continue
-            embed.add_field(name=f"<t:{date}:R>", value=message)
-        return embed
+from discord.ext import commands, pages
 
 
 class moderation(commands.Cog):
@@ -632,21 +619,30 @@ class moderation(commands.Cog):
             return await ctx.send(embed=embed)
 
         deleted = orjson.loads(deleted)
-        messages = []
 
-        for index, date in enumerate(reversed(deleted)):
-            messages.append((date, deleted[date].replace("`", "`​")))
+        embeds = []
+        count = 0
 
-        pages = menus.MenuPages(
-            source=HistoryMenu(messages),
-            clear_reactions_after=True,
-            delete_message_after=True,
-        )
-        await pages.start(ctx)
+        for date, message in reversed(deleted.items()):
+            message = message.replace("`", "`​")
+            if message:
+                embed.add_field(name=f"<t:{date}:R>", value=message)
+                count += 1
+
+                if count == 10:
+                    embeds.append(embed)
+                    embed = discord.Embed(color=discord.Color.blurple())
+                    count = 0
+
+        if count != 10:
+            embeds.append(embed)
+
+        paginator = pages.Paginator(pages=embeds)
+        await paginator.send(ctx)
 
     @history.command(aliases=["e"])
     @commands.has_permissions(manage_messages=True)
-    async def edited(self, ctx, member: discord.Member = None, amount: int = 10):
+    async def edited(self, ctx, member: discord.Member = None):
         """Shows a users most recent edit message history.
 
         member: discord.Member
@@ -665,23 +661,26 @@ class moderation(commands.Cog):
             return await ctx.send(embed=embed)
 
         edited = orjson.loads(edited)
-        messages = []
+        embeds = []
+        count = 0
 
-        for index, date in enumerate(reversed(edited)):
-            if index == amount:
-                break
+        for index, (date, (before, after)) in enumerate(reversed(edited.items())):
+            before = before.replace("`", "`\u200b")
+            after = after.replace("`", "`\u200b")
 
-            before = edited[date][0].replace("`", "`\u200b")
-            after = edited[date][1].replace("`", "`\u200b")
+            embed.add_field(name=f"<t:{date}:R>", value=f"{before} >>> {after}")
+            count += 1
 
-            messages.append((date, f"{before} >>> {after}"))
+            if count == 10:
+                embeds.append(embed)
+                embed = discord.Embed(color=discord.Color.blurple())
+                count = 0
 
-        pages = menus.MenuPages(
-            source=HistoryMenu(messages),
-            clear_reactions_after=True,
-            delete_message_after=True,
-        )
-        await pages.start(ctx)
+        if count != 10:
+            embeds.append(embed)
+
+        paginator = pages.Paginator(pages=embeds)
+        await paginator.send(ctx)
 
 
 def setup(bot: commands.Bot) -> None:
