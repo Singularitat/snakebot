@@ -2,17 +2,7 @@ import textwrap
 
 import discord
 import orjson
-from discord.ext import commands, menus
-
-
-class CryptoMenu(menus.ListPageSource):
-    def __init__(self, data):
-        super().__init__(data, per_page=99)
-
-    async def format_page(self, menu, entries):
-        return discord.Embed(
-            color=discord.Color.blurple(), description=f"```{''.join(entries)}```"
-        )
+from discord.ext import commands, pages
 
 
 class crypto(commands.Cog):
@@ -289,20 +279,21 @@ class crypto(commands.Cog):
     async def list(self, ctx):
         """Shows the prices of crypto with pagination."""
         data = []
-        for i, (stock, price) in enumerate(self.DB.crypto, start=1):
+        cryptos = ""
+        for i, (crypto, price) in enumerate(self.DB.crypto, start=1):
             price = orjson.loads(price)["price"]
 
             if not i % 3:
-                data.append(f"{stock.decode()}: ${float(price):.2f}\n")
+                cryptos += f"{crypto.decode():}: ${float(price):.2f}\n"
             else:
-                data.append(f"{stock.decode()}: ${float(price):.2f}\t".expandtabs())
+                cryptos += f"{crypto.decode():}: ${float(price):.2f}\t".expandtabs()
 
-        pages = menus.MenuPages(
-            source=CryptoMenu(data),
-            clear_reactions_after=True,
-            delete_message_after=True,
-        )
-        await pages.start(ctx)
+            if not i % 99:
+                data.append(f"```prolog\n{cryptos}```")
+                cryptos = ""
+
+        paginator = pages.Paginator(pages=data)
+        await paginator.send(ctx)
 
     @crypto.command()
     async def history(self, ctx, member: discord.Member = None, amount=10):
