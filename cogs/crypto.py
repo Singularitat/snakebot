@@ -278,7 +278,7 @@ class crypto(commands.Cog):
     @crypto.command()
     async def list(self, ctx):
         """Shows the prices of crypto with pagination."""
-        data = []
+        messages = []
         cryptos = ""
         for i, (crypto, price) in enumerate(self.DB.crypto, start=1):
             price = orjson.loads(price)["price"]
@@ -289,10 +289,13 @@ class crypto(commands.Cog):
                 cryptos += f"{crypto.decode():}: ${float(price):.2f}\t".expandtabs()
 
             if not i % 99:
-                data.append(f"```prolog\n{cryptos}```")
+                messages.append(discord.Embed(description=f"```prolog\n{cryptos}```"))
                 cryptos = ""
 
-        paginator = pages.Paginator(pages=data)
+        if i % 99:
+            messages.append(discord.Embed(description=f"```prolog\n{cryptos}```"))
+
+        paginator = pages.Paginator(pages=messages)
         await paginator.send(ctx)
 
     @crypto.command()

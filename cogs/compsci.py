@@ -5,7 +5,7 @@ from zlib import compress
 
 import discord
 import orjson
-from discord.ext import commands, menus
+from discord.ext import commands, pages
 
 from cogs.utils.calculation import bin_float, hex_float, oct_float, safe_eval
 
@@ -37,22 +37,6 @@ RAW_CODE_REGEX = re.compile(
 )
 
 ANSI = re.compile(r"\x1b\[.*?m")
-
-
-class LanguageMenu(menus.ListPageSource):
-    def __init__(self, data):
-        super().__init__(data, per_page=60)
-
-    async def format_page(self, menu, entries):
-        msg = ""
-
-        for count, language in enumerate(sorted(entries), start=1):
-            if count % 2 == 0:
-                msg += f"{language}\n"
-            else:
-                msg += f"{language:<26}"
-
-        return discord.Embed(color=discord.Color.blurple(), description=f"```{msg}```")
 
 
 class compsci(commands.Cog):
@@ -269,12 +253,28 @@ class compsci(commands.Cog):
         """Shows all the languages that tio.run can handle."""
         languages = orjson.loads(self.DB.main.get(b"tiolanguages"))
 
-        pages = menus.MenuPages(
-            source=LanguageMenu(languages),
-            clear_reactions_after=True,
-            delete_message_after=True,
-        )
-        await pages.start(ctx)
+        messages = []
+        message = ""
+        count = 1
+
+        for language in sorted(languages):
+            if count % 2 == 0:
+                message += f"{language}\n"
+            else:
+                message += f"{language:<26}"
+
+            count += 1
+
+            if count == 61:
+                messages.append(discord.Embed(description=f"```{message}```"))
+                message = ""
+                count = 1
+
+        if count != 61:
+            messages.append(discord.Embed(description=f"```{message}```"))
+
+        paginator = pages.Paginator(pages=messages)
+        await paginator.send(ctx)
 
     @commands.command()
     async def hello(self, ctx, language):

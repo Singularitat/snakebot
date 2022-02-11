@@ -266,7 +266,7 @@ class stocks(commands.Cog):
     @stock.command()
     async def list(self, ctx):
         """Shows the prices of stocks from the nasdaq api."""
-        data = []
+        messages = []
         stocks = ""
         for i, (stock, price) in enumerate(self.DB.stocks, start=1):
             price = orjson.loads(price)["price"]
@@ -277,10 +277,13 @@ class stocks(commands.Cog):
                 stocks += f"{stock.decode():}: ${float(price):.2f}\t".expandtabs()
 
             if not i % 99:
-                data.append(f"```prolog\n{stocks}```")
+                messages.append(discord.Embed(description=f"```prolog\n{stocks}```"))
                 stocks = ""
 
-        paginator = pages.Paginator(pages=data)
+        if i % 99:
+            messages.append(discord.Embed(description=f"```prolog\n{stocks}```"))
+
+        paginator = pages.Paginator(pages=messages)
         await paginator.send(ctx)
 
     @commands.command(name="nettop")
