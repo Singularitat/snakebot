@@ -263,21 +263,19 @@ class information(commands.Cog):
     @commands.command()
     async def invite(self, ctx):
         """Sends the invite link of the bot."""
-        # Administrator
-        admin_perms = discord.utils.oauth_url(
-            self.bot.user.id, permissions=discord.Permissions(8)
-        )
-        # View Channels, Manage Channels, Manage Roles, Manage Emojis and Stickers
-        # Kick Members, Ban Members, Send Messages, Send Messages in Threads, Embed Links
-        # Attach Files, Manage Messages, Manage Threads, Read Message History, Connect
-        # Speak
-        mod_perms = discord.utils.oauth_url(
-            self.bot.user.id, permissions=discord.Permissions(293403225110)
-        )
         # View Channels, Send Messages, Send Messages in Threads, Embed Links
         # Attach Files, Use External Emoji, Read Message History, Connect, Speak
         general_perms = discord.utils.oauth_url(
             self.bot.user.id, permissions=discord.Permissions(274881432576)
+        )
+        # Manage Emojis and Stickers, Kick Members, Ban Members Manage Messages
+        # Manage Threads + General Perms
+        mod_perms = discord.utils.oauth_url(
+            self.bot.user.id, permissions=discord.Permissions(293134789638)
+        )
+        # Administrator
+        admin_perms = discord.utils.oauth_url(
+            self.bot.user.id, permissions=discord.Permissions(8)
         )
         view = discord.ui.View(
             discord.ui.Button(label="Admin Perms", url=admin_perms),
@@ -286,16 +284,19 @@ class information(commands.Cog):
         )
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(
-            name="Admin",
-            value="[Click To See Full Perms](https://discordapi.com/permissions.html#8)",
+            name="Admin Perms",
+            value="Gives the bot Administrator\n"
+            "[Full Perms](https://discordapi.com/permissions.html#8)",
         )
         embed.add_field(
-            name="Mod",
-            value="[Click To See Full Perms](https://discordapi.com/permissions.html#293403225110)",
+            name="Mod Perms",
+            value="Kick, Ban and Manage Messages\n"
+            "[Full Perms](https://discordapi.com/permissions.html#293134789638)",
         )
         embed.add_field(
-            name="General",
-            value="[Click To See Full Perms](https://discordapi.com/permissions.html#274881432576)",
+            name="General Perms",
+            value="Send Messages, Read Messages, Connect to voice and Speak\n"
+            "[Full Perms](https://discordapi.com/permissions.html#274881432576)",
         )
         await ctx.send(embed=embed, view=view)
 

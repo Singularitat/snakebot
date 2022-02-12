@@ -460,6 +460,48 @@ class images(commands.Cog):
         await self.jeyy(ctx, "cloth", url)
 
     @commands.command()
+    async def iso(self, ctx, *, codes=None):
+        """Uses jeyy.xyz to draw isometric blocks based on inputted codes.
+
+        - 0 = blank block    - g = Gold Block
+        - 1 = Grass Block    - p = Purple Block
+        - 2 = Water          - l = Leaf Block
+        - 3 = Sand Block     - o = Log Block
+        - 4 = Stone block    - c = Coal Block
+        - 5 = Wood Planks    - d = Diamond Block
+        - 6 = Glass Block    - v = Lava
+        - 7 = Redstone Block - h = Hay Bale
+        - 8 = Iron Block     - s = Snow Layer
+        - 9 = Brick Block    - f = Wooden Fence
+        - w = Redstone Dust  - r = Redstone Lamp
+        - e = Lever (off)    - # = Lever (on)
+        - k = Cake           - y = Poppy
+
+        Example usage:
+            .iso 401 133 332 - 1 0 5 - 6
+            .iso 11111-o555o-o555o-o555o 11111-55555-55555-55555 11111-65556-55555-55555 11111
+        """
+        if not codes:
+            return await ctx.reply(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="Example usage: `.iso 401 133 332 - 1 0 5 - 6`"
+                    "\n\nUse `.help iso` for full block list",
+                )
+            )
+        url = "https://api.jeyy.xyz/isometric"
+        params = {"iso_code": codes}
+
+        async with self.bot.client_session.get(url, params=params, timeout=30) as resp:
+            image = BytesIO()
+
+            async for chunk in resp.content.iter_chunked(8 * 1024):
+                image.write(chunk)
+
+            image.seek(0)
+            await ctx.reply(file=discord.File(fp=image, filename="isometric_draw.png"))
+
+    @commands.command()
     async def images(self, ctx):
         """Shows all the image manipulation commands."""
         image_commands = []
