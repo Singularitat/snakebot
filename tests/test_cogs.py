@@ -641,9 +641,7 @@ class CryptoCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.list(self.cog, context)
 
-        self.assertNotEqual(
-            context.channel.send.call_args.kwargs["embed"].color.value, 10038562
-        )
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_crypto_history_command(self):
         context = helpers.MockContext()
@@ -872,9 +870,8 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.tiolanguages(self.cog, context)
 
-        self.assertNotEqual(
-            context.channel.send.call_args.kwargs["embed"].color.value, 10038562
-        )
+        # It does send an embed but it uses `embeds` rather than `embed`
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def run_command(self):
         with self.subTest(command="run"):
@@ -1055,7 +1052,9 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.invite(self.cog, context)
 
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
 
     async def test_ping_command(self):
         context = helpers.MockContext()
@@ -1517,9 +1516,7 @@ class StocksCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.list(self.cog, context)
 
-        self.assertNotEqual(
-            context.channel.send.call_args.kwargs["embed"].color.value, 10038562
-        )
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_stock_net_worth_command(self):
         context = helpers.MockContext()
