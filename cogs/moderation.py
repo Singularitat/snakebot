@@ -12,6 +12,7 @@ class moderation(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
         self.loop = bot.loop
+        self.handles = {}
 
     @commands.command(hidden=True)
     async def inactive(self, ctx, days: int = 7):
@@ -95,14 +96,18 @@ class moderation(commands.Cog):
 
         embed.title = title
         message = await ctx.send(embed=embed)
+        message_id = str(message.id)
 
-        polls[guild][str(message.id)] = polls[guild].pop("temp")
+        polls[guild][message_id] = polls[guild].pop("temp")
 
         for i in range(len(options)):
             await message.add_reaction(chr(127462 + i))
 
         self.DB.main.put(b"polls", orjson.dumps(polls))
-        self.loop.call_later(21600, asyncio.create_task, self._end_poll(guild, message))
+        handle = self.loop.call_later(
+            21600, asyncio.create_task, self._end_poll(guild, message)
+        )
+        self.handles[message_id] = handle
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
@@ -138,6 +143,9 @@ class moderation(commands.Cog):
 
         polls[str(ctx.guild.id)].pop(message_id)
         self.DB.main.put(b"polls", orjson.dumps(polls))
+
+        self.handles[message_id].cancel()
+        self.handles.pop(message_id)
 
     @commands.command(name="mute")
     @commands.has_permissions(kick_members=True)

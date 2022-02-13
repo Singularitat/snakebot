@@ -637,7 +637,7 @@ class events(commands.Cog):
 
             print(
                 f"Logged in as {self.bot.user.name}\n"
-                f"Discord.py version: {discord.__version__}\n"
+                f"Pycord version: {discord.__version__}\n"
                 f"Python version: {platform.python_version()}\n"
                 f"Running on: {platform.system()} {platform.release()}({os.name})\n"
                 f"Boot time: {boot_time:.3f}s\n"
