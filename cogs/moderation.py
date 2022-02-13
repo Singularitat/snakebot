@@ -104,7 +104,9 @@ class moderation(commands.Cog):
             await message.add_reaction(chr(127462 + i))
 
         self.DB.main.put(b"polls", orjson.dumps(polls))
-        handle = self.loop.call_later(21600, asyncio.create_task, self._end_poll(guild, message))
+        handle = self.loop.call_later(
+            21600, asyncio.create_task, self._end_poll(guild, message)
+        )
         self.handles[message_id] = handle
 
     @commands.command()
