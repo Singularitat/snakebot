@@ -79,7 +79,7 @@ class information(commands.Cog):
             name="Source", value="[github](https://github.com/Singularitat/snakebot)"
         )
         embed.add_field(name="Uptime", value=f"Since **<t:{self.bot.uptime:.0f}:R>**")
-        embed.add_field(name="discord.py version", value=discord.__version__)
+        embed.add_field(name="Pycord version", value=discord.__version__)
         embed.add_field(name="Python version", value=platform.python_version())
         embed.add_field(
             name="OS", value=f"{platform.system()} {platform.release()}({os.name})"
