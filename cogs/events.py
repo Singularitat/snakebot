@@ -540,18 +540,10 @@ class events(commands.Cog):
 
         error: Exception
         """
-        if hasattr(ctx.command, "on_error"):
-            return
-
-        cog = ctx.cog
-        if cog:
-            attr = f"_{cog.__class__.__name__}__error"
-            if hasattr(cog, attr):
-                return
-
         error = getattr(error, "original", error)
 
-        if str(error).startswith("The check functions") or str(error).startswith(
+        message = str(error)
+        if message.startswith("The check functions") or message.startswith(
             "The global check"
         ):
             return

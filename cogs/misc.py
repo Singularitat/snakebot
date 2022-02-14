@@ -11,7 +11,7 @@ import discord
 import lxml.html
 import opcode
 import orjson
-from discord.ext import commands
+from discord.ext import commands, pages
 
 from cogs.utils.color import hsslv
 from cogs.utils.time import parse_date
@@ -231,7 +231,7 @@ class misc(commands.Cog):
         text: str
         """
         embed = discord.Embed(color=discord.Color.blurple())
-        if len(text) > 236:
+        if len(text) > 271:
             embed.description = "```Text must be shorter than 236 characters```"
             return await ctx.send(embed=embed)
 
@@ -260,12 +260,51 @@ class misc(commands.Cog):
             "fs",
             "f95",
             "go",
+            "autoit",
+            "basic",
+            "fs",
+            "gs",
+            "haml",
+            "hs",
+            "hsp",
+            "isbl",
+            "julia",
+            "ldif",
+            "less",
+            "llvm",
+            "mk",
+            "wl",
+            "nginx",
+            "properties",
+            "rb",
+            "rs",
         )
 
-        for lang in languages:
+        embeds = [embed]
+
+        for lang in languages[:21]:
             embed.add_field(name=lang, value=f"```{lang}\n{text}```")
 
-        await ctx.send(embed=embed)
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        for lang in languages[21:]:
+            embed.add_field(name=lang, value=f"```{lang}\n{text}```")
+
+        embeds.append(embed)
+
+        paginator = pages.Paginator(pages=embeds, use_default_buttons=False)
+        paginator.add_button(
+            pages.PaginatorButton("prev", label="<", style=discord.ButtonStyle.green)
+        )
+        paginator.add_button(
+            pages.PaginatorButton(
+                "page_indicator", style=discord.ButtonStyle.gray, disabled=True
+            )
+        )
+        paginator.add_button(
+            pages.PaginatorButton("next", label=">", style=discord.ButtonStyle.green)
+        )
+        await paginator.send(ctx)
 
     @commands.command()
     async def fen(self, ctx, *, fen: str):

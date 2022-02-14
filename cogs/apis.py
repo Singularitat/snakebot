@@ -40,7 +40,9 @@ class apis(commands.Cog):
             "to_language": "PYTHON_REQUESTS",
         }
 
-        async with self.bot.client_session.post(url, json=data) as response:
+        async with ctx.typing(), self.bot.client_session.post(
+            url, json=data
+        ) as response:
             formatted = (await response.json())["output_code"]
 
         if len(formatted) > 1991:
@@ -103,9 +105,7 @@ class apis(commands.Cog):
 
             url = f"https://excuser.herokuapp.com/v1/excuse/{category}"
 
-        with ctx.typing():
-            data = await self.bot.get_json(url)
-
+        data = await self.bot.get_json(url)
         await ctx.send(f"> {data[0]['excuse']}")
 
     @commands.command()
@@ -224,7 +224,10 @@ class apis(commands.Cog):
             self.DB.main.put(b"cache", orjson.dumps(cache))
         else:
             url = f"https://old.reddit.com/r/{subreddit}/hot/.json"
-            posts = (await self.bot.get_json(url))["data"]["children"]
+
+            with ctx.typing():
+                posts = (await self.bot.get_json(url))["data"]["children"]
+
             post = random.choice(posts)
 
             clean_posts = []
@@ -339,7 +342,7 @@ class apis(commands.Cog):
         """This city doesn't exist."""
         url = "https://thiscitydoesnotexist.com/"
 
-        async with ctx.typing(), self.bot.client_session.get(url) as resp:
+        async with self.bot.client_session.get(url) as resp:
             text = await resp.text()
             link = re.search(r"<img src=\"\.(.*)\" alt=", text).group(1)
 
@@ -438,7 +441,9 @@ class apis(commands.Cog):
     async def insult(self, ctx):
         """Insults you."""
         url = "https://evilinsult.com/generate_insult.php?lang=en&type=json"
-        data = await self.bot.get_json(url)
+
+        with ctx.typing():
+            data = await self.bot.get_json(url)
 
         await ctx.send(data["insult"])
 
@@ -447,7 +452,7 @@ class apis(commands.Cog):
         """Uses zenquotes.io to get an inspirational quote."""
         url = "https://zenquotes.io/api/random"
 
-        async with ctx.typing(), self.bot.client_session.get(url) as resp:
+        async with self.bot.client_session.get(url) as resp:
             data = (await resp.json(content_type=None))[0]
 
         embed = discord.Embed(color=discord.Color.blurple(), description=data["q"])
@@ -460,7 +465,7 @@ class apis(commands.Cog):
         """Gets images from inspirobot.me an ai quote generator."""
         url = "https://inspirobot.me/api?generate=true"
 
-        async with ctx.typing(), self.bot.client_session.get(url) as quote:
+        async with self.bot.client_session.get(url) as quote:
             await ctx.send(
                 embed=discord.Embed(color=discord.Color.random())
                 .set_image(url=(await quote.text()))
@@ -565,27 +570,24 @@ class apis(commands.Cog):
         url = f"https://restcountries.com/v3.1/name/{name}"
         embed = discord.Embed(color=discord.Color.blurple())
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
+        data = await self.bot.get_json(url)
 
-            if not isinstance(data, list):
-                embed.description = "```Country not found```"
-                return await ctx.send(embed=embed)
+        if not isinstance(data, list):
+            embed.description = "```Country not found```"
+            return await ctx.send(embed=embed)
 
-            data = data[0]
+        data = data[0]
 
-            embed.set_author(name=data["name"]["common"], icon_url=data["flags"]["png"])
-            embed.add_field(
-                name="Capital", value=data.get("capital", ["No Capital"])[0]
-            )
-            embed.add_field(name="Demonym", value=data["demonyms"]["eng"]["m"])
-            embed.add_field(name="Continent", value=data["region"])
-            embed.add_field(
-                name="Total Area",
-                value=f"{data['area']:,.0f}km²" if "area" in data else "NaN",
-            )
-            embed.add_field(name="Population", value=f"{data['population']:,}")
-            embed.add_field(name="TLD(s)", value=", ".join(data["tld"]))
+        embed.set_author(name=data["name"]["common"], icon_url=data["flags"]["png"])
+        embed.add_field(name="Capital", value=data.get("capital", ["No Capital"])[0])
+        embed.add_field(name="Demonym", value=data["demonyms"]["eng"]["m"])
+        embed.add_field(name="Continent", value=data["region"])
+        embed.add_field(
+            name="Total Area",
+            value=f"{data['area']:,.0f}km²" if "area" in data else "NaN",
+        )
+        embed.add_field(name="Population", value=f"{data['population']:,}")
+        embed.add_field(name="TLD(s)", value=", ".join(data["tld"]))
 
         await ctx.send(embed=embed)
 
@@ -594,7 +596,7 @@ class apis(commands.Cog):
         """Gets a random fact."""
         url = "https://uselessfacts.jsph.pl/random.json?language=en"
 
-        async with ctx.typing():
+        with ctx.typing():
             data = await self.bot.get_json(url)
 
             await ctx.send(
@@ -616,7 +618,7 @@ class apis(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
 
-        async with ctx.typing():
+        with ctx.typing():
             posts = (await self.bot.get_json(url))["items"]
 
             if not posts:
@@ -641,39 +643,36 @@ class apis(commands.Cog):
         """Gets a random Kanye West quote."""
         url = "https://api.kanye.rest"
 
-        async with ctx.typing():
-            quote = await self.bot.get_json(url)
-            embed = discord.Embed(
-                color=discord.Color.blurple(), description="> " + quote["quote"]
-            )
-            embed.set_footer(text="― Kayne West")
-            await ctx.send(embed=embed)
+        quote = await self.bot.get_json(url)
+        embed = discord.Embed(
+            color=discord.Color.blurple(), description="> " + quote["quote"]
+        )
+        embed.set_footer(text="― Kayne West")
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def quote(self, ctx):
         """Gets a random quote."""
         url = "https://api.fisenko.net/v1/quotes/en/random"
 
-        async with ctx.typing():
-            quote = await self.bot.get_json(url)
-            embed = discord.Embed(
-                color=discord.Color.blurple(), description="> " + quote["text"]
-            )
-            embed.set_footer(text=f"― {quote['author']['name']}")
-            await ctx.send(embed=embed)
+        quote = await self.bot.get_json(url)
+        embed = discord.Embed(
+            color=discord.Color.blurple(), description="> " + quote["text"]
+        )
+        embed.set_footer(text=f"― {quote['author']['name']}")
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def suntzu(self, ctx):
         """Gets fake Sun Tzu art of war quotes."""
         url = "http://api.fakeartofwar.gaborszathmari.me/v1/getquote"
 
-        async with ctx.typing():
-            quote = await self.bot.get_json(url)
-            embed = discord.Embed(
-                color=discord.Color.blurple(), description="> " + quote["quote"]
-            )
-            embed.set_footer(text="― Sun Tzu, Art Of War")
-            await ctx.send(embed=embed)
+        quote = await self.bot.get_json(url)
+        embed = discord.Embed(
+            color=discord.Color.blurple(), description="> " + quote["quote"]
+        )
+        embed.set_footer(text="― Sun Tzu, Art Of War")
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def rhyme(self, ctx, word):
@@ -683,21 +682,20 @@ class apis(commands.Cog):
         """
         url = f"https://api.datamuse.com/words?rel_rhy={word}&max=9"
 
-        async with ctx.typing():
-            rhymes = await self.bot.get_json(url)
+        rhymes = await self.bot.get_json(url)
 
-            embed = discord.Embed(color=discord.Color.blurple())
+        embed = discord.Embed(color=discord.Color.blurple())
 
-            if not rhymes:
-                embed.description = "```No results found```"
-                return await ctx.send(embed=embed)
+        if not rhymes:
+            embed.description = "```No results found```"
+            return await ctx.send(embed=embed)
 
-            embed.set_footer(text="The numbers below are the scores")
+        embed.set_footer(text="The numbers below are the scores")
 
-            for rhyme in rhymes:
-                embed.add_field(name=rhyme["word"], value=rhyme.get("score", "N/A"))
+        for rhyme in rhymes:
+            embed.add_field(name=rhyme["word"], value=rhyme.get("score", "N/A"))
 
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def spelling(self, ctx, word):
@@ -708,23 +706,20 @@ class apis(commands.Cog):
         """
         url = f"https://api.datamuse.com/words?sp={word}&max=9"
 
-        async with ctx.typing():
-            spellings = await self.bot.get_json(url)
+        spellings = await self.bot.get_json(url)
 
-            embed = discord.Embed(
-                color=discord.Color.blurple(), title="Possible spellings"
-            )
+        embed = discord.Embed(color=discord.Color.blurple(), title="Possible spellings")
 
-            if not spellings:
-                embed.description = "```No results found```"
-                return await ctx.send(embed=embed)
+        if not spellings:
+            embed.description = "```No results found```"
+            return await ctx.send(embed=embed)
 
-            embed.set_footer(text="The numbers below are the scores")
+        embed.set_footer(text="The numbers below are the scores")
 
-            for spelling in spellings:
-                embed.add_field(name=spelling["word"], value=spelling["score"])
+        for spelling in spellings:
+            embed.add_field(name=spelling["word"], value=spelling["score"])
 
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def meaning(self, ctx, *, words):
@@ -736,23 +731,20 @@ class apis(commands.Cog):
         """
         url = f"https://api.datamuse.com/words?ml={words}&max=9"
 
-        async with ctx.typing():
-            meanings = await self.bot.get_json(url)
+        meanings = await self.bot.get_json(url)
 
-            embed = discord.Embed(
-                color=discord.Color.blurple(), title="Possible meanings"
-            )
+        embed = discord.Embed(color=discord.Color.blurple(), title="Possible meanings")
 
-            if not meanings:
-                embed.description = "```No results found```"
-                return await ctx.send(embed=embed)
+        if not meanings:
+            embed.description = "```No results found```"
+            return await ctx.send(embed=embed)
 
-            embed.set_footer(text="The numbers below are the scores")
+        embed.set_footer(text="The numbers below are the scores")
 
-            for meaning in meanings:
-                embed.add_field(name=meaning["word"], value=meaning["score"])
+        for meaning in meanings:
+            embed.add_field(name=meaning["word"], value=meaning["score"])
 
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.group(invoke_without_command=True)
     async def apis(self, ctx):
@@ -768,16 +760,15 @@ class apis(commands.Cog):
         """Gets all the categories of the public apis api."""
         url = "https://api.publicapis.org/categories"
 
-        async with ctx.typing():
-            categories = await self.bot.get_json(url)
+        data = await self.bot.get_json(url)
 
-            await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    title="All categories of the public apis api",
-                    description="```{}```".format("\n".join(categories)),
-                )
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                title="All categories of the public apis api",
+                description="```prolog\n{}```".format("\n".join(data["categories"])),
             )
+        )
 
     @apis.command()
     async def random(self, ctx, category=""):
@@ -787,22 +778,19 @@ class apis(commands.Cog):
         """
         url = f"https://api.publicapis.org/random?category={category}"
 
-        async with ctx.typing():
-            data = (await self.bot.get_json(url))["entries"][0]
+        data = (await self.bot.get_json(url))["entries"][0]
 
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                title=data["API"],
-                description=f"{data['Description']}\n[Link]({data['Link']})",
-            )
-            embed.add_field(
-                name="Auth", value="None" if not data["Auth"] else data["Auth"]
-            )
-            embed.add_field(name="HTTPS", value=data["HTTPS"])
-            embed.add_field(name="Cors", value=data["Cors"])
-            embed.add_field(name="Category", value=data["Category"])
+        embed = discord.Embed(
+            color=discord.Color.blurple(),
+            title=data["API"],
+            description=f"{data['Description']}\n[Link]({data['Link']})",
+        )
+        embed.add_field(name="Auth", value="None" if not data["Auth"] else data["Auth"])
+        embed.add_field(name="HTTPS", value=data["HTTPS"])
+        embed.add_field(name="Cors", value=data["Cors"])
+        embed.add_field(name="Category", value=data["Category"])
 
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @apis.command()
     async def search(self, ctx, *, search):
@@ -812,24 +800,23 @@ class apis(commands.Cog):
         """
         url = f"https://api.publicapis.org/entries?title={search}"
 
-        async with ctx.typing():
-            entries = (await self.bot.get_json(url))["entries"]
+        entries = (await self.bot.get_json(url))["entries"]
 
-            embed = discord.Embed(color=discord.Color.blurple())
+        embed = discord.Embed(color=discord.Color.blurple())
 
-            if not entries:
-                embed.description = f"No apis found for `{search}`"
-                return await ctx.send(embed=embed)
+        if not entries:
+            embed.description = f"No apis found for `{search}`"
+            return await ctx.send(embed=embed)
 
-            for index, entry in enumerate(entries):
-                if index == 12:
-                    break
-                embed.add_field(
-                    name=entry["API"],
-                    value=f"{entry['Description']}\n[Link]({entry['Link']})",
-                )
+        for index, entry in enumerate(entries):
+            if index == 12:
+                break
+            embed.add_field(
+                name=entry["API"],
+                value=f"{entry['Description']}\n[Link]({entry['Link']})",
+            )
 
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def nationalize(self, ctx, first_name):
@@ -839,23 +826,22 @@ class apis(commands.Cog):
         """
         url = f"https://api.nationalize.io/?name={first_name}"
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
+        data = await self.bot.get_json(url)
 
-            embed = discord.Embed(color=discord.Color.blurple())
+        embed = discord.Embed(color=discord.Color.blurple())
 
-            if not data["country"]:
-                embed.description = "```No results found```"
-                return await ctx.send(embed=embed)
+        if not data["country"]:
+            embed.description = "```No results found```"
+            return await ctx.send(embed=embed)
 
-            embed.title = f"Estimates of the nationality of {data['name']}"
+        embed.title = f"Estimates of the nationality of {data['name']}"
 
-            for country in data["country"]:
-                embed.add_field(
-                    name=country["country_id"],
-                    value=f"{country['probability'] * 100:.2f}%",
-                )
-            await ctx.send(embed=embed)
+        for country in data["country"]:
+            embed.add_field(
+                name=country["country_id"],
+                value=f"{country['probability'] * 100:.2f}%",
+            )
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def apod(self, ctx):
@@ -863,7 +849,7 @@ class apis(commands.Cog):
         url = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
         embed = discord.Embed(color=discord.Color.blurple())
 
-        async with ctx.typing(), self.bot.client_session.get(url, timeout=30) as resp:
+        async with self.bot.client_session.get(url, timeout=30) as resp:
             apod = await resp.json()
 
         if not apod:
@@ -888,18 +874,17 @@ class apis(commands.Cog):
         """
         url = f"https://api.genderize.io/?name={first_name}"
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
-            embed = discord.Embed(color=discord.Color.blurple())
-            embed.description = textwrap.dedent(
-                f"""
-                ```First Name: {data['name']}
-                Gender: {data['gender']}
-                Probability: {data['probability'] * 100}%
-                Count: {data['count']}```
-                """
-            )
-            await ctx.send(embed=embed)
+        data = await self.bot.get_json(url)
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.description = textwrap.dedent(
+            f"""
+            ```First Name: {data['name']}
+            Gender: {data['gender']}
+            Probability: {data['probability'] * 100}%
+            Count: {data['count']}```
+            """
+        )
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def trends(self, ctx, *, country="new zealand"):
@@ -912,54 +897,52 @@ class apis(commands.Cog):
         if country != "new zealand":
             country = country.replace(" ", "_")
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
-            embed = discord.Embed(color=discord.Color.blurple())
+        data = await self.bot.get_json(url)
+        embed = discord.Embed(color=discord.Color.blurple())
 
-            if country not in data:
-                embed.description = f"```Country {country.title()} not found.```"
-                return await ctx.send(embed=embed)
+        if country not in data:
+            embed.description = f"```Country {country.title()} not found.```"
+            return await ctx.send(embed=embed)
 
-            embed.title = f"{country.title()} Search Trends"
-            embed.description = "```{}```".format("\n".join(data[country]))
-            await ctx.send(embed=embed)
+        embed.title = f"{country.title()} Search Trends"
+        embed.description = "```{}```".format("\n".join(data[country]))
+        await ctx.send(embed=embed)
 
     @commands.command(name="fakeuser")
     async def fake_user(self, ctx):
         """Gets a fake user with some random data."""
         url = "https://randomuser.me/api/?results=1"
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
-            data = data["results"][0]
-            embed = (
-                discord.Embed(color=discord.Color.blurple())
-                .set_author(
-                    name="{} {} {}".format(
-                        data["name"]["title"],
-                        data["name"]["first"],
-                        data["name"]["last"],
-                    ),
-                    icon_url=data["picture"]["large"],
-                )
-                .add_field(name="Gender", value=data["gender"])
-                .add_field(name="Username", value=data["login"]["username"])
-                .add_field(name="Password", value=data["login"]["password"])
-                .add_field(
-                    name="Location",
-                    value="{}, {}, {}, {}".format(
-                        data["location"]["street"]["name"],
-                        data["location"]["city"],
-                        data["location"]["state"],
-                        data["location"]["country"],
-                    ),
-                )
-                .add_field(name="Email", value=data["email"])
-                .add_field(name="Date of birth", value=data["dob"]["date"])
-                .add_field(name="Phone", value=data["phone"])
+        data = await self.bot.get_json(url)
+        data = data["results"][0]
+        embed = (
+            discord.Embed(color=discord.Color.blurple())
+            .set_author(
+                name="{} {} {}".format(
+                    data["name"]["title"],
+                    data["name"]["first"],
+                    data["name"]["last"],
+                ),
+                icon_url=data["picture"]["large"],
             )
+            .add_field(name="Gender", value=data["gender"])
+            .add_field(name="Username", value=data["login"]["username"])
+            .add_field(name="Password", value=data["login"]["password"])
+            .add_field(
+                name="Location",
+                value="{}, {}, {}, {}".format(
+                    data["location"]["street"]["name"],
+                    data["location"]["city"],
+                    data["location"]["state"],
+                    data["location"]["country"],
+                ),
+            )
+            .add_field(name="Email", value=data["email"])
+            .add_field(name="Date of birth", value=data["dob"]["date"])
+            .add_field(name="Phone", value=data["phone"])
+        )
 
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command(name="dadjoke")
     async def dad_joke(self, ctx):
@@ -967,9 +950,7 @@ class apis(commands.Cog):
         url = "https://icanhazdadjoke.com/"
         headers = {"Accept": "application/json"}
 
-        async with ctx.typing(), self.bot.client_session.get(
-            url, headers=headers
-        ) as resp:
+        async with self.bot.client_session.get(url, headers=headers) as resp:
             data = await resp.json()
 
             await ctx.reply(data["joke"])
@@ -987,13 +968,12 @@ class apis(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
-            if not data["drinks"]:
-                embed.description = "```No cocktails found.```"
-                embed.color = discord.Color.red()
-                return await ctx.send(embed=embed)
-            drink = random.choice(data["drinks"])
+        data = await self.bot.get_json(url)
+        if not data["drinks"]:
+            embed.description = "```No cocktails found.```"
+            embed.color = discord.Color.red()
+            return await ctx.send(embed=embed)
+        drink = random.choice(data["drinks"])
 
         embed.set_image(url=drink["strDrinkThumb"])
         embed.set_author(name=drink["strDrink"], icon_url=drink["strDrinkThumb"])
@@ -1023,8 +1003,7 @@ class apis(commands.Cog):
         """
         url = f"https://opentdb.com/api.php?amount=1&difficulty={difficulty}&type=multiple"
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
+        data = await self.bot.get_json(url)
 
         result = data["results"][0]
 
@@ -1073,7 +1052,7 @@ class apis(commands.Cog):
         """
         url = f"https://api.mcsrvstat.us/2/{ip}"
 
-        async with ctx.typing():
+        with ctx.typing():
             data = await self.bot.get_json(url)
 
         embed = discord.Embed(color=discord.Color.blurple())
@@ -1113,109 +1092,106 @@ class apis(commands.Cog):
         """
         url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
 
-        async with ctx.typing():
-            definition = await self.bot.get_json(url)
+        definition = await self.bot.get_json(url)
 
-            embed = discord.Embed(color=discord.Color.blurple())
-            if isinstance(definition, dict):
-                embed.description = "```No definition found```"
-                return await ctx.send(embed=embed)
+        embed = discord.Embed(color=discord.Color.blurple())
+        if isinstance(definition, dict):
+            embed.description = "```No definition found```"
+            return await ctx.send(embed=embed)
 
-            definition = definition[0]
+        definition = definition[0]
 
-            if definition["phonetics"][0]:
-                embed.title = definition["phonetics"][0]["text"]
-                embed.description = (
-                    f"[pronunciation](https:{definition['phonetics'][0]['audio']})"
-                )
+        if definition["phonetics"][0]:
+            embed.title = definition["phonetics"][0]["text"]
+            embed.description = (
+                f"[pronunciation](https:{definition['phonetics'][0]['audio']})"
+            )
 
-            for meaning in definition["meanings"]:
-                embed.add_field(
-                    name=meaning["partOfSpeech"],
-                    value=f"```{meaning['definitions'][0]['definition']}```",
-                )
+        for meaning in definition["meanings"]:
+            embed.add_field(
+                name=meaning["partOfSpeech"],
+                value=f"```{meaning['definitions'][0]['definition']}```",
+            )
 
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["syn", "synonym"])
     async def synonyms(self, ctx, *, word):
         url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
+        data = await self.bot.get_json(url)
 
-            embed = discord.Embed(color=discord.Color.blurple())
-            if isinstance(data, dict):
-                embed.description = "```Word not found```"
-                return await ctx.send(embed=embed)
+        embed = discord.Embed(color=discord.Color.blurple())
+        if isinstance(data, dict):
+            embed.description = "```Word not found```"
+            return await ctx.send(embed=embed)
 
-            data = data[0]
-            description = ""
+        data = data[0]
+        description = ""
 
-            for meaning in data["meanings"]:
-                temp = meaning["partOfSpeech"] + "\n  "
-                seen = False
-                for definition in meaning["definitions"]:
-                    synonyms = definition["synonyms"]
-                    if synonyms:
-                        temp += (
-                            definition["definition"]
-                            + "\n    "
-                            + "\n    ".join(synonyms)
-                            + "\n\n  "
-                        )
-                        seen = True
-                if seen:
-                    description += temp[:-2]
+        for meaning in data["meanings"]:
+            temp = meaning["partOfSpeech"] + "\n  "
+            seen = False
+            for definition in meaning["definitions"]:
+                synonyms = definition["synonyms"]
+                if synonyms:
+                    temp += (
+                        definition["definition"]
+                        + "\n    "
+                        + "\n    ".join(synonyms)
+                        + "\n\n  "
+                    )
+                    seen = True
+            if seen:
+                description += temp[:-2]
 
-            if not description:
-                embed.description = "```No synonyms found```"
-                return await ctx.send(embed=embed)
+        if not description:
+            embed.description = "```No synonyms found```"
+            return await ctx.send(embed=embed)
 
-            embed.url = f"https://www.dictionary.com/browse/{word}"
-            embed.title = f"{word.title()} Synonyms"
-            embed.description = f"```prolog\n{description.title().strip()}```"
-            await ctx.send(embed=embed)
+        embed.url = f"https://www.dictionary.com/browse/{word}"
+        embed.title = f"{word.title()} Synonyms"
+        embed.description = f"```prolog\n{description.title().strip()}```"
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["antonym"])
     async def antonyms(self, ctx, *, word):
         url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
+        data = await self.bot.get_json(url)
 
-            embed = discord.Embed(color=discord.Color.blurple())
-            if isinstance(data, dict):
-                embed.description = "```Word not found```"
-                return await ctx.send(embed=embed)
+        embed = discord.Embed(color=discord.Color.blurple())
+        if isinstance(data, dict):
+            embed.description = "```Word not found```"
+            return await ctx.send(embed=embed)
 
-            data = data[0]
-            description = ""
+        data = data[0]
+        description = ""
 
-            for meaning in data["meanings"]:
-                temp = meaning["partOfSpeech"] + "\n  "
-                seen = False
-                for definition in meaning["definitions"]:
-                    antonyms = definition["antonyms"]
-                    if antonyms:
-                        temp += (
-                            definition["definition"]
-                            + "\n    "
-                            + "\n    ".join(antonyms)
-                            + "\n\n  "
-                        )
-                        seen = True
-                if seen:
-                    description += temp[:-2]
+        for meaning in data["meanings"]:
+            temp = meaning["partOfSpeech"] + "\n  "
+            seen = False
+            for definition in meaning["definitions"]:
+                antonyms = definition["antonyms"]
+                if antonyms:
+                    temp += (
+                        definition["definition"]
+                        + "\n    "
+                        + "\n    ".join(antonyms)
+                        + "\n\n  "
+                    )
+                    seen = True
+            if seen:
+                description += temp[:-2]
 
-            if not description:
-                embed.description = "```No antonyms found```"
-                return await ctx.send(embed=embed)
+        if not description:
+            embed.description = "```No antonyms found```"
+            return await ctx.send(embed=embed)
 
-            embed.url = f"https://www.dictionary.com/browse/{word}"
-            embed.title = f"{word.title()} Antonyms"
-            embed.description = f"```prolog\n{description.title().strip()}```"
-            await ctx.send(embed=embed)
+        embed.url = f"https://www.dictionary.com/browse/{word}"
+        embed.title = f"{word.title()} Antonyms"
+        embed.description = f"```prolog\n{description.title().strip()}```"
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def latex(self, ctx, *, latex):
@@ -1310,8 +1286,7 @@ class apis(commands.Cog):
         else:
             url = f"https://api.urbandictionary.com/v0/define?term={search}"
 
-            async with ctx.typing():
-                urban = await self.bot.get_json(url)
+            urban = await self.bot.get_json(url)
 
             if not urban:
                 embed.title = "Timed out try again later"
@@ -1348,18 +1323,17 @@ class apis(commands.Cog):
         """Gets a random wikipedia article."""
         url = "https://en.wikipedia.org/api/rest_v1/page/random/summary"
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
+        data = await self.bot.get_json(url)
 
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                title=data["title"],
-                description=data["extract"],
-                url=data["content_urls"]["desktop"]["page"],
-            )
-            embed.set_image(url=data["thumbnail"]["source"])
+        embed = discord.Embed(
+            color=discord.Color.blurple(),
+            title=data["title"],
+            description=data["extract"],
+            url=data["content_urls"]["desktop"]["page"],
+        )
+        embed.set_image(url=data["thumbnail"]["source"])
 
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["wiki"])
     async def wikipedia(self, ctx, *, search: str):
@@ -1368,24 +1342,23 @@ class apis(commands.Cog):
         search: str
             The term to search wikipedia for.
         """
-        async with ctx.typing():
-            titles = await self.bot.get_json(
-                f"https://en.wikipedia.org/w/api.php?action=opensearch&search={search}",
-            )
-            embed = discord.Embed(color=discord.Color.blurple())
+        titles = await self.bot.get_json(
+            f"https://en.wikipedia.org/w/api.php?action=opensearch&search={search}",
+        )
+        embed = discord.Embed(color=discord.Color.blurple())
 
-            if not titles:
-                embed.description = "```Couldn't find any results```"
-                return await ctx.send(embed=embed)
+        if not titles:
+            embed.description = "```Couldn't find any results```"
+            return await ctx.send(embed=embed)
 
-            embed.title = f"Wikipedia results for `{search}`"
-            embed.description = "\n".join(
-                f"`{index}` [{title}]({url})"
-                for index, (title, url) in enumerate(zip(titles[1], titles[3]), start=1)
-            )
-            embed.timestamp = discord.utils.utcnow()
+        embed.title = f"Wikipedia results for `{search}`"
+        embed.description = "\n".join(
+            f"`{index}` [{title}]({url})"
+            for index, (title, url) in enumerate(zip(titles[1], titles[3]), start=1)
+        )
+        embed.timestamp = discord.utils.utcnow()
 
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def covid(self, ctx, *, country="nz"):
@@ -1397,8 +1370,7 @@ class apis(commands.Cog):
 
         embed = discord.Embed(colour=discord.Color.red())
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
+        data = await self.bot.get_json(url)
 
         if "message" in data:
             embed.description = (
@@ -1432,77 +1404,71 @@ class apis(commands.Cog):
     @commands.command(aliases=["gh"])
     async def github(self, ctx, username: str):
         """Fetches a members's GitHub information."""
-        async with ctx.typing():
-            user_data = await self.bot.get_json(
-                f"https://api.github.com/users/{username}"
+        user_data = await self.bot.get_json(f"https://api.github.com/users/{username}")
+
+        if user_data.get("message") is not None:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title=f"The profile for `{username}` was not found.",
+                    colour=discord.Colour.dark_red(),
+                )
             )
 
-            if user_data.get("message") is not None:
-                return await ctx.send(
-                    embed=discord.Embed(
-                        title=f"The profile for `{username}` was not found.",
-                        colour=discord.Colour.dark_red(),
-                    )
-                )
+        org_data = await self.bot.get_json(user_data["organizations_url"])
 
-            org_data = await self.bot.get_json(user_data["organizations_url"])
+        orgs = [
+            f"[{org['login']}](https://github.com/{org['login']})" for org in org_data
+        ]
+        orgs_to_add = " | ".join(orgs)
 
-            orgs = [
-                f"[{org['login']}](https://github.com/{org['login']})"
-                for org in org_data
-            ]
-            orgs_to_add = " | ".join(orgs)
+        gists = user_data["public_gists"]
 
-            gists = user_data["public_gists"]
+        if user_data["blog"].startswith("http"):
+            blog = user_data["blog"]
+        elif user_data["blog"]:
+            blog = f"https://{user_data['blog']}"
+        else:
+            blog = "No website link available"
 
-            if user_data["blog"].startswith("http"):
-                blog = user_data["blog"]
-            elif user_data["blog"]:
-                blog = f"https://{user_data['blog']}"
-            else:
-                blog = "No website link available"
+        embed = discord.Embed(
+            title=f"`{user_data['login']}`'s GitHub profile info",
+            description=user_data["bio"] or "",
+            colour=0x7289DA,
+            url=user_data["html_url"],
+            timestamp=datetime.strptime(user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"),
+        )
+        embed.set_thumbnail(url=user_data["avatar_url"])
+        embed.set_footer(text="Account created at")
 
-            embed = discord.Embed(
-                title=f"`{user_data['login']}`'s GitHub profile info",
-                description=user_data["bio"] or "",
-                colour=0x7289DA,
-                url=user_data["html_url"],
-                timestamp=datetime.strptime(
-                    user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"
-                ),
-            )
-            embed.set_thumbnail(url=user_data["avatar_url"])
-            embed.set_footer(text="Account created at")
-
-            if user_data["type"] == "User":
-
-                embed.add_field(
-                    name="Followers",
-                    value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)",
-                )
-                embed.add_field(name="\u200b", value="\u200b")
-                embed.add_field(
-                    name="Following",
-                    value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)",
-                )
+        if user_data["type"] == "User":
 
             embed.add_field(
-                name="Public repos",
-                value=f"[{user_data['public_repos']}]({user_data['html_url']}?tab=repositories)",
+                name="Followers",
+                value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)",
             )
             embed.add_field(name="\u200b", value="\u200b")
+            embed.add_field(
+                name="Following",
+                value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)",
+            )
 
-            if user_data["type"] == "User":
-                embed.add_field(
-                    name="Gists", value=f"[{gists}](https://gist.github.com/{username})"
-                )
+        embed.add_field(
+            name="Public repos",
+            value=f"[{user_data['public_repos']}]({user_data['html_url']}?tab=repositories)",
+        )
+        embed.add_field(name="\u200b", value="\u200b")
 
-                embed.add_field(
-                    name="Organization(s)",
-                    value=orgs_to_add or "No organizations",
-                )
-                embed.add_field(name="\u200b", value="\u200b")
-            embed.add_field(name="Website", value=blog)
+        if user_data["type"] == "User":
+            embed.add_field(
+                name="Gists", value=f"[{gists}](https://gist.github.com/{username})"
+            )
+
+            embed.add_field(
+                name="Organization(s)",
+                value=orgs_to_add or "No organizations",
+            )
+            embed.add_field(name="\u200b", value="\u200b")
+        embed.add_field(name="Website", value=blog)
 
         await ctx.send(embed=embed)
 
