@@ -83,6 +83,14 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def excuse_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="excuse"):
+            await self.cog.excuse(self.cog, context)
+
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+
     async def idea_command(self):
         context = helpers.MockContext()
 
