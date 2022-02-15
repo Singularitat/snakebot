@@ -83,6 +83,32 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def contests_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="contests"):
+            await self.cog.contests(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
+    async def excuse_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="excuse"):
+            await self.cog.excuse(self.cog, context)
+
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+
+    async def idea_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="idea"):
+            await self.cog.idea(self.cog, context)
+
+            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+
     async def domains_command(self):
         context = helpers.MockContext()
 
