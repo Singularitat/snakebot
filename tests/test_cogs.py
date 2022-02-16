@@ -83,6 +83,21 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def curl_command(self):
+        context = helpers.MockContext()
+        code = r"""
+        curl 'https://axoltlapi.herokuapp.com/' \
+            -H 'Connection: keep-alive' \
+            -H 'Cache-Control: max-age=0' \
+            -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36' \
+            -H 'Referer: https://theaxolotlapi.netlify.app/' \
+            -H 'Accept-Language: en-US,en;q=0.9' \
+            --compressed
+        """
+
+        with self.subTest(command="curl"):
+            await self.cog.curl(self.cog, context, code=code)
+
     async def contests_command(self):
         context = helpers.MockContext()
 
@@ -1208,7 +1223,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         await self.cog.md(self.cog, context, text="!@#$%^&*()")
 
         self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
+            context.send.call_args.kwargs["embeds"].color.value, 10038562
         )
 
     async def test_epoch_command(self):
@@ -1579,6 +1594,44 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
                 if name.endswith("command") and not name.startswith("test")
             ]
         )
+
+    async def vaccine_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.vaccine(self.cog, context)
+
+        embed = context.send.call_args.kwargs["embed"]
+
+        self.assertNotEqual(embed.color.value, 10038562)
+        data = embed.description.split()
+
+        first_dose_perc = data[6]
+        second_dose_perc = data[9]
+
+        first_dose = int(data[14].replace(",", ""))
+        second_dose = int(data[17].replace(",", ""))
+        third_dose = int(data[20].replace(",", ""))
+        booster = int(data[22].replace(",", ""))
+
+        first_dose_yesterday = int(data[27].replace(",", ""))
+        second_dose_yesterday = int(data[30].replace(",", ""))
+        third_dose_yesterday = int(data[33].replace(",", ""))
+        booster_yesterday = int(data[35].replace(",", ""))
+
+        self.assertTrue(first_dose_perc[-1] == "%" and int(first_dose_perc[:-1]) >= 96)
+        self.assertTrue(
+            second_dose_perc[-1] == "%" and int(second_dose_perc[:-1]) >= 95
+        )
+
+        self.assertTrue(first_dose >= 4_014_360)
+        self.assertTrue(second_dose >= 3_946_709)
+        self.assertTrue(third_dose >= 31_534)
+        self.assertTrue(booster >= 2_004_808)
+
+        self.assertTrue(first_dose_yesterday >= 660)
+        self.assertTrue(second_dose_yesterday >= 1_406)
+        self.assertTrue(third_dose_yesterday >= 198)
+        self.assertTrue(booster_yesterday >= 46_156)
 
     async def holidays_command(self):
         context = helpers.MockContext()
