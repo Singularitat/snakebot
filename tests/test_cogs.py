@@ -1595,6 +1595,44 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
             ]
         )
 
+    async def vaccine_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.vaccine(self.cog, context)
+
+        embed = context.send.call_args.kwargs["embed"]
+
+        self.assertNotEqual(embed.color.value, 10038562)
+        data = embed.description.split()
+
+        first_dose_perc = data[6]
+        second_dose_perc = data[9]
+
+        first_dose = int(data[14].replace(",", ""))
+        second_dose = int(data[17].replace(",", ""))
+        third_dose = int(data[20].replace(",", ""))
+        booster = int(data[22].replace(",", ""))
+
+        first_dose_yesterday = int(data[27].replace(",", ""))
+        second_dose_yesterday = int(data[30].replace(",", ""))
+        third_dose_yesterday = int(data[33].replace(",", ""))
+        booster_yesterday = int(data[35].replace(",", ""))
+
+        self.assertTrue(first_dose_perc[-1] == "%" and int(first_dose_perc[:-1]) >= 96)
+        self.assertTrue(
+            second_dose_perc[-1] == "%" and int(second_dose_perc[:-1]) >= 95
+        )
+
+        self.assertTrue(first_dose >= 4_014_360)
+        self.assertTrue(second_dose >= 3_946_709)
+        self.assertTrue(third_dose >= 31_534)
+        self.assertTrue(booster >= 2_004_808)
+
+        self.assertTrue(first_dose_yesterday >= 660)
+        self.assertTrue(second_dose_yesterday >= 1_406)
+        self.assertTrue(third_dose_yesterday >= 198)
+        self.assertTrue(booster_yesterday >= 46_156)
+
     async def holidays_command(self):
         context = helpers.MockContext()
 
