@@ -283,7 +283,7 @@ class useful(commands.Cog):
 
         description = (
             "```prolog\nEligible Population Vaccinated %:\n  First Dose: "
-            f"{data[186].text_content()}\n  Second Dose: {data[189].text_content()}\n\nCumulative Total:\n  "
+            f"{data[198].text_content()}\n  Second Dose: {data[201].text_content()}\n\nCumulative Total:\n  "
             f"First Dose: {data[1].text}\n  Second Dose: {data[4].text}\n  Third Primary:"
             f" {data[7].text}\n  Boosters: {data[9].text}\n\nVaccinations Yesterday:\n"
             f"  First Dose: {data[0].text}\n  Second Dose: {data[3].text}\n"
