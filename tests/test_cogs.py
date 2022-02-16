@@ -83,6 +83,21 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             *[getattr(self, name)() for name in dir(self) if name.endswith("command")]
         )
 
+    async def curl_command(self):
+        context = helpers.MockContext()
+        code = r"""
+        curl 'https://axoltlapi.herokuapp.com/' \
+            -H 'Connection: keep-alive' \
+            -H 'Cache-Control: max-age=0' \
+            -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36' \
+            -H 'Referer: https://theaxolotlapi.netlify.app/' \
+            -H 'Accept-Language: en-US,en;q=0.9' \
+            --compressed
+        """
+
+        with self.subTest(command="curl"):
+            await self.cog.curl(self.cog, context, code=code)
+
     async def contests_command(self):
         context = helpers.MockContext()
 
@@ -1208,7 +1223,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         await self.cog.md(self.cog, context, text="!@#$%^&*()")
 
         self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
+            context.send.call_args.kwargs["embeds"].color.value, 10038562
         )
 
     async def test_epoch_command(self):
