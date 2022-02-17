@@ -1223,7 +1223,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         await self.cog.md(self.cog, context, text="!@#$%^&*()")
 
         self.assertNotEqual(
-            context.send.call_args.kwargs["embeds"].color.value, 10038562
+            context.send.call_args.kwargs["embeds"][0].color.value, 10038562
         )
 
     async def test_epoch_command(self):
@@ -1605,33 +1605,34 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(embed.color.value, 10038562)
         data = embed.description.split()
 
-        first_dose_perc = data[6]
-        second_dose_perc = data[9]
+        first_perc = data[7]
+        second_perc = data[10]
+        booster_perc = data[12]
 
-        first_dose = int(data[14].replace(",", ""))
-        second_dose = int(data[17].replace(",", ""))
-        third_dose = int(data[20].replace(",", ""))
-        booster = int(data[22].replace(",", ""))
+        first_dose = int(data[17].replace(",", ""))
+        second_dose = int(data[20].replace(",", ""))
+        third_dose = int(data[23].replace(",", ""))
+        booster = int(data[25].replace(",", ""))
 
-        first_dose_yesterday = int(data[27].replace(",", ""))
-        second_dose_yesterday = int(data[30].replace(",", ""))
-        third_dose_yesterday = int(data[33].replace(",", ""))
-        booster_yesterday = int(data[35].replace(",", ""))
+        first_dose_yesterday = int(data[30].replace(",", ""))
+        second_dose_yesterday = int(data[33].replace(",", ""))
+        third_dose_yesterday = int(data[36].replace(",", ""))
+        booster_yesterday = int(data[38].replace(",", ""))
 
-        self.assertTrue(first_dose_perc[-1] == "%" and int(first_dose_perc[:-1]) >= 96)
-        self.assertTrue(
-            second_dose_perc[-1] == "%" and int(second_dose_perc[:-1]) >= 95
-        )
+        self.assertTrue(first_perc[-1] == "%" and float(first_perc[:-1]) >= 96.4)
+        self.assertTrue(second_perc[-1] == "%" and float(second_perc[:-1]) >= 94.8)
+        self.assertTrue(booster_perc[-1] == "%" and float(booster_perc[:-1]) >= 63.6)
 
-        self.assertTrue(first_dose >= 4_014_360)
-        self.assertTrue(second_dose >= 3_946_709)
-        self.assertTrue(third_dose >= 31_534)
-        self.assertTrue(booster >= 2_004_808)
+        self.assertTrue(first_dose >= 4_014_939)
+        self.assertTrue(second_dose >= 3_948_146)
+        self.assertTrue(third_dose >= 31_818)
+        self.assertTrue(booster >= 2_045_457)
 
-        self.assertTrue(first_dose_yesterday >= 660)
-        self.assertTrue(second_dose_yesterday >= 1_406)
-        self.assertTrue(third_dose_yesterday >= 198)
-        self.assertTrue(booster_yesterday >= 46_156)
+        # This values may have to be changed cause the daily values vary
+        self.assertTrue(first_dose_yesterday >= 200)
+        self.assertTrue(second_dose_yesterday >= 700)
+        self.assertTrue(third_dose_yesterday >= 100)
+        self.assertTrue(booster_yesterday >= 20_000)
 
     async def holidays_command(self):
         context = helpers.MockContext()
