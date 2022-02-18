@@ -1177,6 +1177,23 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_vec4_command(self):
+        context = helpers.MockContext()
+        tests = (
+            ("#FF00FF", "```less\n1.00000, 0.00000, 1.00000, 1.0```"),
+            ("#264e94", "```less\n0.14902, 0.30588, 0.58039, 1.0```"),
+            ("#182fe1", "```less\n0.09412, 0.18431, 0.88235, 1.0```"),
+            ("50e828", "```less\n0.31373, 0.90980, 0.15686, 1.0```"),
+            ("3efe99", "```less\n0.24314, 0.99608, 0.60000, 1.0```"),
+        )
+
+        for color, result in tests:
+            with self.subTest(color=color):
+                await self.cog.vec4(self.cog, context, color)
+
+                self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+                self.assertEqual(context.send.call_args.args[0], result)
+
     async def test_char_command(self):
         context = helpers.MockContext()
 
