@@ -104,6 +104,12 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def vec4(self, ctx, hex_val):
+        decimal = int(hex_val.lstrip("#"), 16)
+        r, g, b = decimal >> 16, (decimal >> 8) & 0b11111111, decimal & 0b11111111
+        await ctx.send(f"```less\n{r / 255:.5f}, {g / 255:.5f}, {b / 255:.5f}, 1.0```")
+
+    @commands.command()
     async def oneline(self, ctx, *, code=None):
         """Convert python 3 code into one line.
 
