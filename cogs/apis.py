@@ -653,13 +653,15 @@ class apis(commands.Cog):
     @commands.command()
     async def quote(self, ctx):
         """Gets a random quote."""
-        url = "https://api.fisenko.net/v1/quotes/en/random"
+        url = "https://quote-garden.herokuapp.com/api/v3/quotes/random"
 
         quote = await self.bot.get_json(url)
+        quote = quote["data"][0]
+
         embed = discord.Embed(
-            color=discord.Color.blurple(), description="> " + quote["text"]
+            color=discord.Color.blurple(), description="> " + quote["quoteText"]
         )
-        embed.set_footer(text=f"― {quote['author']['name']}")
+        embed.set_footer(text=f"― {quote['quoteAuthor']}")
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -1331,7 +1333,10 @@ class apis(commands.Cog):
             description=data["extract"],
             url=data["content_urls"]["desktop"]["page"],
         )
-        embed.set_image(url=data["thumbnail"]["source"])
+
+        thumbnail = data.get("thumbnail")
+        if thumbnail:
+            embed.set_image(url=thumbnail["source"])
 
         await ctx.send(embed=embed)
 
