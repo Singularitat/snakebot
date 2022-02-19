@@ -132,6 +132,11 @@ class animals(commands.Cog):
         await self.get(ctx, "https://wohlsoft.ru/images/foxybot/randomfox.php", "file")
 
     @commands.command()
+    async def fox3(self, ctx):
+        """Gets a random fox image."""
+        await self.get(ctx, "https://some-random-api.ml/img/fox", "link")
+
+    @commands.command()
     async def cat(self, ctx):
         """This cat doesn't exist."""
         url = "https://thiscatdoesnotexist.com"
