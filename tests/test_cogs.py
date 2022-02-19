@@ -1185,14 +1185,21 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             ("#182fe1", "```less\n0.09412, 0.18431, 0.88235, 1.0```"),
             ("50e828", "```less\n0.31373, 0.90980, 0.15686, 1.0```"),
             ("3efe99", "```less\n0.24314, 0.99608, 0.60000, 1.0```"),
+            ("1.00000, 0.00000, 1.00000, 1.0", "```less\nFF00FF```"),
+            ("0.14902, 0.30588, 0.58039, 1.0", "```less\n264E94```"),
+            ("0.09412, 0.18431, 0.88235, 1.0", "```less\n182FE1```"),
+            ("0.31373, 0.90980, 0.15686, 1.0", "```less\n50E828```"),
+            ("0.24314, 0.99608, 0.60000", "```less\n3EFE99```"),
         )
 
         for color, result in tests:
             with self.subTest(color=color):
-                await self.cog.vec4(self.cog, context, color)
+                await self.cog.vec4(self.cog, context, value=color)
 
-                self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-                self.assertEqual(context.send.call_args.args[0], result)
+                embed = context.send.call_args.kwargs["embed"]
+
+                self.assertNotEqual(embed.color.value, 10038562)
+                self.assertEqual(embed.description, result)
 
     async def test_char_command(self):
         context = helpers.MockContext()
@@ -1645,7 +1652,7 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(third_dose >= 31_818)
         self.assertTrue(booster >= 2_045_457)
 
-        # This values may have to be changed cause the daily values vary
+        # These values may have to be changed cause the daily values vary a lot
         self.assertTrue(first_dose_yesterday >= 200)
         self.assertTrue(second_dose_yesterday >= 700)
         self.assertTrue(third_dose_yesterday >= 100)
