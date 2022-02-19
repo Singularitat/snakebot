@@ -122,8 +122,14 @@ class misc(commands.Cog):
         decimal = int(value.lstrip("#"), 16)
         embed.color = decimal
 
-        r, g, b = (decimal & 0xff0000) >> 16, (decimal & 0x00ff00) >> 8, decimal & 0x0000ff
-        embed.description = f"```less\n{r / 255:.5f}, {g / 255:.5f}, {b / 255:.5f}, 1.0```"
+        r, g, b = (
+            (decimal & 0xFF0000) >> 16,
+            (decimal & 0x00FF00) >> 8,
+            decimal & 0x0000FF,
+        )
+        embed.description = (
+            f"```less\n{r / 255:.5f}, {g / 255:.5f}, {b / 255:.5f}, 1.0```"
+        )
         await ctx.send(embed=embed)
 
     @commands.command()
