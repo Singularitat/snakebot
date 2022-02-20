@@ -1,12 +1,14 @@
-import os
+from __future__ import annotations
+
 import asyncio
 import logging
+import os
 import subprocess
 from contextlib import suppress
 
+import aiohttp
 import discord
 from discord.ext import commands
-import aiohttp
 
 import config
 from cogs.utils.database import Database
@@ -30,7 +32,7 @@ class Bot(commands.Bot):
         self.client_session = None
         self.DB = Database()
 
-    async def get_prefix(self, message):
+    async def get_prefix(self, message: discord.Message) -> str:
         default = "."
 
         if not message.guild:
@@ -46,7 +48,7 @@ class Bot(commands.Bot):
     @classmethod
     def create(cls) -> commands.Bot:
         """Create and return an instance of a Bot."""
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
 
         intents = discord.Intents.all()
         intents.dm_typing = False
@@ -74,8 +76,6 @@ class Bot(commands.Bot):
     async def get_json(self, url: str) -> dict:
         """Gets and loads json from a url.
 
-        session: aiohttp.ClientSession
-            A aiohttp client session so that a new one isn't made every request
         url: str
             The url to fetch the json from.
         """
@@ -88,7 +88,7 @@ class Bot(commands.Bot):
         ):
             return None
 
-    async def run_process(self, command, raw=False):
+    async def run_process(self, command, raw=False) -> list | str:
         """Runs a shell command and returns the output.
 
         command: str
@@ -130,7 +130,7 @@ class Bot(commands.Bot):
     async def login(self, *args, **kwargs) -> None:
         """Setup the client_session before logging in."""
         self.client_session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=6)
+            timeout=aiohttp.ClientTimeout(total=10)
         )
 
         await super().login(*args, **kwargs)

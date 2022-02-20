@@ -20,7 +20,7 @@ class PerformanceMocker:
     """A mock object that can also be used in await expressions."""
 
     def __init__(self):
-        self.loop = asyncio.get_event_loop()
+        self.loop = asyncio.get_running_loop()
 
     def permissions_for(self, obj):
         perms = discord.Permissions.all()
@@ -139,11 +139,16 @@ class owner(commands.Cog):
             )
             return await ctx.send(
                 embed=discord.Embed(
-                    color=discord.Color.blurple(), description=f"```{matches}```"
+                    color=discord.Color.blurple(), description=f"```less\n{matches}```"
                 )
             )
 
-        await ctx.send(file=discord.File(StringIO(docs.decode()), "doc.txt"))
+        docs = docs.decode()
+
+        if len(docs) > 2000:
+            return await ctx.send(file=discord.File(StringIO(docs), "doc.txt"))
+
+        await ctx.send(f"```ahk\n{docs}```")
 
     @commands.command(pass_context=True, hidden=True, name="eval")
     async def _eval(self, ctx, *, code: str):
