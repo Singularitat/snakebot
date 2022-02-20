@@ -20,7 +20,7 @@ class PerformanceMocker:
     """A mock object that can also be used in await expressions."""
 
     def __init__(self):
-        self.loop = asyncio.get_event_loop()
+        self.loop = asyncio.get_running_loop()
 
     def permissions_for(self, obj):
         perms = discord.Permissions.all()
