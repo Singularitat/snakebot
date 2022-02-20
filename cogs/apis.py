@@ -238,8 +238,11 @@ class apis(commands.Cog):
                 post = post["data"]
                 video = post["secure_media"]
                 if video:
-                    if "oembed" in video:
-                        video = video["oembed"]["thumbnail_url"]
+                    oembed = video.get("oembed")
+                    if oembed:
+                        video = oembed.get("thumbnail_url")
+                        if not video:
+                            video = oembed["url"]
                     else:
                         video = video["reddit_video"]["fallback_url"]
 
