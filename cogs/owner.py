@@ -139,11 +139,16 @@ class owner(commands.Cog):
             )
             return await ctx.send(
                 embed=discord.Embed(
-                    color=discord.Color.blurple(), description=f"```{matches}```"
+                    color=discord.Color.blurple(), description=f"```less\n{matches}```"
                 )
             )
 
-        await ctx.send(file=discord.File(StringIO(docs.decode()), "doc.txt"))
+        docs = docs.decode()
+
+        if len(docs) > 2000:
+            return await ctx.send(file=discord.File(StringIO(docs), "doc.txt"))
+
+        await ctx.send(f"```ahk\n{docs}```")
 
     @commands.command(pass_context=True, hidden=True, name="eval")
     async def _eval(self, ctx, *, code: str):
