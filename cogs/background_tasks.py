@@ -435,6 +435,8 @@ class background_tasks(commands.Cog):
         """Gets the documentation of all discord objects from their __doc__ attribute."""
         with self.DB.docs.write_batch() as wb:
             self._get_documentation(discord, wb)
+            self._get_documentation(commands, wb)
+            self._get_documentation(tasks, wb)
 
     @tasks.loop(hours=2)
     async def get_currencies(self):
