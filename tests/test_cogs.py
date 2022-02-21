@@ -1201,6 +1201,16 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
                 self.assertNotEqual(embed.color.value, 10038562)
                 self.assertEqual(embed.description, result)
 
+    async def test_oneline_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.oneline(self.cog, context, code='print("one")\nprint("two")')
+
+        self.assertEqual(
+            context.reply.call_args.args[0],
+            "```py\n(print('one'), (print('two'), None)[1])[1]```",
+        )
+
     async def test_char_command(self):
         context = helpers.MockContext()
 
