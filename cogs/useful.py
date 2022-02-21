@@ -321,64 +321,6 @@ class useful(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.cooldown(1, 30, commands.BucketType.user)
-    @commands.cooldown(10, 60, commands.BucketType.default)
-    @commands.command(aliases=["ss"])
-    async def screenshot(self, ctx, website: str):
-        """Takes a screenshot of a website and sends the image.
-
-        url: str
-        """
-        if not website.startswith("http"):
-            website = "https://" + website
-
-        url = "https://onlinescreenshot.com/"
-
-        headers = {
-            "authority": "onlinescreenshot.com",
-            "accept": "*/*",
-            "x-requested-with": "XMLHttpRequest",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36",
-            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-            "origin": "https://onlinescreenshot.com",
-            "sec-fetch-site": "same-origin",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-dest": "empty",
-            "referer": "https://onlinescreenshot.com/",
-            "accept-language": "en-US,en;q=0.9",
-        }
-
-        data = {
-            "url": website,
-            "cookies": 0,
-            "proxy": 0,
-            "delay": 1,
-            "captchaToken": False,
-            "device": 1,
-            "platform": 1,
-            "browser": 1,
-            "fFormat": 1,
-            "width": 1920,
-            "height": 1080,
-            "uid": "NaN",
-        }
-
-        async with ctx.typing(), self.bot.client_session.post(
-            url, headers=headers, data=data, timeout=40
-        ) as resp:
-            data = await resp.json()
-
-        if data["imgUrl"]:
-            message = await ctx.send(data["imgUrl"])
-            await self.wait_for_deletion(ctx.author, message)
-        elif data["error"]:
-            await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```Another request is being processed```",
-                )
-            )
-
     @commands.command()
     async def tempmail(self, ctx):
         """Creates a random tempmail account for you."""
