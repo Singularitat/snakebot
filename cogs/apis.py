@@ -226,18 +226,34 @@ class apis(commands.Cog):
             url = f"https://old.reddit.com/r/{subreddit}/hot/.json"
 
             with ctx.typing():
-                posts = (await self.bot.get_json(url))["data"]["children"]
+                resp = await self.bot.get_json(url)
 
+                error = resp.get("error")
+                if error:
+                    return await ctx.send(
+                        embed=discord.Embed(
+                            color=discord.Color.dark_red(),
+                            description=f"Error: {error}\nMessage: {resp['message']}",
+                        )
+                    )
+
+            posts = resp["data"]["children"]
             post = random.choice(posts)
 
             clean_posts = []
 
             for post in posts:
-                if post["data"]["over_18"]:
-                    continue
                 post = post["data"]
-                video = post["secure_media"]
-                if video:
+
+                if post["over_18"]:
+                    continue
+
+                text = post["selftext"].replace("&amp;", "&")
+
+                if text and len(text) > 4003:
+                    text = f"{text[:4000]}..."
+
+                if not text and (video := post["secure_media"]):
                     oembed = video.get("oembed")
                     if oembed:
                         video = oembed.get("thumbnail_url")
@@ -245,6 +261,8 @@ class apis(commands.Cog):
                             video = oembed["url"]
                     else:
                         video = video["reddit_video"]["fallback_url"]
+                else:
+                    video = None
 
                 title = post["title"]
 
@@ -254,6 +272,7 @@ class apis(commands.Cog):
                 clean_posts.append(
                     {
                         "title": title,
+                        "text": text,
                         "video": video,
                         "url": post["url"],
                         "link": post["permalink"],
@@ -275,12 +294,21 @@ class apis(commands.Cog):
 
             post = random.choice(clean_posts)
 
-        if post["video"]:
-            return await ctx.send(
-                f"**{post['title']}**\n{post['sub']}\n{post['video']}"
+        text = post.get("text")
+        if text:
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                title=post["title"],
+                description=f"{post['sub']} "
+                f"[Post](https://reddit.com{post['link']})\n\n{text}",
             )
+            return await ctx.send(embed=embed)
 
-        if post["url"][-4:] in [".jpg", ".png"]:
+        video = post.get("video")
+        if video:
+            return await ctx.send(f"**{post['title']}**\n{post['sub']}\n{video}")
+
+        if post["url"][-4:] in (".jpg", ".png"):
             embed = discord.Embed(
                 color=discord.Color.blurple(),
                 title=post["title"],
