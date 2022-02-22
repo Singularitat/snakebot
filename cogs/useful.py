@@ -321,6 +321,25 @@ class useful(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    @commands.cooldown(1, 30, commands.BucketType.user)
+    @commands.cooldown(10, 60, commands.BucketType.default)
+    @commands.command(aliases=["ss"])
+    async def screenshot(self, ctx, website: str):
+        """Takes a screenshot of a website and sends the image.
+
+        website: str
+        """
+        if not website.startswith("http"):
+            website = "https://" + website
+
+        url = f"https://api.pikwy.com/?tkn=125&d=3000&u={website}&fs=0&w=1920&h=1080&f=png&rt=jweb"
+
+        async with ctx.typing(), self.bot.client_session.post(url, timeout=40) as resp:
+            data = await resp.json()
+
+        message = await ctx.send(data["iurl"])
+        await self.wait_for_deletion(ctx.author, message)
+
     @commands.command()
     async def tempmail(self, ctx):
         """Creates a random tempmail account for you."""
