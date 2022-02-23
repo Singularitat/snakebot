@@ -1201,16 +1201,6 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
                 self.assertNotEqual(embed.color.value, 10038562)
                 self.assertEqual(embed.description, result)
 
-    async def test_oneline_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.oneline(self.cog, context, code='print("one")\nprint("two")')
-
-        self.assertEqual(
-            context.reply.call_args.args[0],
-            "```py\n(print('one'), (print('two'), None)[1])[1]```",
-        )
-
     async def test_char_command(self):
         context = helpers.MockContext()
 
@@ -1648,25 +1638,14 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         third_dose = int(data[23].replace(",", ""))
         booster = int(data[25].replace(",", ""))
 
-        first_dose_yesterday = int(data[30].replace(",", ""))
-        second_dose_yesterday = int(data[33].replace(",", ""))
-        third_dose_yesterday = int(data[36].replace(",", ""))
-        booster_yesterday = int(data[38].replace(",", ""))
+        self.assertTrue(first_perc[-1] == "%" and float(first_perc[:-1]) >= 96.5)
+        self.assertTrue(second_perc[-1] == "%" and float(second_perc[:-1]) >= 94.9)
+        self.assertTrue(booster_perc[-1] == "%" and float(booster_perc[:-1]) >= 67.7)
 
-        self.assertTrue(first_perc[-1] == "%" and float(first_perc[:-1]) >= 96.4)
-        self.assertTrue(second_perc[-1] == "%" and float(second_perc[:-1]) >= 94.8)
-        self.assertTrue(booster_perc[-1] == "%" and float(booster_perc[:-1]) >= 63.6)
-
-        self.assertTrue(first_dose >= 4_014_939)
-        self.assertTrue(second_dose >= 3_948_146)
-        self.assertTrue(third_dose >= 31_818)
-        self.assertTrue(booster >= 2_045_457)
-
-        # These values may have to be changed cause the daily values vary a lot
-        self.assertTrue(first_dose_yesterday >= 200)
-        self.assertTrue(second_dose_yesterday >= 700)
-        self.assertTrue(third_dose_yesterday >= 100)
-        self.assertTrue(booster_yesterday >= 20_000)
+        self.assertTrue(first_dose >= 4_017_433)
+        self.assertTrue(second_dose >= 3_954_560)
+        self.assertTrue(third_dose >= 32_757)
+        self.assertTrue(booster >= 2_223_385)
 
     async def holidays_command(self):
         context = helpers.MockContext()
