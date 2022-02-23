@@ -115,8 +115,7 @@ class misc(commands.Cog):
             c /= 255
             if c <= 0.04045:
                 return c / 12.92
-            else:
-                return pow((c + 0.055) / 1.055, 2.4)
+            return pow((c + 0.055) / 1.055, 2.4)
 
         r, g, b = (
             round(lin_to_srgb((decimal & 0xFF0000) >> 16) * 255),
@@ -124,7 +123,11 @@ class misc(commands.Cog):
             round(lin_to_srgb(decimal & 0x0000FF) * 255),
         )
 
-        return await ctx.send(embed=discord.Embed(color=decimal, description=f"```less\n{r:0>2X}{g:0>2X}{b:0>2X}```"))
+        return await ctx.send(
+            embed=discord.Embed(
+                color=decimal, description=f"```less\n{r:0>2X}{g:0>2X}{b:0>2X}```"
+            )
+        )
 
     @commands.command()
     async def vec4(self, ctx, *, value):
