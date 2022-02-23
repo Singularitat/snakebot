@@ -104,8 +104,31 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def srgb(self, ctx, color_hex):
+        """Converts from rgb to srgb.
+
+        hex: str
+        """
+        decimal = int(color_hex, 16)
+
+        def lin_to_srgb(c):
+            c /= 255
+            if c <= 0.04045:
+                return c / 12.92
+            else:
+                return pow((c + 0.055) / 1.055, 2.4)
+
+        r, g, b = (
+            round(lin_to_srgb((decimal & 0xFF0000) >> 16) * 255),
+            round(lin_to_srgb((decimal & 0x00FF00) >> 8) * 255),
+            round(lin_to_srgb(decimal & 0x0000FF) * 255),
+        )
+
+        return await ctx.send(embed=discord.Embed(color=decimal, description=f"```less\n{r:0>2X}{g:0>2X}{b:0>2X}```"))
+
+    @commands.command()
     async def vec4(self, ctx, *, value):
-        """Converts a hex value to RGBa scaled by 255 and vice versa
+        """Converts a hex value to RGBa scaled by 255 and vice versa.
 
         value: str
         """
