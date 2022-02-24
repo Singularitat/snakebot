@@ -313,11 +313,22 @@ class useful(commands.Cog):
         with ctx.typing():
             data = await self.bot.get_json(url)
 
-        embed = discord.Embed(color=discord.Color.blurple())
+        embed = discord.Embed(color=discord.Color.blurple(), title="Upcoming Holidays")
+        current_time = time.time()
+        past_holidays = []
 
         for holiday in data:
             epoch = time.mktime(time.strptime(holiday["date"], "%Y-%m-%d"))
-            embed.add_field(name=holiday["name"], value=f"<t:{epoch:.0f}:R>")
+            # I want the the past holidays after everything else
+            if epoch < current_time:
+                past_holidays.append((holiday["name"], f"<t:{epoch:.0f}:R>"))
+            else:
+                embed.add_field(name=holiday["name"], value=f"<t:{epoch:.0f}:R>")
+
+        embed.add_field(name="\u200B", value="\u200B", inline=False)
+
+        for holiday, date in past_holidays[::-1]:
+            embed.add_field(name=holiday, value=date)
 
         await ctx.send(embed=embed)
 
