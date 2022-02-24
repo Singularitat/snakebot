@@ -1290,20 +1290,6 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             "```32°F is 0.00°C```",
         )
 
-    async def test_nato_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.nato(
-            self.cog, context, text="the quick brown fox jumps over 13 lazy dogs"
-        )
-
-        context.send.assert_called_with(
-            "Tango Hotel Echo (space) Quebec Uniform India Charlie Kilo (space) Bravo "
-            "Romeo Oscar Whiskey November (space) Foxtrot Oscar X-ray (space) Juliett "
-            "Uniform Mike Papa Sierra (space) Oscar Victor Echo Romeo (space) One Three"
-            " (space) Lima Alfa Zulu Yankee (space) Delta Oscar Golf Sierra ",
-        )
-
     async def test_embedjson_command(self):
         context = helpers.MockContext()
 

@@ -641,53 +641,6 @@ class misc(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def nato(self, ctx, *, text):
-        """Converts text to the NATO phonetic alphabet.
-
-        text: str
-        """
-        table = {
-            32: "(space) ",
-            49: "One ",
-            50: "Two ",
-            51: "Three ",
-            52: "Four ",
-            53: "Five ",
-            54: "Six ",
-            55: "Seven ",
-            56: "Eight ",
-            57: "Nine ",
-            97: "Alfa ",
-            98: "Bravo ",
-            99: "Charlie ",
-            100: "Delta ",
-            101: "Echo ",
-            102: "Foxtrot ",
-            103: "Golf ",
-            104: "Hotel ",
-            105: "India ",
-            106: "Juliett ",
-            107: "Kilo ",
-            108: "Lima ",
-            109: "Mike ",
-            110: "November ",
-            111: "Oscar ",
-            112: "Papa ",
-            113: "Quebec ",
-            114: "Romeo ",
-            115: "Sierra ",
-            116: "Tango ",
-            117: "Uniform ",
-            118: "Victor ",
-            119: "Whiskey ",
-            120: "X-ray ",
-            121: "Yankee ",
-            122: "Zulu ",
-        }
-
-        await ctx.send(text.lower().translate(table))
-
-    @commands.command()
     async def convert(self, ctx, number: int):
         """Converts fahrenheit to celsius
 
