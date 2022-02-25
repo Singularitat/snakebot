@@ -1,3 +1,4 @@
+import asyncio
 import html
 import io
 import random
@@ -439,12 +440,20 @@ class apis(commands.Cog):
             "topP": 0.9,
         }
 
-        async with ctx.typing(), self.bot.client_session.post(
-            url, json=data, timeout=30
-        ) as resp:
-            resp = await resp.json()
+        try:
+            async with ctx.typing(), self.bot.client_session.post(
+                url, json=data, timeout=30
+            ) as resp:
+                resp = await resp.json()
+        except asyncio.TimeoutError:
+            return await ctx.reply(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="Request timed out",
+                ).set_footer(text="api may be experiencing high trafic")
+            )
 
-        await ctx.send(
+        await ctx.reply(
             embed=discord.Embed(
                 color=discord.Color.blurple(),
                 description=f"```\n{resp[0]['generated_text']}```",
