@@ -1,4 +1,3 @@
-import difflib
 import io
 import math
 import random
@@ -674,20 +673,6 @@ class misc(commands.Cog):
         )
         embed.add_field(name="Increment", value=snowflake & 0xFFF, inline=False)
         await ctx.send(embed=embed)
-
-    @commands.command()
-    async def unsplash(self, ctx, *, search):
-        """Gets an image from unsplash based off a search.
-
-        search: str
-        """
-        url = f"https://source.unsplash.com/random?{search}"
-        async with ctx.typing(), self.bot.client_session.get(
-            url, allow_redirects=False
-        ) as page:
-            soup = lxml.html.fromstring(await page.text())
-
-        await ctx.send(soup.xpath(".//a")[0].attrib["href"])
 
     @commands.command()
     async def rand(self, ctx, a: int, b: int):
