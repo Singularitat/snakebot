@@ -1,4 +1,3 @@
-import difflib
 import io
 import math
 import random
@@ -676,48 +675,11 @@ class misc(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def unsplash(self, ctx, *, search):
-        """Gets an image from unsplash based off a search.
-
-        search: str
-        """
-        url = f"https://source.unsplash.com/random?{search}"
-        async with ctx.typing(), self.bot.client_session.get(
-            url, allow_redirects=False
-        ) as page:
-            soup = lxml.html.fromstring(await page.text())
-
-        await ctx.send(soup.xpath(".//a")[0].attrib["href"])
-
-    @commands.command()
     async def rand(self, ctx, a: int, b: int):
         """Gets a random number such that a <= N <= b"""
         if a > b:
             a, b = b, a
         await ctx.reply(random.randint(a, b))
-
-    @commands.command()
-    async def opcode(self, ctx, search):
-        """Gets closest matches for an opcode.
-        Example usage .opcode UNARY_INVERT
-
-        search: str
-        """
-
-        def format_op(op):
-            code = opcodes[op]
-            return f"{code:<5x}{code:<5}{repr(chr(code)):<8}{op}"
-
-        matches = difflib.get_close_matches(search.upper(), [*opcodes], cutoff=0, n=5)
-        msg = "\n".join([format_op(match) for match in matches])
-        await ctx.send(f"```prolog\nHex: Num: BC:     Name:\n\n{msg}```")
-
-    @commands.command()
-    async def markdown(self, ctx):
-        """Sends a link to a guide on markdown"""
-        await ctx.send(
-            "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51"
-        )
 
     @commands.command(name="8ball")
     async def eightball(self, ctx):
