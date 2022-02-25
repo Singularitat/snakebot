@@ -712,13 +712,6 @@ class misc(commands.Cog):
         msg = "\n".join([format_op(match) for match in matches])
         await ctx.send(f"```prolog\nHex: Num: BC:     Name:\n\n{msg}```")
 
-    @commands.command()
-    async def markdown(self, ctx):
-        """Sends a link to a guide on markdown"""
-        await ctx.send(
-            "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51"
-        )
-
     @commands.command(name="8ball")
     async def eightball(self, ctx):
         """Seek advice or fortune-telling."""
