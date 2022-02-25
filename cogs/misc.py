@@ -696,22 +696,6 @@ class misc(commands.Cog):
             a, b = b, a
         await ctx.reply(random.randint(a, b))
 
-    @commands.command()
-    async def opcode(self, ctx, search):
-        """Gets closest matches for an opcode.
-        Example usage .opcode UNARY_INVERT
-
-        search: str
-        """
-
-        def format_op(op):
-            code = opcodes[op]
-            return f"{code:<5x}{code:<5}{repr(chr(code)):<8}{op}"
-
-        matches = difflib.get_close_matches(search.upper(), [*opcodes], cutoff=0, n=5)
-        msg = "\n".join([format_op(match) for match in matches])
-        await ctx.send(f"```prolog\nHex: Num: BC:     Name:\n\n{msg}```")
-
     @commands.command(name="8ball")
     async def eightball(self, ctx):
         """Seek advice or fortune-telling."""
