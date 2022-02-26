@@ -103,32 +103,6 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
-    async def srgb(self, ctx, color_hex):
-        """Converts from rgb to srgb.
-
-        hex: str
-        """
-        decimal = int(color_hex, 16)
-
-        def lin_to_srgb(c):
-            c /= 255
-            if c <= 0.04045:
-                return c / 12.92
-            return pow((c + 0.055) / 1.055, 2.4)
-
-        r, g, b = (
-            round(lin_to_srgb((decimal & 0xFF0000) >> 16) * 255),
-            round(lin_to_srgb((decimal & 0x00FF00) >> 8) * 255),
-            round(lin_to_srgb(decimal & 0x0000FF) * 255),
-        )
-
-        return await ctx.send(
-            embed=discord.Embed(
-                color=decimal, description=f"```less\n{r:0>2X}{g:0>2X}{b:0>2X}```"
-            )
-        )
-
-    @commands.command()
     async def vec4(self, ctx, *, value):
         """Converts a hex value to RGBa scaled by 255 and vice versa.
 
@@ -244,25 +218,6 @@ class misc(commands.Cog):
         await ctx.send(msg)
 
     @commands.command()
-    async def tiles(self, ctx, sat: float = 0.25):
-        """Generates tiles of a random color with a deafult 25% saturation.
-
-        sat: float
-            Saturation of the random color.
-        """
-        color = discord.Color.from_hsv(random.random(), sat, 1)
-        url = (
-            f"https://php-noise.com/noise.php?hex={color.value:X}"
-            "&tileSize=20&borderWidth=2&json"
-        )
-
-        tile = await self.bot.get_json(url)
-
-        embed = discord.Embed(color=color)
-        embed.set_image(url=tile["uri"])
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def code(self, ctx):
         embed = discord.Embed(
             color=discord.Color.random(), title="Discord Code Block formatting"
@@ -359,21 +314,6 @@ class misc(commands.Cog):
             pages.PaginatorButton("next", label=">", style=discord.ButtonStyle.green)
         )
         await paginator.send(ctx)
-
-    @commands.command()
-    async def fen(self, ctx, *, fen: str):
-        """Converts a chess fen to an image.
-
-        fen examples:
-        r1b1k1nr/p2p1pNp/n2B4/1p1NP2P/6P1/3P1Q2/P1P1K3/q5b1
-        rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-        4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1
-
-        fen: str
-        """
-        await ctx.send(
-            f"https://www.chess.com/dynboard?fen={fen.replace(' ', '%20')}&size=2"
-        )
 
     @commands.command()
     async def epoch(self, ctx, epoch: int):

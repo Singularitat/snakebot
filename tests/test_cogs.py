@@ -248,7 +248,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             await self.cog.synth(self.cog, context, prompt="reverse a binary tree")
 
             self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
+                context.reply.call_args.kwargs["embed"].color.value, 10038562
             )
 
     async def art_command(self):
@@ -1156,18 +1156,6 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
-    async def tiles_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="tiles"):
-            await self.cog.tiles(
-                self.cog,
-                context,
-            )
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
     async def color_command(self):
         context = helpers.MockContext()
 
@@ -1219,17 +1207,6 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context,
             1000,
         )
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-
-    async def test_fen_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.fen(
-            self.cog,
-            context,
-            fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        )
-
         self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_code_command(self):
@@ -1341,15 +1318,6 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(embed.fields[2].value, "<t:1597631921>")
         self.assertEqual(embed.fields[3].value, "140")
 
-    async def test_markdown_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.markdown(self.cog, context)
-
-        context.send.assert_called_with(
-            "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51"
-        )
-
     async def test_eightball_command(self):
         context = helpers.MockContext()
 
@@ -1416,13 +1384,6 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
                 "```"
             ),
         )
-
-    async def test_opcode_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.opcode(self.cog, context, search="UNARY")
-
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_rand_command(self):
         context = helpers.MockContext()
