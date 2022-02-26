@@ -361,21 +361,6 @@ class misc(commands.Cog):
         await paginator.send(ctx)
 
     @commands.command()
-    async def fen(self, ctx, *, fen: str):
-        """Converts a chess fen to an image.
-
-        fen examples:
-        r1b1k1nr/p2p1pNp/n2B4/1p1NP2P/6P1/3P1Q2/P1P1K3/q5b1
-        rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-        4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1
-
-        fen: str
-        """
-        await ctx.send(
-            f"https://www.chess.com/dynboard?fen={fen.replace(' ', '%20')}&size=2"
-        )
-
-    @commands.command()
     async def epoch(self, ctx, epoch: int):
         """Converts epoch time to relative time.
 
