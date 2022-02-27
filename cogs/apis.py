@@ -448,7 +448,7 @@ class apis(commands.Cog):
         except asyncio.TimeoutError:
             return await ctx.reply(
                 embed=discord.Embed(
-                    color=discord.Color.blurple(),
+                    color=discord.Color.dark_red(),
                     description="Request timed out",
                 ).set_footer(text="api may be experiencing high trafic")
             )
@@ -948,42 +948,6 @@ class apis(commands.Cog):
 
         embed.title = f"{country.title()} Search Trends"
         embed.description = "```{}```".format("\n".join(data[country]))
-        await ctx.send(embed=embed)
-
-    @commands.command(name="fakeuser")
-    async def fake_user(self, ctx):
-        """Gets a fake user with some random data."""
-        url = "https://randomuser.me/api/?results=1"
-
-        data = await self.bot.get_json(url)
-        data = data["results"][0]
-        embed = (
-            discord.Embed(color=discord.Color.blurple())
-            .set_author(
-                name="{} {} {}".format(
-                    data["name"]["title"],
-                    data["name"]["first"],
-                    data["name"]["last"],
-                ),
-                icon_url=data["picture"]["large"],
-            )
-            .add_field(name="Gender", value=data["gender"])
-            .add_field(name="Username", value=data["login"]["username"])
-            .add_field(name="Password", value=data["login"]["password"])
-            .add_field(
-                name="Location",
-                value="{}, {}, {}, {}".format(
-                    data["location"]["street"]["name"],
-                    data["location"]["city"],
-                    data["location"]["state"],
-                    data["location"]["country"],
-                ),
-            )
-            .add_field(name="Email", value=data["email"])
-            .add_field(name="Date of birth", value=data["dob"]["date"])
-            .add_field(name="Phone", value=data["phone"])
-        )
-
         await ctx.send(embed=embed)
 
     @commands.command(name="dadjoke")
