@@ -359,6 +359,16 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```No posts found```")
 
+    async def kanye_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="kanye"):
+            await self.cog.kanye(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def quote_command(self):
         context = helpers.MockContext()
 
