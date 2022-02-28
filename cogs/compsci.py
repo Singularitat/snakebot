@@ -692,7 +692,7 @@ class compsci(commands.Cog):
         text = re.sub(r"(\D)(\d+)", lambda m: int(m.group(2)) * m.group(1), text)
         await ctx.send(text)
 
-    @commands.command(aliases=["ch", "cht"])
+    @commands.command(aliases=["ch", "rust", "java"])
     async def cheatsheet(self, ctx, *search):
         """https://cheat.sh/python/ gets a cheatsheet.
 
@@ -700,8 +700,13 @@ class compsci(commands.Cog):
             The search terms.
         """
         search = "+".join(search)
+        language = (
+            ctx.invoked_with
+            if ctx.invoked_with not in ("ch", "cheatsheet")
+            else "python"
+        )
 
-        url = f"https://cheat.sh/python/{search}"
+        url = f"https://cheat.sh/{language}/{search}"
         headers = {"User-Agent": "curl/7.68.0"}
 
         async with ctx.typing(), self.bot.client_session.get(
@@ -710,9 +715,9 @@ class compsci(commands.Cog):
             result = ANSI.sub("", await page.text()).translate({96: "\\`"})
 
         embed = discord.Embed(
-            title=f"https://cheat.sh/python/{search}",
+            title=url,
             color=discord.Color.blurple(),
-            description=f"```py\n{result}```",
+            description=f"```{language}\n{result}```",
         )
 
         await ctx.send(embed=embed)
