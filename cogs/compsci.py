@@ -700,7 +700,11 @@ class compsci(commands.Cog):
             The search terms.
         """
         search = "+".join(search)
-        language = ctx.invoked_with if ctx.invoked_with not in ("ch", "cheatsheet") else "python"
+        language = (
+            ctx.invoked_with
+            if ctx.invoked_with not in ("ch", "cheatsheet")
+            else "python"
+        )
 
         url = f"https://cheat.sh/{language}/{search}"
         headers = {"User-Agent": "curl/7.68.0"}
