@@ -506,16 +506,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 embed.description, "```Country New Zealand not found.```"
             )
 
-    async def fake_user_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="fake_user"):
-            await self.cog.fake_user(self.cog, context)
-
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
     async def cocktail_command(self):
         context = helpers.MockContext()
 
@@ -1597,12 +1587,12 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertTrue(first_perc[-1] == "%" and float(first_perc[:-1]) >= 96.5)
         self.assertTrue(second_perc[-1] == "%" and float(second_perc[:-1]) >= 95.1)
-        self.assertTrue(booster_perc[-1] == "%" and float(booster_perc[:-1]) >= 70.4)
+        self.assertTrue(booster_perc[-1] == "%" and float(booster_perc[:-1]) >= 70.3)
 
-        self.assertTrue(first_dose >= 4_019_173)
-        self.assertTrue(second_dose >= 3_958_932)
-        self.assertTrue(third_dose >= 33_413)
-        self.assertTrue(booster >= 2_333_984)
+        self.assertTrue(first_dose >= 4_019_345)
+        self.assertTrue(second_dose >= 3_959_359)
+        self.assertTrue(third_dose >= 33_421)
+        self.assertTrue(booster >= 2_347_710)
 
     async def holidays_command(self):
         context = helpers.MockContext()
