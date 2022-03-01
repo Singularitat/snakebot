@@ -556,6 +556,17 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```No definition found```")
 
+    async def synonyms_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="synonyms"):
+            await self.cog.synonyms(self.cog, context, word="cat")
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(embed.description, "```Word not found```")
+
     async def latex_command(self):
         context = helpers.MockContext()
 
