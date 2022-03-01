@@ -241,6 +241,16 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
+    async def song_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="song"):
+            await self.cog.song(self.cog, context)
+
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def synth_command(self):
         context = helpers.MockContext()
 
@@ -545,6 +555,28 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```No definition found```")
+
+    async def synonyms_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="synonyms"):
+            await self.cog.synonyms(self.cog, context, word="cat")
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(embed.description, "```Word not found```")
+
+    async def antonyms_command(self):
+        context = helpers.MockContext()
+
+        with self.subTest(command="antonyms"):
+            await self.cog.antonyms(self.cog, context, word="cat")
+
+            embed = context.send.call_args.kwargs["embed"]
+
+            self.assertNotEqual(embed.color.value, 10038562)
+            self.assertNotEqual(embed.description, "```Word not found```")
 
     async def latex_command(self):
         context = helpers.MockContext()
