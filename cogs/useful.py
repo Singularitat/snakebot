@@ -76,7 +76,7 @@ STATUS_CODES = {
         "419": "Page Expired",
         # Twitter
         "420": "Enhance Your Calm",
-        # End
+        # Twitter End
         "421": "Misdirected Request",
         "422": "Unprocessable Entity",
         "423": "Locked",
@@ -131,7 +131,7 @@ STATUS_CODES = {
         "529": "Site is overloaded",
         # Pantheon
         "530": "Site is frozen",
-        # End
+        # Pantheon End
         "598": "(Informal convention) Network read timeout error",
         "599": "Network Connect Timeout Error",
     },
@@ -282,13 +282,21 @@ class useful(commands.Cog):
         data = soup.xpath(".//td")
 
         description = (
-            "```prolog\nEligible Population Vaccinated %:\n  First Dose: "
-            f"{data[227].text_content()}\n  Second Dose: {data[229].text_content()}\n  "
-            f"Boosters: {data[233].text_content()}\n\nCumulative Total:\n  "
-            f"First Dose: {data[1].text}\n  Second Dose: {data[4].text}\n  Third Primary:"
-            f" {data[7].text}\n  Boosters: {data[9].text}\n\nVaccinations Yesterday:\n"
-            f"  First Dose: {data[0].text}\n  Second Dose: {data[3].text}\n"
-            f"  Third Primary: {data[6].text}\n  Boosters: {data[8].text}\n```"
+            "```prolog\n"
+            "Eligible Population Vaccinated %:\n"
+            f"  First Dose: {data[227].text_content()}\n"
+            f"  Second Dose: {data[229].text_content()}\n"
+            f"  Boosters: {data[233].text_content()}\n\n"
+            "Cumulative Total:\n"
+            f"  First Dose: {data[1].text}\n"
+            f"  Second Dose: {data[4].text}\n"
+            f"  Third Primary: {data[7].text}\n"
+            f"  Boosters: {data[9].text}\n\n"
+            "Vaccinations Yesterday:\n"
+            f"  First Dose: {data[0].text}\n"
+            f"  Second Dose: {data[3].text}\n"
+            f"  Third Primary: {data[6].text}\n"
+            f"  Boosters: {data[8].text}```"
         )
 
         await ctx.send(

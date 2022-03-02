@@ -414,19 +414,6 @@ class apis(commands.Cog):
         num = random.randint(1, 125)
         await ctx.send(f"https://boredhumans.b-cdn.net/dreams/{num}.jpg")
 
-    @commands.command()
-    async def song(self, ctx):
-        """Gets an ai generated song."""
-        url = "https://boredhumans.com/api_lyrics.php"
-
-        async with ctx.typing(), self.bot.client_session.post(url) as resp:
-            text = await resp.text()
-
-        text = text.partition("<BR><BR>")[0]
-        text = re.sub(r"<[^<]+?>", "\n", text).replace("\n\n", "\n")
-
-        await ctx.send(f">>> {text.lstrip()}")
-
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.command(aliases=["complete"])
     async def synth(self, ctx, *, prompt: str):
