@@ -320,8 +320,17 @@ class compsci(commands.Cog):
         [Compsci 130](https://notes.joewuthrich.com/compsci130)
         Entry course to Computer Science for students with prior programming knowledge in Python.
 
+        [Compsci 215](https://notes.joewuthrich.com/COMPSCI215-Data-Communications-and-Security-853cd928ba3346398b6a53a897728639)
+        An introduction to data communications and security.
+
+        [Compsci 220](https://notes.joewuthrich.com/compsci220)
+        An introduction to the analysis of algorithms and data structures.
+
         [Compsci 225](https://notes.joewuthrich.com/compsci225)
         Discrete Structures in Mathematics and Computer Science.
+
+        [Compsci 230](https://notes.joewuthrich.com/compsci230)
+        An introduction to object-oriented coding in Java.
         """
         await ctx.send(embed=embed)
 
@@ -701,9 +710,7 @@ class compsci(commands.Cog):
         """
         search = "+".join(search)
         language = (
-            ctx.invoked_with
-            if ctx.invoked_with not in ("ch", "cheatsheet")
-            else "python"
+            "python" if ctx.invoked_with in ("ch", "cheatsheet") else ctx.invoked_with
         )
 
         url = f"https://cheat.sh/{language}/{search}"
