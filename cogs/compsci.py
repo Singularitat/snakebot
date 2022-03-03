@@ -629,15 +629,19 @@ class compsci(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @binary.command(name="en")
+    @binary.command(name="encode", aliases=["en"])
     async def binary_encode(self, ctx, *, text):
         """Encodes ascii text as binary.
 
         text: str
         """
-        await ctx.send(" ".join([f"{bin(ord(letter))[2:]:0>8}" for letter in text]))
+        await ctx.send(
+            "```less\n{}```".format(
+                " ".join([f"{bin(ord(letter))[2:]:0>8}" for letter in text])
+            )
+        )
 
-    @binary.command(name="de")
+    @binary.command(name="decode", aliases=["de"])
     async def binary_decode(self, ctx, *, binary):
         """Decodes binary as ascii text.
 
