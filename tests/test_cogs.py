@@ -806,6 +806,39 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].description, "```[21, 26, 140]\n```"
         )
 
+    async def test_binary_command(self):
+        context = helpers.MockContext()
+        context.invoked_subcommand = None
+
+        await self.cog.binary(self.cog, context)
+
+        self.assertEqual(
+            context.send.call_args.kwargs["embed"].description,
+            f"```Usage: {context.prefix}binary [decode/encode]```",
+        )
+
+    async def test_binary_encode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.binary_encode(
+            self.cog,
+            context,
+            text="lazy",
+        )
+
+        context.send.assert_called_with(
+            "```less\n01101100 01100001 01111010 01111001```"
+        )
+
+    async def test_binary_decode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.binary_decode(
+            self.cog, context, binary="01101100 01100001 01111010 01111001"
+        )
+
+        context.send.assert_called_with("lazy")
+
     async def test_dashboard_command(self):
         context = helpers.MockContext()
 
