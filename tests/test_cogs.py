@@ -826,7 +826,9 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
             text="lazy",
         )
 
-        context.send.assert_called_with("```less\n01101100 01100001 01111010 01111001```")
+        context.send.assert_called_with(
+            "```less\n01101100 01100001 01111010 01111001```"
+        )
 
     async def test_binary_decode_command(self):
         context = helpers.MockContext()
