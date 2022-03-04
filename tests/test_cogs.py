@@ -1775,3 +1775,12 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
+
+    async def test_time_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.time(self.cog, context, command="yeah")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
