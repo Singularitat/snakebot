@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 
 import discord
@@ -309,10 +311,10 @@ class moderation(commands.Cog):
 
         return seconds
 
-    async def ban(self, ctx, member: discord.Member, duration=None, *, reason=None):
+    async def ban(self, ctx, member: discord.User, duration=None, *, reason=None):
         """Bans a member.
 
-        member: discord.Member
+        member: discord.User
             The member to ban.
         duration: str
             How long to ban the member for.
@@ -320,7 +322,11 @@ class moderation(commands.Cog):
             The reason for banning the member.
         """
         embed = discord.Embed(color=discord.Color.dark_red())
-        if ctx.author.top_role <= member.top_role and ctx.guild.owner != ctx.author:
+        if (
+            isinstance(member, discord.Member)
+            and ctx.author.top_role <= member.top_role
+            and ctx.guild.owner != ctx.author
+        ):
             embed.description = "```You can't ban someone higher or equal to you```"
             return await ctx.send(embed=embed)
 
@@ -336,7 +342,7 @@ class moderation(commands.Cog):
         else:
             embed.title = f"Banned {member.display_name}"
 
-        await member.ban(delete_message_days=0, reason=reason)
+        await ctx.guild.ban(member, delete_message_days=0, reason=reason)
 
         member_id = f"{ctx.guild.id}-{member.id}".encode()
         infractions = self.DB.infractions.get(member_id)
@@ -362,7 +368,9 @@ class moderation(commands.Cog):
 
     @commands.command(name="ban")
     @commands.has_permissions(ban_members=True)
-    async def ban_member(self, ctx, member: discord.Member, *, reason=None):
+    async def ban_member(
+        self, ctx, member: discord.Member | discord.User, *, reason=None
+    ):
         """Bans a member.
 
         Usage:
@@ -378,7 +386,7 @@ class moderation(commands.Cog):
     @commands.command(name="tempban")
     @commands.has_permissions(ban_members=True)
     async def temp_ban_member(
-        self, ctx, member: discord.Member, duration=None, *, reason=None
+        self, ctx, member: discord.Member | discord.User, duration=None, *, reason=None
     ):
         """Temporarily bans a member.
 
