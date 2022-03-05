@@ -1220,6 +1220,15 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def atom_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.atom(self.cog, context, "O")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
     async def test_vec4_command(self):
         context = helpers.MockContext()
         tests = (
