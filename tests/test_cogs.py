@@ -1220,6 +1220,15 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def atom_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.atom(self.cog, context, "O")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
     async def test_vec4_command(self):
         context = helpers.MockContext()
         tests = (
@@ -1447,6 +1456,13 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         await self.cog.rand(self.cog, context, a=a, b=b)
 
         self.assertIs(a <= int(context.reply.call_args.args[0]) <= b, True)
+
+    async def test_8ball_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.eightball(self.cog, context)
+
+        self.assertIsNone(context.reply.call_args.kwargs.get("embed"))
 
 
 class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
