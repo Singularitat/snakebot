@@ -1181,6 +1181,15 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_user_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.user(self.cog, context, user=helpers.MockMember())
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
 
 class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
@@ -1787,15 +1796,6 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         await self.cog.statuscodes(self.cog, context)
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
-    async def test_time_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.time(self.cog, context, command="yeah")
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
