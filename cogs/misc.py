@@ -5,7 +5,6 @@ import re
 import unicodedata
 from datetime import datetime
 
-import aiohttp
 import discord
 import lxml.html
 import opcode
@@ -702,12 +701,12 @@ class misc(commands.Cog):
         embed = discord.Embed(colour=discord.Color.blurple())
 
         async with ctx.typing():
-            try:
-                async with self.bot.client_session.get(url) as page:
-                    text = lxml.html.fromstring(await page.text())
-            except aiohttp.client_exceptions.ClientResponseError:
-                embed.description = f"```Could not find and element with the symbol {element.upper()}```"
-                return await ctx.send(embed=embed)
+            async with self.bot.client_session.get(url) as resp:
+                text = lxml.html.fromstring(await resp.text())
+
+                if resp.status != 200:
+                    embed.description = f"```Could not find and an element with the symbol {element.upper()}```"
+                    return await ctx.send(embed=embed)
 
         image = f"http://www.chemicalelements.com{text.xpath('.//img')[1].attrib['src'][2:]}"
         text = text.xpath("//text()")[108:]
