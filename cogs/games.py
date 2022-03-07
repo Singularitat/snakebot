@@ -647,6 +647,7 @@ class games(commands.Cog):
         )
 
     @commands.command()
+    @commands.guild_only()
     async def word(self, ctx):
         """Starts a game of Word Snacks."""
         await self.game_invite(
@@ -657,6 +658,7 @@ class games(commands.Cog):
         )
 
     @commands.command()
+    @commands.guild_only()
     async def scrabble(self, ctx):
         """Starts a game of Letter League."""
         await self.game_invite(
@@ -667,6 +669,7 @@ class games(commands.Cog):
         )
 
     @commands.command()
+    @commands.guild_only()
     async def doodle(self, ctx):
         """Starts a game of Sketch Heads."""
         await self.game_invite(
@@ -677,6 +680,7 @@ class games(commands.Cog):
         )
 
     @commands.command()
+    @commands.guild_only()
     async def checkers(self, ctx):
         """Starts a game of Checkers In The Park."""
         await self.game_invite(
@@ -687,6 +691,7 @@ class games(commands.Cog):
         )
 
     @commands.command()
+    @commands.guild_only()
     async def awkword(self, ctx):
         """Starts a game of Awkword."""
         await self.game_invite(
@@ -697,6 +702,7 @@ class games(commands.Cog):
         )
 
     @commands.command()
+    @commands.guild_only()
     async def sketchy(self, ctx):
         """Starts a game of Sketchy Artist."""
         await self.game_invite(
@@ -707,6 +713,7 @@ class games(commands.Cog):
         )
 
     @commands.command()
+    @commands.guild_only()
     async def putt(self, ctx):
         """Starts a game of Putt Party."""
         await self.game_invite(
@@ -717,6 +724,7 @@ class games(commands.Cog):
         )
 
     @commands.command()
+    @commands.guild_only()
     async def ocho(self, ctx):
         """Starts a game of Ocho."""
         await self.game_invite(

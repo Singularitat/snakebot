@@ -383,6 +383,7 @@ class owner(commands.Cog):
         await ctx.send(file=discord.File(file, "data.json"))
 
     @commands.command(aliases=["clearinf"])
+    @commands.guild_only()
     async def clear_infractions(self, ctx, member: discord.Member):
         """Removes all infractions of a member.
 
@@ -391,6 +392,7 @@ class owner(commands.Cog):
         self.DB.infractions.delete(f"{ctx.guild.id}-{member.id}".encode())
 
     @commands.command(aliases=["showinf"])
+    @commands.guild_only()
     async def show_infractions(self, ctx, member: discord.Member):
         """Shows all infractions of a member.
 
@@ -416,6 +418,7 @@ class owner(commands.Cog):
         self.DB.infractions.put(member_id, orjson.dumps(infractions))
 
     @commands.command(aliases=["removeinf"])
+    @commands.guild_only()
     async def remove_infraction(
         self, ctx, member: discord.Member, infraction: str, index: int
     ):
@@ -702,6 +705,7 @@ class owner(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
+    @commands.guild_only()
     async def suin(
         self, ctx, channel: discord.TextChannel, member: discord.Member, *, command: str
     ):
@@ -722,7 +726,7 @@ class owner(commands.Cog):
         await self.bot.invoke(new_ctx)
 
     @commands.command()
-    async def sudo(self, ctx, member: discord.Member, *, command: str):
+    async def sudo(self, ctx, member: discord.Member | discord.User, *, command: str):
         """Run a command as another user.
 
         member: discord.Member
@@ -821,6 +825,7 @@ class owner(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.group(invoke_without_command=True)
+    @commands.guild_only()
     async def rrole(self, ctx):
         await ctx.send(
             embed=discord.Embed(
