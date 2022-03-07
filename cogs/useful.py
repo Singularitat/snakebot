@@ -780,6 +780,7 @@ class useful(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
+    @commands.guild_only()
     async def snipe(self, ctx):
         """Snipes the last deleted message."""
         data = self.DB.main.get(f"{ctx.guild.id}-snipe_message".encode())
@@ -798,6 +799,7 @@ class useful(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
+    @commands.guild_only()
     async def editsnipe(self, ctx):
         """Snipes the last edited message."""
         data = self.DB.main.get(f"{ctx.guild.id}-editsnipe_message".encode())

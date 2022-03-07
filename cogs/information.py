@@ -22,6 +22,7 @@ class information(commands.Cog):
         self.process = psutil.Process()
 
     @commands.command()
+    @commands.guild_only()
     async def roles(self, ctx):
         """Shows the roles of the server."""
         description = ""
@@ -87,6 +88,7 @@ class information(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="oldest", aliases=["accdate", "newest"])
+    @commands.guild_only()
     async def oldest_members(self, ctx, amount: int = 10):
         """Gets the oldest accounts in a server.
         Call with 'newest' to get the newest members
@@ -113,6 +115,7 @@ class information(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["msgtop"])
+    @commands.guild_only()
     async def message_top(self, ctx, amount=10):
         """Gets the users with the most messages in a server.
 
@@ -393,6 +396,7 @@ class information(commands.Cog):
         await ctx.send(f"Bot has been up since **<t:{self.bot.uptime:.0f}:R>**")
 
     @commands.command()
+    @commands.guild_only()
     async def server(self, ctx):
         """Shows information about the current server."""
         guild = ctx.guild

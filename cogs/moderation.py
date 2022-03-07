@@ -17,6 +17,7 @@ class moderation(commands.Cog):
         self.handles = {}
 
     @commands.command(hidden=True)
+    @commands.guild_only()
     async def inactive(self, ctx, days: int = 7):
         """Gets how many people can be pruned.
 
@@ -57,6 +58,7 @@ class moderation(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
+    @commands.guild_only()
     async def poll(self, ctx, title, *options):
         """Starts a poll.
 
@@ -113,6 +115,7 @@ class moderation(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
+    @commands.guild_only()
     async def endpoll(self, ctx, message_id):
         """Ends a poll based off its message id."""
         polls = self.DB.main.get(b"polls")
@@ -151,6 +154,7 @@ class moderation(commands.Cog):
 
     @commands.command(name="mute")
     @commands.has_permissions(kick_members=True)
+    @commands.guild_only()
     async def mute_member(self, ctx, member: discord.Member, *, reason=None):
         """Mutes a member.
 
@@ -228,6 +232,7 @@ class moderation(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(manage_nicknames=True)
+    @commands.guild_only()
     async def nick(self, ctx, member: discord.Member, *, nickname):
         """Changes a members nickname.
 
@@ -239,6 +244,7 @@ class moderation(commands.Cog):
 
     @commands.command(name="warn")
     @commands.has_permissions(manage_messages=True)
+    @commands.guild_only()
     async def warn_member(self, ctx, member: discord.Member, *, reason=None):
         """Warns a member and keeps track of how many warnings a member has.
 
@@ -274,6 +280,7 @@ class moderation(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(manage_messages=True)
+    @commands.guild_only()
     async def warnings(self, ctx, member: discord.Member):
         """Shows the warnings a member has.
 
@@ -368,6 +375,7 @@ class moderation(commands.Cog):
 
     @commands.command(name="ban")
     @commands.has_permissions(ban_members=True)
+    @commands.guild_only()
     async def ban_member(
         self, ctx, member: discord.Member | discord.User, *, reason=None
     ):
@@ -385,6 +393,7 @@ class moderation(commands.Cog):
 
     @commands.command(name="tempban")
     @commands.has_permissions(ban_members=True)
+    @commands.guild_only()
     async def temp_ban_member(
         self, ctx, member: discord.Member | discord.User, duration=None, *, reason=None
     ):
@@ -406,6 +415,7 @@ class moderation(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
+    @commands.guild_only()
     async def unban(self, ctx, name):
         """Unbans a member based off their name.
 
@@ -422,6 +432,7 @@ class moderation(commands.Cog):
 
     @commands.command(name="kick")
     @commands.has_permissions(kick_members=True)
+    @commands.guild_only()
     async def kick_member(self, ctx, member: discord.Member, *, reason=None):
         """Kicks a member.
 
@@ -565,6 +576,7 @@ class moderation(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_messages=True)
+    @commands.guild_only()
     async def history(self, ctx):
         """Shows the edited message or deleted message history of a member."""
         embed = discord.Embed(
@@ -575,6 +587,7 @@ class moderation(commands.Cog):
 
     @history.command(aliases=["d"])
     @commands.has_permissions(manage_messages=True)
+    @commands.guild_only()
     async def deleted(self, ctx, member: discord.Member = None):
         """Shows a members most recent deleted message history.
 
@@ -617,6 +630,7 @@ class moderation(commands.Cog):
 
     @history.command(aliases=["e"])
     @commands.has_permissions(manage_messages=True)
+    @commands.guild_only()
     async def edited(self, ctx, member: discord.Member = None):
         """Shows a users most recent edit message history.
 
