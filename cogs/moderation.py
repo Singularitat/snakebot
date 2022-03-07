@@ -464,47 +464,6 @@ class moderation(commands.Cog):
         await ctx.send(embed=embed)
         self.DB.infractions.put(member_id, orjson.dumps(infractions))
 
-    @commands.command()
-    @commands.has_permissions(manage_roles=True)
-    async def role(self, ctx, member: discord.Member, role: discord.Role):
-        """Gives member a role.
-
-        role: discord.Role
-            The name of the role.
-        member: discord.Member
-            The member to give the role.
-        """
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if (
-            ctx.author != member
-            and ctx.author.top_role <= member.top_role
-            and ctx.guild.owner != ctx.author
-        ):
-            embed.description = (
-                "```You can't change the roles of someone higher than you.```"
-            )
-            return await ctx.send(embed=embed)
-
-        if (
-            ctx.author == member
-            and ctx.author.top_role <= role
-            and ctx.guild.owner != ctx.author
-        ):
-            embed.description = (
-                "```You can't give yourself a role higher than your highest role.```"
-            )
-            return await ctx.send(embed=embed)
-
-        if role in member.roles:
-            await member.remove_roles(role)
-            embed.description = f"```Removed the role {role} from {member}```"
-            return await ctx.send(embed=embed)
-
-        await member.add_roles(role)
-        embed.description = f"```Gave {member} the role {role}```"
-        return await ctx.send(embed=embed)
-
     @commands.group()
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
