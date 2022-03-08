@@ -1190,6 +1190,13 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_banner_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.banner(self.cog, context, user=helpers.MockMember())
+
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+
     async def test_uptime_command(self):
         context = helpers.MockContext()
 
@@ -1499,18 +1506,6 @@ class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         await self.cog.poll(self.cog, context, "Test Poll", "Cat", "Dog")
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
-    async def test_role_command(self):
-        context = helpers.MockContext()
-        context.author.top_role = helpers.MockRole(position=2)
-        member = helpers.MockMember()
-        member.top_role = helpers.MockRole(position=1)
-
-        await self.cog.role(self.cog, context, member, helpers.MockRole(position=3))
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
