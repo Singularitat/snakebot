@@ -1190,6 +1190,13 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_uptime_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.uptime(self.cog, context)
+
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+
 
 class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
