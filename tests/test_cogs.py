@@ -1190,6 +1190,15 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_server_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.server(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
     async def test_icon_command(self):
         context = helpers.MockContext()
 
