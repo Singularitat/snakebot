@@ -1190,6 +1190,13 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_icon_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.icon(self.cog, context, user=helpers.MockMember())
+
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+
     async def test_banner_command(self):
         context = helpers.MockContext()
 
