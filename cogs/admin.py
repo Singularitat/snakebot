@@ -78,7 +78,9 @@ class admin(commands.Cog):
             message_id = message_id.decode()
             data = orjson.loads(data)
 
-            self.bot.add_view(ButtonRoles(self.bot, data["guild"], data["roles"], message_id))
+            self.bot.add_view(
+                ButtonRoles(self.bot, data["guild"], data["roles"], message_id)
+            )
 
     @commands.command()
     async def role(self, ctx, *, information):
@@ -134,7 +136,9 @@ class admin(commands.Cog):
 
         message_id = str(ctx.message.id)
 
-        await ctx.send(title, view=ButtonRoles(self.bot, ctx.guild.id, roles, message_id))
+        await ctx.send(
+            title, view=ButtonRoles(self.bot, ctx.guild.id, roles, message_id)
+        )
         data = {
             "guild": ctx.guild.id,
             "roles": roles,
