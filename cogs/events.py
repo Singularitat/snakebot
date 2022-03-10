@@ -100,45 +100,6 @@ class events(commands.Cog):
 
         self.DB.main.put(b"emoji_submissions", orjson.dumps(emojis))
 
-    async def reaction_role_check(self, payload):
-        """Checks if a reaction was on a reaction role message.
-
-        payload: discord.RawReactionActionEvent
-            A payload of raw data about the reaction and member.
-        """
-        reaction_roles = self.DB.rrole.get(str(payload.message_id).encode())
-
-        if not reaction_roles:
-            return
-
-        reaction_roles = orjson.loads(reaction_roles)
-
-        if str(payload.emoji) in reaction_roles:
-            role_id = int(reaction_roles[str(payload.emoji)])
-        elif payload.emoji.name in reaction_roles:
-            role_id = int(reaction_roles[payload.emoji.name])
-        else:
-            return
-
-        guild = self.bot.get_guild(payload.guild_id)
-
-        if not guild:
-            return
-
-        role = guild.get_role(role_id)
-
-        if not role:
-            return
-
-        if payload.event_type == "REACTION_REMOVE":
-            member = guild.get_member(payload.user_id)
-            return await member.remove_roles(role)
-
-        if not payload.member:
-            return
-
-        await payload.member.add_roles(role)
-
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         """Gives roles based off reaction added if message in reaction_roles.json.
@@ -151,16 +112,6 @@ class events(commands.Cog):
 
         await self.emoji_submission_check(payload)
         await self.poll_check(payload)
-        await self.reaction_role_check(payload)
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, payload):
-        """Removes roles based off reaction added if message in reaction_roles.json.
-
-        payload: discord.RawReactionActionEvent
-            A payload of raw data about the reaction and member.
-        """
-        await self.reaction_role_check(payload)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -626,6 +577,8 @@ class events(commands.Cog):
             # Wipe the cache and polls as we have no way of knowing if they have expired
             self.DB.main.put(b"cache", b"{}")
             self.DB.main.delete(b"polls")
+
+            self.bot.get_cog("admin").on_ready()
 
             print(
                 f"Logged in as {self.bot.user.name}\n"
