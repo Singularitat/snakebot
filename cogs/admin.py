@@ -1,8 +1,59 @@
+import re
+
 import discord
 import orjson
 from discord.ext import commands
 
 from cogs.utils.time import parse_time
+
+
+class RoleButton(discord.ui.Button["ButtonRoles"]):
+    def __init__(self, role: discord.Role, name: str, custom_id: str, row: int):
+        self.role = role
+
+        super().__init__(
+            style=discord.ButtonStyle.secondary,
+            label=name or role.name,
+            custom_id=custom_id,
+            row=row,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        user = interaction.user
+
+        if user.get_role(self.role.id):
+            await user.remove_roles(self.role)
+        else:
+            await user.add_roles(self.role)
+
+
+class ButtonRoles(discord.ui.View):
+    def __init__(
+        self, bot: commands.Bot, guild: int, roles: list[(int, str)], message_id: str
+    ):
+        super().__init__(timeout=None)
+        guild = bot.get_guild(guild)
+        count = 0
+        row = 0
+
+        if not guild:
+            return
+
+        self.guild = guild
+
+        for role, name in roles:
+            if role == "break":
+                row += 1
+                count = 0
+                continue
+
+            role = guild.get_role(role)
+
+            if role:
+                self.add_item(RoleButton(role, name, f"{message_id}-{role.id}", row))
+                count += 1
+                if count % 5 == 0:
+                    row += 1
 
 
 class admin(commands.Cog):
@@ -21,6 +72,74 @@ class admin(commands.Cog):
         if isinstance(ctx.author, discord.User):
             return ctx.author.id in self.bot.owner_ids
         return ctx.author.guild_permissions.administrator
+
+    def on_ready(self):
+        for message_id, data in self.DB.rrole:
+            message_id = message_id.decode()
+            data = orjson.loads(data)
+
+            self.bot.add_view(ButtonRoles(self.bot, data["guild"], data["roles"], message_id))
+
+    @commands.command()
+    async def role(self, ctx, *, information):
+        """Creates a button role message.
+
+        Example usage:
+        .role `\u200B`\u200B`\u200Bless
+        **Pronoun Role Menu**
+        Click a button for a role
+        he/him             | he/him
+        she/her            |
+        break
+        they/them          |
+        950348151674511360 |
+        `\u200B`\u200B`\u200B
+
+        Code blocks are optional.
+        If a line doesn't have a | or is just a break then it is included in the title.
+        To move to the next row of buttons early use break.
+        Before the | is either an id or role name and after is the button label.
+        If you don't give a button label the role name is used.
+        """
+        information = re.sub(r"```\w+\n|```", "", information)
+
+        title = ""
+        roles = []
+
+        for line in information.split("\n"):
+            role, *name = line.split("|")
+
+            if role == "break":
+                roles.append(("break", None))
+                continue
+
+            if not name:
+                title += f"{role}\n"
+                continue
+
+            if not role:
+                continue
+
+            try:
+                role = int(role)
+            except ValueError:
+                role = discord.utils.get(ctx.guild.roles, name=role.strip())
+
+                if not role:
+                    continue  # failed to get role
+
+                role = role.id
+
+            roles.append((role, name[0].strip()))
+
+        message_id = str(ctx.message.id)
+
+        await ctx.send(title, view=ButtonRoles(self.bot, ctx.guild.id, roles, message_id))
+        data = {
+            "guild": ctx.guild.id,
+            "roles": roles,
+        }
+        self.DB.rrole.put(message_id.encode(), orjson.dumps(data))
 
     @commands.command()
     async def prefix(self, ctx, prefix=None):

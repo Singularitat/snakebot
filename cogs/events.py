@@ -578,7 +578,7 @@ class events(commands.Cog):
             self.DB.main.put(b"cache", b"{}")
             self.DB.main.delete(b"polls")
 
-            self.bot.get_cog("role").on_ready()
+            self.bot.get_cog("admin").on_ready()
 
             print(
                 f"Logged in as {self.bot.user.name}\n"
