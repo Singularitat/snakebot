@@ -176,43 +176,6 @@ class admin(commands.Cog):
         self.DB.main.put(key, orjson.dumps(disabled))
 
     @commands.command()
-    @commands.cooldown(1, 86400, commands.BucketType.user)
-    async def color_roles(self, ctx):
-        """Creates basic color roles if they don't exist."""
-        roles = {
-            "Gold": (discord.Color.gold(), "⭐"),
-            "Red": (discord.Color.from_rgb(255, 0, 0), "🔴"),
-            "Orange": (discord.Color.orange(), "🟠"),
-            "Green": (discord.Color.green(), "🟢"),
-            "Magenta": (discord.Color.magenta(), "🟣"),
-            "Blue": (discord.Color.blue(), "🔵"),
-            "Blurple": (discord.Color.blurple(), "💙"),
-        }
-        rrole = {"guild": ctx.guild.id}
-
-        msg = (
-            "**Color Role Menu:**\nReact for a color role.\n"
-            "Also the emojis aren't accurate to what color the role is.\n\n"
-        )
-
-        for name in roles:
-            role = discord.utils.get(ctx.guild.roles, name=name)
-            if not role:
-                role = await ctx.guild.create_role(
-                    name=name,
-                    permissions=discord.Permissions.none(),
-                    color=roles[name][0],
-                )
-            rrole[roles[name][1]] = role.id
-            msg += f"{roles[name][1]}: `{name}`\n\n"
-
-        message = await ctx.send(msg)
-
-        self.DB.rrole.put(str(message.id).encode(), orjson.dumps(rrole))
-        for name in roles:
-            await message.add_reaction(roles[name][1])
-
-    @commands.command()
     async def lockall(self, ctx, toggle: bool = True):
         """Removes the send messages permissions from @everyone in every category.
 
