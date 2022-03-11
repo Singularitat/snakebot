@@ -612,7 +612,7 @@ class moderation(commands.Cog):
         count = 0
 
         for date, message in reversed(deleted.items()):
-            message = message.replace("`", "`​")
+            message = message.replace("`", "`\u200B")
             if message:
                 embed.add_field(name=f"<t:{date}:R>", value=message)
                 count += 1
