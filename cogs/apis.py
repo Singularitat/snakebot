@@ -1094,11 +1094,11 @@ class apis(commands.Cog):
 
         definition = definition[0]
 
-        if definition["phonetics"][0]:
-            embed.title = definition["phonetics"][0]["text"]
-            embed.description = (
-                f"[pronunciation](https:{definition['phonetics'][0]['audio']})"
-            )
+        phonetics = definition["phonetics"]
+
+        if phonetics and (phonetics := phonetics[0]):
+            embed.title = phonetics["text"]
+            embed.description = f"[pronunciation]({phonetics['audio']})"
 
         for meaning in definition["meanings"]:
             embed.add_field(
