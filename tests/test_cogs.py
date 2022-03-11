@@ -539,12 +539,13 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         with self.subTest(command="define"):
-            await self.cog.define(self.cog, context, word="cat")
+            for word in ("cat", "pseudoscorpion"):
+                await self.cog.define(self.cog, context, word=word)
 
-            embed = context.send.call_args.kwargs["embed"]
+                embed = context.send.call_args.kwargs["embed"]
 
-            self.assertNotEqual(embed.color.value, 10038562)
-            self.assertNotEqual(embed.description, "```No definition found```")
+                self.assertNotEqual(embed.color.value, 10038562)
+                self.assertNotEqual(embed.description, "```No definition found```")
 
     async def synonyms_command(self):
         context = helpers.MockContext()
