@@ -34,7 +34,7 @@ STATUS_CODES = {
         "207": "Multi-Status",
         "208": "Already Reported",
         # Apache Web Server
-        "218": "This is fine",
+        "218": "This Is Fine",
         "226": "IM Used",
     },
     "3": {
@@ -93,13 +93,11 @@ STATUS_CODES = {
         # Windows
         "450": "Blocked By Windows Parental Controls",
         "451": "Unavailable For Legal Reasons",
-        # AWS
-        "561": "Unauthorized",
         # nginx
-        "494": "Request header too large",
+        "494": "Request Header Too Large",
         "495": "SSL Certificate Error",
         "496": "SSL Certificate Required",
-        "497": "HTTP Request Sent to HTTPS Port",
+        "497": "HTTP Request Sent To HTTPS Port",
         "499": "Client Closed Request",
     },
     "5": {
@@ -119,20 +117,22 @@ STATUS_CODES = {
         "510": "Not Extended",
         "511": "Network Authentication Required",
         # Cloudflare
-        "520": "Web Server Returned an Unknown Error",
-        "521": "Web Server is Down",
+        "520": "Web Server Returned An Unknown Error",
+        "521": "Web Server Is Down",
         "522": "Connection Timed Out",
-        "523": "Origin is Unreachable",
+        "523": "Origin Is Unreachable",
         "524": "A Timeout Occurred",
         "525": "SSL Handshake Failed",
         "526": "Invalid SSL Certificate",
         "527": "Railgun Error",
         # Qualys
-        "529": "Site is overloaded",
+        "529": "Site Is Overloaded",
         # Pantheon
-        "530": "Site is frozen",
-        # Pantheon End
-        "598": "(Informal convention) Network read timeout error",
+        "530": "Site Is Frozen",
+        # AWS
+        "561": "Unauthorized",
+        # AWS End
+        "598": "(Informal Convention) Network Read Timeout Error",
         "599": "Network Connect Timeout Error",
     },
 }
