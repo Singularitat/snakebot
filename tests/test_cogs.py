@@ -1221,6 +1221,13 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
+    async def test_snipe_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.snipe(self.cog, context)
+
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+
 
 class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
