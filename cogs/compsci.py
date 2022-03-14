@@ -489,12 +489,13 @@ class compsci(commands.Cog):
         try:
             decimal = int(whole, 2)
 
-            for i, digit in enumerate(frac[0], start=1):
-                if digit == "1":
-                    decimal += 0.5**i
-                elif digit != "0":
-                    decimal = "failed"
-                    break
+            if frac:
+                for i, digit in enumerate(frac[0], start=1):
+                    if digit == "1":
+                        decimal += 0.5**i
+                    elif digit != "0":
+                        decimal = "failed"
+                        break
         except ValueError:
             decimal = "failed"
 
