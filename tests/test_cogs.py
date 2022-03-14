@@ -751,15 +751,30 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
     async def test_bin_command(self):
         context = helpers.MockContext()
 
-        await self.cog._bin(self.cog, context, number="1666")
+        tests = (
+            ("1666", "```py\nbin: 11010000010\nint: failed```"),
+            (
+                "11010000010",
+                "```py\nbin: 1010010000001111110100010010001010\nint: 1666```",
+            ),
+            ("16.5", "```py\nbin: 10000.1\nint: failed```"),
+            (
+                "10000.1",
+                "```py\nbin: 10011100010000.000110011001100110011001100110011001101\nint: 16.5```",
+            ),
+        )
 
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-        self.assertEqual(
-            context.send.call_args.kwargs["embed"].description,
-            "```py\nbin: 11010000010\nint: failed```",
-        )
+        for test, answer in tests:
+            with self.subTest(test=test):
+                await self.cog._bin(self.cog, context, number=test)
+
+                self.assertNotEqual(
+                    context.send.call_args.kwargs["embed"].color.value, 10038562
+                )
+                self.assertEqual(
+                    context.send.call_args.kwargs["embed"].description,
+                    answer,
+                )
 
     async def test_cipher_command(self):
         context = helpers.MockContext()
