@@ -47,8 +47,16 @@ def xor(a, b):
     return a ^ b
 
 
+def logical_implication(a, b):
+    return (not a) or b
+
+
 def invert(a):
     return ~a
+
+
+def _not(a):
+    return not a
 
 
 def negate(a):
@@ -57,6 +65,14 @@ def negate(a):
 
 def pos(a):
     return +a
+
+
+def _and(a, b):
+    return a and b
+
+
+def _or(a, b):
+    return a or b
 
 
 def safe_comb(n, k):
@@ -90,10 +106,17 @@ OPERATIONS = {
     ast.BitOr: or_,
     ast.BitAnd: and_,
     ast.BitXor: xor,
+    ast.MatMult: logical_implication,  # This is used for the truth command for logical implications
+}
+
+BOOLOPS = {
+    ast.And: _and,
+    ast.Or: _or,
 }
 
 UNARYOPS = {
     ast.Invert: invert,
+    ast.Not: _not,
     ast.USub: negate,
     ast.UAdd: pos,
 }
@@ -183,10 +206,21 @@ def safe_eval(node):
             raise ValueError("Too large to calculate")
         return OPERATIONS[node.op.__class__](left, right)
 
+    if isinstance(node, ast.BoolOp):
+        return BOOLOPS[node.op.__class__](*[safe_eval(value) for value in node.values])
+
+    if isinstance(node, ast.Compare):
+        left = safe_eval(node.left)
+        for op in node.ops:
+            if not isinstance(op, ast.Eq):
+                raise ValueError("Calculation failed")
+        return all(left == safe_eval(comp) for comp in node.comparators)
+
     if isinstance(node, ast.Name):
         return CONSTANTS[node.id]
 
     if isinstance(node, ast.Call):
         return FUNCTIONS[node.func.id](*[safe_eval(arg) for arg in node.args])
 
+    print(type(node))
     raise ValueError("Calculation failed")
