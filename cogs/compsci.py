@@ -775,9 +775,7 @@ class compsci(commands.Cog):
         }
         expr = expr.replace("<=>", " == ").replace("=>", " @ ").translate(table)
 
-        message = ("| {} " * count).format(
-            *letters
-        ) + f"|\n{'_' * (count) * 5}\n"
+        message = ("| {} " * count).format(*letters) + f"|\n{'_' * (count) * 5}\n"
 
         for check in checks:
             result = safe_eval(
