@@ -320,10 +320,10 @@ class compsci(commands.Cog):
         [Compsci 130](https://notes.joewuthrich.com/compsci130)
         Entry course to Computer Science for students with prior programming knowledge in Python.
 
-        [Compsci 210](https://notes.joewuthrich.com/COMPSCI210-Computer-Organisation-fc0e2a433ea64d9a988be519a9f3ca11)
+        [Compsci 210](https://notes.joewuthrich.com/compsci210)
         An introduction to computer organisation, programming in the LC3 assembly language and C.
 
-        [Compsci 215](https://notes.joewuthrich.com/COMPSCI215-Data-Communications-and-Security-853cd928ba3346398b6a53a897728639)
+        [Compsci 215](https://notes.joewuthrich.com/compsci215)
         An introduction to data communications and security.
 
         [Compsci 220](https://notes.joewuthrich.com/compsci220)
@@ -736,6 +736,61 @@ class compsci(commands.Cog):
         )
 
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def truth(self, ctx, *, expr):
+        """Converts a proposition to a truth table.
+
+        example usage:
+            .truth A => B
+
+        expr: str
+        """
+        expr = expr.upper()
+        letters = "PQR" if "P" in expr else "ABCDE"
+        count = 0
+
+        for letter in letters:
+            if letter not in expr:
+                break
+            count += 1
+            expr = expr.replace(letter, f"{{{letter}}}")
+
+        total = 2**count
+        checks = [list(f"{num:0>{count}b}") for num in range(total)]
+
+        # ⇒ | (not A) or B
+        # ↔ | A == B
+        # ∧ | A and B
+        # ∨ | A or B
+        # ~ | not (A)
+        table = {
+            8658: " @ ",  # ⇒
+            8594: " @ ",  # →
+            8596: " == ",  # ↔
+            8743: " and ",  # ∧
+            8744: " or ",  # ∨
+            172: "not ",  # ¬
+            126: "not ",  # ~
+        }
+        expr = expr.replace("<=>", " == ").replace("=>", " @ ").translate(table)
+
+        message = ("| {} " * count).format(
+            *letters
+        ) + f"|\n{'_' * (count) * 5}\n"
+
+        for check in checks:
+            result = safe_eval(
+                compile(
+                    expr.format(**dict(zip(letters, check))),
+                    "<calc>",
+                    "eval",
+                    flags=1024,
+                ).body
+            )
+            message += ("| {} " * (count + 1)).format(*check, int(result)) + "\n"
+
+        await ctx.send(f"```hs\n{message}```")
 
 
 def setup(bot: commands.Bot) -> None:
