@@ -320,6 +320,9 @@ class compsci(commands.Cog):
         [Compsci 130](https://notes.joewuthrich.com/compsci130)
         Entry course to Computer Science for students with prior programming knowledge in Python.
 
+        [Compsci 210](https://notes.joewuthrich.com/COMPSCI210-Computer-Organisation-fc0e2a433ea64d9a988be519a9f3ca11)
+        An introduction to computer organisation, programming in the LC3 assembly language and C.
+
         [Compsci 215](https://notes.joewuthrich.com/COMPSCI215-Data-Communications-and-Security-853cd928ba3346398b6a53a897728639)
         An introduction to data communications and security.
 
