@@ -67,12 +67,12 @@ def pos(a):
     return +a
 
 
-def _and(a, b):
-    return a and b
+def _and(*values):
+    return all(values)
 
 
-def _or(a, b):
-    return a or b
+def _or(*values):
+    return any(values)
 
 
 def safe_comb(n, k):
