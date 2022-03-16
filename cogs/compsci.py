@@ -746,15 +746,27 @@ class compsci(commands.Cog):
 
         expr: str
         """
-        expr = expr.upper()
-        letters = "PQR" if "P" in expr else "ABCDE"
-        count = 0
+        letters = []
+        table = {}
 
-        for letter in letters:
-            if letter not in expr:
-                break
-            count += 1
-            expr = expr.replace(letter, f"{{{letter}}}")
+        for letter in expr:
+            if letter.isalpha() and letter not in letters:
+                letters.append(letter)
+                table[ord(letter)] = f"{{{letter}}}"
+
+        count = len(letters)
+
+        if count > 6:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title=f"More than 6 variables ({count})",
+                ).set_footer(
+                    text="Having more than 6 variables would make the table too large to send"
+                )
+            )
+
+        letters.sort()
 
         total = 2**count
         checks = [list(f"{num:0>{count}b}") for num in range(total)]
@@ -764,18 +776,20 @@ class compsci(commands.Cog):
         # ∧ | A and B
         # ∨ | A or B
         # ~ | not (A)
-        table = {
-            8658: " @ ",  # ⇒
-            8594: " @ ",  # →
-            8596: " == ",  # ↔
-            8743: " and ",  # ∧
-            8744: " or ",  # ∨
-            172: "not ",  # ¬
-            126: "not ",  # ~
-        }
+        table.update(
+            {
+                8658: " @ ",  # ⇒
+                8594: " @ ",  # →
+                8596: " == ",  # ↔
+                8743: " and ",  # ∧
+                8744: " or ",  # ∨
+                172: "not ",  # ¬
+                126: "not ",  # ~
+            }
+        )
         expr = expr.replace("<=>", " == ").replace("=>", " @ ").translate(table)
 
-        message = ("| {} " * count).format(*letters) + f"|\n{'_' * (count) * 5}\n"
+        message = ("| {} " * count).format(*letters) + f"|\n{'_' * ((count * 4) + 1)}\n"
 
         for check in checks:
             result = safe_eval(
@@ -786,7 +800,7 @@ class compsci(commands.Cog):
                     flags=1024,
                 ).body
             )
-            message += ("| {} " * (count + 1)).format(*check, int(result)) + "\n"
+            message += (("| {} " * count) + "| {}").format(*check, int(result)) + "\n"
 
         await ctx.send(f"```hs\n{message}```")
 
