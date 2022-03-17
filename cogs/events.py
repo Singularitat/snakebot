@@ -350,12 +350,16 @@ class events(commands.Cog):
             if not data:
                 return
 
-            files = []
+            file = data["files"].values().__iter__().__next__()
+            content = file["content"]
+            filename = file["filename"]
+            extension = filename.split(".")[-1]
 
-            for file in data["files"].values():
-                files.append(discord.File(StringIO(file["content"]), file["filename"]))
-
-            await message.channel.send(files=files)
+            if file["size"] + len(extension) > 1992:
+                return await message.channel.send(
+                    file=discord.File(StringIO(content), filename)
+                )
+            await message.channel.send(f"```{extension}\n{content}```")
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
