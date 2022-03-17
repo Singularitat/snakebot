@@ -356,7 +356,9 @@ class events(commands.Cog):
             extension = filename.split(".")[-1]
 
             if file["size"] + len(extension) > 1992:
-                return await message.channel.send(file=discord.File(StringIO(content), filename))
+                return await message.channel.send(
+                    file=discord.File(StringIO(content), filename)
+                )
             await message.channel.send(f"```{extension}\n{content}```")
 
     @commands.Cog.listener()
