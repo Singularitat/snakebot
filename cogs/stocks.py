@@ -40,14 +40,13 @@ class stocks(commands.Cog):
             embed.description = f"```No stock found for {symbol}```"
             return await ctx.send(embed=embed)
 
-        sign = "" if stock["change"][0] == "-" else "+"
+        change = stock["change"]
+        sign = "" if change[0] == "-" else "+"
 
         embed.title = f"{symbol} [{stock['name']}]"
         embed.add_field(name="Price", value=f"```${stock['price']}```")
         embed.add_field(name="Market Cap", value=f"```${stock['cap']}```", inline=False)
-        embed.add_field(
-            name="24h Change", value=f"```diff\n{sign}{stock['change']}%```"
-        )
+        embed.add_field(name="24h Change", value=f"```diff\n{sign}{change}```")
         embed.add_field(
             name="Percent 24h Change", value=f"```diff\n{sign}{stock['%change']}%```"
         )
@@ -207,7 +206,7 @@ class stocks(commands.Cog):
                 Price: {stock['price']}
 
                 Percent Gain/Loss:
-                {"" if str(change)[0] == "-" else "+"}{change:.2f}%
+                {"" if change < 0 else "+"}{change:.2f}%
 
                 Market Cap: {stock['cap']}
                 ```
@@ -240,7 +239,7 @@ class stocks(commands.Cog):
         net_value = 0
         msg = (
             f"{member.display_name}'s stock profile:\n\n"
-            " Name:  Amount:        Price:             Percent Gain:\n"
+            "  Name:    Amount:      Price:             Percent Gain:\n"
         )
 
         for stock in stockbal:
@@ -253,10 +252,12 @@ class stocks(commands.Cog):
                 if trade[0] > 0
             ]
             change = ((price / (sum(trades) / len(trades))) - 1) * 100
-            sign = "-" if str(change)[0] == "-" else "+"
+            sign = "-" if change < 0 else "+"
 
-            msg += f"{sign} {stock:>4}: {stockbal[stock]['total']:<14.2f}"
-            msg += f" Price: ${price:<10.2f} {change:.2f}%\n"
+            msg += (
+                f"{sign} {stock + ':':<8} {stockbal[stock]['total']:<13.2f}"
+                f"${price:<17.2f} {change:.2f}%\n"
+            )
 
             net_value += stockbal[stock]["total"] * price
 

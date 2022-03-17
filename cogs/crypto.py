@@ -196,7 +196,7 @@ class crypto(commands.Cog):
         net_value = 0
         msg = (
             f"{member.display_name}'s crypto profile:\n\n"
-            " Name:                 Price:             Percent Gain:\n"
+            "  Name:    Amount:      Price:             Percent Gain:\n"
         )
 
         for crypto in cryptobal:
@@ -208,10 +208,12 @@ class crypto(commands.Cog):
                 if trade[0] > 0
             ]
             change = ((data["price"] / (sum(trades) / len(trades))) - 1) * 100
-            sign = "-" if str(change)[0] == "-" else "+"
+            sign = "-" if change < 0 else "+"
 
-            msg += f"{sign} {crypto:>4}: {cryptobal[crypto]['total']:<14.2f}"
-            msg += f" Price: ${data['price']:<10.2f} {change:.2f}%\n"
+            msg += (
+                f"{sign} {crypto + ':':<8} {cryptobal[crypto]['total']:<13.2f}"
+                f"${data['price']:<17.2f} {change:.2f}%\n"
+            )
 
             net_value += cryptobal[crypto]["total"] * float(data["price"])
 
@@ -247,7 +249,7 @@ class crypto(commands.Cog):
             if trade[0] > 0
         ]
         change = ((crypto["price"] / (sum(trades) / len(trades))) - 1) * 100
-        sign = "" if str(crypto["change_24h"])[0] == "-" else "+"
+        sign = "" if crypto["change_24h"] < 0 else "+"
 
         embed.set_author(
             name=f"{crypto['name']} [{symbol}]",
@@ -259,7 +261,7 @@ class crypto(commands.Cog):
                 Bal: {cryptobal[symbol]['total']}
 
                 Percent Gain/Loss:
-                {"" if str(change)[0] == "-" else "+"}{change:.2f}%
+                {"" if change < 0 else "+"}{change:.2f}%
 
                 Price:
                 ${crypto['price']:,.2f}
