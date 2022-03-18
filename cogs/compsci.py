@@ -46,6 +46,24 @@ class compsci(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
+    @commands.command()
+    async def ip(self, ctx, ip):
+        """Convert ip to binary and vice versa.
+
+        ip: str
+        """
+        if "." in ip:
+            binary = "".join([f"{int(part):0>8b}" for part in ip.split(".")])
+            return await ctx.send(binary)
+
+        network_a, network_b, host_a, host_b = (
+            int(ip[:8], 2),
+            int(ip[8:16], 2),
+            int(ip[16:24], 2),
+            int(ip[24:], 2),
+        )
+        return await ctx.send(f"{network_a}.{network_b}.{host_a}.{host_b}")
+
     @commands.command(aliases=["c"])
     async def calc(self, ctx, num_base, *, expr=""):
         """Does math.
