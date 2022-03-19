@@ -1,7 +1,15 @@
 import difflib
+from itertools import islice
 
 import discord
 from discord.ext import commands, pages
+
+
+def chunks(items, split):
+    for i in range(0, len(items), split):
+        chunk = islice(items, i, i + split)
+        if chunk:
+            yield chunk
 
 
 class PaginatedHelpCommand(commands.HelpCommand):
@@ -38,7 +46,6 @@ class PaginatedHelpCommand(commands.HelpCommand):
             else:
                 if current_count + ending_length + 1 > 800:
                     page.pop()
-
                 break
 
         if len(page) == len(commands):
@@ -123,44 +130,30 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
     async def send_bot_help(self, mapping):
         embeds = []
-        cogs = []
-        count = 1
-        for cog in self.context.bot.cogs.values():
-            commands = await self.filter_commands(cog.get_commands(), sort=True)
+
+        mapping.pop(None)  # Why is there just None in the mapping?
+
+        for cog in [*mapping.keys()]:
+            commands = await self.filter_commands(mapping[cog], sort=True)
             if not commands:
-                continue
-            cogs.append((cog, commands))
-
-            if count == 4:
-                embeds.append(await self.format_cogs(cogs))
-                cogs.clear()
-                count = 1
+                mapping.pop(cog)
             else:
-                count += 1
+                mapping[cog] = commands
 
-        if cogs:
-            embeds.append(await self.format_cogs(cogs))
+        for chunk in chunks(mapping.items(), 4):
+            embeds.append(await self.format_cogs(chunk))
 
         paginator = pages.Paginator(pages=embeds)
         await paginator.send(self.context)
 
     async def send_cog_help(self, cog):
         entries = await self.filter_commands(cog.get_commands(), sort=True)
-        count = 1
-        commands = []
-        embeds = []
 
         title = f"{cog.qualified_name} Commands"
-        for command in entries:
-            commands.append(command)
-            if count == 6:
-                embeds.append(self.format_group(title, cog.description, commands))
-                commands.clear()
-                count = 1
-            else:
-                count += 1
-        if commands:
-            embeds.append(self.format_group(title, cog.description, commands))
+        embeds = []
+
+        for chunk in chunks(entries, 6):
+            embeds.append(self.format_group(title, cog.description, chunk))
 
         paginator = pages.Paginator(pages=embeds)
         await paginator.send(self.context)
@@ -188,23 +181,15 @@ class PaginatedHelpCommand(commands.HelpCommand):
         if len(entries) == 0:
             return await self.send_command_help(group)
 
-        count = 1
-        commands = []
-        embeds = []
         title = f"{group.qualified_name} Commands"
-        for command in entries:
-            commands.append(command)
-            if count == 6:
-                embeds.append(self.format_group(title, group.description, commands))
-                commands.clear()
-                count = 1
-            else:
-                count += 1
+        embeds = []
 
-        if commands:
-            embeds.append(self.format_group(title, group.description, commands))
+        for chunk in chunks(entries, 6):
+            embeds.append(self.format_group(title, group.description, chunk))
 
-        paginator = pages.Paginator(pages=embeds)
+        paginator = pages.Paginator(
+            pages=embeds
+        )
         await paginator.send(self.context)
 
 
