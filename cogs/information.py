@@ -432,7 +432,9 @@ class information(commands.Cog):
             {online} {online_u:,} {dnd} {dnd_u:,} {idle} {idle_u:,} {offline} {offline_u:,}
         """
 
-        embed.set_thumbnail(url=guild.icon)
+        if guild.icon:
+            embed.set_thumbnail(url=guild.icon)
+
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["member"])
