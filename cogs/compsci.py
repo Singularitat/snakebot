@@ -2,6 +2,7 @@ import io
 import math
 import re
 from zlib import compress
+import ipaddress
 
 import discord
 import orjson
@@ -46,6 +47,59 @@ class compsci(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
+    @commands.command(aliases=["propagation", "transmission"])
+    async def prop(self, ctx, data_rate, length, speed, frame_size):
+        """Calculates transmission time, propagation time and effective data rate."""
+        data_rate = int(data_rate.upper().rstrip("MB"))
+        length = int(length.upper().rstrip("KM"))
+        speed = int(speed.upper().rstrip("KM").rstrip("KM/S"))
+        frame_size = int(frame_size)
+
+        transmission = frame_size / data_rate
+        propagation = (length / speed) * 1000
+        effective = (transmission / 1000) + (propagation * 2)
+
+        await ctx.send(
+            f"```ahk\nTransmission Time: {transmission}μs\n"
+            f"Propagation Time: {propagation}ms\n"
+            f"Effective Data Rate: {effective}Mb/s```"
+        )
+
+    @prop.error
+    async def prop_error_handler(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.dark_red(),
+                    description=(
+                        f"```properties\nUsage:\n{ctx.prefix}"
+                        "prop <data_rate> <length> <speed> <frame_size>\n\n"
+                        "data_rate: bits per second\n"
+                        "length: cable length in km\n"
+                        "speed: speed of light in cable\n"
+                        "frame_size: frame size in bytes```"
+                    ),
+                )
+            )
+
+    @commands.command()
+    async def network(self, ctx, ip):
+        net = ipaddress.ip_network(ip, False)
+
+        if isinstance(net, ipaddress.IPv6Network):
+            lang = "less"
+        else:
+            lang = "ahk"
+
+        await ctx.send(
+            f"```{lang}\nNetwork Address: {net.network_address}\n"
+            f"Network Mask: {net.netmask}\n"
+            f"Host Mask: {net.hostmask}\n"
+            f"Broadcast Address: {net.broadcast_address}\n"
+            f"Last Address: {net[-1]}\n"
+            f"Total Addresses: {net.num_addresses}```"
+        )
+
     @commands.command()
     async def ip(self, ctx, ip):
         """Convert ip to binary and vice versa.
@@ -53,7 +107,7 @@ class compsci(commands.Cog):
         ip: str
         """
         if "." in ip:
-            binary = "".join([f"{int(part):0>8b}" for part in ip.split(".")])
+            binary = "{:0>8b}{:0>8b}{:0>8b}{:0>8b}".format(*map(int, ip.split(".")))
             return await ctx.send(binary)
 
         network_a, network_b, host_a, host_b = (

@@ -495,6 +495,9 @@ class events(commands.Cog):
 
         error: Exception
         """
+        if hasattr(ctx.command, "on_error"):
+            return
+
         error = getattr(error, "original", error)
 
         message = str(error)
