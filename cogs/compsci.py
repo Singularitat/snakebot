@@ -47,6 +47,41 @@ class compsci(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
+    @commands.command(aliases=["propagation", "transmission"])
+    async def prop(self, ctx, data_rate, length, speed, frame_size):
+        """Calculates transmission time, propagation time and effective data rate."""
+        data_rate = int(data_rate.upper().rstrip("MB"))
+        length = int(length.upper().rstrip("KM"))
+        speed = int(speed.upper().rstrip("KM").rstrip("KM/S"))
+        frame_size = int(frame_size)
+
+        transmission = frame_size / data_rate
+        propagation = (length / speed) * 1000
+        effective = (transmission / 1000) + (propagation * 2)
+
+        await ctx.send(
+            f"```ahk\nTransmission Time: {transmission}μs\n"
+            f"Propagation Time: {propagation}ms\n"
+            f"Effective Data Rate: {effective}Mb/s```"
+        )
+
+    @prop.error
+    async def prop_error_handler(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.dark_red(),
+                    description=(
+                        f"```properties\nUsage:\n{ctx.prefix}"
+                        "prop <data_rate> <length> <speed> <frame_size>\n\n"
+                        "data_rate: bits per second\n"
+                        "length: cable length in km\n"
+                        "speed: speed of light in cable\n"
+                        "frame_size: frame size in bytes```"
+                    ),
+                )
+            )
+
     @commands.command()
     async def network(self, ctx, ip):
         net = ipaddress.ip_network(ip, False)
