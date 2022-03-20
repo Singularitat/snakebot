@@ -2,6 +2,7 @@ import io
 import math
 import re
 from zlib import compress
+import ipaddress
 
 import discord
 import orjson
@@ -47,13 +48,31 @@ class compsci(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def network(self, ctx, ip):
+        net = ipaddress.ip_network(ip, False)
+
+        if isinstance(net, ipaddress.IPv6Network):
+            lang = "less"
+        else:
+            lang = "ahk"
+
+        await ctx.send(
+            f"```{lang}\nNetwork Address: {net.network_address}\n"
+            f"Network Mask: {net.netmask}\n"
+            f"Host Mask: {net.hostmask}\n"
+            f"Broadcast Address: {net.broadcast_address}\n"
+            f"Last Address: {net[-1]}\n"
+            f"Total Addresses: {net.num_addresses}```"
+        )
+
+    @commands.command()
     async def ip(self, ctx, ip):
         """Convert ip to binary and vice versa.
 
         ip: str
         """
         if "." in ip:
-            binary = "".join([f"{int(part):0>8b}" for part in ip.split(".")])
+            binary = "{:0>8b}{:0>8b}{:0>8b}{:0>8b}".format(*map(int, ip.split(".")))
             return await ctx.send(binary)
 
         network_a, network_b, host_a, host_b = (
