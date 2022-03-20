@@ -135,26 +135,20 @@ class information(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
         members = []
         counts = []
+        message = []
 
         for count, member in msgtop:
             user = self.bot.get_user(int(member.split("-")[1]))
             if user:
                 members.append(user.display_name)
                 counts.append(count)
+                message.append(f"**{user.display_name}:** {count} messages")
 
-        description = "\n".join(
-            [
-                f"**{member}:** {count} messages"
-                for count, member in zip(members, counts)
-            ]
-        )
-
-        if len(description) > 2048:
-            embed.description = "```Message to large to send.```"
-            return await ctx.send(embed=embed)
+        description = "\n".join(message)
+        if len(description) < 2048:
+            embed.description = description
 
         embed.title = f"Top {len(msgtop)} chatters"
-        embed.description = description
         data = str(
             {
                 "type": "bar",
