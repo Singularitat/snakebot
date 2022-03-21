@@ -1236,20 +1236,6 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
-    async def test_snipe_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.snipe(self.cog, context)
-
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-
-    async def test_editsnipe_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.editsnipe(self.cog, context)
-
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-
 
 class MiscCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
@@ -1715,12 +1701,12 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertTrue(first_perc[-1] == "%" and float(first_perc[:-1]) >= 96.3)
         self.assertTrue(second_perc[-1] == "%" and float(second_perc[:-1]) >= 95.0)
-        self.assertTrue(booster_perc[-1] == "%" and float(booster_perc[:-1]) >= 72.8)
+        self.assertTrue(booster_perc[-1] == "%" and float(booster_perc[:-1]) >= 72.7)
 
-        self.assertTrue(first_dose >= 4_024_159)
-        self.assertTrue(second_dose >= 3_971_385)
-        self.assertTrue(third_dose >= 34_217)
-        self.assertTrue(booster >= 2_545_448)
+        self.assertTrue(first_dose >= 4_024_487)
+        self.assertTrue(second_dose >= 3_971_936)
+        self.assertTrue(third_dose >= 34_230)
+        self.assertTrue(booster >= 2_552_901)
 
     async def holidays_command(self):
         context = helpers.MockContext()
@@ -1848,3 +1834,17 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
+
+    async def test_snipe_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.snipe(self.cog, context)
+
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+
+    async def test_editsnipe_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.editsnipe(self.cog, context)
+
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
