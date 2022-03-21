@@ -316,12 +316,12 @@ class compsci(commands.Cog):
         )[2:-4]
 
         async with ctx.typing(), self.bot.client_session.post(
-            url, data=data
-        ) as response:
-            response = (await response.read()).decode("utf-8")
-            response = response.replace(response[:16], "")
+            url, data=data, timeout=15
+        ) as resp:
+            output = (await resp.read()).decode("utf-8")
+            output = output.replace(output[:16], "")
 
-        await ctx.reply(f"```{lang}\n{response}```")
+        await ctx.reply(f"```{lang}\n{output}```")
 
     @commands.command()
     async def tiolanguages(self, ctx):
