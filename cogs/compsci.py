@@ -57,7 +57,7 @@ class compsci(commands.Cog):
 
         transmission = frame_size / data_rate
         propagation = (length / speed) * 1000
-        effective_excluding = (propagation * 2)
+        effective_excluding = propagation * 2
         effective = (transmission / 1000) + effective_excluding
 
         await ctx.send(
