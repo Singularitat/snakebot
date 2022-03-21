@@ -57,12 +57,14 @@ class compsci(commands.Cog):
 
         transmission = frame_size / data_rate
         propagation = (length / speed) * 1000
-        effective = (transmission / 1000) + (propagation * 2)
+        effective_excluding = (propagation * 2)
+        effective = (transmission / 1000) + effective_excluding
 
         await ctx.send(
             f"```ahk\nTransmission Time: {transmission}μs\n"
             f"Propagation Time: {propagation}ms\n"
-            f"Effective Data Rate: {effective}Mb/s```"
+            f"Effective Data Rate: {effective}Mb/s "
+            f"({effective_excluding}Mb/s excluding transmission)```"
         )
 
     @prop.error
@@ -74,6 +76,7 @@ class compsci(commands.Cog):
                     description=(
                         f"```properties\nUsage:\n{ctx.prefix}"
                         "prop <data_rate> <length> <speed> <frame_size>\n\n"
+                        f"Example:\n{ctx.prefix}prop 1000Mb 800km 200000km/s 10000\n\n"
                         "data_rate: bits per second\n"
                         "length: cable length in km\n"
                         "speed: speed of light in cable\n"
