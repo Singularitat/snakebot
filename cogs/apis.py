@@ -88,35 +88,6 @@ class apis(commands.Cog):
         await ctx.send(data["this"] + " for " + data["that"])
 
     @commands.command()
-    async def domains(self, ctx, domain_name, page=1):
-        """Looks up domains similar to given search e.g facebook.
-
-        domain_name: str
-        """
-        page = max(1, page) - 1
-        url = f"https://api.domainsdb.info/v1/domains/search?domain={domain_name}"
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        with ctx.typing():
-            data = await self.bot.get_json(url)
-
-        if "message" in data:
-            embed.description = "```No matching domains found```"
-            return await ctx.send(embed=embed)
-
-        start = page * 24
-        end = start + 24
-
-        for domain in data["domains"][start:end]:
-            alive = "Inactive" if domain["isDead"] == "True" else "Active"
-            embed.add_field(
-                name=f"http://{domain['domain']}",
-                value=f"```prolog\n{domain['country'] or 'N/A'} : {alive}```",
-            )
-        embed.set_footer(text="Most sites will not work as they might be apis, etc.")
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def validate(self, ctx, domain: str):
         """Checks if domains are disposable used to check if tempmail is fine.
 
