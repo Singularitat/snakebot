@@ -1840,11 +1840,15 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.snipe(self.cog, context)
 
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
 
     async def test_editsnipe_command(self):
         context = helpers.MockContext()
 
         await self.cog.editsnipe(self.cog, context)
 
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
