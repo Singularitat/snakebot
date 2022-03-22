@@ -1700,13 +1700,13 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         booster = int(data[25].replace(",", ""))
 
         self.assertTrue(first_perc[-1] == "%" and float(first_perc[:-1]) >= 96.3)
-        self.assertTrue(second_perc[-1] == "%" and float(second_perc[:-1]) >= 95.0)
-        self.assertTrue(booster_perc[-1] == "%" and float(booster_perc[:-1]) >= 72.7)
+        self.assertTrue(second_perc[-1] == "%" and float(second_perc[:-1]) >= 95.1)
+        self.assertTrue(booster_perc[-1] == "%" and float(booster_perc[:-1]) >= 72.8)
 
-        self.assertTrue(first_dose >= 4_024_487)
-        self.assertTrue(second_dose >= 3_971_936)
-        self.assertTrue(third_dose >= 34_230)
-        self.assertTrue(booster >= 2_552_901)
+        self.assertTrue(first_dose >= 4_024_664)
+        self.assertTrue(second_dose >= 3_972_259)
+        self.assertTrue(third_dose >= 34_211)
+        self.assertTrue(booster >= 2_556_753)
 
     async def holidays_command(self):
         context = helpers.MockContext()
@@ -1840,11 +1840,15 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.snipe(self.cog, context)
 
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
 
     async def test_editsnipe_command(self):
         context = helpers.MockContext()
 
         await self.cog.editsnipe(self.cog, context)
 
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )

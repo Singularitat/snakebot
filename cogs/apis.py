@@ -55,38 +55,6 @@ class apis(commands.Cog):
         await ctx.reply(f"```py\n{formatted}```")
 
     @commands.command()
-    async def contests(self, ctx):
-        """Shows upcoming coding contests."""
-        url = "https://kontests.net/api/v1/all"
-
-        contests = await self.bot.get_json(url)
-        embed = discord.Embed(color=discord.Color.blurple())
-        count = 0
-
-        for contest in contests:
-            if contest["status"] != "BEFORE":
-                continue
-
-            try:
-                contest_time = datetime.strptime(
-                    contest["start_time"][:-5], "%Y-%m-%dT%H:%M:%S"
-                )
-            except ValueError:
-                continue
-
-            count += 1
-
-            embed.add_field(
-                name=f"<t:{contest_time.timestamp():.0f}:R>",
-                value=f"[{contest['name']}]({contest['url']})",
-            )
-
-            if count == 12:
-                break
-
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def excuse(self, ctx, category=None):
         """Gets a random excuse.
 
@@ -108,45 +76,6 @@ class apis(commands.Cog):
 
         data = await self.bot.get_json(url)
         await ctx.send(f"> {data[0]['excuse']}")
-
-    @commands.command()
-    async def idea(self, ctx):
-        """Gets a random idea from the itsthisforthat.com website."""
-        url = "http://itsthisforthat.com/api.php?json"
-
-        async with self.bot.client_session.get(url) as resp:
-            data = await resp.json(content_type=None)
-
-        await ctx.send(data["this"] + " for " + data["that"])
-
-    @commands.command()
-    async def domains(self, ctx, domain_name, page=1):
-        """Looks up domains similar to given search e.g facebook.
-
-        domain_name: str
-        """
-        page = max(1, page) - 1
-        url = f"https://api.domainsdb.info/v1/domains/search?domain={domain_name}"
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        with ctx.typing():
-            data = await self.bot.get_json(url)
-
-        if "message" in data:
-            embed.description = "```No matching domains found```"
-            return await ctx.send(embed=embed)
-
-        start = page * 24
-        end = start + 24
-
-        for domain in data["domains"][start:end]:
-            alive = "Inactive" if domain["isDead"] == "True" else "Active"
-            embed.add_field(
-                name=f"http://{domain['domain']}",
-                value=f"```prolog\n{domain['country'] or 'N/A'} : {alive}```",
-            )
-        embed.set_footer(text="Most sites will not work as they might be apis, etc.")
-        await ctx.send(embed=embed)
 
     @commands.command()
     async def validate(self, ctx, domain: str):
