@@ -78,16 +78,6 @@ class apis(commands.Cog):
         await ctx.send(f"> {data[0]['excuse']}")
 
     @commands.command()
-    async def idea(self, ctx):
-        """Gets a random idea from the itsthisforthat.com website."""
-        url = "http://itsthisforthat.com/api.php?json"
-
-        async with self.bot.client_session.get(url) as resp:
-            data = await resp.json(content_type=None)
-
-        await ctx.send(data["this"] + " for " + data["that"])
-
-    @commands.command()
     async def validate(self, ctx, domain: str):
         """Checks if domains are disposable used to check if tempmail is fine.
 
