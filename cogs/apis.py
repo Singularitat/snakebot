@@ -928,12 +928,18 @@ class apis(commands.Cog):
         data = await self.bot.get_json(url)
 
         result = data["results"][0]
+        options = result["incorrect_answers"]
+        correct = html.unescape(result["correct_answer"])
+
+        for i in range(len(options)):
+            options[i] = html.unescape(options[i])
+
+        options.append(correct)
+        random.shuffle(options)
 
         embed = discord.Embed(
             color=discord.Color.blurple(), title=html.unescape(result["question"])
         )
-        options = result["incorrect_answers"] + [result["correct_answer"]]
-        random.shuffle(options)
 
         for i, option in enumerate(options, start=0):
             embed.add_field(name=i + 1, value=option)
@@ -955,7 +961,7 @@ class apis(commands.Cog):
             "reaction_add", timeout=60.0, check=check
         )
 
-        if reactions.index(reaction.emoji) == options.index(result["correct_answer"]):
+        if int(reaction.emoji[0]) - 1 == options.index(correct):
             return await message.add_reaction("✅")
 
         await message.add_reaction("❎")
