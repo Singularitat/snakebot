@@ -107,38 +107,42 @@ class admin(commands.Cog):
 
         title = ""
         roles = []
+        failed = []
 
         for line in information.split("\n"):
-            role, *name = line.split("|")
+            role_name, *display = line.split("|")
 
-            if role == "break":
+            if role_name == "break":
                 roles.append(("break", None))
                 continue
 
-            if not name:
-                title += f"{role}\n"
+            if not display:
+                title += f"{role_name}\n"
                 continue
 
-            if not role:
+            if not role_name:
                 continue
 
             try:
-                role = int(role)
+                role_id = int(role_name)
             except ValueError:
-                role = discord.utils.get(ctx.guild.roles, name=role.strip())
+                role = discord.utils.get(ctx.guild.roles, name=role_name.strip())
 
                 if not role:
+                    failed.append(role_name)
                     continue  # failed to get role
 
-                role = role.id
+                role_id = role.id
 
-            roles.append((role, name[0].strip()))
+            roles.append((role_id, display[0].strip()))
 
         message_id = str(ctx.message.id)
 
         await ctx.send(
             title, view=ButtonRoles(self.bot, ctx.guild.id, roles, message_id)
         )
+        if failed:
+            await ctx.send(f"Failed to find the following roles: {failed}")
         data = {
             "guild": ctx.guild.id,
             "roles": roles,
