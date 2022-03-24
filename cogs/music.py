@@ -553,7 +553,7 @@ class music(commands.Cog):
                 await ctx.message.add_reaction("⏭")
                 ctx.voice_state.skip()
             else:
-                ctx.message.add_reaction("➕")
+                await ctx.message.add_reaction("✅")
         else:
             await ctx.send("You have already voted to skip this song.", delete_after=15)
             await self.r_command_error(ctx.message)
