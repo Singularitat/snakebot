@@ -1,8 +1,8 @@
 import io
+import ipaddress
 import math
 import re
 from zlib import compress
-import ipaddress
 
 import discord
 import orjson
