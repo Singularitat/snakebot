@@ -843,6 +843,15 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    async def test_library_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.library(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
     async def test_ones_command(self):
         context = helpers.MockContext()
 
