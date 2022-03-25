@@ -59,7 +59,9 @@ class apis(commands.Cog):
             "apikey": "5a64d478-9c89-43d8-88e3-c65de9999580",
         }
 
-        async with self.bot.client_session.post(api_url, data=data, headers=headers) as resp:
+        async with self.bot.client_session.post(
+            api_url, data=data, headers=headers
+        ) as resp:
             results = await resp.json()
 
         results = results["ParsedResults"][0]
