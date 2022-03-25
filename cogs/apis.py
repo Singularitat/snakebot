@@ -23,6 +23,56 @@ class apis(commands.Cog):
         self.loop = bot.loop
 
     @commands.command()
+    async def text(self, ctx, url=None):
+        """Extracts the text out of an image."""
+        if not url:
+            if ctx.message.attachments:
+                url = ctx.message.attachments[0].url
+            elif ctx.message.reference and (message := ctx.message.reference.resolved):
+                if message.attachments:
+                    url = message.attachments[0].url
+                elif message.embeds:
+                    url = message.embeds[0].url
+
+        if not url:
+            return
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        api_url = "https://api8.ocr.space/parse/image"
+
+        data = {
+            "url": url,
+            "language": "eng",
+            "isOverlayRequired": "true",
+            "FileType": ".Auto",
+            "IsCreateSearchablePDF": "false",
+            "isSearchablePdfHideTextLayer": "true",
+            "detectOrientation": "false",
+            "isTable": "true",
+            "scale": "true",
+            "OCREngine": 2,
+            "detectCheckbox": "false",
+            "checkboxTemplate": 0,
+        }
+        headers = {
+            "apikey": "5a64d478-9c89-43d8-88e3-c65de9999580",
+        }
+
+        async with self.bot.client_session.post(api_url, data=data, headers=headers) as resp:
+            results = await resp.json()
+
+        results = results["ParsedResults"][0]
+        result = results["ParsedText"].replace("`", "`\u200b")
+
+        if not result:
+            embed.description = "```Failed to process image```"
+            return await ctx.send(embed=embed)
+
+        embed.description = f"```\n{result}```"
+        await ctx.send(embed=embed)
+
+    @commands.command()
     async def curl(self, ctx, *, code):
         """Converts from a curl command to python requests.
 
