@@ -559,6 +559,10 @@ class apis(commands.Cog):
             embed.description = "```Calculation errored out```"
             return await ctx.send(embed=embed)
 
+        if "pods" not in data:
+            embed.description = "```Calculation failed```"
+            return await ctx.send(embed=embed)
+
         msg = ""
 
         for pod in data["pods"]:
