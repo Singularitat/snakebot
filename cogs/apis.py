@@ -107,29 +107,6 @@ class apis(commands.Cog):
         await ctx.reply(f"```py\n{formatted}```")
 
     @commands.command()
-    async def excuse(self, ctx, category=None):
-        """Gets a random excuse.
-
-        category: str
-            One of the following, family, office, children, college, party
-        """
-        if not category:
-            url = "https://excuser.herokuapp.com/v1/excuse"
-        else:
-            if category not in ("family", "office", "children", "college", "party"):
-                return await ctx.send(
-                    embed=discord.Embed(
-                        description="```Category must be one of the following,"
-                        " family, office, children, college, party```"
-                    )
-                )
-
-            url = f"https://excuser.herokuapp.com/v1/excuse/{category}"
-
-        data = await self.bot.get_json(url)
-        await ctx.send(f"> {data[0]['excuse']}")
-
-    @commands.command()
     async def validate(self, ctx, domain: str):
         """Checks if domains are disposable used to check if tempmail is fine.
 
