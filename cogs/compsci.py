@@ -89,18 +89,25 @@ class compsci(commands.Cog):
     async def network(self, ctx, ip):
         net = ipaddress.ip_network(ip, False)
 
-        if isinstance(net, ipaddress.IPv6Network):
-            lang = "less"
-        else:
-            lang = "ahk"
+        def dotted(ip):
+            return ".".join([format(chunk, "08b") for chunk in ip.packed])
 
+        network_address = net.network_address
+        netmask = net.netmask
+        hostmask = net.hostmask
+        broadcast_address = net.broadcast_address
+        max_address = net[-2]
+        min_address = net[1]
+
+        # Due to the IPv4Address having an __format__ method they need to be converted to strings first
         await ctx.send(
-            f"```{lang}\nNetwork Address: {net.network_address}\n"
-            f"Network Mask: {net.netmask}\n"
-            f"Host Mask: {net.hostmask}\n"
-            f"Broadcast Address: {net.broadcast_address}\n"
-            f"Last Address: {net[-1]}\n"
-            f"Total Addresses: {net.num_addresses}```"
+            f"```ahk\nNetwork Address: {str(network_address):<22}; {dotted(network_address)}\n"
+            f"Network Mask: {str(netmask):<25}; {dotted(netmask)}\n"
+            f"Host Mask: {str(hostmask):<28}; {dotted(hostmask)}\n"
+            f"Broadcast Address: {str(broadcast_address):<20}; {dotted(broadcast_address)}\n"
+            f"Max Address: {str(max_address):<26}; {dotted(max_address)}\n"
+            f"Min Address: {str(min_address):<26}; {dotted(min_address)}\n"
+            f"Total Addresses: {net.num_addresses} ({net.num_addresses - 2})```"
         )
 
     @commands.command()
@@ -110,7 +117,9 @@ class compsci(commands.Cog):
         ip: str
         """
         if "." in ip:
-            binary = "{:0>8b}{:0>8b}{:0>8b}{:0>8b}".format(*map(int, ip.split(".")))
+            binary = "```ahk\n{:08b}{:08b}{:08b}{:08b}```".format(
+                *map(int, ip.split("."))
+            )
             return await ctx.send(binary)
 
         network_a, network_b, host_a, host_b = (
@@ -119,7 +128,7 @@ class compsci(commands.Cog):
             int(ip[16:24], 2),
             int(ip[24:], 2),
         )
-        return await ctx.send(f"{network_a}.{network_b}.{host_a}.{host_b}")
+        return await ctx.send(f"```ahk\n{network_a}.{network_b}.{host_a}.{host_b}```")
 
     @commands.command(aliases=["c"])
     async def calc(self, ctx, num_base, *, expr=""):
