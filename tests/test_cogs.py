@@ -98,14 +98,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
         with self.subTest(command="curl"):
             await self.cog.curl(self.cog, context, code=code)
 
-    async def excuse_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="excuse"):
-            await self.cog.excuse(self.cog, context)
-
-            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-
     async def validate_command(self):
         context = helpers.MockContext()
 
@@ -693,6 +685,20 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
         cls.cog = compsci(bot=bot)
+
+    async def test_ip_command(self):
+        context = helpers.MockContext()
+
+        tests = (
+            ("50.74.24.1", "```ahk\n00110010010010100001100000000001```"),
+            ("00110010010010100001100000000001", "```ahk\n50.74.24.1```"),
+        )
+
+        for test, answer in tests:
+            with self.subTest(test=test):
+                await self.cog.ip(self.cog, context, number=test)
+
+                self.assertEqual(context.send.call_args.args[0], answer)
 
     async def test_hex_command(self):
         context = helpers.MockContext()
