@@ -189,6 +189,18 @@ WWO_CODES = {
 }
 
 
+class DeleteButton(discord.ui.View):
+    def __init__(self, author: discord.Member):
+        super().__init__()
+        self.author = author
+
+    @discord.ui.button(label="X", style=discord.ButtonStyle.red)
+    async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if interaction.user == self.author:
+            if interaction.message:
+                await interaction.message.delete()
+
+
 class useful(commands.Cog):
     """Actually useful commands."""
 
@@ -356,8 +368,7 @@ class useful(commands.Cog):
         async with ctx.typing(), self.bot.client_session.post(url, timeout=40) as resp:
             data = await resp.json()
 
-        message = await ctx.send(data["iurl"])
-        await self.wait_for_deletion(ctx.author, message)
+        await ctx.send(data["iurl"], view=DeleteButton(ctx.author))
 
     @commands.command()
     async def tempmail(self, ctx):
@@ -818,18 +829,6 @@ class useful(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    async def wait_for_deletion(self, author: discord.Member, message: discord.Message):
-        def check(reaction: discord.Reaction, user: discord.User) -> bool:
-            return (
-                author == user and reaction.message == message and reaction.emoji == "❎"
-            )
-
-        await message.add_reaction("❎")
-        reaction, user = await self.bot.wait_for(
-            "reaction_add", timeout=60.0, check=check
-        )
-        await message.delete()
-
     async def cache_check(self, search):
         """Checks the cache for an search if found randomly return a result.
 
@@ -867,8 +866,7 @@ class useful(commands.Cog):
             embed.set_image(url=url)
             embed.title = title
 
-            message = await ctx.send(embed=embed)
-            return await self.wait_for_deletion(ctx.author, message)
+            return await ctx.send(embed=embed, view=DeleteButton(ctx.author))
 
         async with ctx.typing():
             url = f"https://www.google.com/search?q={search}&source=lnms&tbm=isch&safe=active"
@@ -895,13 +893,11 @@ class useful(commands.Cog):
             embed.set_image(url=url)
             embed.title = title
 
-            message = await ctx.send(embed=embed)
+            await ctx.send(embed=embed, view=DeleteButton(ctx.author))
 
             cache[cache_search] = images
             self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
             self.DB.main.put(b"cache", orjson.dumps(cache))
-
-        await self.wait_for_deletion(ctx.author, message)
 
     @commands.command(aliases=["img"])
     async def image(self, ctx, *, search):
@@ -920,8 +916,7 @@ class useful(commands.Cog):
             embed.set_image(url=url)
             embed.title = title
 
-            message = await ctx.send(embed=embed)
-            return await self.wait_for_deletion(ctx.author, message)
+            return await ctx.send(embed=embed, view=DeleteButton(ctx.author))
 
         async with ctx.typing():
             url = f"https://yandex.com/images/search?family=yes&text={search}"
@@ -947,13 +942,11 @@ class useful(commands.Cog):
             embed.set_image(url=url)
             embed.title = title
 
-            message = await ctx.send(embed=embed)
+            await ctx.send(embed=embed, view=DeleteButton(ctx.author))
 
             cache[cache_search] = images
             self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
             self.DB.main.put(b"cache", orjson.dumps(cache))
-
-        await self.wait_for_deletion(ctx.author, message)
 
 
 def setup(bot: commands.Bot) -> None:
