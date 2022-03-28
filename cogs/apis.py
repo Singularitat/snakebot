@@ -14,6 +14,18 @@ from discord.ext import commands
 URBAN_REGEX = re.compile(r"\[(.*?)\]")
 
 
+class DeleteButton(discord.ui.View):
+    def __init__(self, author: discord.Member):
+        super().__init__()
+        self.author = author
+
+    @discord.ui.button(label="X", style=discord.ButtonStyle.red)
+    async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if interaction.user == self.author:
+            if interaction.message:
+                await interaction.message.delete()
+
+
 class apis(commands.Cog):
     """For commands related to apis."""
 
@@ -261,11 +273,14 @@ class apis(commands.Cog):
                 description=f"{post['sub']} "
                 f"[Post](https://reddit.com{post['link']})\n\n{text}",
             )
-            return await ctx.send(embed=embed)
+            return await ctx.send(embed=embed, view=DeleteButton(ctx.author))
 
         video = post.get("video")
         if video:
-            return await ctx.send(f"**{post['title']}**\n{post['sub']}\n{video}")
+            return await ctx.send(
+                f"**{post['title']}**\n{post['sub']}\n{video}",
+                view=DeleteButton(ctx.author),
+            )
 
         if post["url"][-4:] in (".jpg", ".png"):
             embed = discord.Embed(
@@ -275,9 +290,12 @@ class apis(commands.Cog):
                 f"[Post](https://reddit.com{post['link']})",
             )
             embed.set_image(url=post["url"])
-            return await ctx.send(embed=embed)
+            return await ctx.send(embed=embed, view=DeleteButton(ctx.author))
 
-        await ctx.send(f"**{post['title']}**\n{post['sub']}\n{post['url']}")
+        await ctx.send(
+            f"**{post['title']}**\n{post['sub']}\n{post['url']}",
+            view=DeleteButton(ctx.author),
+        )
 
     @commands.command()
     async def bots(self, ctx, amount=12):
