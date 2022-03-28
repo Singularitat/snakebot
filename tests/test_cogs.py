@@ -696,7 +696,7 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
 
         for test, answer in tests:
             with self.subTest(test=test):
-                await self.cog.ip(self.cog, context, number=test)
+                await self.cog.ip(self.cog, context, test)
 
                 self.assertEqual(context.send.call_args.args[0], answer)
 
@@ -1776,16 +1776,26 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
             )
 
     async def google_command(self):
-        with self.subTest(command="google"), self.assertRaises(ValueError):
+        with self.subTest(command="google"):
             context = helpers.MockContext()
 
             await self.cog.google(self.cog, context, search="cat")
 
+            self.assertRegex(context.send.call_args.kwargs["embed"].url, url_regex)
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
+
     async def image_command(self):
-        with self.subTest(command="image"), self.assertRaises(ValueError):
+        with self.subTest(command="image"):
             context = helpers.MockContext()
 
             await self.cog.image(self.cog, context, search="cat")
+
+            self.assertRegex(context.send.call_args.kwargs["embed"].url, url_regex)
+            self.assertNotEqual(
+                context.send.call_args.kwargs["embed"].color.value, 10038562
+            )
 
     async def weather_command(self):
         context = helpers.MockContext()
