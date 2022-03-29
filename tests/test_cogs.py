@@ -686,6 +686,13 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = compsci(bot=bot)
 
+    async def test_prop_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.prop(self.cog, context, "1000Mb", "800km", "200000km/s", "10000")
+
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+
     async def test_network_command(self):
         context = helpers.MockContext()
 
