@@ -1704,10 +1704,10 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(second_perc[-1] == "%" and float(second_perc[:-1]) >= 95.1)
         self.assertTrue(booster_perc[-1] == "%" and float(booster_perc[:-1]) >= 72.8)
 
-        self.assertTrue(first_dose >= 4_024_664)
-        self.assertTrue(second_dose >= 3_972_259)
-        self.assertTrue(third_dose >= 34_211)
-        self.assertTrue(booster >= 2_556_753)
+        self.assertTrue(first_dose >= 4_025_561)
+        self.assertTrue(second_dose >= 3_974_205)
+        self.assertTrue(third_dose >= 34_279)
+        self.assertTrue(booster >= 2_579_735)
 
     async def holidays_command(self):
         context = helpers.MockContext()
