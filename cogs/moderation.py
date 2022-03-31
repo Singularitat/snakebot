@@ -588,10 +588,10 @@ class moderation(commands.Cog):
     @history.command(aliases=["d"])
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
-    async def deleted(self, ctx, member: discord.Member = None):
+    async def deleted(self, ctx, member: discord.User = None):
         """Shows a members most recent deleted message history.
 
-        member: discord.Member
+        member: discord.User
             The user to get the history of.
         amount: int
             The amount of messages to get.
@@ -631,10 +631,10 @@ class moderation(commands.Cog):
     @history.command(aliases=["e"])
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
-    async def edited(self, ctx, member: discord.Member = None):
+    async def edited(self, ctx, member: discord.User = None):
         """Shows a users most recent edit message history.
 
-        member: discord.Member
+        member: discord.User
             The user to get the edit history of.
         amount: int
             The amount of messages to get.
