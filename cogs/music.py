@@ -1,11 +1,10 @@
 import asyncio
 import functools
-from itertools import islice
 
 import discord
 import yt_dlp
 from async_timeout import timeout
-from discord.ext import commands
+from discord.ext import commands, pages
 
 try:
     import uvloop
@@ -286,11 +285,12 @@ class Song:
         self.requester = source.requester
 
     def create_embed(self, songs, looped):
-        if len(songs) == 0:
+        if not len(songs):
             queue = "Empty queue."
         else:
             queue = ""
-            for i, song in enumerate(songs[0:5], start=0):
+            print(songs[:5])
+            for i, song in enumerate(songs[:5], start=0):
                 queue += (
                     f"`{i + 1}.` [**{song.source.title_limited_embed}**]"
                     f"({song.source.url} '{song.source.title}')\n"
@@ -324,7 +324,13 @@ class Song:
 class SongQueue(asyncio.Queue):
     def __getitem__(self, item):
         if isinstance(item, slice):
-            return list(islice(self._queue, item.start, item.stop, item.step))
+            length = self.qsize()
+            start = item.start or 0
+
+            if start > length:
+                return []
+
+            return [self._queue[i] for i in range(start, min(item.stop, length))]
 
         return self._queue[item]
 
@@ -566,12 +572,14 @@ class music(commands.Cog):
         await self.command_error(ctx.message)
 
     @commands.command(aliases=["q"])
-    async def queue(self, ctx, *, page: int = 1):
+    async def queue(self, ctx):
         """Shows the player's queue.
 
         page: int
             The page to display defaulting to the first page.
         """
+        songs = ctx.voice_state.songs
+
         if len(ctx.voice_state.songs) == 0:
             await ctx.send(
                 embed=discord.Embed(
@@ -581,20 +589,30 @@ class music(commands.Cog):
             )
             return await self.command_error(ctx.message)
 
-        queue = ""
-        # fmt: off
-        songs = ctx.voice_state.songs[(page - 1) * 10: (((page - 1) * 10) + 10)]
-        # fmt: on
-        for i, song in enumerate(songs, start=(page - 1) * 10):
-            queue += (
-                f"`{i + 1}.` [**{song.source.title_limited}**]"
-                f"({song.source.url} '{song.source.title}')\n"
+        embeds = []
+        length = len(songs)
+
+        for page in range(-(-len(length) // 10)):
+            queue = ""
+            page = page * 10
+            # fmt: off
+            songs = songs[page: page + 10]
+            # fmt: on
+
+            for i, song in enumerate(songs, start=page):
+                queue += (
+                    f"`{i + 1}.` [**{song.source.title_limited}**]"
+                    f"({song.source.url} '{song.source.title}')\n"
+                )
+            embeds.append(
+                discord.Embed(
+                    color=discord.Color.blurple(),
+                    description=f"**{length} tracks:**\n\n{queue}",
+                )
             )
 
-        embed = discord.Embed(
-            description=f"**{len(ctx.voice_state.songs)} tracks:**\n\n{queue}"
-        ).set_footer(text=f"Viewing page {page}/{-(-len(ctx.voice_state.songs) // 10)}")
-        await ctx.send(embed=embed)
+        paginator = pages.Paginator(pages=embeds)
+        await paginator.send(ctx)
         await self.command_success(ctx.message)
 
     @commands.command()
