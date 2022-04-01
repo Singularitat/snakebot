@@ -298,32 +298,6 @@ class apis(commands.Cog):
         )
 
     @commands.command()
-    async def bots(self, ctx, amount=12):
-        """Shows a little information about the top bots.
-
-        amount: int
-            Amount of bots to get.
-        """
-        url = "https://topbots.advaith.workers.dev/"
-
-        bots = await self.bot.get_json(url)
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        for i, bot in enumerate(bots):
-            if i == amount:
-                break
-            embed.add_field(
-                name=bot["name"],
-                value=(
-                    f"```ahk\nID:\n{bot['id']}\n\n"
-                    f"Servers:\n{bot['servers']:,}\n\n"
-                    f"Discord library:\n{bot['lib']}```"
-                ),
-            )
-
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def sky(self, ctx):
         """Gets an ai generated night sky."""
         num = random.randint(1, 5000)
