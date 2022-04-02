@@ -415,12 +415,12 @@ class economy(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(
-            name="**Wins/Loses**",
+            name="**Wins/Losses**",
             value=f"""
             **Total Wins:** {wins["totalwin"]}
             **Total Losses:** {wins["totallose"]}
             **Current Wins:** {wins["currentwin"]}
-            **Current Loses:** {wins["currentlose"]}
+            **Current Losses:** {wins["currentlose"]}
             **Highest Win Streak:** {wins["highestwin"]}
             **Highest Loss Streak:** {wins["highestlose"]}
             """,

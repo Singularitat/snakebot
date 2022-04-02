@@ -22,6 +22,7 @@ prefixed_dbs = (
     "cookies",
     "reminders",
     "docs",
+    "trivia_wins",
 )
 
 
