@@ -26,6 +26,63 @@ class DeleteButton(discord.ui.View):
                 await interaction.message.delete()
 
 
+class AnswerButton(discord.ui.Button["Trivia"]):
+    def __init__(self, answer: str):
+        self.answer = answer
+
+        super().__init__(
+            style=discord.ButtonStyle.secondary,
+            label=answer,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        user = interaction.user
+        view = self.view
+
+        if view.player == user:
+            key = str(user.id).encode()
+            stats = view.db.trivia_wins.get(key)
+
+            if not stats:
+                wins, losses = 0, 0
+            else:
+                wins, losses = map(int, stats.decode().split(":"))
+
+            if self.answer == view.answer:
+                style = discord.ButtonStyle.success
+                wins += 1
+            else:
+                style = discord.ButtonStyle.danger
+                losses += 1
+
+            view.db.trivia_wins.put(key, f"{wins}:{losses}".encode())
+
+            for button in view.children:
+                button.disabled = True
+                button.style = style
+
+            view.stop()
+            return await interaction.response.edit_message(
+                embed=view.embed.set_footer(text=f"Correct answer was {view.answer}"),
+                view=view,
+            )
+        await interaction.response.send_message(
+            "This isn't your game :angry:", ephemeral=True
+        )
+
+
+class Trivia(discord.ui.View):
+    def __init__(self, db, author, embed, correct_answer, answers):
+        super().__init__(timeout=360)
+        self.db = db
+        self.player = author
+        self.embed = embed
+        self.answer = correct_answer
+
+        for question in answers:
+            self.add_item(AnswerButton(question))
+
+
 class apis(commands.Cog):
     """For commands related to apis."""
 
@@ -966,35 +1023,8 @@ class apis(commands.Cog):
             color=discord.Color.blurple(), title=html.unescape(result["question"])
         )
 
-        for i, option in enumerate(options, start=0):
-            embed.add_field(name=i + 1, value=option)
-
-        message = await ctx.send(embed=embed)
-        reactions = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
-
-        for emoji in reactions:
-            await message.add_reaction(emoji)
-
-        def check(reaction: discord.Reaction, user: discord.User) -> bool:
-            return (
-                user == ctx.author
-                and reaction.message.channel == ctx.channel
-                and reaction.emoji in reactions
-            )
-
-        reaction, user = await ctx.bot.wait_for(
-            "reaction_add", timeout=60.0, check=check
-        )
-
-        if int(reaction.emoji[0]) - 1 == options.index(correct):
-            return await message.add_reaction("✅")
-
-        await message.add_reaction("❎")
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"Correct answer was {result['correct_answer']}",
-            )
+        await ctx.reply(
+            embed=embed, view=Trivia(self.DB, ctx.author, embed, correct, options)
         )
 
     @commands.command()

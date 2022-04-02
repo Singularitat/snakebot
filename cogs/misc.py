@@ -101,6 +101,58 @@ class misc(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
+    @commands.command(aliases=["tboard"])
+    async def triviaboard(self, ctx):
+        """Shows the top 10 trivia players."""
+        users = []
+        for user, stats in self.DB.trivia_wins:
+            wins, losses = map(int, stats.decode().split(":"))
+            user = self.bot.get_user(int(user.decode()))
+            if not user:
+                continue
+            win_rate = (wins / (wins + losses)) * 100
+            users.append((wins, losses, win_rate, user.display_name))
+
+        users.sort(reverse=True)
+        top_users = []
+
+        for wins, losses, win_rate, user in users[:10]:
+            top_users.append(f"{user:<20} {wins:>5} | {losses:<7}| {win_rate:.2f}%")
+
+        embed = discord.Embed(
+            color=discord.Color.blurple(), title=f"Top {len(top_users)} Trivia Players"
+        )
+        embed.description = (
+            "```\n                      wins | losses | win rate\n{}```"
+        ).format("\n".join(top_users))
+
+        await ctx.send(embed=embed)
+
+    @commands.command(aliases=["tstats"])
+    async def triviastats(self, ctx, user: discord.User = None):
+        """Shows the trivia stats of a user.
+
+        user: discord.User
+            The user to show the stats of.
+        """
+        user = user or ctx.author
+        key = str(user.id).encode()
+
+        stats = self.DB.trivia_wins.get(key)
+        wins, losses = map(int, stats.decode().split(":"))
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                title=f"{user.display_name}'s Trivia Stats",
+                description=(
+                    f"**Win Rate:** {(wins / (wins + losses)) * 100:.2f}%\n"
+                    f"**Wins:** {wins}\n"
+                    f"**Losses:** {losses}"
+                ),
+            )
+        )
+
     @commands.command()
     async def vec4(self, ctx, *, value):
         """Converts a hex value to RGBa scaled by 255 and vice versa.
