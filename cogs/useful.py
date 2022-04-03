@@ -539,14 +539,6 @@ class useful(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def temp(self, ctx, *, location="auckland+cbd"):
-        """Gets a temperature/rain graph of a location.
-
-        location: str
-        """
-        await ctx.send(f"http://v2d.wttr.in/{location.replace(' ', '+')}.png")
-
-    @commands.command()
     async def translate(self, ctx, *, text=None):
         """Translates text to english."""
         if not text:

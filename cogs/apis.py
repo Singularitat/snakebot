@@ -177,7 +177,7 @@ class apis(commands.Cog):
 
     @commands.command()
     async def validate(self, ctx, domain: str):
-        """Checks if domains are disposable used to check if tempmail is fine.
+        """Checks if domains are disposable used to check if tempmail is detected as disposable.
 
         domain: str
         """
@@ -414,12 +414,6 @@ class apis(commands.Cog):
                 description=">>> " + data["lyrics"],
             )
         )
-
-    @commands.command()
-    async def surreal(self, ctx):
-        """Gets a surreal ai generated image."""
-        num = random.randint(1, 125)
-        await ctx.send(f"https://boredhumans.b-cdn.net/dreams/{num}.jpg")
 
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.command(aliases=["complete"])
