@@ -1000,8 +1000,15 @@ class apis(commands.Cog):
             Choices are easy, medium or hard.
         """
         url = f"https://opentdb.com/api.php?amount=1&difficulty={difficulty}&type=multiple"
-
+        embed = discord.Embed(color=discord.Color.blurple())
         data = await self.bot.get_json(url)
+
+        if data:
+            embed.title = "Failed to reach trivia api"
+            embed.set_footer(
+                text="api may be temporarily down or experiencing high trafic"
+            )
+            return await ctx.send(embed=embed)
 
         result = data["results"][0]
         options = result["incorrect_answers"]
@@ -1013,9 +1020,7 @@ class apis(commands.Cog):
         options.append(correct)
         random.shuffle(options)
 
-        embed = discord.Embed(
-            color=discord.Color.blurple(), title=html.unescape(result["question"])
-        )
+        embed.title = html.unescape(result["question"])
 
         await ctx.reply(
             embed=embed, view=Trivia(self.DB, ctx.author, embed, correct, options)
