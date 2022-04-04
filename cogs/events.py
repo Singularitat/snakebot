@@ -4,13 +4,12 @@ import os
 import platform
 import re
 from datetime import datetime
-from io import BytesIO, StringIO
+from io import StringIO
 
 import discord
 import orjson
 import psutil
 from discord.ext import commands
-from PIL import Image
 
 GIST_REGEX = re.compile(
     r"(?P<host>(http(s)?://gist\.github\.com))/"
@@ -55,51 +54,6 @@ class events(commands.Cog):
 
         self.DB.main.put(b"polls", orjson.dumps(polls))
 
-    async def emoji_submission_check(self, payload):
-        """Checks if an emoji submission has passed 8 votes.
-
-        payload: discord.RawReactionActionEvent
-            A payload of raw data about the reaction and member.
-        """
-        emojis = self.DB.main.get(b"emoji_submissions")
-
-        if not payload.emoji.is_custom_emoji():
-            return
-
-        if not emojis or payload.emoji.name.lower() != "upvote":
-            return
-
-        emojis = orjson.loads(emojis)
-        message_id = str(payload.message_id)
-
-        if message_id not in emojis:
-            return
-
-        if payload.user_id not in emojis[message_id]["users"]:
-            emojis[message_id]["users"].append(payload.user_id)
-
-        if len(emojis[message_id]["users"]) >= 8:
-            channel = self.bot.get_channel(payload.channel_id)
-            message = await channel.fetch_message(payload.message_id)
-            file = message.attachments[0]
-            file = BytesIO(await file.read())
-            file = Image.open(file)
-            file.thumbnail((256, 256), Image.LANCZOS)
-
-            imgByteArr = BytesIO()
-            file.save(imgByteArr, format="PNG")
-            file = imgByteArr.getvalue()
-
-            name = emojis[message_id]["name"]
-
-            if not discord.utils.get(message.guild.emojis, name=name):
-                emoji = await message.guild.create_custom_emoji(name=name, image=file)
-                await message.add_reaction(emoji)
-
-            emojis.pop(message_id)
-
-        self.DB.main.put(b"emoji_submissions", orjson.dumps(emojis))
-
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         """Gives roles based off reaction added if message in reaction_roles.json.
@@ -110,7 +64,6 @@ class events(commands.Cog):
         if payload.member == self.bot.user:
             return
 
-        await self.emoji_submission_check(payload)
         await self.poll_check(payload)
 
     @commands.Cog.listener()
