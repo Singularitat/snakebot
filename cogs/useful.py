@@ -691,47 +691,6 @@ class useful(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def emoji(self, ctx, *, name):
-        """Does an emoji submission automatically.
-
-        To use this command attach an image and put
-        ".emoji [name]" as the comment
-
-        name: str
-            The emoji name. Must be at least 2 characters.
-        """
-        if len(name) < 2:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```Name has to be at least 2 characters```",
-                )
-            )
-
-        if discord.utils.get(ctx.guild.emojis, name=name):
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```An emoji already exists with that name```",
-                )
-            )
-
-        if not ctx.message.attachments:
-            return await ctx.send(
-                "```You need to attach the emoji image to the message```"
-            )
-        emojis = self.DB.main.get(b"emoji_submissions")
-
-        if not emojis:
-            emojis = {}
-        else:
-            emojis = orjson.loads(emojis)
-
-        emojis[str(ctx.message.id)] = {"name": name, "users": []}
-
-        self.DB.main.put(b"emoji_submissions", orjson.dumps(emojis))
-
-    @commands.command()
     async def invites(self, ctx):
         """Shows the invites that users joined from."""
         invite_list = []
