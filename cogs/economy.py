@@ -1,4 +1,5 @@
 import random
+from decimal import Decimal
 
 import discord
 import orjson
@@ -90,11 +91,11 @@ class economy(commands.Cog):
         try:
             if bet[-1] == "%":
                 return bal * ((float(bet[:-1])) / 100)
-            return float(bet.replace(",", ""))
+            return Decimal(bet.replace(",", ""))
         except ValueError:
             return None
 
-    @commands.command()
+    @commands.command(aliases=["bj"])
     async def blackjack(self, ctx, bet="0"):
         """Starts a game of blackjack.
 
@@ -103,7 +104,7 @@ class economy(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         member = str(ctx.author.id).encode()
-        bal = await self.DB.get_bal(member)
+        bal = self.DB.get_bal(member)
         bet = self.get_amount(bal, bet)
 
         if bet is None:
@@ -127,12 +128,12 @@ class economy(commands.Cog):
 
         if deck.get_score(m_cards) == 21:
             await message.edit(embed=deck.get_embed(bet, False))
-            await self.DB.put_bal(member, bal + bet)
+            self.DB.put_bal(member, bal + bet)
             return await message.add_reaction("✅")
 
         if deck.get_score(d_cards) == 21:
             await message.edit(embed=deck.get_embed(bet, False))
-            await self.DB.put_bal(member, bal - bet)
+            self.DB.put_bal(member, bal - bet)
             return await message.add_reaction("❎")
 
         reactions = ["🇭", "🇸"]
@@ -175,9 +176,9 @@ class economy(commands.Cog):
                 await message.add_reaction("❎")
 
         await message.edit(embed=deck.get_embed(bet, False))
-        await self.DB.put_bal(member, bal)
+        self.DB.put_bal(member, bal)
 
-    @commands.command(aliases=["coinf"])
+    @commands.command(aliases=["coinf", "cf"])
     async def coinflip(self, ctx, choice="h", bet="0"):
         """Flips a coin.
 
@@ -191,7 +192,7 @@ class economy(commands.Cog):
             return await ctx.send(embed=embed)
 
         member = str(ctx.author.id).encode()
-        bal = await self.DB.get_bal(member)
+        bal = self.DB.get_bal(member)
         bet = self.get_amount(bal, bet)
 
         if bet is None:
@@ -226,9 +227,9 @@ class economy(commands.Cog):
             embed.description = f"You lost ${bet}"
             bal -= bet
 
-        await self.DB.put_bal(member, bal)
+        self.DB.put_bal(member, bal)
 
-        embed.set_footer(text=f"Balance: ${bal:,}")
+        embed.set_footer(text=f"Balance: ${bal:,f}")
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -265,7 +266,7 @@ class economy(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         member = str(ctx.author.id).encode()
-        bal = await self.DB.get_bal(member)
+        bal = self.DB.get_bal(member)
         bet = self.get_amount(bal, bet)
 
         if bet is None:
@@ -282,12 +283,12 @@ class economy(commands.Cog):
 
         if random.randint(1, 100) == 50:
             bal += bet * 99
-            await self.DB.put_bal(member, bal)
+            self.DB.put_bal(member, bal)
             embed.title = f"You won ${bet * 99}"
-            embed.set_footer(text=f"Balance: ${bal:,}")
+            embed.set_footer(text=f"Balance: ${bal:,f}")
             return await ctx.send(embed=embed)
 
-        await self.DB.put_bal(member, bal - bet)
+        self.DB.put_bal(member, bal - bet)
         embed.title = f"You lost ${bet}"
         embed.set_footer(text=f"Balance: ${bal - bet:,}")
         embed.color = discord.Color.red()
@@ -332,7 +333,7 @@ class economy(commands.Cog):
         embed = discord.Embed(color=discord.Color.red())
 
         member = str(ctx.author.id).encode()
-        bal = await self.DB.get_bal(member)
+        bal = self.DB.get_bal(member)
         bet = self.get_amount(bal, bet)
 
         if bet is None:
@@ -384,12 +385,12 @@ class economy(commands.Cog):
             embed.color = discord.Color.red()
 
         bal += bet * winnings
-        await self.DB.put_bal(member, bal)
+        self.DB.put_bal(member, bal)
 
         if not silent:
             embed.title = f"[ {a} {b} {c} {d} ]"
             embed.description = f"You {result} ${bet*(abs(winnings)):,.2f}"
-            embed.set_footer(text=f"Balance: ${bal:,}")
+            embed.set_footer(text=f"Balance: ${bal:,f}")
 
             await ctx.reply(embed=embed, mention_author=False)
 
@@ -455,10 +456,10 @@ class economy(commands.Cog):
         user = user or ctx.author
 
         user_id = str(user.id).encode()
-        bal = await self.DB.get_bal(user_id)
+        bal = self.DB.get_bal(user_id)
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.add_field(name=f"{user.display_name}'s balance", value=f"${bal:,}")
+        embed.add_field(name=f"{user.display_name}'s balance", value=f"${bal:,f}")
 
         await ctx.send(embed=embed)
 
@@ -477,16 +478,24 @@ class economy(commands.Cog):
             embed.description = "```You can't pay yourself.```"
             return await ctx.send(embed=embed)
 
-        _from = str(ctx.author.id).encode()
-        to = str(user.id).encode()
+        if amount < 0:
+            embed.title = "You cannot pay a negative amount"
+            return await ctx.send(embed=embed)
 
-        bal = await self.DB.transfer(_from, to, amount)
+        receiver = str(user.id).encode()
+        sender = str(ctx.author.id).encode()
+        sender_bal = self.DB.get_bal(sender)
 
-        embed = discord.Embed(
-            title=f"Sent ${amount} to {user.display_name}",
-            color=discord.Color.blurple(),
-        )
-        embed.set_footer(text=f"New Balance: ${bal:,}")
+        if sender_bal < amount:
+            embed.title = "You don't have enough cash"
+            return await ctx.send(embed=embed)
+
+        self.DB.add_bal(receiver, amount)
+        sender_bal -= Decimal(amount)
+        self.DB.put_bal(sender, sender_bal)
+
+        embed.title = f"Sent ${amount} to {user.display_name}"
+        embed.set_footer(text=f"New Balance: ${sender_bal:,f}")
 
         await ctx.send(embed=embed)
 
@@ -495,12 +504,12 @@ class economy(commands.Cog):
     async def salary(self, ctx):
         """Gives you a salary of 1000 on a 6 hour cooldown."""
         member = str(ctx.author.id).encode()
-        bal = await self.DB.add_bal(member, 1000)
+        bal = self.DB.add_bal(member, 1000)
 
         embed = discord.Embed(
             title=f"Paid {ctx.author.display_name} $1000", color=discord.Color.blurple()
         )
-        embed.set_footer(text=f"Balance: ${bal:,}")
+        embed.set_footer(text=f"Balance: ${bal:,f}")
 
         await ctx.send(embed=embed)
 
