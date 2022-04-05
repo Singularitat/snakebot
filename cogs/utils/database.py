@@ -1,4 +1,5 @@
 import pathlib
+from decimal import Decimal
 
 import orjson
 import plyvel
@@ -45,7 +46,7 @@ class Database:
             return
         self.main.put(b"cache", orjson.dumps(cache))
 
-    async def add_karma(self, member_id, amount):
+    def add_karma(self, member_id, amount):
         """Adds or removes an amount from a members karma.
 
         member_id: int
@@ -61,7 +62,7 @@ class Database:
 
         self.karma.put(member_id, str(member_karma).encode())
 
-    async def get_blacklist(self, member_id, guild=None):
+    def get_blacklist(self, member_id, guild=None):
         """Returns whether someone is blacklisted.
 
         member_id: int
@@ -72,7 +73,7 @@ class Database:
         if guild and (state := self.blacklist.get(f"{guild}-{member_id}".encode())):
             return state
 
-    async def get_bal(self, member_id):
+    def get_bal(self, member_id):
         """Gets the balance of an member.
 
         member_id: bytes
@@ -80,20 +81,19 @@ class Database:
         balance = self.bal.get(member_id)
 
         if balance:
-            return float(balance)
+            return Decimal(balance.decode())
 
-        return 1000.0
+        return Decimal(1000.0)
 
-    async def put_bal(self, member_id, amount: float):
+    def put_bal(self, member_id, balance: float):
         """Sets the balance of an member.
 
         member_id: bytes
-        amount: int
+        balance: float
         """
-        self.bal.put(member_id, str(amount).encode())
-        return amount
+        self.bal.put(member_id, f"{balance:50f}".rstrip("0").encode())
 
-    async def add_bal(self, member_id, amount: float):
+    def add_bal(self, member_id, amount: float):
         """Adds to the balance of an member.
 
         member_id: bytes
@@ -101,32 +101,9 @@ class Database:
         """
         if amount < 0:
             raise ValueError("You can't pay a negative amount")
-        return await self.put_bal(member_id, await self.get_bal(member_id) + amount)
+        return self.put_bal(member_id, self.get_bal(member_id) + Decimal(amount))
 
-    async def withdraw_bal(self, member_id, amount: float):
-        """Withdraws from the balance of an member.
-
-        member_id: bytes
-        amount: int
-        """
-        if amount < 0:
-            raise ValueError("You can't pay a negative amount")
-        return await self.put_bal(member_id, await self.get_bal(member_id) - amount)
-
-    async def transfer(self, _from, to, amount: float):
-        """Transfers money from one member to another.
-
-        _from: bytes
-        to: bytes
-        amount: int
-        """
-        from_bal = await self.get_bal(_from)
-
-        if from_bal > amount:
-            await self.add_bal(to, amount)
-            return await self.withdraw_bal(_from, amount)
-
-    async def get_stock(self, symbol):
+    def get_stock(self, symbol):
         """Returns the data of a stock.
 
         symbol: bytes
@@ -137,7 +114,7 @@ class Database:
             return orjson.loads(stock)
         return None
 
-    async def put_stock(self, symbol, data):
+    def put_stock(self, symbol, data):
         """Sets the data of a stock.
 
         symbol: bytes
@@ -145,7 +122,7 @@ class Database:
         """
         self.stocks.put(symbol.encode(), orjson.dumps(data))
 
-    async def get_stockbal(self, member_id):
+    def get_stockbal(self, member_id):
         """Returns a members stockbal.
 
         member_id: bytes
@@ -156,7 +133,7 @@ class Database:
             return orjson.loads(data)
         return {}
 
-    async def put_stockbal(self, member_id, data):
+    def put_stockbal(self, member_id, data):
         """Sets a members stockbal.
 
         member_id: bytes
@@ -164,7 +141,7 @@ class Database:
         """
         self.stockbal.put(member_id, orjson.dumps(data))
 
-    async def get_crypto(self, symbol):
+    def get_crypto(self, symbol):
         """Returns the data of a crypto.
 
         symbol: bytes
@@ -175,7 +152,7 @@ class Database:
             return orjson.loads(data)
         return None
 
-    async def put_crypto(self, symbol, data):
+    def put_crypto(self, symbol, data):
         """Sets the data of a crypto.
 
         symbol: bytes
@@ -184,7 +161,7 @@ class Database:
         data = orjson.dumps(data)
         self.crypto.put(symbol.encode(), data)
 
-    async def get_cryptobal(self, member_id):
+    def get_cryptobal(self, member_id):
         """Returns a members cryptobal.
 
         member_id: bytes
@@ -195,7 +172,7 @@ class Database:
             return orjson.loads(data)
         return {}
 
-    async def put_cryptobal(self, member_id, data):
+    def put_cryptobal(self, member_id, data):
         """Sets a members cryptobal.
 
         member_id: bytes
