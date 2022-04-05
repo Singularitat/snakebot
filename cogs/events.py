@@ -87,9 +87,9 @@ class events(commands.Cog):
             return
 
         if reaction.emoji.name.lower() == "downvote":
-            await self.DB.add_karma(reaction.message.author.id, -1)
+            self.DB.add_karma(reaction.message.author.id, -1)
         elif reaction.emoji.name.lower() == "upvote":
-            await self.DB.add_karma(reaction.message.author.id, 1)
+            self.DB.add_karma(reaction.message.author.id, 1)
 
     @commands.Cog.listener()
     async def on_reaction_remove(self, reaction, user):
@@ -112,9 +112,9 @@ class events(commands.Cog):
             return
 
         if reaction.emoji.name.lower() == "downvote":
-            await self.DB.add_karma(reaction.message.author.id, 1)
+            self.DB.add_karma(reaction.message.author.id, 1)
         elif reaction.emoji.name.lower() == "upvote":
-            await self.DB.add_karma(reaction.message.author.id, -1)
+            self.DB.add_karma(reaction.message.author.id, -1)
 
     @commands.Cog.listener()
     async def on_reaction_clear(self, message, reactions):
@@ -123,7 +123,7 @@ class events(commands.Cog):
         message: discord.Message
         reactions: List[discord.Reaction]
         """
-        if await self.DB.get_blacklist(message.author.id, message.guild.id) == b"1":
+        if self.DB.get_blacklist(message.author.id, message.guild.id) == b"1":
             try:
                 await message.add_reaction("<:downvote:766414744730206228>")
             except discord.errors.HTTPException:
@@ -143,9 +143,9 @@ class events(commands.Cog):
         if not after.channel:
             return
 
-        if await self.DB.get_blacklist(member.id, member.guild.id) == b"1":
+        if self.DB.get_blacklist(member.id, member.guild.id) == b"1":
             await member.edit(voice_channel=None)
-            await self.DB.add_karma(member.id, -1)
+            self.DB.add_karma(member.id, -1)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
@@ -287,7 +287,7 @@ class events(commands.Cog):
         else:
             guild = None
 
-        if await self.DB.get_blacklist(message.author.id, guild) == b"1":
+        if self.DB.get_blacklist(message.author.id, guild) == b"1":
             try:
                 await message.add_reaction("<:downvote:766414744730206228>")
             except discord.errors.HTTPException:
@@ -575,9 +575,7 @@ class events(commands.Cog):
                 )
                 return False
 
-        if await self.DB.get_blacklist(
-            ctx.author.id, ctx.guild.id if ctx.guild else None
-        ):
+        if self.DB.get_blacklist(ctx.author.id, ctx.guild.id if ctx.guild else None):
             await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.red(),

@@ -1,4 +1,5 @@
 import textwrap
+from decimal import Decimal
 
 import discord
 import orjson
@@ -33,7 +34,7 @@ class stocks(commands.Cog):
             return await ctx.send(embed=embed)
 
         symbol = ctx.subcommand_passed.upper()
-        stock = await self.DB.get_stock(symbol)
+        stock = self.DB.get_stock(symbol)
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not stock:
@@ -66,7 +67,7 @@ class stocks(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         symbol = symbol.upper()
-        price = await self.DB.get_stock(symbol)
+        price = self.DB.get_stock(symbol)
 
         if not price:
             embed.description = f"```Couldn't find stock {symbol}```"
@@ -74,7 +75,7 @@ class stocks(commands.Cog):
 
         price = price["price"]
         member_id = str(ctx.author.id).encode()
-        stockbal = await self.DB.get_stockbal(member_id)
+        stockbal = self.DB.get_stockbal(member_id)
 
         if not stockbal:
             embed.description = f"```You have never invested in {symbol}```"
@@ -95,7 +96,7 @@ class stocks(commands.Cog):
             )
             return await ctx.send(embed=embed)
 
-        bal = await self.DB.get_bal(member_id)
+        bal = self.DB.get_bal(member_id)
 
         cash = amount * float(price)
 
@@ -106,18 +107,18 @@ class stocks(commands.Cog):
         else:
             stockbal[symbol]["history"].append((-amount, cash))
 
-        bal += cash
+        bal += Decimal(cash)
 
         embed = discord.Embed(
             title=f"Sold {amount:.2f} stocks for ${cash:.2f}",
             color=discord.Color.blurple(),
         )
-        embed.set_footer(text=f"Balance: ${bal}")
+        embed.set_footer(text=f"Balance: ${bal:,f}")
 
         await ctx.send(embed=embed)
 
-        await self.DB.put_bal(member_id, bal)
-        await self.DB.put_stockbal(member_id, stockbal)
+        self.DB.put_bal(member_id, bal)
+        self.DB.put_stockbal(member_id, stockbal)
 
     @stock.command(aliases=["buy"])
     async def invest(self, ctx, symbol, cash: float):
@@ -134,7 +135,7 @@ class stocks(commands.Cog):
             return await ctx.send(embed=embed)
 
         symbol = symbol.upper()
-        stock = await self.DB.get_stock(symbol)
+        stock = self.DB.get_stock(symbol)
 
         if not stock:
             embed.description = f"```Couldn't find stock {symbol}```"
@@ -142,7 +143,7 @@ class stocks(commands.Cog):
 
         stock = stock["price"]
         member_id = str(ctx.author.id).encode()
-        bal = await self.DB.get_bal(member_id)
+        bal = self.DB.get_bal(member_id)
 
         if bal < cash:
             embed.description = "```You don't have enough cash```"
@@ -150,7 +151,7 @@ class stocks(commands.Cog):
 
         amount = cash / float(stock)
 
-        stockbal = await self.DB.get_stockbal(member_id)
+        stockbal = self.DB.get_stockbal(member_id)
 
         if symbol not in stockbal:
             stockbal[symbol] = {"total": 0, "history": [(amount, cash)]}
@@ -158,18 +159,18 @@ class stocks(commands.Cog):
             stockbal[symbol]["history"].append((amount, cash))
 
         stockbal[symbol]["total"] += amount
-        bal -= cash
+        bal -= Decimal(cash)
 
         embed = discord.Embed(
             title=f"You bought {amount:.2f} stocks in {symbol}",
             color=discord.Color.blurple(),
         )
-        embed.set_footer(text=f"Balance: ${bal}")
+        embed.set_footer(text=f"Balance: ${bal:,f}")
 
         await ctx.send(embed=embed)
 
-        await self.DB.put_bal(member_id, bal)
-        await self.DB.put_stockbal(member_id, stockbal)
+        self.DB.put_bal(member_id, bal)
+        self.DB.put_stockbal(member_id, stockbal)
 
     @stock.command(aliases=["balance"])
     async def bal(self, ctx, symbol):
@@ -180,7 +181,7 @@ class stocks(commands.Cog):
         """
         symbol = symbol.upper()
         member_id = str(ctx.author.id).encode()
-        stockbal = await self.DB.get_stockbal(member_id)
+        stockbal = self.DB.get_stockbal(member_id)
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not stockbal:
@@ -191,7 +192,7 @@ class stocks(commands.Cog):
             embed.description = f"```You have never invested in {symbol}```"
             return await ctx.send(embed=embed)
 
-        stock = await self.DB.get_stock(symbol)
+        stock = self.DB.get_stock(symbol)
 
         trades = [
             trade[1] / trade[0] for trade in stockbal[symbol]["history"] if trade[0] > 0
@@ -225,7 +226,7 @@ class stocks(commands.Cog):
         member = member or ctx.author
 
         member_id = str(member.id).encode()
-        stockbal = await self.DB.get_stockbal(member_id)
+        stockbal = self.DB.get_stockbal(member_id)
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not stockbal:
@@ -243,7 +244,7 @@ class stocks(commands.Cog):
         )
 
         for stock in stockbal:
-            data = await self.DB.get_stock(stock)
+            data = self.DB.get_stock(stock)
             price = float(data["price"])
 
             trades = [
@@ -310,12 +311,8 @@ class stocks(commands.Cog):
         net_top = []
 
         for member_id, value in self.DB.bal:
-            stock_value = get_value(
-                await self.DB.get_stockbal(member_id), self.DB.stocks
-            )
-            crypto_value = get_value(
-                await self.DB.get_cryptobal(member_id), self.DB.crypto
-            )
+            stock_value = get_value(self.DB.get_stockbal(member_id), self.DB.stocks)
+            crypto_value = get_value(self.DB.get_cryptobal(member_id), self.DB.crypto)
             # fmt: off
             if (member := self.bot.get_user(int(member_id))):
                 net_top.append(
@@ -342,24 +339,26 @@ class stocks(commands.Cog):
         member = member or ctx.author
 
         member_id = str(member.id).encode()
-        bal = await self.DB.get_bal(member_id)
+        bal = self.DB.get_bal(member_id)
 
         embed = discord.Embed(color=discord.Color.blurple())
 
         def get_value(values, db):
             if values:
-                return sum(
-                    [
-                        stock[1]["total"]
-                        * float(orjson.loads(db.get(stock[0].encode()))["price"])
-                        for stock in values.items()
-                    ]
+                return Decimal(
+                    sum(
+                        [
+                            stock[1]["total"]
+                            * float(orjson.loads(db.get(stock[0].encode()))["price"])
+                            for stock in values.items()
+                        ]
+                    )
                 )
 
             return 0
 
-        stock_value = get_value(await self.DB.get_stockbal(member_id), self.DB.stocks)
-        crypto_value = get_value(await self.DB.get_cryptobal(member_id), self.DB.crypto)
+        stock_value = get_value(self.DB.get_stockbal(member_id), self.DB.stocks)
+        crypto_value = get_value(self.DB.get_cryptobal(member_id), self.DB.crypto)
 
         embed.add_field(
             name=f"{member.display_name}'s net worth",
