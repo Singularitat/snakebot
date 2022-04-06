@@ -432,12 +432,17 @@ class apis(commands.Cog):
             async with ctx.typing(), self.bot.client_session.post(
                 url, json=data, timeout=30
             ) as resp:
+                if resp != 200:
+                    return await ctx.reply(
+                        embed=discord.Embed(
+                            color=discord.Color.dark_red(), title="Request Failed"
+                        ).set_footer(text=f"Status code was {resp.status}")
+                    )
                 resp = await resp.json()
         except asyncio.TimeoutError:
             return await ctx.reply(
                 embed=discord.Embed(
-                    color=discord.Color.dark_red(),
-                    description="Request timed out",
+                    color=discord.Color.dark_red(), title="Request timed out"
                 ).set_footer(text="api may be experiencing high trafic")
             )
 

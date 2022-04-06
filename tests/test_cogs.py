@@ -137,16 +137,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                     context.send.call_args.kwargs["embed"].color.value, 10038562
                 )
 
-    async def bots_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="bots"):
-            await self.cog.bots(self.cog, context)
-
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
     async def sky_command(self):
         context = helpers.MockContext()
 
@@ -196,14 +186,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
-
-    async def surreal_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="surreal"):
-            await self.cog.surreal(self.cog, context)
-
-            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def synth_command(self):
         context = helpers.MockContext()
@@ -484,7 +466,7 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
     async def trivia_command(self):
         context = helpers.MockContext()
 
-        with self.subTest(command="trivia"), self.assertRaises(TypeError):
+        with self.subTest(command="trivia"):
             await self.cog.trivia(self.cog, context)
 
     async def minecraft_command(self):
@@ -1829,13 +1811,6 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
-
-    async def test_temp_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.temp(self.cog, context)
-
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
     async def test_statuscodes_command(self):
         context = helpers.MockContext()

@@ -90,7 +90,7 @@ class economy(commands.Cog):
     def get_amount(bal, bet):
         try:
             if bet[-1] == "%":
-                return bal * ((float(bet[:-1])) / 100)
+                return bal * (Decimal(bet[:-1]) / 100)
             return Decimal(bet.replace(",", ""))
         except ValueError:
             return None
@@ -464,12 +464,12 @@ class economy(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["give", "donate"])
-    async def pay(self, ctx, user: discord.User, amount: float):
+    async def pay(self, ctx, user: discord.User, amount):
         """Pays a user from your balance.
 
         user: discord.User
             The member you are paying.
-        amount: float
+        amount: str
             The amount you are paying.
         """
         embed = discord.Embed(color=discord.Color.blurple())
@@ -478,13 +478,15 @@ class economy(commands.Cog):
             embed.description = "```You can't pay yourself.```"
             return await ctx.send(embed=embed)
 
-        if amount < 0:
-            embed.title = "You cannot pay a negative amount"
-            return await ctx.send(embed=embed)
-
         receiver = str(user.id).encode()
         sender = str(ctx.author.id).encode()
         sender_bal = self.DB.get_bal(sender)
+
+        amount = self.get_amount(sender_bal, amount)
+
+        if amount < 0:
+            embed.title = "You cannot pay a negative amount"
+            return await ctx.send(embed=embed)
 
         if sender_bal < amount:
             embed.title = "You don't have enough cash"
@@ -494,7 +496,7 @@ class economy(commands.Cog):
         sender_bal -= Decimal(amount)
         self.DB.put_bal(sender, sender_bal)
 
-        embed.title = f"Sent ${amount} to {user.display_name}"
+        embed.title = f"Sent ${amount:,f} to {user.display_name}"
         embed.set_footer(text=f"New Balance: ${sender_bal:,f}")
 
         await ctx.send(embed=embed)
