@@ -301,7 +301,7 @@ class crypto(commands.Cog):
         paginator = pages.Paginator(pages=messages)
         await paginator.send(ctx)
 
-    @crypto.command()
+    @crypto.command(aliases=["h"])
     async def history(self, ctx, member: discord.Member = None, amount=10):
         """Gets a members crypto transaction history.
 
@@ -320,14 +320,14 @@ class crypto(commands.Cog):
 
         msg = ""
 
-        for crypto in cryptobal:
-            msg += f"{crypto}:\n"
-            for trade in cryptobal[crypto]["history"]:
+        for crypto_name, crypto_data in cryptobal.items():
+            msg += f"{crypto_name}:\n"
+            for trade in crypto_data["history"]:
                 if trade[0] < 0:
                     kind = "Sold"
                 else:
                     kind = "Bought"
-                msg += f"{kind} {trade[0]:.2f} for ${trade[1]:.2f}\n"
+                msg += f"{kind} {abs(trade[0]):.2f} for ${trade[1]:.2f}\n"
             msg += "\n"
 
         embed.description = f"```{msg}```"

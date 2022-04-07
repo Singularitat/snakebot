@@ -233,30 +233,6 @@ class economy(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def baltop(self, ctx, amount: int = 10):
-        """Gets members with the highest balances.
-
-        amount: int
-            The amount of balances to get defaulting to 10.
-        """
-        baltop = []
-        for member, bal in self.DB.bal:
-            member = self.bot.get_user(int(member))
-            if member:
-                baltop.append((float(bal), member.display_name))
-
-        baltop = sorted(baltop, reverse=True)[:amount]
-
-        embed = discord.Embed(
-            color=discord.Color.blurple(),
-            title=f"Top {len(baltop)} Balances",
-            description="\n".join(
-                [f"**{member}:** ${bal:,.2f}" for bal, member in baltop]
-            ),
-        )
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def lottery(self, ctx, bet="0"):
         """Lottery with a 1/99 chance of winning 99 times the bet.
 
@@ -461,6 +437,115 @@ class economy(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
         embed.add_field(name=f"{user.display_name}'s balance", value=f"${bal:,f}")
 
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def baltop(self, ctx, amount: int = 10):
+        """Gets members with the highest balances.
+
+        amount: int
+            The amount of balances to get defaulting to 10.
+        """
+        baltop = []
+        for member, bal in self.DB.bal:
+            member = self.bot.get_user(int(member))
+            if member:
+                baltop.append((float(bal), member.display_name))
+
+        baltop = sorted(baltop, reverse=True)[:amount]
+
+        embed = discord.Embed(
+            color=discord.Color.blurple(),
+            title=f"Top {len(baltop)} Balances",
+            description="\n".join(
+                [f"**{member}:** ${bal:,.2f}" for bal, member in baltop]
+            ),
+        )
+        await ctx.send(embed=embed)
+
+    @commands.command(aliases=["net"])
+    async def networth(self, ctx, member: discord.Member = None):
+        """Gets a members net worth.
+
+        members: discord.Member
+            The member whose net worth will be returned.
+        """
+        member = member or ctx.author
+
+        member_id = str(member.id).encode()
+        bal = self.DB.get_bal(member_id)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        def get_value(values, db):
+            if values:
+                return Decimal(
+                    sum(
+                        [
+                            stock[1]["total"]
+                            * float(orjson.loads(db.get(stock[0].encode()))["price"])
+                            for stock in values.items()
+                        ]
+                    )
+                )
+
+            return 0
+
+        stock_value = get_value(self.DB.get_stockbal(member_id), self.DB.stocks)
+        crypto_value = get_value(self.DB.get_cryptobal(member_id), self.DB.crypto)
+
+        embed.add_field(
+            name=f"{member.display_name}'s net worth",
+            value=f"${bal + stock_value + crypto_value:,.2f}",
+        )
+
+        embed.set_footer(
+            text="Crypto: ${:,.2f}\nStocks: ${:,.2f}\nBalance: ${:,.2f}".format(
+                crypto_value, stock_value, bal
+            )
+        )
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def nettop(self, ctx, amount: int = 10):
+        """Gets members with the highest net worth
+
+        amount: int
+            The amount of members to get
+        """
+
+        def get_value(values, db):
+            if values:
+                return sum(
+                    [
+                        stock[1]["total"]
+                        * float(orjson.loads(db.get(stock[0].encode()))["price"])
+                        for stock in values.items()
+                    ]
+                )
+
+            return 0
+
+        net_top = []
+
+        for member_id, value in self.DB.bal:
+            stock_value = get_value(self.DB.get_stockbal(member_id), self.DB.stocks)
+            crypto_value = get_value(self.DB.get_cryptobal(member_id), self.DB.crypto)
+            # fmt: off
+            if (member := self.bot.get_user(int(member_id))):
+                net_top.append(
+                    (float(value) + stock_value + crypto_value, member.display_name)
+                )
+            # fmt: on
+
+        net_top = sorted(net_top, reverse=True)[:amount]
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        embed.title = f"Top {len(net_top)} Richest Members"
+        embed.description = "\n".join(
+            [f"**{member}:** ${bal:,.2f}" for bal, member in net_top]
+        )
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["give", "donate"])

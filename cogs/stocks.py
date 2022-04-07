@@ -288,89 +288,36 @@ class stocks(commands.Cog):
         paginator = pages.Paginator(pages=messages)
         await paginator.send(ctx)
 
-    @commands.command(name="nettop")
-    async def top_net_worths(self, ctx, amount: int = 10):
-        """Gets members with the highest net worth
+    @stock.command(aliases=["h"])
+    async def history(self, ctx, member: discord.Member = None, amount=10):
+        """Gets a members crypto transaction history.
 
+        member: discord.Member
         amount: int
-            The amount of members to get
-        """
-
-        def get_value(values, db):
-            if values:
-                return sum(
-                    [
-                        stock[1]["total"]
-                        * float(orjson.loads(db.get(stock[0].encode()))["price"])
-                        for stock in values.items()
-                    ]
-                )
-
-            return 0
-
-        net_top = []
-
-        for member_id, value in self.DB.bal:
-            stock_value = get_value(self.DB.get_stockbal(member_id), self.DB.stocks)
-            crypto_value = get_value(self.DB.get_cryptobal(member_id), self.DB.crypto)
-            # fmt: off
-            if (member := self.bot.get_user(int(member_id))):
-                net_top.append(
-                    (float(value) + stock_value + crypto_value, member.display_name)
-                )
-            # fmt: on
-
-        net_top = sorted(net_top, reverse=True)[:amount]
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        embed.title = f"Top {len(net_top)} Richest Members"
-        embed.description = "\n".join(
-            [f"**{member}:** ${bal:,.2f}" for bal, member in net_top]
-        )
-        await ctx.send(embed=embed)
-
-    @commands.command(name="net", aliases=["networth"])
-    async def net_worth(self, ctx, member: discord.Member = None):
-        """Gets a members net worth.
-
-        members: discord.Member
-            The member whose net worth will be returned.
+            How many transactions to get
         """
         member = member or ctx.author
 
-        member_id = str(member.id).encode()
-        bal = self.DB.get_bal(member_id)
-
         embed = discord.Embed(color=discord.Color.blurple())
+        stockbal = self.DB.get_stockbal(str(member.id).encode())
 
-        def get_value(values, db):
-            if values:
-                return Decimal(
-                    sum(
-                        [
-                            stock[1]["total"]
-                            * float(orjson.loads(db.get(stock[0].encode()))["price"])
-                            for stock in values.items()
-                        ]
-                    )
-                )
+        if not stockbal:
+            embed.description = "```You haven't invested.```"
+            return await ctx.send(embed=embed)
 
-            return 0
+        msg = ""
 
-        stock_value = get_value(self.DB.get_stockbal(member_id), self.DB.stocks)
-        crypto_value = get_value(self.DB.get_cryptobal(member_id), self.DB.crypto)
+        for stock_name, stock_data in stockbal.items():
+            msg += f"{stock_name}:\n"
+            for trade in stock_data["history"]:
+                if trade[0] < 0:
+                    kind = "Sold"
+                else:
+                    kind = "Bought"
+                msg += f"{kind} {abs(trade[0]):.2f} for ${trade[1]:.2f}\n"
+            msg += "\n"
 
-        embed.add_field(
-            name=f"{member.display_name}'s net worth",
-            value=f"${bal + stock_value + crypto_value:,.2f}",
-        )
-
-        embed.set_footer(
-            text="Crypto: ${:,.2f}\nStocks: ${:,.2f}\nBalance: ${:,.2f}".format(
-                crypto_value, stock_value, bal
-            )
-        )
-
+        embed.description = f"```{msg}```"
         await ctx.send(embed=embed)
 
 
