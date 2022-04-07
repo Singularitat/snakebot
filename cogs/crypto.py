@@ -320,9 +320,9 @@ class crypto(commands.Cog):
 
         msg = ""
 
-        for crypto in cryptobal:
-            msg += f"{crypto}:\n"
-            for trade in cryptobal[crypto]["history"]:
+        for crypto_name, crypto_data in cryptobal.items():
+            msg += f"{crypto_name}:\n"
+            for trade in crypto_data["history"]:
                 if trade[0] < 0:
                     kind = "Sold"
                 else:

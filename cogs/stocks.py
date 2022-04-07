@@ -288,6 +288,38 @@ class stocks(commands.Cog):
         paginator = pages.Paginator(pages=messages)
         await paginator.send(ctx)
 
+    @stock.command(aliases=["h"])
+    async def history(self, ctx, member: discord.Member = None, amount=10):
+        """Gets a members crypto transaction history.
+
+        member: discord.Member
+        amount: int
+            How many transactions to get
+        """
+        member = member or ctx.author
+
+        embed = discord.Embed(color=discord.Color.blurple())
+        stockbal = self.DB.get_stockbal(str(member.id).encode())
+
+        if not stockbal:
+            embed.description = "```You haven't invested.```"
+            return await ctx.send(embed=embed)
+
+        msg = ""
+
+        for stock_name, stock_data in stockbal.items():
+            msg += f"{stock_name}:\n"
+            for trade in stock_data["history"]:
+                if trade[0] < 0:
+                    kind = "Sold"
+                else:
+                    kind = "Bought"
+                msg += f"{kind} {abs(trade[0]):.2f} for ${trade[1]:.2f}\n"
+            msg += "\n"
+
+        embed.description = f"```{msg}```"
+        await ctx.send(embed=embed)
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts stocks cog."""
