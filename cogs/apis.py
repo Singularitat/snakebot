@@ -91,6 +91,25 @@ class apis(commands.Cog):
         self.DB = bot.DB
         self.loop = bot.loop
 
+    @commands.command(aliases=["qod"])
+    async def qotd(self, ctx):
+        """Gets the quote of the day from https://quotes.rest"""
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        with ctx.typing():
+            data = await self.bot.get_json("https://quotes.rest/qod")
+
+        if not data:
+            embed.title = "Failed to get quote"
+            embed.set_footer(
+                text="api may be temporarily down or experiencing high trafic"
+            )
+            return await ctx.send(embed=embed)
+
+        quote = data["contents"]["quotes"][0]
+        embed.description = "> " + quote["quote"]
+        await ctx.send(embed=embed.set_footer(text=f"― {quote['author']}"))
+
     @commands.command()
     async def text(self, ctx, url=None):
         """Extracts the text out of an image."""
@@ -1008,7 +1027,7 @@ class apis(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
         data = await self.bot.get_json(url)
 
-        if data:
+        if not data:
             embed.title = "Failed to reach trivia api"
             embed.set_footer(
                 text="api may be temporarily down or experiencing high trafic"
