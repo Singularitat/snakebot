@@ -187,9 +187,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
         for chunk in chunks(entries, 6):
             embeds.append(self.format_group(title, group.description, chunk))
 
-        paginator = pages.Paginator(
-            pages=embeds
-        )
+        paginator = pages.Paginator(pages=embeds)
         await paginator.send(self.context)
 
 
