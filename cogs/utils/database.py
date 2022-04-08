@@ -92,6 +92,7 @@ class Database:
         balance: float
         """
         self.bal.put(member_id, f"{balance:50f}".rstrip("0").encode())
+        return balance
 
     def add_bal(self, member_id, amount: float):
         """Adds to the balance of an member.
