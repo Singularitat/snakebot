@@ -593,76 +593,6 @@ class Background_TasksCogTests(unittest.IsolatedAsyncioTestCase):
     pass
 
 
-class CryptoCogTests(unittest.IsolatedAsyncioTestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.cog = crypto(bot=bot)
-
-    async def test_crypto_command(self):
-        context = helpers.MockContext()
-        context.invoked_subcommand = None
-        context.subcommand_passed = "BTC"
-
-        await self.cog.crypto(self.cog, context)
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].description,
-            "```No stock found for BTC```",
-        )
-
-    async def test_crypto_buy_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.buy(self.cog, context, symbol="btc", cash=1)
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
-    async def test_crypto_profile_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.profile(self.cog, context)
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
-    async def test_crypto_bal_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.bal(self.cog, context, symbol="btc")
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
-    async def test_crypto_sell_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.sell(self.cog, context, symbol="btc", amount="100%")
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
-    async def test_crypto_list_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.list(self.cog, context)
-
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-
-    async def test_crypto_history_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.history(self.cog, context)
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
-
 class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
@@ -986,6 +916,76 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
 
+class CryptoCogTests(unittest.IsolatedAsyncioTestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.cog = crypto(bot=bot)
+
+    async def test_crypto_command(self):
+        context = helpers.MockContext()
+        context.invoked_subcommand = None
+        context.subcommand_passed = "BTC"
+
+        await self.cog.crypto(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].description,
+            "```No stock found for BTC```",
+        )
+
+    async def test_crypto_buy_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.buy(self.cog, context, symbol="btc", cash=1)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_crypto_profile_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.profile(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_crypto_bal_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.bal(self.cog, context, symbol="btc")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_crypto_sell_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.sell(self.cog, context, symbol="btc", amount="100%")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_crypto_list_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.list(self.cog, context)
+
+        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+
+    async def test_crypto_history_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.history(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+
 class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
@@ -1041,6 +1041,33 @@ class EconomyCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         await self.cog.chances(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_networth_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.networth(self.cog, context)
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_pay_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.pay(self.cog, context, helpers.MockMember(), "0")
+
+        self.assertNotEqual(
+            context.send.call_args.kwargs["embed"].color.value, 10038562
+        )
+
+    async def test_nettop_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.nettop(self.cog, context)
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -1627,24 +1654,6 @@ class StocksCogTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
-    async def test_stock_net_worth_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.net_worth(self.cog, context)
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
-    async def test_stock_nettop_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.top_net_worths(self.cog, context)
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
 
 class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
@@ -1759,7 +1768,7 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
             await self.cog.translate(self.cog, context, text="안녕하십니까")
 
             self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-            self.assertEqual(context.send.call_args.args[0], "Hello ")
+            self.assertEqual(context.send.call_args.args[0].lower(), "hello ")
 
     async def news_command(self):
         with self.subTest(command="news"):
