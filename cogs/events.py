@@ -555,27 +555,24 @@ class events(commands.Cog):
             return True
 
         if ctx.guild:
-            disabled = self.DB.main.get(f"{ctx.guild.id}-disabled_channels".encode())
+            guild_id = ctx.guild.id
+            disabled = self.DB.main.get(f"{guild_id}-disabled_channels".encode())
 
-            if (
-                disabled
-                and ctx.command.name != "disable_channel"
-                and str(ctx.guild.id) in (disabled := orjson.loads(disabled))
-            ):
-                if ctx.channel.id in disabled[str(ctx.guild.id)]:
+            if disabled and ctx.command.name != "disable_channel":
+                if ctx.channel.id in orjson.loads(disabled):
                     return False
 
-            if ctx.guild and self.DB.main.get(
-                f"{ctx.guild.id}-t-{ctx.command}".encode()
-            ):
+            if self.DB.main.get(f"{guild_id}-t-{ctx.command}".encode()):
                 await ctx.send(
                     embed=discord.Embed(
                         color=discord.Color.red(), description="```Command disabled```"
                     )
                 )
                 return False
+        else:
+            guild_id = None
 
-        if self.DB.get_blacklist(ctx.author.id, ctx.guild.id if ctx.guild else None):
+        if self.DB.get_blacklist(ctx.author.id, guild_id):
             await ctx.send(
                 embed=discord.Embed(
                     color=discord.Color.red(),

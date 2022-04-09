@@ -620,7 +620,7 @@ class compsci(commands.Cog):
                 color=discord.Color.blurple(),
                 description=f"```Usage: {ctx.prefix}cipher [decode/encode]```",
             )
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @cipher.command()
     async def encode(self, ctx, shift: int, *, message):
@@ -638,7 +638,7 @@ class compsci(commands.Cog):
 
         table = str.maketrans(chars, chars[shift:] + chars[:shift])
 
-        await ctx.send(message.translate(table))
+        await ctx.reply(message.translate(table))
 
     @cipher.command(aliases=["solve", "brute"])
     async def decode(self, ctx, *, message):
@@ -691,7 +691,7 @@ class compsci(commands.Cog):
 
         embed.set_footer(text="Sorted by the chi-square of their letter frequencies")
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command()
     async def block(self, ctx, A, B):
@@ -734,7 +734,7 @@ class compsci(commands.Cog):
                 color=discord.Color.blurple(),
                 description=f"```Usage: {ctx.prefix}binary [decode/encode]```",
             )
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @binary.command(name="encode", aliases=["en"])
     async def binary_encode(self, ctx, *, text):
@@ -742,7 +742,7 @@ class compsci(commands.Cog):
 
         text: str
         """
-        await ctx.send(
+        await ctx.reply(
             "```less\n{}```".format(
                 " ".join([f"{bin(ord(letter))[2:]:0>8}" for letter in text])
             )
@@ -756,7 +756,7 @@ class compsci(commands.Cog):
         """
         binary = binary.replace(" ", "")
         # fmt: off
-        await ctx.send(
+        await ctx.reply(
             "".join([chr(int(binary[i: i + 8], 2)) for i in range(0, len(binary), 8)])
         )
         # fmt: on
@@ -798,19 +798,19 @@ class compsci(commands.Cog):
                 color=discord.Color.blurple(),
                 description=f"```Usage: {ctx.prefix}rle [de/en]```",
             )
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @rle.command()
     async def en(self, ctx, *, text):
         """Encodes a string with run length encoding."""
         text = re.sub(r"(.)\1*", lambda m: m.group(1) + str(len(m.group(0))), text)
-        await ctx.send(text)
+        await ctx.reply(text)
 
     @rle.command()
     async def de(self, ctx, *, text):
         """Decodes a string with run length encoding."""
         text = re.sub(r"(\D)(\d+)", lambda m: int(m.group(2)) * m.group(1), text)
-        await ctx.send(text)
+        await ctx.reply(text)
 
     @commands.command(aliases=["ch", "rust", "java"])
     async def cheatsheet(self, ctx, *search):

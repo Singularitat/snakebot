@@ -269,7 +269,7 @@ class admin(commands.Cog):
         )
         self.DB.main.put(key, orjson.dumps(rules))
 
-    @commands.command(aliases=["disablech"])
+    @commands.command(aliases=["disablech", "disablechannel"])
     async def disable_channel(self, ctx, channel: discord.TextChannel = None):
         """Disables commands from being used in a channel.
 
@@ -282,18 +282,15 @@ class admin(commands.Cog):
         disabled = self.DB.main.get(key)
 
         if not disabled:
-            disabled = {}
+            disabled = []
         else:
             disabled = orjson.loads(disabled)
 
-        if guild not in disabled:
-            disabled[guild] = []
-
-        if channel.id in disabled[guild]:
-            disabled[guild].remove(channel.id)
+        if channel.id in disabled:
+            disabled.remove(channel.id)
             state = "enabled"
         else:
-            disabled[guild].append(channel.id)
+            disabled.append(channel.id)
             state = "disabled"
 
         embed = discord.Embed(color=discord.Color.blurple())
