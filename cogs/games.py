@@ -327,15 +327,16 @@ class games(commands.Cog):
         `.poker`     (Poker Night)
         `.betrayal`  (Betrayal.io)
         `.fishing`   (Fishington.io)
-        `.youtube`   (Watch YouTube)
+        `.youtube`   (Watch Together)
         `.spell`     (SpellCast) - A scrabble like game
         `.word`      (Word Snacks) - A word wheel like game
         `.scrabble`  (Letter League)
         `.doodle`    (Sketch Heads) - Basically skribblio
-        `.awkword`   (Awkword) - A game where you create sentences and vote on the best sentence
+        `.awkword`   (Awkword) - Create sentences and vote on the best sentences
         `.sketchy`   (Sketchy Artist)
         `.putt`      (Putt Party) - Mini golf game
-        `.ocho`      (Ocho) - A Crazy Eights variation
+        `.ocho`      (Blazing 8s) - A Crazy Eights variation
+        `.land`      (Land.io) - Snake inspired arcade game
         """
         embed.set_footer(text="Games are still in beta and may be broken")
         await ctx.send(embed=embed)
@@ -627,12 +628,12 @@ class games(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def youtube(self, ctx):
-        """Starts a YouTube Together."""
+        """Starts discord Watch Together."""
         await self.game_invite(
             880218394199220334,
             ctx,
             f"{ctx.guild.id}-youtube_together".encode(),
-            "There is another active Youtube Together",
+            "There is another active Watch Together",
         )
 
     @commands.command()
@@ -673,7 +674,7 @@ class games(commands.Cog):
     async def doodle(self, ctx):
         """Starts a game of Sketch Heads."""
         await self.game_invite(
-            878067389634314250,
+            902271654783242291,
             ctx,
             f"{ctx.guild.id}-doodle".encode(),
             "There is another active Sketch Heads game",
@@ -726,12 +727,23 @@ class games(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def ocho(self, ctx):
-        """Starts a game of Ocho."""
+        """Starts a game of Blazing 8s."""
         await self.game_invite(
             832025144389533716,
             ctx,
             f"{ctx.guild.id}-ocho".encode(),
-            "There is another active Ocho game",
+            "There is another active Blazing 8s game",
+        )
+
+    @commands.command()
+    @commands.guild_only()
+    async def land(self, ctx):
+        """Starts a Land.io game."""
+        await self.game_invite(
+            903769130790969345,
+            ctx,
+            f"{ctx.guild.id}-landio".encode(),
+            "There is another active Land.io game",
         )
 
 
