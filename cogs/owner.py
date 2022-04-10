@@ -286,11 +286,15 @@ class owner(commands.Cog):
                 embed.description = "```You need to attach a file or input a value.```"
                 return await ctx.send(embed=embed)
 
-            value = ctx.message.attachments[0].read().decode()
+            value = (await ctx.message.attachments[0].read()).decode()
 
         self.DB.main.put(key.encode(), value.encode())
 
-        embed.description = f"```Put {value} at {key}```"
+        length = len(value)
+        if length < 1986:
+            embed.description = f"```Put {value} at {key}```"
+        else:
+            embed.description = f"```Put {length} characters at {key}```"
         await ctx.send(embed=embed)
 
     @db.command(name="delete", aliases=["del"])
