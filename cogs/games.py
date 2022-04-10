@@ -332,10 +332,11 @@ class games(commands.Cog):
         `.word`      (Word Snacks) - A word wheel like game
         `.scrabble`  (Letter League)
         `.doodle`    (Sketch Heads) - Basically skribblio
-        `.awkword`   (Awkword) - A game where you create sentences and vote on the best sentence
+        `.awkword`   (Awkword) - Create sentences and vote on the best sentences
         `.sketchy`   (Sketchy Artist)
         `.putt`      (Putt Party) - Mini golf game
         `.ocho`      (Blazing 8s) - A Crazy Eights variation
+        `.land`      (Land.io) - Snake inspired arcade game
         """
         embed.set_footer(text="Games are still in beta and may be broken")
         await ctx.send(embed=embed)
@@ -732,6 +733,17 @@ class games(commands.Cog):
             ctx,
             f"{ctx.guild.id}-ocho".encode(),
             "There is another active Blazing 8s game",
+        )
+
+    @commands.command()
+    @commands.guild_only()
+    async def land(self, ctx):
+        """Starts a Land.io game."""
+        await self.game_invite(
+            903769130790969345,
+            ctx,
+            f"{ctx.guild.id}-landio".encode(),
+            "There is another active Land.io game",
         )
 
 
