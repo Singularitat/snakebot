@@ -370,7 +370,9 @@ class Wordle(discord.ui.View):
         if interaction.user == self.author:
             await interaction.response.send_modal(WordleInput(self))
         else:
-            await interaction.response.send_message("You need to start your own game", ephemeral=True)
+            await interaction.response.send_message(
+                "You need to start your own game", ephemeral=True
+            )
 
 
 class games(commands.Cog):
