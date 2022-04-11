@@ -1,4 +1,5 @@
 import math
+import random
 import time
 
 import discord
@@ -307,6 +308,73 @@ class TicTacToe(discord.ui.View):
         return None
 
 
+class WordleInput(discord.ui.Modal):
+    def __init__(self, view: discord.ui.View):
+        super().__init__(title="\u200b")
+        self.view = view
+
+        self.add_item(
+            discord.ui.InputText(
+                placeholder="Enter a word",
+                max_length=5,
+                min_length=5,
+                label="Enter a valid five letter word",
+            )
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        word = self.children[0].value
+
+        if word.encode() not in self.view.word_list:
+            return await interaction.response.send_message(
+                "Not in word list", ephemeral=True
+            )
+
+        self.view.attempts += 1
+
+        if self.view.attempts == 5 or word == self.view.word:
+            self.view.stop()
+            self.view.children[0].disabled = True
+
+        line = []
+        for i in range(5):
+            if word[i] == self.view.word[i]:
+                line.append("🟩")
+            elif word[i] in self.view.word:
+                line.append("🟨")
+            else:
+                line.append("⬛")
+
+        emoji_letters = "|".join([chr(127397 + ord(letter)) for letter in word.upper()])
+        self.view.lines += "|".join(line) + "\n" + emoji_letters + "\n"
+
+        await interaction.response.edit_message(
+            view=self.view,
+            embed=discord.Embed(
+                description=self.view.lines, color=discord.Color.blurple()
+            ),
+        )
+
+
+class Wordle(discord.ui.View):
+    def __init__(self, author: discord.Member, word_list: list[str]):
+        super().__init__(timeout=300)
+        self.author = author
+        self.word = random.choice(word_list).decode()
+        self.word_list = word_list
+        self.attempts = 0
+        self.lines = ""
+
+    @discord.ui.button(label="Click To Enter A Word", style=discord.ButtonStyle.primary)
+    async def start(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if interaction.user == self.author:
+            await interaction.response.send_modal(WordleInput(self))
+        else:
+            await interaction.response.send_message(
+                "You need to start your own game", ephemeral=True
+            )
+
+
 class games(commands.Cog):
     """For commands that are games."""
 
@@ -580,6 +648,13 @@ class games(commands.Cog):
             await embed_message.edit(embed=embed)
 
         await embed_message.add_reaction("❎")
+
+    @commands.command()
+    async def wordle(self, ctx):
+        """Starts a game of wordle with a random word."""
+        word_list = self.DB.main.get(b"word_list").split()
+
+        await ctx.send(view=Wordle(ctx.author, word_list))
 
     @commands.command()
     @commands.guild_only()
