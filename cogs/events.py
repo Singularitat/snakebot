@@ -17,6 +17,18 @@ GIST_REGEX = re.compile(
 )
 
 
+class DeleteButton(discord.ui.View):
+    def __init__(self, author: discord.Member):
+        super().__init__()
+        self.author = author
+
+    @discord.ui.button(label="X", style=discord.ButtonStyle.red)
+    async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if interaction.user == self.author:
+            if interaction.message:
+                await interaction.message.delete()
+
+
 class events(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
@@ -505,7 +517,6 @@ class events(commands.Cog):
             logging.getLogger("discord").warning(
                 f"Unhandled Error: {ctx.command.qualified_name}, Error: {error}, Type: {type(error)}"
             )
-            message = error
 
         if not str(message):
             logging.getLogger("discord").warning(
@@ -514,7 +525,7 @@ class events(commands.Cog):
             return
 
         embed.description = f"```{message}```"
-        await ctx.send(embed=embed)
+        await ctx.send(embed=embed, view=DeleteButton(ctx.author))
 
     @commands.Cog.listener()
     async def on_ready(self):
