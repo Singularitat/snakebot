@@ -331,10 +331,15 @@ class WordleInput(discord.ui.Modal):
             )
 
         self.view.attempts += 1
+        embed = discord.Embed(color=discord.Color.blurple())
 
-        if self.view.attempts == 5 or word == self.view.word:
+        if word == self.view.word:
             self.view.stop()
             self.view.children[0].disabled = True
+        elif self.view.attempts == 5:
+            self.view.stop()
+            self.view.children[0].disabled = True
+            embed.set_footer(text=f"The word was {self.view.word}")
 
         line = []
         for i in range(5):
@@ -347,13 +352,9 @@ class WordleInput(discord.ui.Modal):
 
         emoji_letters = "|".join([chr(127397 + ord(letter)) for letter in word.upper()])
         self.view.lines += "|".join(line) + "\n" + emoji_letters + "\n"
+        embed.description = self.view.lines
 
-        await interaction.response.edit_message(
-            view=self.view,
-            embed=discord.Embed(
-                description=self.view.lines, color=discord.Color.blurple()
-            ),
-        )
+        await interaction.response.edit_message(view=self.view, embed=embed)
 
 
 class Wordle(discord.ui.View):

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 
 import discord
 import orjson
@@ -311,8 +312,8 @@ class moderation(commands.Cog):
         seconds = 0
         times = {"s": 1, "m": 60, "h": 3600, "d": 86400}
         try:
-            for time in duration.split():
-                seconds += int(time[:-1]) * times[time[-1]]
+            for part in duration.split():
+                seconds += int(part[:-1]) * times[part[-1]]
         except ValueError:
             return None
 
@@ -550,6 +551,11 @@ class moderation(commands.Cog):
         await channel.clone()
         await channel.delete()
 
+    @staticmethod
+    async def single_delete(messages):
+        for m in messages:
+            await m.delete()
+
     @purge.command(name="from")
     @commands.has_permissions(manage_channels=True)
     @commands.guild_only()
@@ -572,7 +578,37 @@ class moderation(commands.Cog):
                 )
             )
 
-        await ctx.channel.purge(before=start, after=end)
+        messages = []
+        count = 0
+
+        minimum_time = (
+            int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
+        )
+        strategy = ctx.channel.delete_messages
+        iterator = ctx.channel.history(limit=100, before=start, after=end)
+        await iterator.messages.put(ctx.message)
+
+        async for message in iterator:
+            if count == 100:
+                to_delete = messages[-100:]
+                await strategy(to_delete)
+                count = 0
+                await asyncio.sleep(1)
+
+            if message.id < minimum_time:
+                if count == 1:
+                    await messages[-1].delete()
+                elif count >= 2:
+                    to_delete = messages[-count:]
+                    await strategy(to_delete)
+
+                count = 0
+                strategy = self.single_delete
+
+            count += 1
+            messages.append(message)
+
+        await strategy(messages[-count:])
 
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_messages=True)
