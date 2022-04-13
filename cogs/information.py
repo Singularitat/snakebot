@@ -116,13 +116,11 @@ class information(commands.Cog):
 
     @commands.command(aliases=["msgtop"])
     @commands.guild_only()
-    async def message_top(self, ctx, amount=10):
+    async def message_top(self, ctx, amount=None):
         """Gets the users with the most messages in a server.
 
         amount: int
         """
-        amount = max(0, min(50, amount))
-
         msgtop = sorted(
             [
                 (int(b), m.decode())
@@ -130,38 +128,51 @@ class information(commands.Cog):
                 if int(m.decode().split("-")[0]) == ctx.guild.id
             ],
             reverse=True,
-        )[:amount]
+        )
 
-        embed = discord.Embed(color=discord.Color.blurple())
+        if amount.lower() == "all":
+            msgtop = msgtop[:300]
+        else:
+            msgtop = msgtop[:int(amount) if amount else 10]
+
+        total_lines = 0
         members = []
         counts = []
-        message = []
+        lines = ""
 
         for count, member in msgtop:
             user = self.bot.get_user(int(member.split("-")[1]))
             if user:
                 members.append(user.display_name)
                 counts.append(count)
-                message.append(f"**{user.display_name}:** {count} messages")
 
-        description = "\n".join(message)
-        if len(description) < 2048:
-            embed.description = description
+                if total_lines < 30:
+                    total_lines += 1
+                    lines += f"**{user.display_name}:** {count} messages\n"
 
-        embed.title = f"Top {len(msgtop)} chatters"
-        data = str(
-            {
+        data = {
+            "c": {
                 "type": "bar",
                 "data": {
                     "labels": members,
                     "datasets": [{"label": "Users", "data": counts}],
                 },
-            }
-        ).replace(" ", "%20")
+            },
+            "backgroundColor": "#202225",
+            "format": "png"
+        }
 
-        embed.set_image(url=f"https://quickchart.io/chart?bkg=%23202225&c={data}")
+        url = "https://quickchart.io/chart/create"
+        async with self.bot.client_session.get(url, json=data) as resp:
+            resp = await resp.json()
 
-        await ctx.send(embed=embed)
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(),
+                description=lines,
+                title=f"Top {len(msgtop)} chatters",
+            ).set_image(url=resp["url"])
+        )
 
     @commands.command()
     async def rule(self, ctx, number: int):
