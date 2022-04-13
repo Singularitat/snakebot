@@ -359,7 +359,7 @@ class WordleInput(discord.ui.Modal):
 
 class Wordle(discord.ui.View):
     def __init__(self, author: discord.Member, word_list: list[str]):
-        super().__init__(timeout=300)
+        super().__init__(timeout=1200)
         self.author = author
         self.word = random.choice(word_list).decode()
         self.word_list = word_list
