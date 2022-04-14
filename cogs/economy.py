@@ -61,15 +61,15 @@ class Deck:
     def is_win(self):
         if (m_score := self.score(self.member)) > 21:
             return False
-        else:
-            while (score := self.score(self.dealer)) < 16 or score < m_score:
-                self.dealer.append(self.items.pop())
 
-            if score > 21 or m_score > score:
-                return True
-            elif score == m_score:
-                return None
-            return False
+        while (score := self.score(self.dealer)) < 16 or score < m_score:
+            self.dealer.append(self.items.pop())
+
+        if score > 21 or m_score > score:
+            return True
+        if score == m_score:
+            return None
+        return False
 
     def get_embed(self, bet, hidden=True):
         embed = discord.Embed(color=discord.Color.blurple())
