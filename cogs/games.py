@@ -323,7 +323,7 @@ class WordleInput(discord.ui.Modal):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        word = self.children[0].value
+        word = self.children[0].value.lower()
 
         if word.encode() not in self.view.word_list:
             return await interaction.response.send_message(
@@ -350,19 +350,21 @@ class WordleInput(discord.ui.Modal):
             else:
                 line.append("⬛")
 
-        emoji_letters = "|".join([chr(127397 + ord(letter)) for letter in word.upper()])
+        emoji_letters = "|".join([chr(127365 + ord(letter)) for letter in word])
         self.view.lines += "|".join(line) + "\n" + emoji_letters + "\n"
         embed.description = self.view.lines
 
+        self.view.view_message = interaction.message
         await interaction.response.edit_message(view=self.view, embed=embed)
 
 
 class Wordle(discord.ui.View):
     def __init__(self, author: discord.Member, word_list: list[str]):
-        super().__init__(timeout=1200)
+        super().__init__(timeout=1200.0)
         self.author = author
-        self.word = random.choice(word_list).decode()
         self.word_list = word_list
+        self.word = random.choice(word_list).decode()
+        self.view_message = None
         self.attempts = 0
         self.lines = ""
 
@@ -373,6 +375,15 @@ class Wordle(discord.ui.View):
         else:
             await interaction.response.send_message(
                 "You need to start your own game", ephemeral=True
+            )
+
+    async def on_timeout(self):
+        if self.view_message:
+            await self.view_message.edit(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description=self.lines
+                ).set_footer(text=f"Game timed out, the word was {self.word}"),
+                view=self,
             )
 
 
