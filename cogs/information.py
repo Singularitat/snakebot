@@ -133,7 +133,9 @@ class information(commands.Cog):
         if amount.lower() == "all":
             msgtop = msgtop[:300]
         else:
-            msgtop = msgtop[:int(amount) if amount else 10]
+            # fmt off
+            msgtop = msgtop[: int(amount) if amount else 10]
+            # fmt on
 
         total_lines = 0
         members = []
@@ -159,7 +161,7 @@ class information(commands.Cog):
                 },
             },
             "backgroundColor": "#202225",
-            "format": "png"
+            "format": "png",
         }
 
         url = "https://quickchart.io/chart/create"
