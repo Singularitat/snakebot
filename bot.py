@@ -9,6 +9,7 @@ from contextlib import suppress
 import aiohttp
 import discord
 from discord.ext import commands
+from discord.gateway import DiscordWebSocket
 
 import config
 from cogs.utils.database import Database
@@ -21,6 +22,18 @@ handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="a"
 handler.setFormatter(logging.Formatter("%(message)s, %(levelname)s, %(asctime)s"))
 
 log.addHandler(handler)
+
+
+class MonkeyWebSocket(DiscordWebSocket):
+    async def send_as_json(self, data):
+        if data.get("op") == self.IDENTIFY:
+            if data.get("d", {}).get("properties", {}).get("$browser") is not None:
+                data["d"]["properties"]["$browser"] = "Discord Android"
+                data["d"]["properties"]["$device"] = "Discord Android"
+        await super().send_as_json(data)
+
+
+DiscordWebSocket.from_client = MonkeyWebSocket.from_client
 
 
 class Bot(commands.Bot):

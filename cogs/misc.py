@@ -553,7 +553,7 @@ class misc(commands.Cog):
         user = user or ctx.author
         num = random.Random(user.id ^ 1970636).randint(0, 100)
 
-        await ctx.send(
+        await ctx.reply(
             f"{user.mention} is a {num} out of 100",
             allowed_mentions=discord.AllowedMentions.none(),
         )
@@ -576,7 +576,7 @@ class misc(commands.Cog):
         while user == ship:
             ship = temp_random.choice(ctx.guild.members)
 
-        await ctx.send(
+        await ctx.reply(
             f"{user.mention} has been shipped with {ship.mention} :eyes:",
             allowed_mentions=discord.AllowedMentions.none(),
         )
@@ -594,7 +594,7 @@ class misc(commands.Cog):
         user2 = user2 or ctx.author
         perc = random.Random(user1.id & user2.id).randint(0, 100)
 
-        await ctx.send(
+        await ctx.reply(
             f"{user1.mention} is a {perc}% match with {user2.mention}",
             allowed_mentions=discord.AllowedMentions.none(),
         )

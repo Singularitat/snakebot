@@ -38,16 +38,17 @@ class Deck:
             "K": 10,
         }
 
-        self.card_deck = []
+        self.items = []
         for suit in suits:
             for card, value in cards.items():
-                self.card_deck.append(Card(suits[suit], card, value))
+                self.items.append(Card(suits[suit], card, value))
+        random.shuffle(self.items)
 
-        self.member_cards = [self.get_card(), self.get_card()]
-        self.dealer_cards = [self.get_card(), self.get_card()]
+        self.member = [self.items.pop(), self.items.pop()]
+        self.dealer = [self.items.pop(), self.items.pop()]
 
     @staticmethod
-    def get_score(cards):
+    def score(cards):
         score = sum(card.value for card in cards)
         if score > 21:
             for card in cards:
@@ -57,8 +58,18 @@ class Deck:
                         return score
         return score
 
-    def get_card(self):
-        return self.card_deck.pop(random.randrange(len(self.card_deck)))
+    def is_win(self):
+        if (m_score := self.score(self.member)) > 21:
+            return False
+
+        while (score := self.score(self.dealer)) < 16 or score < m_score:
+            self.dealer.append(self.items.pop())
+
+        if score > 21 or m_score > score:
+            return True
+        if score == m_score:
+            return None
+        return False
 
     def get_embed(self, bet, hidden=True):
         embed = discord.Embed(color=discord.Color.blurple())
@@ -69,12 +80,12 @@ class Deck:
         **Dealers Hand: {}**
         {}
         """.format(
-            self.get_score(self.member_cards),
-            " ".join([f"`{c.name}{c.suit}`" for c in self.member_cards]),
-            self.get_score(self.dealer_cards) if not hidden else "",
-            " ".join([f"`{c.name}{c.suit}`" for c in self.dealer_cards])
+            self.score(self.member),
+            " ".join([f"`{c.name}{c.suit}`" for c in self.member]),
+            self.score(self.dealer) if not hidden else "",
+            " ".join([f"`{c.name}{c.suit}`" for c in self.dealer])
             if not hidden
-            else f"`{self.dealer_cards[0].name}{self.dealer_cards[0].suit}` `##`",
+            else f"`{self.dealer[0].name}{self.dealer[0].suit}` `##`",
         )
         return embed
 
@@ -120,18 +131,14 @@ class economy(commands.Cog):
             return await ctx.send(embed=embed)
 
         deck = Deck()
-
-        m_cards = deck.member_cards
-        d_cards = deck.dealer_cards
-
         message = await ctx.send(embed=deck.get_embed(bet))
 
-        if deck.get_score(m_cards) == 21:
+        if deck.score(deck.member) == 21:
             await message.edit(embed=deck.get_embed(bet, False))
             self.DB.put_bal(member, bal + bet)
             return await message.add_reaction("✅")
 
-        if deck.get_score(d_cards) == 21:
+        if deck.score(deck.dealer) == 21:
             await message.edit(embed=deck.get_embed(bet, False))
             self.DB.put_bal(member, bal - bet)
             return await message.add_reaction("❎")
@@ -148,32 +155,27 @@ class economy(commands.Cog):
         for reaction in reactions:
             await message.add_reaction(reaction)
 
-        while deck.get_score(m_cards) < 21:
+        while deck.score(deck.member) < 21:
             reaction, user = await ctx.bot.wait_for(
                 "reaction_add", timeout=60.0, check=check
             )
             if reaction.emoji == "🇭":
-                m_cards.append(deck.get_card())
+                deck.member.append(deck.items.pop())
             else:
                 break
             await reaction.remove(user)
             await message.edit(embed=deck.get_embed(bet))
 
-        if (m_score := deck.get_score(m_cards)) > 21:
+        is_win = deck.is_win()
+
+        if is_win is None:
+            await message.add_reaction("➖")
+        elif is_win:
+            bal += bet
+            await message.add_reaction("✅")
+        else:
             bal -= bet
             await message.add_reaction("❎")
-        else:
-            while (score := deck.get_score(d_cards)) < 16 or score < m_score:
-                d_cards.append(deck.get_card())
-
-            if score > 21 or m_score > score:
-                bal += bet
-                await message.add_reaction("✅")
-            elif score == m_score:
-                await message.add_reaction("➖")
-            else:
-                bal -= bet
-                await message.add_reaction("❎")
 
         await message.edit(embed=deck.get_embed(bet, False))
         self.DB.put_bal(member, bal)
@@ -563,7 +565,6 @@ class economy(commands.Cog):
             embed.description = "```You can't pay yourself.```"
             return await ctx.send(embed=embed)
 
-        receiver = str(user.id).encode()
         sender = str(ctx.author.id).encode()
         sender_bal = self.DB.get_bal(sender)
 
@@ -577,7 +578,7 @@ class economy(commands.Cog):
             embed.title = "You don't have enough cash"
             return await ctx.send(embed=embed)
 
-        self.DB.add_bal(receiver, amount)
+        self.DB.add_bal(str(user.id).encode(), amount)
         sender_bal -= Decimal(amount)
         self.DB.put_bal(sender, sender_bal)
 
