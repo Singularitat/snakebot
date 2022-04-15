@@ -687,7 +687,7 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
         await self.cog.cipher(self.cog, context)
 
         self.assertEqual(
-            context.send.call_args.kwargs["embed"].description,
+            context.reply.call_args.kwargs["embed"].description,
             f"```Usage: {context.prefix}cipher [decode/encode]```",
         )
 
@@ -701,7 +701,7 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
             message="the quick brown fox jumps over the lazy dog",
         )
 
-        context.send.assert_called_with("aol xbpjr iyvdu mve qbtwz vcly aol shgf kvn")
+        context.reply.assert_called_with("aol xbpjr iyvdu mve qbtwz vcly aol shgf kvn")
 
     async def test_cipher_decode_command(self):
         context = helpers.MockContext()
@@ -711,7 +711,7 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
+            context.reply.call_args.kwargs["embed"].color.value, 10038562
         )
 
     async def test_block_command(self):
@@ -733,7 +733,7 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
         await self.cog.binary(self.cog, context)
 
         self.assertEqual(
-            context.send.call_args.kwargs["embed"].description,
+            context.reply.call_args.kwargs["embed"].description,
             f"```Usage: {context.prefix}binary [decode/encode]```",
         )
 
@@ -746,7 +746,7 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
             text="lazy",
         )
 
-        context.send.assert_called_with(
+        context.reply.assert_called_with(
             "```less\n01101100 01100001 01111010 01111001```"
         )
 
@@ -757,7 +757,7 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
             self.cog, context, binary="01101100 01100001 01111010 01111001"
         )
 
-        context.send.assert_called_with("lazy")
+        context.reply.assert_called_with("lazy")
 
     async def test_dashboard_command(self):
         context = helpers.MockContext()
@@ -811,7 +811,7 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
         await self.cog.rle(self.cog, context)
 
         self.assertEqual(
-            context.send.call_args.kwargs["embed"].description,
+            context.reply.call_args.kwargs["embed"].description,
             f"```Usage: {context.prefix}rle [de/en]```",
         )
 
@@ -820,14 +820,14 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.en(self.cog, context, text="aaaabbbccd")
 
-        context.send.assert_called_with("a4b3c2d1")
+        context.reply.assert_called_with("a4b3c2d1")
 
     async def test_rle_de_command(self):
         context = helpers.MockContext()
 
         await self.cog.de(self.cog, context, text="a4b3c2d1")
 
-        context.send.assert_called_with("aaaabbbccd")
+        context.reply.assert_called_with("aaaabbbccd")
 
     async def test_calc_command(self):
         context = helpers.MockContext()
@@ -1411,7 +1411,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.rate(self.cog, context)
 
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+        self.assertIsNone(context.reply.call_args.kwargs.get("embed"))
 
     async def test_ship_command(self):
         context = helpers.MockContext(
@@ -1422,7 +1422,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         await self.cog.ship(self.cog, context)
 
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+        self.assertIsNone(context.reply.call_args.kwargs.get("embed"))
 
     async def test_match_command(self):
         context = helpers.MockContext()
@@ -1433,7 +1433,7 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             user1=helpers.MockMember(name="Snake Bot", id=744747000293228684),
         )
 
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
+        self.assertIsNone(context.reply.call_args.kwargs.get("embed"))
 
     async def test_snowflake_command(self):
         context = helpers.MockContext()
