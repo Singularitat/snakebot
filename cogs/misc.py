@@ -137,21 +137,24 @@ class misc(commands.Cog):
         """
         user = user or ctx.author
         key = str(user.id).encode()
+        embed = discord.Embed(color=discord.Color.blurple())
 
         stats = self.DB.trivia_wins.get(key)
+
+        if not stats:
+            embed.title = "You haven't played trivia yet"
+            return await ctx.send(embed=embed)
+
         wins, losses = map(int, stats.decode().split(":"))
 
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                title=f"{user.display_name}'s Trivia Stats",
-                description=(
-                    f"**Win Rate:** {(wins / (wins + losses)) * 100:.2f}%\n"
-                    f"**Wins:** {wins}\n"
-                    f"**Losses:** {losses}"
-                ),
-            )
+        embed.title = f"{user.display_name}'s Trivia Stats"
+        embed.description = (
+            f"**Win Rate:** {(wins / (wins + losses)) * 100:.2f}%\n"
+            f"**Wins:** {wins}\n"
+            f"**Losses:** {losses}"
         )
+
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def vec4(self, ctx, *, value):

@@ -130,12 +130,14 @@ class information(commands.Cog):
             reverse=True,
         )
 
-        if amount.lower() == "all":
+        if not amount:
+            msgtop = msgtop[:10]
+        elif amount.lower() == "all":
             msgtop = msgtop[:300]
         else:
-            # fmt off
-            msgtop = msgtop[: int(amount) if amount else 10]
-            # fmt on
+            # fmt: off
+            msgtop = msgtop[:int(amount)]
+            # fmt: on
 
         total_lines = 0
         members = []
