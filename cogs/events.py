@@ -535,18 +535,14 @@ class events(commands.Cog):
             boot_time = start_time - psutil.Process(os.getpid()).create_time()
 
             self.bot.uptime = start_time
+
             boot_times = self.DB.main.get(b"boot_times")
-
-            if boot_times:
-                boot_times = orjson.loads(boot_times)
-            else:
-                boot_times = []
-
+            boot_times = orjson.loads(boot_times) if boot_times else []
             boot_times.append(round(boot_time, 5))
+
             self.DB.main.put(b"boot_times", orjson.dumps(boot_times))
 
-            # Wipe the cache and polls as we have no way of knowing if they have expired
-            self.DB.main.put(b"cache", b"{}")
+            # Wipe the polls as we have no way of knowing if they have expired
             self.DB.main.delete(b"polls")
 
             self.bot.get_cog("admin").on_ready()

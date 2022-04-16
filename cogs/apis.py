@@ -8,7 +8,6 @@ from datetime import datetime
 from html import unescape
 
 import discord
-import orjson
 from discord.ext import commands
 
 URBAN_REGEX = re.compile(r"\[(.*?)\]")
@@ -259,7 +258,7 @@ class apis(commands.Cog):
         subreddit: str
         """
         subreddit_cache = f"reddit-{subreddit}"
-        cache = orjson.loads(self.DB.main.get(b"cache"))
+        cache = self.bot.cache
 
         if subreddit_cache in cache:
             post = random.choice(cache[subreddit_cache])
@@ -267,8 +266,6 @@ class apis(commands.Cog):
 
             if not cache[subreddit_cache]:
                 cache.pop(subreddit_cache)
-
-            self.DB.main.put(b"cache", orjson.dumps(cache))
         else:
             url = f"https://old.reddit.com/r/{subreddit}/hot/.json"
 
@@ -336,8 +333,7 @@ class apis(commands.Cog):
                 )
 
             cache[subreddit_cache] = clean_posts
-            self.DB.main.put(b"cache", orjson.dumps(cache))
-            self.loop.call_later(300, self.DB.delete_cache, subreddit_cache, cache)
+            self.loop.call_later(300, self.bot.remove_from_cache, subreddit_cache)
 
             post = random.choice(clean_posts)
 
@@ -1280,7 +1276,7 @@ class apis(commands.Cog):
             The term to search for.
         """
         cache_search = f"urban-{search}"
-        cache = orjson.loads(self.DB.main.get(b"cache"))
+        cache = self.bot.cache
 
         embed = discord.Embed(colour=discord.Color.blurple())
 
@@ -1306,8 +1302,8 @@ class apis(commands.Cog):
 
             item = urban["list"].pop()
             cache[cache_search] = urban["list"]
-            self.DB.main.put(b"cache", orjson.dumps(cache))
-            self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
+
+            self.loop.call_later(300, self.bot.remove_from_cache, cache_search)
 
         embed.title = search.title()
         embed.add_field(
