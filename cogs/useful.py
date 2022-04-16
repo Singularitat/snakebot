@@ -208,6 +208,7 @@ class useful(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
         self.loop = bot.loop
+        self.cache = {}
 
     @commands.command()
     async def currency(self, ctx, *message):
@@ -785,7 +786,7 @@ class useful(commands.Cog):
 
         search: str
         """
-        cache = orjson.loads(self.DB.main.get(b"cache"))
+        cache = self.bot.cache
 
         if search in cache:
             if not cache[search]:
@@ -794,8 +795,6 @@ class useful(commands.Cog):
             url, title = random.choice(list(cache[search].items()))
 
             cache[search].pop(url)
-
-            self.DB.main.put(b"cache", orjson.dumps(cache))
 
             return url, title
         return cache
@@ -847,8 +846,7 @@ class useful(commands.Cog):
             await ctx.send(embed=embed, view=DeleteButton(ctx.author))
 
             cache[cache_search] = images
-            self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
-            self.DB.main.put(b"cache", orjson.dumps(cache))
+            self.loop.call_later(300, self.bot.remove_from_cache, cache_search)
 
     @commands.command(aliases=["img"])
     async def image(self, ctx, *, search):
@@ -896,8 +894,7 @@ class useful(commands.Cog):
             await ctx.send(embed=embed, view=DeleteButton(ctx.author))
 
             cache[cache_search] = images
-            self.loop.call_later(300, self.DB.delete_cache, cache_search, cache)
-            self.DB.main.put(b"cache", orjson.dumps(cache))
+            self.loop.call_later(300, self.bot.remove_from_cache, cache_search)
 
 
 def setup(bot: commands.Bot) -> None:

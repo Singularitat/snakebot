@@ -43,6 +43,7 @@ class Bot(commands.Bot):
         super().__init__(*args, **kwargs)
 
         self.client_session = None
+        self.cache = {}
         self.DB = Database()
 
     async def get_prefix(self, message: discord.Message) -> str:
@@ -124,6 +125,16 @@ class Bot(commands.Bot):
             return [output.decode() for output in result]
 
         return "".join([output.decode() for output in result]).split()
+
+    def remove_from_cache(self, search):
+        """Deletes a search from the cache.
+
+        search: str
+        """
+        try:
+            self.cache.pop(search)
+        except KeyError:
+            return
 
     async def close(self) -> None:
         """Close the Discord connection and the aiohttp session."""
