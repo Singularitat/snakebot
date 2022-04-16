@@ -119,25 +119,20 @@ class information(commands.Cog):
     async def message_top(self, ctx, amount=None):
         """Gets the users with the most messages in a server.
 
-        amount: int
-        """
-        msgtop = sorted(
-            [
-                (int(b), m.decode())
-                for m, b in self.DB.message_count
-                if int(m.decode().split("-")[0]) == ctx.guild.id
-            ],
-            reverse=True,
-        )
+        Maximum amount that can be shown in the graph is 250
 
-        if not amount:
-            msgtop = msgtop[:10]
-        elif amount.lower() == "all":
-            msgtop = msgtop[:300]
-        else:
-            # fmt: off
-            msgtop = msgtop[:int(amount)]
-            # fmt: on
+        amount: str
+        """
+        msgtop = []
+        guild = str(ctx.guild.id).encode()
+
+        for member, count in self.DB.message_count:
+            if member.startswith(guild):
+                msgtop.append((int(count), member.decode()))
+
+        msgtop.sort(reverse=True)
+
+        amount = 10 if not amount else 250 if amount.lower() == "all" else int(amount)
 
         total_lines = 0
         members = []
@@ -147,12 +142,16 @@ class information(commands.Cog):
         for count, member in msgtop:
             user = self.bot.get_user(int(member.split("-")[1]))
             if user:
+                total_lines += 1
+
                 members.append(user.display_name)
                 counts.append(count)
 
                 if total_lines < 30:
-                    total_lines += 1
                     lines += f"**{user.display_name}:** {count} messages\n"
+
+                if total_lines == amount:
+                    break
 
         data = {
             "c": {
@@ -174,7 +173,7 @@ class information(commands.Cog):
             embed=discord.Embed(
                 color=discord.Color.blurple(),
                 description=lines,
-                title=f"Top {len(msgtop)} chatters",
+                title=f"Top {total_lines} chatters",
             ).set_image(url=resp["url"])
         )
 
