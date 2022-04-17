@@ -9,6 +9,7 @@ from discord.ext import commands, pages
 
 from cogs.utils.time import parse_time
 
+
 class moderation(commands.Cog):
     """For commands related to moderation."""
 
@@ -290,7 +291,9 @@ class moderation(commands.Cog):
             and ctx.author.top_role <= member.top_role
             and ctx.guild.owner != ctx.author
         ):
-            embed.description = "```You can't ban someone higher or equal in roles to you```"
+            embed.description = (
+                "```You can't ban someone higher or equal in roles to you```"
+            )
             return await ctx.send(embed=embed)
 
         await ctx.guild.ban(member, delete_message_days=0, reason=reason)
