@@ -303,29 +303,19 @@ class moderation(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    async def end_date(self, duration):
-        """Converts a duration to an end date.
-
-        duration: str
-            How much to add onto the current date e.g 5d 10h 25m 5s
-        """
-        seconds = 0
-        times = {"s": 1, "m": 60, "h": 3600, "d": 86400}
-        try:
-            for part in duration.split():
-                seconds += int(part[:-1]) * times[part[-1]]
-        except ValueError:
-            return None
-
-        return seconds
-
-    async def ban(self, ctx, member: discord.User, duration=None, *, reason=None):
+    @commands.command(name="ban")
+    @commands.has_permissions(ban_members=True)
+    @commands.guild_only()
+    async def ban_member(
+        self, ctx, member: discord.Member | discord.User, *, reason=None
+    ):
         """Bans a member.
 
-        member: discord.User
+        Usage:
+        .ban @Singularity#8953 He was rude
+
+        member: discord.Member
             The member to ban.
-        duration: str
-            How long to ban the member for.
         reason: str
             The reason for banning the member.
         """
@@ -335,20 +325,8 @@ class moderation(commands.Cog):
             and ctx.author.top_role <= member.top_role
             and ctx.guild.owner != ctx.author
         ):
-            embed.description = "```You can't ban someone higher or equal to you```"
+            embed.description = "```You can't ban someone higher or equal in roles to you```"
             return await ctx.send(embed=embed)
-
-        if duration:
-            seconds = await self.end_date(duration)
-
-            if not seconds:
-                embed.description = "```Invalid duration. Example: '3d 5h 10m'```"
-                return await ctx.send(embed=embed)
-
-            self.loop.call_later(seconds, asyncio.create_task, ctx.guild.unban(member))
-            embed.title = f"Banned {member.display_name} for {seconds}s"
-        else:
-            embed.title = f"Banned {member.display_name}"
 
         await ctx.guild.ban(member, delete_message_days=0, reason=reason)
 
@@ -369,50 +347,11 @@ class moderation(commands.Cog):
         infractions["count"] += 1
         infractions["bans"].append(reason)
 
+        embed.title = f"Banned {member.display_name}"
         embed.description = f"```They had {infractions['count']} total infractions.```"
         self.DB.infractions.put(member_id, orjson.dumps(infractions))
 
         await ctx.send(embed=embed)
-
-    @commands.command(name="ban")
-    @commands.has_permissions(ban_members=True)
-    @commands.guild_only()
-    async def ban_member(
-        self, ctx, member: discord.Member | discord.User, *, reason=None
-    ):
-        """Bans a member.
-
-        Usage:
-        .ban @Singularity#8953 He was rude
-
-        member: discord.Member
-            The member to ban.
-        reason: str
-            The reason for banning the member.
-        """
-        await self.ban(ctx=ctx, member=member, reason=reason)
-
-    @commands.command(name="tempban")
-    @commands.has_permissions(ban_members=True)
-    @commands.guild_only()
-    async def temp_ban_member(
-        self, ctx, member: discord.Member | discord.User, duration=None, *, reason=None
-    ):
-        """Temporarily bans a member.
-
-        Usage:
-        .ban @Singularity#8953 "3d 5h 10m" He was rude
-
-        You need the quotes for the duration or it will only get the first argument
-
-        member: discord.Member
-            The member to ban.
-        duration: str
-            How long to ban the member for.
-        reason: str
-            The reason for banning the member.
-        """
-        await self.ban(ctx=ctx, member=member, duration=duration, reason=reason)
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
