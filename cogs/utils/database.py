@@ -35,17 +35,6 @@ class Database:
         for db in prefixed_dbs:
             setattr(self, db, self.main.prefixed_db(f"{db}-".encode()))
 
-    def delete_cache(self, search, cache):
-        """Deletes a search from the cache.
-
-        search: str
-        """
-        try:
-            cache.pop(search)
-        except KeyError:
-            return
-        self.main.put(b"cache", orjson.dumps(cache))
-
     def add_karma(self, member_id, amount):
         """Adds or removes an amount from a members karma.
 

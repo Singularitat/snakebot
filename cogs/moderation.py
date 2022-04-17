@@ -7,6 +7,8 @@ import discord
 import orjson
 from discord.ext import commands, pages
 
+from cogs.utils.time import parse_time
+
 
 class moderation(commands.Cog):
     """For commands related to moderation."""
@@ -153,84 +155,6 @@ class moderation(commands.Cog):
         self.handles[message_id].cancel()
         self.handles.pop(message_id)
 
-    @commands.command(name="mute")
-    @commands.has_permissions(kick_members=True)
-    @commands.guild_only()
-    async def mute_member(self, ctx, member: discord.Member, *, reason=None):
-        """Mutes a member.
-
-        member: discord.member
-        reason: str
-        """
-        role = discord.utils.get(ctx.guild.roles, name="Muted")
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if role in member.roles:
-            await member.remove_roles(role)
-            embed.description = f"```Unmuted {member.display_name}```"
-            return await ctx.send(embed=embed)
-
-        member_id = f"{ctx.guild.id}-{member.id}".encode()
-        infractions = self.DB.infractions.get(member_id)
-
-        if not infractions:
-            infractions = {
-                "count": 0,
-                "bans": [],
-                "kicks": [],
-                "mutes": [],
-                "warnings": [],
-            }
-        else:
-            infractions = orjson.loads(infractions)
-
-        infractions["count"] += 1
-        infractions["mutes"].append(reason)
-
-        if not role:
-            reactions = ["✅", "❎"]
-
-            def check(reaction: discord.Reaction, user: discord.User) -> bool:
-                return (
-                    user.id == ctx.author.id
-                    and reaction.message.channel == ctx.channel
-                    and reaction.emoji in reactions
-                )
-
-            embed.description = "```No muted role found react to add Muted role.```"
-
-            message = await ctx.send(embed=embed)
-
-            for reaction in reactions:
-                await message.add_reaction(reaction)
-
-            reaction, user = await ctx.bot.wait_for(
-                "reaction_add", timeout=60.0, check=check
-            )
-
-            if reaction.emoji == "✅":
-                role = await ctx.guild.create_role(
-                    name="Muted", color=discord.Color.dark_red()
-                )
-                for categories in ctx.guild.categories:
-                    await categories.set_permissions(
-                        role, send_messages=False, connect=False
-                    )
-            else:
-                return
-
-        await member.add_roles(role)
-
-        embed = discord.Embed(
-            color=discord.Color.dark_red(),
-            description="{} has been muted. They have {} total infractions.".format(
-                member.mention, infractions["count"]
-            ),
-        )
-        await ctx.send(embed=embed)
-
-        self.DB.infractions.put(member_id, orjson.dumps(infractions))
-
     @commands.command()
     @commands.has_permissions(manage_nicknames=True)
     @commands.guild_only()
@@ -303,29 +227,61 @@ class moderation(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    async def end_date(self, duration):
-        """Converts a duration to an end date.
+    @commands.command(aliases=["mute"])
+    @commands.has_permissions(moderate_members=True)
+    @commands.guild_only()
+    async def timeout(self, ctx, member: discord.Member, *, duration="1d", reason=None):
+        """Times out a member.
 
-        duration: str
-            How much to add onto the current date e.g 5d 10h 25m 5s
+        Usage:
+        .timeout @Singularity#8953 "1d 12h" He was rude
+
+        member: discord.member
+        reason: str
         """
-        seconds = 0
-        times = {"s": 1, "m": 60, "h": 3600, "d": 86400}
-        try:
-            for part in duration.split():
-                seconds += int(part[:-1]) * times[part[-1]]
-        except ValueError:
-            return None
+        member_id = f"{ctx.guild.id}-{member.id}".encode()
+        infractions = self.DB.infractions.get(member_id)
 
-        return seconds
+        if not infractions:
+            infractions = {
+                "count": 0,
+                "bans": [],
+                "kicks": [],
+                "mutes": [],
+                "warnings": [],
+            }
+        else:
+            infractions = orjson.loads(infractions)
 
-    async def ban(self, ctx, member: discord.User, duration=None, *, reason=None):
+        infractions["count"] += 1
+        infractions["mutes"].append(reason)
+
+        await member.timeout(until=parse_time(duration), reason=reason)
+
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.dark_red(),
+                description="{} has been timed out. They have {} total infractions.".format(
+                    member.mention, infractions["count"]
+                ),
+            )
+        )
+
+        self.DB.infractions.put(member_id, orjson.dumps(infractions))
+
+    @commands.command(name="ban")
+    @commands.has_permissions(ban_members=True)
+    @commands.guild_only()
+    async def ban_member(
+        self, ctx, member: discord.Member | discord.User, *, reason=None
+    ):
         """Bans a member.
 
-        member: discord.User
+        Usage:
+        .ban @Singularity#8953 He was rude
+
+        member: discord.Member
             The member to ban.
-        duration: str
-            How long to ban the member for.
         reason: str
             The reason for banning the member.
         """
@@ -335,20 +291,10 @@ class moderation(commands.Cog):
             and ctx.author.top_role <= member.top_role
             and ctx.guild.owner != ctx.author
         ):
-            embed.description = "```You can't ban someone higher or equal to you```"
+            embed.description = (
+                "```You can't ban someone higher or equal in roles to you```"
+            )
             return await ctx.send(embed=embed)
-
-        if duration:
-            seconds = await self.end_date(duration)
-
-            if not seconds:
-                embed.description = "```Invalid duration. Example: '3d 5h 10m'```"
-                return await ctx.send(embed=embed)
-
-            self.loop.call_later(seconds, asyncio.create_task, ctx.guild.unban(member))
-            embed.title = f"Banned {member.display_name} for {seconds}s"
-        else:
-            embed.title = f"Banned {member.display_name}"
 
         await ctx.guild.ban(member, delete_message_days=0, reason=reason)
 
@@ -369,50 +315,11 @@ class moderation(commands.Cog):
         infractions["count"] += 1
         infractions["bans"].append(reason)
 
+        embed.title = f"Banned {member.display_name}"
         embed.description = f"```They had {infractions['count']} total infractions.```"
         self.DB.infractions.put(member_id, orjson.dumps(infractions))
 
         await ctx.send(embed=embed)
-
-    @commands.command(name="ban")
-    @commands.has_permissions(ban_members=True)
-    @commands.guild_only()
-    async def ban_member(
-        self, ctx, member: discord.Member | discord.User, *, reason=None
-    ):
-        """Bans a member.
-
-        Usage:
-        .ban @Singularity#8953 He was rude
-
-        member: discord.Member
-            The member to ban.
-        reason: str
-            The reason for banning the member.
-        """
-        await self.ban(ctx=ctx, member=member, reason=reason)
-
-    @commands.command(name="tempban")
-    @commands.has_permissions(ban_members=True)
-    @commands.guild_only()
-    async def temp_ban_member(
-        self, ctx, member: discord.Member | discord.User, duration=None, *, reason=None
-    ):
-        """Temporarily bans a member.
-
-        Usage:
-        .ban @Singularity#8953 "3d 5h 10m" He was rude
-
-        You need the quotes for the duration or it will only get the first argument
-
-        member: discord.Member
-            The member to ban.
-        duration: str
-            How long to ban the member for.
-        reason: str
-            The reason for banning the member.
-        """
-        await self.ban(ctx=ctx, member=member, duration=duration, reason=reason)
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
