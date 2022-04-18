@@ -1562,10 +1562,14 @@ class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
-    async def test_mute_member_command(self):
-        with self.assertRaises(TypeError):
-            context = helpers.MockContext()
-            await self.cog.mute_member(self.cog, context, helpers.MockMember())
+    async def test_timeout_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.timeout(self.cog, context, helpers.MockMember())
+
+        self.assertTrue(
+            context.send.call_args.kwargs["embed"].description.endswith(" total infractions.")
+        )
 
     async def test_nick_command(self):
         context = helpers.MockContext()
