@@ -1568,7 +1568,9 @@ class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
         await self.cog.timeout(self.cog, context, helpers.MockMember())
 
         self.assertTrue(
-            context.send.call_args.kwargs["embed"].description.endswith(" total infractions.")
+            context.send.call_args.kwargs["embed"].description.endswith(
+                " total infractions."
+            )
         )
 
     async def test_nick_command(self):

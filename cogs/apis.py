@@ -859,7 +859,9 @@ class apis(commands.Cog):
 
         if not data:
             embed.title = "Request failed"
-            embed.set_footer(text="api may be temporarily down or experiencing high trafic")
+            embed.set_footer(
+                text="api may be temporarily down or experiencing high trafic"
+            )
             return await ctx.send(embed=embed)
 
         entries = data["entries"]
