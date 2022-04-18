@@ -853,13 +853,21 @@ class apis(commands.Cog):
         search: str
         """
         url = f"https://api.publicapis.org/entries?title={search}"
-
-        entries = (await self.bot.get_json(url))["entries"]
-
         embed = discord.Embed(color=discord.Color.blurple())
 
+        data = await self.bot.get_json(url)
+
+        if not data:
+            embed.title = "Request failed"
+            embed.set_footer(
+                text="api may be temporarily down or experiencing high trafic"
+            )
+            return await ctx.send(embed=embed)
+
+        entries = data["entries"]
+
         if not entries:
-            embed.description = f"No apis found for `{search}`"
+            embed.title = f"No apis found for search `{search}`"
             return await ctx.send(embed=embed)
 
         for index, entry in enumerate(entries):
