@@ -216,6 +216,7 @@ class useful(commands.Cog):
 
         Example usage:
             .currency usd
+            .currency 3 usd
             .currency usd nzd
             .currency 3 usd nzd
             .currency usd to nzd
@@ -254,17 +255,29 @@ class useful(commands.Cog):
             else:
                 amount = float(amount)
 
-        current = current.upper()
-        new = new.upper()
-        cprefix = currencies[current]["symbol"]
-        nprefix = currencies[new]["symbol"]
+        iso_current = current.upper()
+        iso_new = new.upper()
+
+        current = currencies.get(iso_current)
+        new = currencies.get(iso_new)
+
+        if not current:
+            embed.title = f"Couldn't find currency with ISO code `{iso_current}`"
+            return await ctx.send(embed=embed)
+
+        if not new:
+            embed.title = f"Couldn't find currency with ISO code `{iso_new}`"
+            return await ctx.send(embed=embed)
+
+        cprefix = current["symbol"]
+        nprefix = new["symbol"]
 
         if new == "NZD":
-            converted = amount / currencies[current]["rate"]
+            converted = amount / current["rate"]
         elif current == "NZD":
-            converted = amount * currencies[new]["rate"]
+            converted = amount * new["rate"]
         else:
-            converted = (currencies[new]["rate"] * amount) / currencies[current]["rate"]
+            converted = (new["rate"] * amount) / current["rate"]
 
         start = len(str(int(converted))) + 1
         count = 2
@@ -277,8 +290,8 @@ class useful(commands.Cog):
                 break
 
         embed.description = (
-            f"```prolog\n{cprefix}{amount:,.0f} {current}"
-            f" is {nprefix}{converted:,.{count}f} {new}```"
+            f"```prolog\n{cprefix}{amount:,.0f} {iso_current}"
+            f" is {nprefix}{converted:,.{count}f} {iso_new}```"
         )
         await ctx.send(embed=embed)
 
