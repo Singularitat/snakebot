@@ -14,12 +14,13 @@ from discord.gateway import DiscordWebSocket
 import config
 from cogs.utils.database import Database
 
-log = logging.getLogger("discord")
-log.setLevel(logging.WARNING)
+log = logging.getLogger()
+log.setLevel(50)
 
-handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="a")
-
-handler.setFormatter(logging.Formatter("%(message)s, %(levelname)s, %(asctime)s"))
+handler = logging.FileHandler(filename="bot.log", encoding="utf-8", mode="a")
+handler.setFormatter(
+    logging.Formatter("%(message)s; %(asctime)s", datefmt="%m-%d %H:%M:%S")
+)
 
 log.addHandler(handler)
 

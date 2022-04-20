@@ -1,7 +1,6 @@
 import asyncio
 import cProfile
 import difflib
-import logging
 import os
 import pstats
 import textwrap
@@ -12,7 +11,7 @@ from io import StringIO
 
 import discord
 import orjson
-from discord.ext import commands
+from discord.ext import commands, pages
 
 
 class PerformanceMocker:
@@ -66,6 +65,25 @@ class owner(commands.Cog):
         ctx: commands.Context
         """
         return ctx.author.id in self.bot.owner_ids
+
+    @commands.command()
+    async def logs(self, ctx):
+        """Paginates over the logs."""
+        with open("bot.log") as file:
+            lines = file.readlines()
+
+        embeds = []
+
+        for i in range(0, len(lines), 20):
+            chunk = "".join(lines[i : i + 20])
+            embeds.append(
+                discord.Embed(
+                    color=discord.Color.blurple(), description=f"```{chunk}```"
+                )
+            )
+
+        paginator = pages.Paginator(pages=embeds)
+        await paginator.send(ctx)
 
     @commands.command(aliases=["type"])
     async def findtype(self, ctx, snowflake: int):
@@ -449,19 +467,6 @@ class owner(commands.Cog):
         await ctx.send(embed=embed)
 
         self.DB.infractions.put(member_id, orjson.dumps(infractions))
-
-    @commands.command(name="loglevel")
-    async def log_level(self, ctx, level):
-        """Changes logging level.
-
-        Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
-
-        level: str
-            The new logging level.
-        """
-        level = level.upper()
-        if level.upper() in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
-            logging.getLogger("discord").setLevel(getattr(logging, level))
 
     @commands.command(name="gblacklist")
     async def global_blacklist(self, ctx, user: discord.User):

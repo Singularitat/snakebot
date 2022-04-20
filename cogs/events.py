@@ -514,14 +514,13 @@ class events(commands.Cog):
             message = f"{self.bot.user.name} is missing required permissions: {error.missing_perms}"
 
         else:
-            logging.getLogger("discord").warning(
-                f"Unhandled Error: {ctx.command.qualified_name}, Error: {error}, Type: {type(error)}"
+            logging.log(
+                50,
+                f"Unhandled Error: {ctx.command.qualified_name}, Error: {error}, Type: {type(error)}",
             )
 
         if not str(message):
-            logging.getLogger("discord").warning(
-                f"{ctx.command.qualified_name}, Error: {error}"
-            )
+            logging.log(50, f"{ctx.command.qualified_name}, Error: {error}")
             return
 
         embed.description = f"```{message}```"
@@ -593,9 +592,7 @@ class events(commands.Cog):
     @commands.Cog.listener()
     async def on_command(self, ctx):
         """Resets command cooldown for owners."""
-        logging.getLogger("discord").info(
-            f"{ctx.author.id} ran the command {ctx.command.qualified_name}"
-        )
+        logging.log(50, f"{ctx.author.id}: .{ctx.command.qualified_name}")
         if ctx.author.id in self.bot.owner_ids:
             ctx.command.reset_cooldown(ctx)
 
