@@ -595,9 +595,7 @@ class music(commands.Cog):
         for page in range(-(-len(length) // 10)):
             queue = ""
             page = page * 10
-            # fmt: off
-            songs = songs[page: page + 10]
-            # fmt: on
+            songs = songs[page : page + 10]
 
             for i, song in enumerate(songs, start=page):
                 queue += (

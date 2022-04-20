@@ -15,8 +15,13 @@ import config
 from cogs.utils.database import Database
 
 log = logging.getLogger()
+log.setLevel(50)
+
 handler = logging.FileHandler(filename="bot.log", encoding="utf-8", mode="a")
-handler.setFormatter(logging.Formatter("%(message)s; %(asctime)s"))
+handler.setFormatter(
+    logging.Formatter("%(message)s; %(asctime)s", datefmt="%m-%d %H:%M:%S")
+)
+
 log.addHandler(handler)
 
 

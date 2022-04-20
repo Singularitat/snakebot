@@ -755,11 +755,9 @@ class compsci(commands.Cog):
         binary: str
         """
         binary = binary.replace(" ", "")
-        # fmt: off
         await ctx.reply(
-            "".join([chr(int(binary[i: i + 8], 2)) for i in range(0, len(binary), 8)])
+            "".join([chr(int(binary[i : i + 8], 2)) for i in range(0, len(binary), 8)])
         )
-        # fmt: on
 
     @commands.command()
     async def ones(self, ctx, number: int, bits: int):
