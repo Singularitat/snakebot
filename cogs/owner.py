@@ -1,7 +1,6 @@
 import asyncio
 import cProfile
 import difflib
-import logging
 import os
 import pstats
 import textwrap
@@ -449,19 +448,6 @@ class owner(commands.Cog):
         await ctx.send(embed=embed)
 
         self.DB.infractions.put(member_id, orjson.dumps(infractions))
-
-    @commands.command(name="loglevel")
-    async def log_level(self, ctx, level):
-        """Changes logging level.
-
-        Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
-
-        level: str
-            The new logging level.
-        """
-        level = level.upper()
-        if level.upper() in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
-            logging.getLogger("discord").setLevel(getattr(logging, level))
 
     @commands.command(name="gblacklist")
     async def global_blacklist(self, ctx, user: discord.User):
