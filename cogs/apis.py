@@ -447,7 +447,7 @@ class apis(commands.Cog):
             async with ctx.typing(), self.bot.client_session.post(
                 url, json=data, timeout=30
             ) as resp:
-                if resp != 200:
+                if resp.status != 200:
                     return await ctx.reply(
                         embed=discord.Embed(
                             color=discord.Color.dark_red(), title="Request Failed"
@@ -1379,7 +1379,7 @@ class apis(commands.Cog):
 
         country: str - The country to search for
         """
-        url = f"https://disease.sh/v3/covid-19/countries/{country}"
+        url = f"https://corona.lmao.ninja/v3/covid-19/countries/{country}"
 
         embed = discord.Embed(colour=discord.Color.red())
 
