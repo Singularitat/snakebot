@@ -1379,7 +1379,7 @@ class apis(commands.Cog):
 
         country: str - The country to search for
         """
-        url = f"https://disease.sh/v3/covid-19/countries/{country}"
+        url = f"https://corona.lmao.ninja/v3/covid-19/countries/{country}"
 
         embed = discord.Embed(colour=discord.Color.red())
 
