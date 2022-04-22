@@ -250,7 +250,7 @@ class events(commands.Cog):
         else:
             deleted = orjson.loads(deleted)
 
-        time_sent = str(((message.id >> 22) + 1420070400000)//1000)
+        time_sent = str(((message.id >> 22) + 1420070400000) // 1000)
         deleted[time_sent] = message.content
 
         self.DB.deleted.put(member_id, orjson.dumps(deleted))
