@@ -257,6 +257,8 @@ class apis(commands.Cog):
 
         subreddit: str
         """
+        subreddit = subreddit.lstrip("r/")
+
         subreddit_cache = f"reddit-{subreddit}"
         cache = self.bot.cache
 
@@ -280,6 +282,14 @@ class apis(commands.Cog):
                             description=f"Error: {error}\nMessage: {resp['message']}",
                         )
                     )
+
+            if not resp["data"]["dist"]:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.blurple(),
+                        title="Couldn't find any posts",
+                    ).set_footer(text="Subreddit may not exist")
+                )
 
             posts = resp["data"]["children"]
             post = random.choice(posts)
