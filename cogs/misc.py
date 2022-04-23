@@ -20,6 +20,19 @@ except ImportError:
     onelinerize = None
 
 CHARACTERS = (
+    # Portal
+    "GLaDOS",
+    "Wheatley",
+    "Sentry Turret",
+    "Chell",
+    # SpongeBob
+    "SpongeBob SquarePants",
+    # Daria
+    "Daria Morgendorffer",
+    "Jane Lane",
+    # Aqua Teen Hunger Force
+    "Carl Brutananadilewski",
+    # Team Fortress 2
     "Miss Pauling",
     "Scout",
     "Soldier",
@@ -29,21 +42,59 @@ CHARACTERS = (
     "Medic",
     "Sniper",
     "Spy",
+    # Persona 4
+    "Rise Kujikawa",
+    # Steven Universe
+    "Steven Universe",
+    # Dan Vs.
+    "Dan",
+    # The Stanley Parable
     "Stanley",
     "The Narrator",
-    "Steven Universe",
-    "Rise Kujikawa",
-    "SpongeBob SquarePants",
-    "Dan",
+    # 2001: A Space Odyssey
+    "HAL 9000",
+    # Doctor Who
+    "Tenth Doctor",
+    # Sans
+    "Sans",
+    "Papyrus",
+    "Flowey",
+    "Toriel",
+    "Asgore",
+    "Asriel",
+    "Alphys",
+    "Undyne",
+    "Mettaton",
+    "Temmie",
+    "Susie",
+    "Noelle",
+    "Berdly",
+    "Rudolph",
+    "Ralsei",
+    "Lancer",
+    "King",
+    "Queen",
+    "Jevil",
+    "Spamton",
+    "Gaster",
 )
 
 ALT_NAMES = {
-    "Pauling": "Miss Pauling",
-    "Narrator": "The Narrator",
-    "Steven": "Steven Universe",
-    "Rise": "Rise Kujikawa",
+    "Glados": "GLaDOS",
+    "Sentry": "Sentry Turret",
     "Spongebob": "SpongeBob SquarePants",
     "Spongebob Squarepants": "SpongeBob SquarePants",
+    "Daria": "Daria Morgendorffer",
+    "Jane": "Jane Lane",
+    "Carl": "Carl Brutananadilewski",
+    "Pauling": "Miss Pauling",
+    "Rise": "Rise Kujikawa",
+    "Steven": "Steven Universe",
+    "Narrator": "The Narrator",
+    "Hal": "HAL 9000",
+    "Hal 9000": "HAL 9000",
+    "Tenth": "Tenth Doctor",
+    "Doctor": "Tenth Doctor",
 }
 
 BIG_NUMS = (
