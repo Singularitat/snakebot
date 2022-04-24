@@ -408,21 +408,19 @@ class economy(commands.Cog):
 
     @commands.command()
     async def chances(self, ctx):
-        """Sends simulated chances of the slot machine from 1000000000 runs."""
-        embed = discord.Embed(
-            title="Chances from 1000000000 runs", color=discord.Color.blurple()
+        """Sends pre simulated chances based off one hundred billion runs of the slot command."""
+        await ctx.send(
+            embed=discord.Embed(color=discord.Color.blurple())
+            .add_field(name="Quad:", value="0.0455%")
+            .add_field(name="Triple:", value="2.1848%")
+            .add_field(name="Double Double:", value="1.6386%")
+            .add_field(name="Double:", value="36.0491%")
+            .add_field(name="None:", value="60.082%")
+            .add_field(name="Percentage gain/loss:", value="18.7531%")
+            .set_footer(
+                text="Based off one hundred billion simulated runs of the slot command"
+            )
         )
-        embed.add_field(name="Quad:", value="455431, 0.04554%")
-        embed.add_field(name="Triple:", value="21855314, 2.18553%")
-        embed.add_field(name="Double double:", value="16378846, 1.63788%")
-        embed.add_field(name="Double:", value="360525049, 36.05250%")
-        embed.add_field(name="None:", value="600785361, 60.07854%")
-        embed.add_field(name="Percentage gain/loss:", value="18.7624388%")
-        embed.add_field(name="Highest win streak:", value=22)
-        embed.add_field(name="Highest lose streak:", value=38)
-        embed.add_field(name="Time taken:", value="2104.39373s")
-
-        await ctx.send(embed=embed)
 
     @commands.command(aliases=["bal"])
     async def balance(self, ctx, user: discord.User = None):

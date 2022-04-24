@@ -175,10 +175,10 @@ class CookieClicker(discord.ui.View):
         min_values=1,
         max_values=1,
         options=[
-            discord.SelectOption(label="Buy 1", value=1),
-            discord.SelectOption(label="Buy 10", value=10),
-            discord.SelectOption(label="Buy 100", value=100),
-            discord.SelectOption(label="Buy Max", value=0),
+            discord.SelectOption(label="Buy 1", value="1"),
+            discord.SelectOption(label="Buy 10", value="10"),
+            discord.SelectOption(label="Buy 100", value="100"),
+            discord.SelectOption(label="Buy Max", value="0"),
         ],
     )
     async def change_purchase_amount(self, select, interaction):
