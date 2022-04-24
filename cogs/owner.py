@@ -129,7 +129,9 @@ class owner(commands.Cog):
                 if await getattr(self.bot, f"fetch_{obj_type}")(snowflake):
                     return await found_message(obj_type)
             except discord.Forbidden:
-                if obj_type != "guild":  # Even if the guild doesn't exist it says it is forbidden rather than not found
+                if (
+                    obj_type != "guild"
+                ):  # Even if the guild doesn't exist it says it is forbidden rather than not found
                     return await found_message(obj_type)
             except discord.NotFound:
                 pass
