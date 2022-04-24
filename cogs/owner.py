@@ -97,10 +97,12 @@ class owner(commands.Cog):
                 )
             )
 
-        m = await self.bot.client_session.head(
+        await ctx.trigger_typing()
+
+        emoji = await self.bot.client_session.head(
             f"https://cdn.discordapp.com/emojis/{snowflake}"
         )
-        if m.status == 200:
+        if emoji.status == 200:
             return await found_message("emoji")
 
         try:
@@ -110,29 +112,29 @@ class owner(commands.Cog):
             pass
 
         types = (
-            "channel",
-            "user",
-            "guild",
-            "sticker",
-            "stage_instance",
-            "webhook",
-            "widget",
+            ("channel", True),
+            ("user", True),
+            ("guild", True),
+            ("sticker", True),
+            ("stage_instance", True),
+            ("webhook", False),
+            ("widget", False),
         )
 
-        for typeobj in types:
-            get = getattr(self.bot, f"get_{typeobj}", None)
-            if get and get(snowflake):
-                return await found_message(typeobj)
-            fetch = getattr(self.bot, f"fetch_{typeobj}")
+        for obj_type, has_get_method in types:
+            if has_get_method:
+                if getattr(self.bot, f"get_{obj_type}")(snowflake):
+                    return await found_message(obj_type)
             try:
-                if await fetch(snowflake):
-                    return await found_message(typeobj)
+                if await getattr(self.bot, f"fetch_{obj_type}")(snowflake):
+                    return await found_message(obj_type)
             except discord.Forbidden:
-                return await found_message(typeobj)
+                if obj_type != "guild":  # Even if the guild doesn't exist it says it is forbidden rather than not found
+                    return await found_message(obj_type)
             except discord.NotFound:
                 pass
 
-        await ctx.reply("Cannot find type of object")
+        await ctx.reply("Cannot find type of object that this id is for")
 
     @commands.command(aliases=["d", "docs"])
     async def doc(self, ctx, search):
