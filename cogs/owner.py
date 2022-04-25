@@ -245,39 +245,6 @@ class owner(commands.Cog):
 
         await ctx.send(file=discord.File(StringIO(file.getvalue()), "profile.txt"))
 
-    @commands.command()
-    async def bytecode(self, ctx, *, command):
-        """Gets the bytecode of a command.
-
-        command: str
-        """
-        command = self.bot.get_command(command)
-        if not command:
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                description="```Couldn't find command.```",
-            )
-            return await ctx.send(embed=embed)
-
-        code_obj = command.callback.__code__
-
-        argcount = code_obj.co_argcount
-        posonlyargcount = code_obj.co_posonlyargcount
-        kwonlyargcount = code_obj.co_kwonlyargcount
-        nlocals = code_obj.co_nlocals
-        stacksize = code_obj.co_stacksize
-        flags = code_obj.co_flags
-
-        args = (
-            f"{argcount=}, {posonlyargcount=}, {kwonlyargcount=}, "
-            f"{nlocals=}, {stacksize=}, {flags=}"
-        ).replace("`", "`\u200b")
-
-        await ctx.send(
-            f"```py\n{args}\n\n```",
-            file=discord.File(StringIO(str(code_obj.co_code)), "bytecode.py"),
-        )
-
     @commands.command(name="wipeblacklist")
     async def wipe_blacklist(self, ctx):
         """Wipes everyone from the blacklist list includes downvoted members."""
