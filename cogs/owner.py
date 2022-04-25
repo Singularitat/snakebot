@@ -122,9 +122,8 @@ class owner(commands.Cog):
         )
 
         for obj_type, has_get_method in types:
-            if has_get_method:
-                if getattr(self.bot, f"get_{obj_type}")(snowflake):
-                    return await found_message(obj_type)
+            if has_get_method and getattr(self.bot, f"get_{obj_type}")(snowflake):
+                return await found_message(obj_type)
             try:
                 if await getattr(self.bot, f"fetch_{obj_type}")(snowflake):
                     return await found_message(obj_type)
@@ -211,12 +210,11 @@ class owner(commands.Cog):
             value = stdout.getvalue()
             return await ctx.send(f"```py\n{value}{traceback.format_exc()}\n```")
 
-        value = stdout.getvalue()
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.add_field(name="stdout", value=stdout.getvalue() or "None", inline=False)
+        embed.add_field(name="Return Value", value=ret, inline=False)
 
-        if ret:
-            await ctx.send(f"```py\n{value}{ret}\n```")
-        elif value:
-            await ctx.send(f"```py\n{value}\n```")
+        return await ctx.send(embed=embed)
 
     @commands.command()
     async def profile(self, ctx, *, command):
@@ -245,39 +243,6 @@ class owner(commands.Cog):
         ps.print_stats()
 
         await ctx.send(file=discord.File(StringIO(file.getvalue()), "profile.txt"))
-
-    @commands.command()
-    async def bytecode(self, ctx, *, command):
-        """Gets the bytecode of a command.
-
-        command: str
-        """
-        command = self.bot.get_command(command)
-        if not command:
-            embed = discord.Embed(
-                color=discord.Color.blurple(),
-                description="```Couldn't find command.```",
-            )
-            return await ctx.send(embed=embed)
-
-        code_obj = command.callback.__code__
-
-        argcount = code_obj.co_argcount
-        posonlyargcount = code_obj.co_posonlyargcount
-        kwonlyargcount = code_obj.co_kwonlyargcount
-        nlocals = code_obj.co_nlocals
-        stacksize = code_obj.co_stacksize
-        flags = code_obj.co_flags
-
-        args = (
-            f"{argcount=}, {posonlyargcount=}, {kwonlyargcount=}, "
-            f"{nlocals=}, {stacksize=}, {flags=}"
-        ).replace("`", "`\u200b")
-
-        await ctx.send(
-            f"```py\n{args}\n\n```",
-            file=discord.File(StringIO(str(code_obj.co_code)), "bytecode.py"),
-        )
 
     @commands.command(name="wipeblacklist")
     async def wipe_blacklist(self, ctx):
