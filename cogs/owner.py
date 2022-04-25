@@ -211,12 +211,11 @@ class owner(commands.Cog):
             value = stdout.getvalue()
             return await ctx.send(f"```py\n{value}{traceback.format_exc()}\n```")
 
-        value = stdout.getvalue()
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.add_field(name="stdout", value=stdout.getvalue() or "None", inline=False)
+        embed.add_field(name="Return Value", value=ret, inline=False)
 
-        if ret:
-            await ctx.send(f"```py\n{value}{ret}\n```")
-        elif value:
-            await ctx.send(f"```py\n{value}\n```")
+        return await ctx.send(embed=embed)
 
     @commands.command()
     async def profile(self, ctx, *, command):
