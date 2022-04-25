@@ -122,9 +122,8 @@ class owner(commands.Cog):
         )
 
         for obj_type, has_get_method in types:
-            if has_get_method:
-                if getattr(self.bot, f"get_{obj_type}")(snowflake):
-                    return await found_message(obj_type)
+            if has_get_method and getattr(self.bot, f"get_{obj_type}")(snowflake):
+                return await found_message(obj_type)
             try:
                 if await getattr(self.bot, f"fetch_{obj_type}")(snowflake):
                     return await found_message(obj_type)
