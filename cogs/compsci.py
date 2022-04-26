@@ -99,7 +99,7 @@ class compsci(commands.Cog):
         max_address = net[-2]
         min_address = net[1]
 
-        # Due to the IPv4Address having an __format__ method they need to be converted to strings first
+        # Due to the IPv4Address not having an __format__ method for padding they need to be converted to strings first
         await ctx.send(
             f"```ahk\nNetwork Address: {str(network_address):<22}; {dotted(network_address)}\n"
             f"Network Mask: {str(netmask):<25}; {dotted(netmask)}\n"
@@ -656,34 +656,38 @@ class compsci(commands.Cog):
         # fmt: off
 
         freq = {
-            "a": 8.04, "b": 1.48, "c": 3.34,
-            "d": 3.82, "e": 12.49, "f": 2.4,
-            "g": 1.87, "h": 5.05, "i": 7.57,
-            "j": 0.16, "k": 0.54, "l": 4.07,
-            "m": 2.51, "n": 7.23, "o": 7.64,
-            "p": 2.14, "q": 0.12, "r": 6.28,
-            "s": 6.51, "t": 9.28, "u": 2.73,
-            "v": 1.05, "w": 1.68, "x": 0.23,
-            "y": 1.66, "z": 0.09,
+            "a": 8.167, "b": 1.492, "c": 2.782, "d": 4.253,
+            "e": 12.702, "f": 2.228, "g": 2.015, "h": 6.094,
+            "i": 6.966, "j": 0.153, "k": 0.772, "l": 4.025,
+            "m": 2.406, "n": 6.749, "o": 7.507, "p": 1.929,
+            "q": 0.095, "r": 5.987, "s": 6.327, "t": 9.056,
+            "u": 2.758, "v": 0.978, "w": 2.360, "x": 0.150,
+            "y": 1.974, "z": 0.074,
         }
 
         # fmt: on
 
         msg_len = len(message)
 
-        rotate1 = str.maketrans(chars, chars[1:] + chars[0])
+        rotate_one = str.maketrans(chars, chars[1:] + chars[0])
         embed = discord.Embed(color=discord.Color.blurple())
 
         results = []
+        counts = {}
+
+        # Gets the count of each letter
+        for letter in message.lower():
+            counts[letter] = counts.get(letter, 0) + 1
 
         for i in range(25, 0, -1):
-            message = message.translate(rotate1)
-            chi = sum(
-                [
-                    (((message.count(char) / msg_len) - freq[char]) ** 2) / freq[char]
-                    for char in set(message.lower().replace(" ", ""))
-                ]
-            )
+            message = message.translate(rotate_one)
+            chi = 0
+            for char in set(message.lower()):
+                frequency = freq.get(char)
+                if frequency:
+                    chi += (
+                        ((counts.get(char, 0) / msg_len) - frequency) ** 2
+                    ) / frequency
             results.append((chi, (i, message)))
 
         for chi, result in sorted(results, reverse=True):
