@@ -693,7 +693,7 @@ class apis(commands.Cog):
                 embed.description = "```No posts found```"
                 return await ctx.send(embed=embed)
 
-            for post in posts:
+            for post in sorted(posts, key=lambda post: post["score"], reverse=True):
                 embed.add_field(
                     name=f"`{unescape(post['title'])}`",
                     value=f"""
