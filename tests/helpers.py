@@ -84,7 +84,7 @@ guild_data = {
     "mfa_level": 1,
     "splash": "splash.png",
     "system_channel_id": 464033278631084042,
-    "description": "mocking is fun",
+    "description": "Go Away",
     "max_presences": 10_000,
     "max_members": 100_000,
     "preferred_locale": "UTC",
@@ -100,6 +100,8 @@ class MockGuild(CustomMockMixin, unittest.mock.Mock, HashableMixin):
     def __init__(self, roles: Optional[Iterable[MockRole]] = None, **kwargs) -> None:
         default_kwargs = {"id": next(self.discord_id), "members": []}
         super().__init__(**collections.ChainMap(kwargs, default_kwargs))
+
+        self.created_at.timestamp = unittest.mock.Mock(return_value=0)
 
         self.roles = [MockRole(name="@everyone", position=1, id=0)]
         if roles:
@@ -161,6 +163,9 @@ class MockMember(CustomMockMixin, unittest.mock.Mock, ColourMixin, HashableMixin
             "color": discord.Color.random(),
         }
         super().__init__(**collections.ChainMap(kwargs, default_kwargs))
+
+        self.created_at.timestamp = unittest.mock.Mock(return_value=0)
+        self.joined_at.timestamp = unittest.mock.Mock(return_value=0)
 
         self.roles = [MockRole(name="@everyone", position=1, id=0)]
         if roles:
@@ -302,10 +307,10 @@ message_data = {
     "webhook_id": 431341013479718912,
     "attachments": [],
     "embeds": [],
-    "application": "Python Discord",
+    "application": "Bot Testing",
     "activity": "mocking",
     "channel": unittest.mock.MagicMock(),
-    "edited_timestamp": "2019-10-14T15:33:48+00:00",
+    "edited_timestamp": "2020-10-14T15:33:48+00:00",
     "type": "message",
     "pinned": False,
     "mention_everyone": False,
