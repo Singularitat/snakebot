@@ -587,8 +587,17 @@ class apis(commands.Cog):
     @commands.command()
     async def wolfram(self, ctx, *, query):
         """Gets the output of a query from wolfram alpha."""
-        table = {33: "%21", 40: "%28", 41: "%29", 42: "%2B", 47: "%2F"}
-        query = query.translate(table).replace(" ", "+")
+        # fmt: off
+        # URL Encoding
+        table = {
+            32: "+", 33: "%21", 35: "%23", 36: "%24", 37: "%25",
+            38: "%26", 40: "%28", 41: "%29", 43: "%2B", 44: "%2C",
+            47: "%2F", 60: "%3C", 61: "%3D", 62: "%3E", 63: "%3F",
+            64: "%40", 91: "%5B", 92: "%5C", 93: "%5D", 94: "%5E",
+            96: "%60", 123: "%7B", 124: "%7C", 125: "%7D", 126: "%7E",
+        }
+        # fmt: on
+        query = query.translate(table)
         url = (
             "https://lin2jing4-cors-4.herokuapp.com/api.wolframalpha.com/v2/query"
             "?&output=json&podstate=step-by-step+solution&podstate=step-by-step&"
@@ -605,12 +614,9 @@ class apis(commands.Cog):
         ) as response:
             data = (await response.json())["queryresult"]
 
-        if data["error"]:
-            embed.description = "```Calculation errored out```"
-            return await ctx.send(embed=embed)
-
-        if "pods" not in data:
-            embed.description = "```Calculation failed```"
+        if data["error"] or "pods" not in data:
+            embed.title = "Calculation failed"
+            embed.color = discord.Color.dark_red()
             return await ctx.send(embed=embed)
 
         msg = ""
@@ -687,7 +693,7 @@ class apis(commands.Cog):
                 embed.description = "```No posts found```"
                 return await ctx.send(embed=embed)
 
-            for post in posts:
+            for post in sorted(posts, key=lambda post: post["score"], reverse=True):
                 embed.add_field(
                     name=f"`{unescape(post['title'])}`",
                     value=f"""
