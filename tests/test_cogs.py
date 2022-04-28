@@ -1142,7 +1142,9 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
+    @unittest.skipIf(SKIP_API_TESTS, "Really Slow.")
     async def test_message_top_commmand(self):
+        bot.client_session = aiohttp.ClientSession()
         context = helpers.MockContext()
 
         await self.cog.message_top(self.cog, context)

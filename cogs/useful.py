@@ -10,7 +10,7 @@ from datetime import datetime
 import discord
 import lxml.html
 import orjson
-from discord.ext import commands, pages
+from discord.ext import commands
 
 STATUS_CODES = {
     "1": {
@@ -703,35 +703,6 @@ class useful(commands.Cog):
         embed.title = info["title"]
         embed.description = f"{info['message']}\n```prolog\n{code} {info[code]}```"
         await ctx.send(embed=embed)
-
-    @commands.command()
-    async def invites(self, ctx):
-        """Shows the invites that users joined from."""
-        invite_list = []
-        invites = ""
-        count = 0
-        for member, invite in self.DB.invites:
-            if len(member) <= 18:
-                member = self.bot.get_user(int(member))
-                # I don't fetch the invite cause it takes 300ms per invite
-                if member:
-                    invites += f"{member.display_name}: {invite.decode()}\n"
-                    count += 1
-
-                    if count == 20:
-                        invite_list.append(f"```ahk\n{invites}```")
-                        invites = ""
-
-        if not invite_list:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```No stored invites```",
-                )
-            )
-
-        paginator = pages.Paginator(pages=invite_list)
-        await paginator.send(ctx)
 
     @commands.command()
     async def time(self, ctx, *, command):

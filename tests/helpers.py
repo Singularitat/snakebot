@@ -102,6 +102,7 @@ class MockGuild(CustomMockMixin, unittest.mock.Mock, HashableMixin):
         super().__init__(**collections.ChainMap(kwargs, default_kwargs))
 
         self.created_at.timestamp = unittest.mock.Mock(return_value=0)
+        self.member_count = 52899
 
         self.roles = [MockRole(name="@everyone", position=1, id=0)]
         if roles:
