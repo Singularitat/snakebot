@@ -19,6 +19,61 @@ class moderation(commands.Cog):
         self.loop = bot.loop
         self.handles = {}
 
+    @commands.command()
+    async def invites(self, ctx, member: discord.User = None):
+        """Shows the invites that users joined from.
+
+        member: discord.Member
+            Used to check the invite that a specific member used.
+        """
+        if member:
+            invite_code = self.DB.invites.get(f"{member.id}-{ctx.guild.id}".encode())
+
+            if not invite_code:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.dark_red(),
+                        title="Failed to get the invite of that member",
+                    )
+                )
+
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title=f"{member} joined from the invite `{invite_code.decode()}`",
+                )
+            )
+
+        invite_list = []
+        invites = ""
+        count = 0
+
+        for member, invite in self.DB.invites:
+            if invite.isdigit():
+                continue
+
+            member = self.bot.get_user(int(member.split(b"-")[0]))
+
+            # I don't fetch the invite cause it takes 300ms per invite
+            if member:
+                invites += f"{member.display_name}: {invite.decode()}\n"
+                count += 1
+
+                if count == 20:
+                    invite_list.append(f"```ahk\n{invites}```")
+                    invites = ""
+
+        if not invite_list:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```No stored invites```",
+                )
+            )
+
+        paginator = pages.Paginator(pages=invite_list)
+        await paginator.send(ctx)
+
     @commands.command(hidden=True)
     @commands.guild_only()
     async def inactive(self, ctx, days: int = 7):
