@@ -399,15 +399,17 @@ class events(commands.Cog):
         member: discord.Member
         """
         for invite in await member.guild.invites():
-            key = f"{invite.code}-{invite.guild.id}"
-            uses = self.DB.invites.get(key.encode())
+            invite_key = f"{invite.code}-{invite.guild.id}"
+            member_key = f"{member.id}-{invite.guild.id}"
+
+            uses = self.DB.invites.get(invite_key.encode())
 
             if not uses:
-                self.DB.invites.put(key.encode(), str(invite.uses).encode())
+                self.DB.invites.put(invite_key.encode(), str(invite.uses).encode())
                 continue
 
             if invite.uses > int(uses):
-                self.DB.invites.put(str(member.id).encode(), invite.code.encode())
+                self.DB.invites.put(member_key.encode(), invite.code.encode())
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
