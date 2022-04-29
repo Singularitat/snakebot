@@ -107,7 +107,9 @@ class compsci(commands.Cog):
 
         for char in message:
             if char.isalpha():
-                ciphertext += chr((ord(char) + int(key[count % key_length]) - 65) % 26 + 65)
+                ciphertext += chr(
+                    (ord(char) + int(key[count % key_length]) - 65) % 26 + 65
+                )
                 count += 1
             else:
                 ciphertext += char
@@ -128,7 +130,9 @@ class compsci(commands.Cog):
 
         for char in message:
             if char.isalpha():
-                ciphertext += chr((ord(char) - int(key[count % key_length]) - 65) % 26 + 65)
+                ciphertext += chr(
+                    (ord(char) - int(key[count % key_length]) - 65) % 26 + 65
+                )
                 count += 1
             else:
                 ciphertext += char
