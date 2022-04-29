@@ -48,6 +48,42 @@ class compsci(commands.Cog):
         self.DB = bot.DB
 
     @commands.group()
+    async def substitution(self, ctx):
+        """Solves or encodes a Substitution Cipher."""
+        if not ctx.invoked_subcommand:
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}substitution [decode/encode]```",
+            )
+            await ctx.reply(embed=embed)
+
+    @substitution.command(name="encode")
+    async def substitution_encode(self, ctx, key, *, message):
+        """Encodes a message using the Substitution Cipher.
+
+        key: str
+        message: str
+        """
+        mapping = []
+
+        for letter in key.upper():
+            if letter not in mapping:
+                mapping.append(letter)
+
+        for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+            if letter not in mapping:
+                mapping.append(letter)
+
+        encoded = ""
+        for letter in message.upper():
+            if letter.isalpha():
+                encoded += mapping[ord(letter) - 65]
+            else:
+                encoded += letter
+
+        await ctx.send(encoded)
+
+    @commands.group()
     async def vigenere(self, ctx):
         """Solves or encodes a Vigenère Cipher."""
         if not ctx.invoked_subcommand:
