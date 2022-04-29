@@ -47,6 +47,58 @@ class compsci(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
+    @commands.group()
+    async def vigenere(self, ctx):
+        """Solves or encodes a Vigenère Cipher."""
+        if not ctx.invoked_subcommand:
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}vigenere [decode/encode]```",
+            )
+            await ctx.reply(embed=embed)
+
+    @vigenere.command(name="encode")
+    async def vigenere_encode(self, ctx, key, *, message):
+        """Encodes a message using the Vigenère Cipher.
+
+        example usage: .vigenere encode "3, 6, 1, 0, 5" HELLO WORLD
+        """
+        key = key.split(",")
+        key_length = len(key)
+
+        ciphertext = ""
+        count = 0
+
+        for char in message:
+            if char.isalpha():
+                ciphertext += chr((ord(char) + int(key[count % key_length]) - 65) % 26 + 65)
+                count += 1
+            else:
+                ciphertext += char
+
+        await ctx.send(ciphertext)
+
+    @vigenere.command(name="decode")
+    async def vigenere_decode(self, ctx, key, *, message):
+        """Decodes a message using the Vigenère Cipher.
+
+        example usage: .vigenere decode "3, 6, 1, 0, 5" KKMLT ZUSLI
+        """
+        key = key.split(",")
+        key_length = len(key)
+
+        ciphertext = ""
+        count = 0
+
+        for char in message:
+            if char.isalpha():
+                ciphertext += chr((ord(char) - int(key[count % key_length]) - 65) % 26 + 65)
+                count += 1
+            else:
+                ciphertext += char
+
+        await ctx.send(ciphertext)
+
     @commands.command(aliases=["propagation", "transmission"])
     async def prop(self, ctx, data_rate, length, speed, frame_size):
         """Calculates transmission time, propagation time and effective data rate."""
@@ -613,17 +665,17 @@ class compsci(commands.Cog):
         )
 
     @commands.group()
-    async def cipher(self, ctx):
+    async def caesar(self, ctx):
         """Solves or encodes a caesar cipher."""
         if not ctx.invoked_subcommand:
             embed = discord.Embed(
                 color=discord.Color.blurple(),
-                description=f"```Usage: {ctx.prefix}cipher [decode/encode]```",
+                description=f"```Usage: {ctx.prefix}caesar [decode/encode]```",
             )
             await ctx.reply(embed=embed)
 
-    @cipher.command()
-    async def encode(self, ctx, shift: int, *, message):
+    @caesar.command(name="encode")
+    async def caesar_encode(self, ctx, shift: int, *, message):
         """Encodes a message using the caesar cipher.
 
         shift: int
@@ -640,8 +692,8 @@ class compsci(commands.Cog):
 
         await ctx.reply(message.translate(table))
 
-    @cipher.command(aliases=["solve", "brute"])
-    async def decode(self, ctx, *, message):
+    @caesar.command(name="decode", aliases=["solve", "brute"])
+    async def caesar_decode(self, ctx, *, message):
         """Solves a caesar cipher via brute force.
         Shows results sorted by the chi-square of letter frequencies
 
