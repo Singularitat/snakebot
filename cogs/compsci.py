@@ -48,8 +48,40 @@ class compsci(commands.Cog):
         self.DB = bot.DB
 
     @commands.group()
+    async def rail(self, ctx):
+        """Decodes or encodes a Rail Fence Cipher."""
+        if not ctx.invoked_subcommand:
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}rail [decode/encode]```",
+            )
+            await ctx.reply(embed=embed)
+
+    @rail.command(name="encode")
+    async def rail_encode(self, ctx, key: int, *, message):
+        """Encodes a message using the Rail Fence Cipher.
+
+        key: str
+        message: str
+        """
+        rail = [[""] * len(message) for i in range(key)]
+
+        down = False
+        row, col = 0, 0
+
+        for char in message:
+            if (row == 0) or (row == key - 1):
+                down = not down
+
+            rail[row][col] = char
+            col += 1
+            row += 1 if down else -1
+
+        await ctx.send("".join(sum(rail, [])))
+
+    @commands.group()
     async def substitution(self, ctx):
-        """Solves or encodes a Substitution Cipher."""
+        """Decodes or encodes a Substitution Cipher."""
         if not ctx.invoked_subcommand:
             embed = discord.Embed(
                 color=discord.Color.blurple(),
@@ -81,11 +113,40 @@ class compsci(commands.Cog):
             else:
                 encoded += letter
 
-        await ctx.send(encoded)
+        await ctx.reply(encoded)
+
+    @substitution.command(name="decode")
+    async def substitution_decode(self, ctx, key, *, message):
+        """Decodes a message using the Substitution Cipher.
+
+        key: str
+        message: str
+        """
+        mapping = {}
+        count = 0
+
+        for letter in key.upper():
+            if letter not in mapping:
+                mapping[letter] = count
+                count += 1
+
+        for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+            if letter not in mapping:
+                mapping[letter] = count
+                count += 1
+
+        decoded = ""
+        for letter in message.upper():
+            if letter.isalpha():
+                decoded += chr(mapping[letter] + 65)
+            else:
+                decoded += letter
+
+        await ctx.reply(decoded)
 
     @commands.group()
     async def vigenere(self, ctx):
-        """Solves or encodes a Vigenère Cipher."""
+        """Decodes or encodes a Vigenère Cipher."""
         if not ctx.invoked_subcommand:
             embed = discord.Embed(
                 color=discord.Color.blurple(),
@@ -114,7 +175,7 @@ class compsci(commands.Cog):
             else:
                 ciphertext += char
 
-        await ctx.send(ciphertext)
+        await ctx.reply(ciphertext)
 
     @vigenere.command(name="decode")
     async def vigenere_decode(self, ctx, key, *, message):
@@ -137,7 +198,7 @@ class compsci(commands.Cog):
             else:
                 ciphertext += char
 
-        await ctx.send(ciphertext)
+        await ctx.reply(ciphertext)
 
     @commands.command(aliases=["propagation", "transmission"])
     async def prop(self, ctx, data_rate, length, speed, frame_size):
