@@ -48,8 +48,40 @@ class compsci(commands.Cog):
         self.DB = bot.DB
 
     @commands.group()
+    async def rail(self, ctx):
+        """Decodes or encodes a Rail Fence Cipher."""
+        if not ctx.invoked_subcommand:
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}rail [decode/encode]```",
+            )
+            await ctx.reply(embed=embed)
+
+    @rail.command(name="encode")
+    async def rail_encode(self, ctx, key: int, *, message):
+        """Encodes a message using the Rail Fence Cipher.
+
+        key: str
+        message: str
+        """
+        rail = [[""] * len(message) for i in range(key)]
+
+        down = False
+        row, col = 0, 0
+
+        for char in message:
+            if (row == 0) or (row == key - 1):
+                down = not down
+
+            rail[row][col] = char
+            col += 1
+            row += 1 if down else -1
+
+        await ctx.send("".join(sum(rail, [])))
+
+    @commands.group()
     async def substitution(self, ctx):
-        """Solves or encodes a Substitution Cipher."""
+        """Decodes or encodes a Substitution Cipher."""
         if not ctx.invoked_subcommand:
             embed = discord.Embed(
                 color=discord.Color.blurple(),
@@ -114,7 +146,7 @@ class compsci(commands.Cog):
 
     @commands.group()
     async def vigenere(self, ctx):
-        """Solves or encodes a Vigenère Cipher."""
+        """Decodes or encodes a Vigenère Cipher."""
         if not ctx.invoked_subcommand:
             embed = discord.Embed(
                 color=discord.Color.blurple(),
