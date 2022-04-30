@@ -81,7 +81,36 @@ class compsci(commands.Cog):
             else:
                 encoded += letter
 
-        await ctx.send(encoded)
+        await ctx.reply(encoded)
+
+    @substitution.command(name="decode")
+    async def substitution_decode(self, ctx, key, *, message):
+        """Decodes a message using the Substitution Cipher.
+
+        key: str
+        message: str
+        """
+        mapping = {}
+        count = 0
+
+        for letter in key.upper():
+            if letter not in mapping:
+                mapping[letter] = count
+                count += 1
+
+        for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+            if letter not in mapping:
+                mapping[letter] = count
+                count += 1
+
+        decoded = ""
+        for letter in message.upper():
+            if letter.isalpha():
+                decoded += chr(mapping[letter] + 65)
+            else:
+                decoded += letter
+
+        await ctx.reply(decoded)
 
     @commands.group()
     async def vigenere(self, ctx):
@@ -114,7 +143,7 @@ class compsci(commands.Cog):
             else:
                 ciphertext += char
 
-        await ctx.send(ciphertext)
+        await ctx.reply(ciphertext)
 
     @vigenere.command(name="decode")
     async def vigenere_decode(self, ctx, key, *, message):
@@ -137,7 +166,7 @@ class compsci(commands.Cog):
             else:
                 ciphertext += char
 
-        await ctx.send(ciphertext)
+        await ctx.reply(ciphertext)
 
     @commands.command(aliases=["propagation", "transmission"])
     async def prop(self, ctx, data_rate, length, speed, frame_size):
