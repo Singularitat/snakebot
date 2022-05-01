@@ -79,6 +79,44 @@ class compsci(commands.Cog):
 
         await ctx.send("".join(sum(rail, [])))
 
+    @rail.command(name="decode")
+    async def rail_decode(self, ctx, key: int, *, message):
+        rail = [[""] * len(message) for i in range(key)]
+
+        down = False
+        row, col = 0, 0
+
+        for _ in message:
+            if (row == 0) or (row == key - 1):
+                down = not down
+
+            rail[row][col] = None
+            col += 1
+            row += 1 if down else -1
+
+        index = 0
+        result = []
+        for i in range(key):
+            for j in range(len(message)):
+                if rail[i][j] is None:
+                    rail[i][j] = message[index]
+                    index += 1
+
+                    if index == message:
+                        break
+
+        result = []
+        row, col = 0, 0
+        for _ in message:
+            if (row == 0) or (row == key - 1):
+                down = not down
+
+            result.append(rail[row][col])
+            col += 1
+            row += 1 if down else -1
+
+        await ctx.send("".join(result))
+
     @commands.group()
     async def substitution(self, ctx):
         """Decodes or encodes a Substitution Cipher."""
