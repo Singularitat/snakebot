@@ -107,7 +107,7 @@ class compsci(commands.Cog):
         row, col = 0, 0
 
         for char in message:
-            if (row == 0) or (row == key - 1):
+            if row in (0, key - 1):
                 down = not down
 
             rail[row][col] = char
@@ -124,7 +124,7 @@ class compsci(commands.Cog):
         row, col = 0, 0
 
         for _ in message:
-            if (row == 0) or (row == key - 1):
+            if row in (0, key - 1):
                 down = not down
 
             rail[row][col] = None
@@ -145,7 +145,7 @@ class compsci(commands.Cog):
         result = []
         row, col = 0, 0
         for _ in message:
-            if (row == 0) or (row == key - 1):
+            if row in (0, key - 1):
                 down = not down
 
             result.append(rail[row][col])
