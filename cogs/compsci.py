@@ -48,6 +48,43 @@ class compsci(commands.Cog):
         self.DB = bot.DB
 
     @commands.group()
+    async def columnar(self, ctx):
+        """Solves or encodes a columnar transposition cipher."""
+        if not ctx.invoked_subcommand:
+            embed = discord.Embed(
+                color=discord.Color.blurple(),
+                description=f"```Usage: {ctx.prefix}columnar [decode/encode]```",
+            )
+            await ctx.reply(embed=embed)
+
+    @columnar.command(name="encode")
+    async def columnar_encode(self, ctx, key, *, message):
+        """Encodes a message using the columnar transposition cipher.
+
+        key: str
+        message: str
+        """
+        cipher = []
+
+        msg_len = float(len(message))
+        msg_lst = list(message)
+        key_lst = sorted(list(key))
+
+        col = len(key)
+        row = -(-(msg_len) // col)  # -(-a // b) gets the ceil of a number
+
+        fill_null = int((row * col) - msg_len)
+        msg_lst.extend("_" * fill_null)
+
+        matrix = [msg_lst[i : i + col] for i in range(0, len(msg_lst), col)]
+
+        for i in range(col):
+            index = key.index(key_lst[i])
+            cipher.extend([row[index] for row in matrix])
+
+        await ctx.send("".join(cipher))
+
+    @commands.group()
     async def rail(self, ctx):
         """Decodes or encodes a Rail Fence Cipher."""
         if not ctx.invoked_subcommand:
