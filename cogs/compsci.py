@@ -73,8 +73,8 @@ class compsci(commands.Cog):
         col = len(key)
         row = -(-(msg_len) // col)  # -(-a // b) gets the ceil of a number
 
-        fill_null = int((row * col) - msg_len)
-        msg_lst.extend("_" * fill_null)
+        fill_amount = int((row * col) - msg_len)
+        msg_lst.extend("_" * fill_amount)
 
         matrix = [msg_lst[i : i + col] for i in range(0, len(msg_lst), col)]
 
@@ -83,6 +83,34 @@ class compsci(commands.Cog):
             cipher.extend([row[index] for row in matrix])
 
         await ctx.send("".join(cipher))
+
+    @columnar.command(name="decode")
+    async def columnar_decode(self, ctx, key, *, message):
+        """Decodes a message using the columnar transposition cipher.
+
+        key: str
+        message: str
+        """
+        message_length = len(message)
+        key_length = len(key)
+
+        order = [key.find(x) for x in sorted(key)]
+
+        chunks = [
+            message[int(x + y * message_length / key_length) // 1]
+            for x in range(message_length // key_length)
+            for y in range(key_length)
+        ]
+
+        chunks = "".join(chunks)
+
+        chunks = [chunks[i : i + key_length] for i in range(0, len(chunks), key_length)]
+
+        decoded = "".join(
+            sum([[c for (y, c) in sorted(zip(order, chunk))] for chunk in chunks], [])
+        )
+
+        await ctx.send(decoded.strip("_"))
 
     @commands.group()
     async def rail(self, ctx):
