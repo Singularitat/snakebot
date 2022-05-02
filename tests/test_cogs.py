@@ -598,6 +598,17 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = compsci(bot=bot)
 
+    async def test_columnar_command(self):
+        context = helpers.MockContext()
+        context.invoked_subcommand = None
+
+        await self.cog.columnar(self.cog, context)
+
+        self.assertEqual(
+            context.reply.call_args.kwargs["embed"].description,
+            f"```Usage: {context.prefix}columnar [decode/encode]```",
+        )
+
     async def test_prop_command(self):
         context = helpers.MockContext()
 
@@ -680,21 +691,21 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
                     answer,
                 )
 
-    async def test_cipher_command(self):
+    async def test_caesar_command(self):
         context = helpers.MockContext()
         context.invoked_subcommand = None
 
-        await self.cog.cipher(self.cog, context)
+        await self.cog.caesar(self.cog, context)
 
         self.assertEqual(
             context.reply.call_args.kwargs["embed"].description,
-            f"```Usage: {context.prefix}cipher [decode/encode]```",
+            f"```Usage: {context.prefix}caesar [decode/encode]```",
         )
 
-    async def test_cipher_encode_command(self):
+    async def test_caesar_encode_command(self):
         context = helpers.MockContext()
 
-        await self.cog.encode(
+        await self.cog.caesar_encode(
             self.cog,
             context,
             shift=7,
@@ -703,10 +714,10 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
 
         context.reply.assert_called_with("aol xbpjr iyvdu mve qbtwz vcly aol shgf kvn")
 
-    async def test_cipher_decode_command(self):
+    async def test_caesar_decode_command(self):
         context = helpers.MockContext()
 
-        await self.cog.decode(
+        await self.cog.caesar_decode(
             self.cog, context, message="aol xbpjr iyvdu mve qbtwz vcly aol shgf kvn"
         )
 
