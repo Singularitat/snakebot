@@ -609,6 +609,38 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
             f"```Usage: {context.prefix}columnar [decode/encode]```",
         )
 
+    async def test_rail_command(self):
+        context = helpers.MockContext()
+        context.invoked_subcommand = None
+
+        await self.cog.rail(self.cog, context)
+
+        self.assertEqual(
+            context.reply.call_args.kwargs["embed"].description,
+            f"```Usage: {context.prefix}rail [decode/encode]```",
+        )
+
+    async def test_rail_encode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.rail_encode(
+            self.cog,
+            context,
+            7,
+            message="the quick brown fox jumps over the lazy dog",
+        )
+
+        context.reply.assert_called_with("tosahrwp lzebnmo y   uve qkfjehduco rtoix g")
+
+    async def test_rail_decode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.rail_decode(
+            self.cog, context, 7, message="tosahrwp lzebnmo y   uve qkfjehduco rtoix g"
+        )
+
+        context.reply.assert_called_with("the quick brown fox jumps over the lazy dog")
+
     async def test_prop_command(self):
         context = helpers.MockContext()
 
