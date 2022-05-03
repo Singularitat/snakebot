@@ -632,6 +632,15 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
 
         context.reply.assert_called_with("tosahrwp lzebnmo y   uve qkfjehduco rtoix g")
 
+    async def test_rail_decode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.rail_decode(
+            self.cog, context, 7, message="tosahrwp lzebnmo y   uve qkfjehduco rtoix g"
+        )
+
+        context.reply.assert_called_with("the quick brown fox jumps over the lazy dog")
+
     async def test_prop_command(self):
         context = helpers.MockContext()
 
