@@ -641,6 +641,41 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
 
         context.reply.assert_called_with("the quick brown fox jumps over the lazy dog")
 
+    async def test_substitution_command(self):
+        context = helpers.MockContext()
+        context.invoked_subcommand = None
+
+        await self.cog.substitution(self.cog, context)
+
+        self.assertEqual(
+            context.reply.call_args.kwargs["embed"].description,
+            f"```Usage: {context.prefix}substitution [decode/encode]```",
+        )
+
+    async def test_substitution_encode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.substitution_encode(
+            self.cog,
+            context,
+            "key",
+            message="THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG",
+        )
+
+        context.reply.assert_called_with("SFB PTGYI EQNVM CNW HTLOR NUBQ SFB JKZX AND")
+
+    async def test_substitution_decode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.substitution_decode(
+            self.cog,
+            context,
+            "key",
+            message="SFB PTGYI EQNVM CNW HTLOR NUBQ SFB JKZX AND",
+        )
+
+        context.reply.assert_called_with("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG")
+
     async def test_prop_command(self):
         context = helpers.MockContext()
 
