@@ -664,6 +664,18 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
 
         context.reply.assert_called_with("SFB PTGYI EQNVM CNW HTLOR NUBQ SFB JKZX AND")
 
+    async def test_substitution_decode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.substitution_decode(
+            self.cog,
+            context,
+            "key",
+            message="SFB PTGYI EQNVM CNW HTLOR NUBQ SFB JKZX AND",
+        )
+
+        context.reply.assert_called_with("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG")
+
     async def test_prop_command(self):
         context = helpers.MockContext()
 
