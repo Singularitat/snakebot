@@ -558,12 +558,12 @@ class useful(commands.Cog):
         if not text:
             reference = ctx.message.reference
             if not reference or not reference.resolved:
-                return await ctx.send(
+                return await ctx.reply(
                     "Either reply to a message or use the text argument"
                 )
             text = reference.resolved.content
         if not text:
-            return await ctx.send("You need to reply to a message with text")
+            return await ctx.reply("You need to reply to a message with text")
 
         headers = {
             "Referer": "http://translate.google.com/",
@@ -601,7 +601,7 @@ class useful(commands.Cog):
                 for sentence in response:
                     translate_text += sentence[0].strip() + " "
 
-                return await ctx.send(translate_text)
+                return await ctx.reply(translate_text)
 
     @commands.command()
     async def weather(self, ctx, *, location="auckland"):
