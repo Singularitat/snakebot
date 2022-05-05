@@ -592,7 +592,7 @@ class music(commands.Cog):
         embeds = []
         length = len(songs)
 
-        for page in range(-(-len(length) // 10)):
+        for page in range(-(-length // 10)):
             queue = ""
             page = page * 10
             songs = songs[page : page + 10]
