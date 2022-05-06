@@ -699,6 +699,18 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
 
         context.reply.assert_called_with("AOL XBPJR IYVDU MVE QBTWZ VCLY AOL SHGF KVN")
 
+    async def test_vigenere_decode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.vigenere_decode(
+            self.cog,
+            context,
+            7,
+            message="AOL XBPJR IYVDU MVE QBTWZ VCLY AOL SHGF KVN",
+        )
+
+        context.reply.assert_called_with("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG")
+
     async def test_prop_command(self):
         context = helpers.MockContext()
 
