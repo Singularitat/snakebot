@@ -676,6 +676,29 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
 
         context.reply.assert_called_with("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG")
 
+    async def test_vigenere_command(self):
+        context = helpers.MockContext()
+        context.invoked_subcommand = None
+
+        await self.cog.vigenere(self.cog, context)
+
+        self.assertEqual(
+            context.reply.call_args.kwargs["embed"].description,
+            f"```Usage: {context.prefix}vigenere [decode/encode]```",
+        )
+
+    async def test_vigenere_encode_command(self):
+        context = helpers.MockContext()
+
+        await self.cog.vigenere_encode(
+            self.cog,
+            context,
+            7,
+            message="THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG",
+        )
+
+        context.reply.assert_called_with("AOL XBPJR IYVDU MVE QBTWZ VCLY AOL SHGF KVN")
+
     async def test_prop_command(self):
         context = helpers.MockContext()
 
