@@ -271,11 +271,6 @@ class VoiceState:
             self.voice.cleanup()
             self.voice = None
 
-    async def maybe_stop(self):
-        if not self.voice:
-            self.songs.clear()
-            self.audio_player.cancel()
-
 
 class Song:
     __slots__ = ("source", "requester")
@@ -371,16 +366,19 @@ class music(commands.Cog):
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before, after):
         """Gets when the bot has been disconnected from voice to do cleanup."""
-        if self.bot.user == member:
-            if not after.channel:
-                guild = member.guild.id
-                if guild in self.voice_states:
-                    voice_state = self.voice_states.pop(guild)
-                    await voice_state.maybe_stop()
-            elif before.channel != after.channel:
-                voice_state = self.voice_states.get(member.guild.id)
-                if voice_state and voice_state.voice:
-                    await voice_state.voice.move_to(after.channel)
+        guild = member.guild.id
+        channel = after.channel or before.channel
+        voice_states = channel.voice_states
+
+        if after.channel and before.channel != after.channel:
+            voice_state = self.voice_states.get(guild)
+            if voice_state and voice_state.voice:
+                await voice_state.voice.move_to(after.channel)
+
+        if self.bot.user.id in voice_states:
+            if len(voice_states) == 1 and guild in self.voice_states:
+                voice_state = self.voice_states.pop(guild)
+                await voice_state.stop()
 
     async def command_success(self, message):
         try:

@@ -208,35 +208,6 @@ class misc(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def vec4(self, ctx, *, value):
-        """Converts a hex value to RGBa scaled by 255 and vice versa.
-
-        value: str
-        """
-        embed = discord.Embed()
-
-        if value[1] == ".":
-            r, g, b, *_ = map(lambda x: round(float(x) * 255), value.split(", "))
-            decimal = (r << 16) + (g << 8) + b
-
-            embed.color = decimal
-            embed.description = f"```less\n{r:0>2X}{g:0>2X}{b:0>2X}```"
-            return await ctx.send(embed=embed)
-
-        decimal = int(value.lstrip("#"), 16)
-        embed.color = decimal
-
-        r, g, b = (
-            (decimal & 0xFF0000) >> 16,
-            (decimal & 0x00FF00) >> 8,
-            decimal & 0x0000FF,
-        )
-        embed.description = (
-            f"```less\n{r / 255:.5f}, {g / 255:.5f}, {b / 255:.5f}, 1.0```"
-        )
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def oneline(self, ctx, *, code=None):
         """Convert python 3 code into one line.
 
