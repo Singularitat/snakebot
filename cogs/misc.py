@@ -862,44 +862,6 @@ class misc(commands.Cog):
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
-    @commands.command()
-    async def bar(self, ctx, graph_data: commands.Greedy[int] = None):
-        """Sends a bar graph based of inputted numbers.
-
-        e.g: bar 1 2 3
-
-                     ____
-               ____ |    |
-         ____ |    ||    |
-        |    ||    ||    |
-        ------------------
-
-        graph_data: commands.Greedy[int]
-            A list of graph data.
-        """
-        max_val = max(graph_data)
-
-        if len(graph_data) * 6 * (max_val + 2) + max_val + 7 > 10000:
-            return
-
-        bar_graph = ""
-
-        for val in range(max_val + 1, 0, -1):
-            for index in range(len(graph_data)):
-                if graph_data[index] - val > -1:
-                    bar_graph += "|    |"
-                elif graph_data[index] - val == -1:
-                    bar_graph += " ____ "
-                else:
-                    bar_graph += "      "
-            bar_graph += "\n"
-        bar_graph += "------" * len(graph_data)
-
-        if len(graph_data) * 6 * (max_val + 2) + max_val + 7 > 2000:
-            return await ctx.send(file=discord.File(io.StringIO(bar_graph), "bar.txt"))
-
-        await ctx.send(f"```\n{bar_graph}```")
-
 
 def setup(bot: commands.Bot) -> None:
     """Starts misc cog."""
