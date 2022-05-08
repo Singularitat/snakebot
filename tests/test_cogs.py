@@ -693,7 +693,7 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
         await self.cog.vigenere_encode(
             self.cog,
             context,
-            7,
+            "7",
             message="THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG",
         )
 
@@ -705,7 +705,7 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
         await self.cog.vigenere_decode(
             self.cog,
             context,
-            7,
+            "7",
             message="AOL XBPJR IYVDU MVE QBTWZ VCLY AOL SHGF KVN",
         )
 
@@ -1418,30 +1418,6 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
             context.send.call_args.kwargs["embed"].color.value, 10038562
         )
 
-    async def test_vec4_command(self):
-        context = helpers.MockContext()
-        tests = (
-            ("#FF00FF", "```less\n1.00000, 0.00000, 1.00000, 1.0```"),
-            ("#264e94", "```less\n0.14902, 0.30588, 0.58039, 1.0```"),
-            ("#182fe1", "```less\n0.09412, 0.18431, 0.88235, 1.0```"),
-            ("50e828", "```less\n0.31373, 0.90980, 0.15686, 1.0```"),
-            ("3efe99", "```less\n0.24314, 0.99608, 0.60000, 1.0```"),
-            ("1.00000, 0.00000, 1.00000, 1.0", "```less\nFF00FF```"),
-            ("0.14902, 0.30588, 0.58039, 1.0", "```less\n264E94```"),
-            ("0.09412, 0.18431, 0.88235, 1.0", "```less\n182FE1```"),
-            ("0.31373, 0.90980, 0.15686, 1.0", "```less\n50E828```"),
-            ("0.24314, 0.99608, 0.60000", "```less\n3EFE99```"),
-        )
-
-        for color, result in tests:
-            with self.subTest(color=color):
-                await self.cog.vec4(self.cog, context, value=color)
-
-                embed = context.send.call_args.kwargs["embed"]
-
-                self.assertNotEqual(embed.color.value, 10038562)
-                self.assertEqual(embed.description, result)
-
     async def test_char_command(self):
         context = helpers.MockContext()
 
@@ -1618,25 +1594,6 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         await self.cog.slap(self.cog, context, member=helpers.MockMember())
 
         self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-
-    async def test_bar_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.bar(self.cog, context, graph_data=(1, 2, 3))
-
-        self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-        self.assertEqual(
-            context.send.call_args.args[0],
-            (
-                "```\n"
-                "             ____ \n"
-                "       ____ |    |\n"
-                " ____ |    ||    |\n"
-                "|    ||    ||    |\n"
-                "------------------"
-                "```"
-            ),
-        )
 
     async def test_rand_command(self):
         context = helpers.MockContext()
@@ -1897,8 +1854,8 @@ class UsefulCogTests(unittest.IsolatedAsyncioTestCase):
 
             await self.cog.translate(self.cog, context, text="안녕하십니까")
 
-            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-            self.assertEqual(context.send.call_args.args[0].lower(), "hello ")
+            self.assertIsNone(context.reply.call_args.kwargs.get("embed"))
+            self.assertEqual(context.reply.call_args.args[0].lower(), "hello ")
 
     async def news_command(self):
         with self.subTest(command="news"):
