@@ -624,7 +624,7 @@ class misc(commands.Cog):
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
-    @commands.command()
+    @commands.command(aliases=["ejson"])
     async def embedjson(self, ctx, message: discord.Message = None):
         """Converts the embed of a message to json.
 
@@ -635,8 +635,14 @@ class misc(commands.Cog):
 
         embed = discord.Embed(color=discord.Color.blurple())
 
-        if not message or not message.embeds:
-            embed.description = "```Message has no embed```"
+        if not message:
+            embed.title = "You need to reply to message or supply an id as an argument"
+            embed.color = discord.Color.dark_red()
+            return await ctx.send(embed=embed)
+
+        if not message.embeds:
+            embed.title = "Message has no embeds"
+            embed.color = discord.Color.dark_red()
             return await ctx.send(embed=embed)
 
         message_embed = message.embeds[0]
