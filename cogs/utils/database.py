@@ -80,7 +80,8 @@ class Database:
         member_id: bytes
         balance: float
         """
-        self.bal.put(member_id, f"{balance:50f}".rstrip("0").encode())
+        balance_bytes = f"{balance:50f}".rstrip("0").lstrip(" ").encode()
+        self.bal.put(member_id, balance_bytes or b"0.0")
         return balance
 
     def add_bal(self, member_id, amount: float):
