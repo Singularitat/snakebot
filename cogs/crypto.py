@@ -197,7 +197,7 @@ class crypto(commands.Cog):
         net_value = 0
         msg = (
             f"{member.display_name}'s crypto profile:\n\n"
-            "  Name:    Amount:      Price:             Percent Gain:\n"
+            "Name:    Amount:      Price:             Percent Gain:\n"
         )
 
         for crypto in cryptobal:
@@ -209,16 +209,16 @@ class crypto(commands.Cog):
                 if trade[0] > 0
             ]
             change = ((data["price"] / (sum(trades) / len(trades))) - 1) * 100
-            sign = "-" if change < 0 else "+"
+            color = "31" if change < 0 else "32"
 
             msg += (
-                f"{sign} {crypto + ':':<8} {cryptobal[crypto]['total']:<13.2f}"
-                f"${data['price']:<17.2f} {change:.2f}%\n"
+                f"[2;{color}m{crypto + ':':<8} {cryptobal[crypto]['total']:<13.2f}"
+                f"${data['price']:<17.2f} {change:.2f}%\n[0m"
             )
 
             net_value += cryptobal[crypto]["total"] * float(data["price"])
 
-        embed.description = f"```diff\n{msg}\nNet Value: ${net_value:.2f}```"
+        embed.description = f"```ansi\n{msg}\nNet Value: ${net_value:.2f}```"
         await ctx.send(embed=embed)
 
     @crypto.command()
