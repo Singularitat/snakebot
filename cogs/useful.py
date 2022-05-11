@@ -453,7 +453,8 @@ class useful(commands.Cog):
             messages = await resp.json()
 
         if not messages["hydra:totalItems"]:
-            embed.description = "```You haven't received any messages```"
+            embed.title = "You haven't received any messages"
+            embed.color = discord.Color.dark_red()
             return await ctx.send(embed=embed)
 
         for message in messages["hydra:member"]:
@@ -719,7 +720,8 @@ class useful(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not new_ctx.command:
-            embed.description = "```Command not found```"
+            embed.title = "Command not found"
+            embed.color = discord.Color.dark_red()
             return await ctx.send(embed=embed)
 
         start = time.perf_counter()
@@ -738,7 +740,8 @@ class useful(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not data:
-            embed.description = "```No message to snipe```"
+            embed.title = "No message to snipe"
+            embed.color = discord.Color.dark_red()
             return await ctx.send(embed=embed)
 
         message, author = orjson.loads(data)
@@ -757,7 +760,8 @@ class useful(commands.Cog):
         embed = discord.Embed(color=discord.Color.blurple())
 
         if not data:
-            embed.description = "```No message to snipe```"
+            embed.title = "No message to snipe"
+            embed.color = discord.Color.dark_red()
             return await ctx.send(embed=embed)
 
         original, edited, author = orjson.loads(data)
@@ -821,7 +825,8 @@ class useful(commands.Cog):
                     pass
 
             if images == {}:
-                embed.description = "```No images found```"
+                embed.title = "No images found"
+                embed.color = discord.Color.dark_red()
                 return await ctx.send(embed=embed)
 
             url, title = random.choice(list(images.items()))
@@ -868,7 +873,8 @@ class useful(commands.Cog):
                 images[data["dups"][0]["url"]] = data["snippet"]["title"]
 
             if not images:
-                embed.description = "```No images found```"
+                embed.title = "No images found"
+                embed.color = discord.Color.dark_red()
                 embed.set_footer(text="Safe search is enabled.")
                 return await ctx.send(embed=embed)
 
