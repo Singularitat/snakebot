@@ -457,9 +457,12 @@ class useful(commands.Cog):
             return await ctx.send(embed=embed)
 
         for message in messages["hydra:member"]:
+            intro = message.get("intro", "N/A")
+            subject = message.get("subject", "N/A")
+
             embed.add_field(
                 name=f"{message['from']['name']} [{message['from']['address']}]",
-                value=f"```Id: {message['id']}\nSubject: {message['subject']}\n\n{message['intro']}```",
+                value=f"```Id: {message['id']}\nSubject: {subject}\n\n{intro}```",
                 inline=False,
             )
 
