@@ -278,8 +278,45 @@ class moderation(commands.Cog):
         embed.description = "```{} Has {} warnings\n\n{}```".format(
             member.display_name,
             len(infractions["warnings"]),
-            "\n".join(infractions["warnings"]),
+            "\n".join([warning or "N/A" for warning in infractions["warnings"]]),
         )
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.has_permissions(manage_messages=True)
+    @commands.guild_only()
+    async def infractions(self, ctx, member: discord.Member):
+        """Shows all infractions of a member.
+
+        member: discord.Member
+        """
+        member_id = f"{ctx.guild.id}-{member.id}".encode()
+        inf = self.DB.infractions.get(member_id)
+
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if not inf:
+            embed.description = "No infractions found for member"
+            return await ctx.send(embed=embed)
+
+        inf = orjson.loads(inf)
+
+        def _format(infractions):
+            length = len(infractions)
+
+            message = f"{length}\n"
+            for i, infraction in enumerate(infractions, start=1):
+                message += "{}: {}\n".format(i, infraction or "No Reason Given")
+
+            return message
+
+        embed.description = "Warnings: {}\nMutes: {}\nKicks: {}\nBans: {}".format(
+            _format(inf["warnings"]),
+            _format(inf["mutes"]),
+            _format(inf["kicks"]),
+            _format(inf["bans"]),
+        )
+
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["mute"])
