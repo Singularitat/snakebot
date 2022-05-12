@@ -278,7 +278,7 @@ class moderation(commands.Cog):
         embed.description = "```{} Has {} warnings\n\n{}```".format(
             member.display_name,
             len(infractions["warnings"]),
-            "\n".join(infractions["warnings"]),
+            "\n".join([warning or "N/A" for warning in infractions["warnings"]]),
         )
         await ctx.send(embed=embed)
 
