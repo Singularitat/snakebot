@@ -71,7 +71,7 @@ class compsci(commands.Cog):
         key_lst = sorted(list(key))
 
         col = len(key)
-        row = -(-(msg_len) // col)  # -(-a // b) gets the ceil of a number
+        row = -(-(msg_len) // col)
 
         fill_amount = int((row * col) - msg_len)
         msg_lst.extend("_" * fill_amount)
@@ -82,7 +82,7 @@ class compsci(commands.Cog):
             index = key.index(key_lst[i])
             cipher.extend([row[index] for row in matrix])
 
-        await ctx.send("".join(cipher))
+        await ctx.reply("".join(cipher))
 
     @columnar.command(name="decode")
     async def columnar_decode(self, ctx, key, *, message):
@@ -110,7 +110,7 @@ class compsci(commands.Cog):
             sum([[c for (y, c) in sorted(zip(order, chunk))] for chunk in chunks], [])
         )
 
-        await ctx.send(decoded.strip("_"))
+        await ctx.reply(decoded.strip("_"))
 
     @commands.group()
     async def rail(self, ctx):
@@ -142,7 +142,7 @@ class compsci(commands.Cog):
             col += 1
             row += 1 if down else -1
 
-        await ctx.send("".join(sum(rail, [])))
+        await ctx.reply("".join(sum(rail, [])))
 
     @rail.command(name="decode")
     async def rail_decode(self, ctx, key: int, *, message):
@@ -180,7 +180,7 @@ class compsci(commands.Cog):
             col += 1
             row += 1 if down else -1
 
-        await ctx.send("".join(result))
+        await ctx.reply("".join(result))
 
     @commands.group()
     async def substitution(self, ctx):
@@ -447,14 +447,13 @@ class compsci(commands.Cog):
         .run py `\u200bprint("Example")`\u200b
 
         .run py `\u200b`\u200b`\u200bprint("Example")`\u200b`\u200b`\u200b
-
-        code: str
-            The code to run.
         """
         if ctx.message.attachments:
             file = ctx.message.attachments[0]
             lang = file.filename.split(".")[-1]
             code = (await file.read()).decode()
+        elif not code:
+            return await ctx.send_help(ctx.command)
         elif match := list(CODE_REGEX.finditer(code)):
             code, lang, alang = match[0].group("code", "lang", "alang")
             lang = lang or alang
@@ -462,13 +461,7 @@ class compsci(commands.Cog):
             code, lang = match[0].group("code", "lang")
 
         if not lang:
-            return await ctx.reply(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description="```You need to supply a language"
-                    " either as an arg or inside a codeblock```",
-                )
-            )
+            return await ctx.send_help(ctx.command)
 
         lang = lang.strip()
 
