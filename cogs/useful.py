@@ -709,29 +709,6 @@ class useful(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def time(self, ctx, *, command):
-        """Runs a command whilst timing it.
-
-        command: str
-            The command to run including arguments.
-        """
-        ctx.message.content = f"{ctx.prefix}{command}"
-        new_ctx = await self.bot.get_context(ctx.message, cls=type(ctx))
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if not new_ctx.command:
-            embed.title = "Command not found"
-            embed.color = discord.Color.dark_red()
-            return await ctx.send(embed=embed)
-
-        start = time.perf_counter()
-        await new_ctx.command.invoke(new_ctx)
-        end = time.perf_counter()
-
-        embed.description = f"`Time: {(end - start) * 1000:.2f}ms`"
-        await ctx.send(embed=embed)
-
-    @commands.command()
     @commands.guild_only()
     async def snipe(self, ctx):
         """Snipes the last deleted message."""
