@@ -624,7 +624,7 @@ class misc(commands.Cog):
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
-    @commands.command(aliases=["ejson"])
+    @commands.command(aliases=["ejson", "json"])
     async def embedjson(self, ctx, message: discord.Message = None):
         """Converts the embed of a message to json.
 
@@ -660,19 +660,6 @@ class misc(commands.Cog):
 
         embed.description = f"```json\n{json}```"
         await ctx.send(embed=embed)
-
-    @commands.command()
-    async def convert(self, ctx, number: int):
-        """Converts fahrenheit to celsius
-
-        number: int
-        """
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```{number}°F is {(number - 32) * (5/9):.2f}°C```",
-            )
-        )
 
     @commands.command(aliases=["id"])
     async def snowflake(self, ctx, snowflake: int):

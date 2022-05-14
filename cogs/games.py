@@ -805,7 +805,7 @@ class games(commands.Cog):
     async def putt(self, ctx):
         """Starts a game of Putt Party."""
         await self.game_invite(
-            763133495793942528,
+            945737671223947305,
             ctx,
             f"{ctx.guild.id}-putt".encode(),
             "There is another active Putt Party game",

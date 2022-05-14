@@ -26,7 +26,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
     YTDL_OPTIONS = {
         "format": "bestaudio/best",
         "extractaudio": True,
-        "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
         "restrictfilenames": True,
         "noplaylist": False,
         "nocheckcertificate": True,
@@ -235,7 +234,8 @@ class VoiceState:
                     async with timeout(180):
                         self.current = await self.songs.get()
                 except asyncio.TimeoutError:
-                    return await self.stop()
+                    self.bot.loop.create_task(self.stop())
+                    return
                 self.current.source.volume = self._volume
                 self.voice.play(self.current.source, after=self.play_next_song)
             else:
@@ -245,6 +245,7 @@ class VoiceState:
                 self.voice.play(self.now, after=self.play_next_song)
 
             if not self.voice:
+                self.bot.loop.create_task(self.stop())
                 return
 
             await self.next.wait()
@@ -284,7 +285,6 @@ class Song:
             queue = "Empty queue."
         else:
             queue = ""
-            print(songs[:5])
             for i, song in enumerate(songs[:5], start=0):
                 queue += (
                     f"`{i + 1}.` [**{song.source.title_limited_embed}**]"
@@ -659,6 +659,16 @@ class music(commands.Cog):
                 )
             )
 
+        total_songs = len(ctx.voice_state.songs)
+
+        if total_songs > 200:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.dark_red(),
+                    title="Too many songs in queue",
+                )
+            )
+
         if not ctx.voice_state.voice:
             ctx.voice_state.voice = await ctx.author.voice.channel.connect()
 
@@ -690,6 +700,11 @@ class music(commands.Cog):
                         await ctx.voice_state.songs.put(Song(source))
                     except discord.errors.HTTPException:
                         skipped += 1
+
+                    total_songs += 1
+
+                    if total_songs > 200:
+                        break
 
                 await ctx.send(f"Playlist added. Removed {skipped} songs.")
                 ctx.voice_state.processing = False
