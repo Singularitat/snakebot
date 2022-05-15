@@ -23,10 +23,14 @@ class RoleButton(discord.ui.Button["ButtonRoles"]):
 
         if user.get_role(self.role.id):
             await user.remove_roles(self.role)
-            await interaction.response.send_message(f"Removed {self.role.name} role", ephemeral=True)
+            await interaction.response.send_message(
+                f"Removed {self.role.name} role", ephemeral=True
+            )
         else:
             await user.add_roles(self.role)
-            await interaction.response.send_message(f"Added {self.role.name} role", ephemeral=True)
+            await interaction.response.send_message(
+                f"Added {self.role.name} role", ephemeral=True
+            )
 
 
 class ButtonRoles(discord.ui.View):
