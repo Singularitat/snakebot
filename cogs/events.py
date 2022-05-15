@@ -85,10 +85,7 @@ class events(commands.Cog):
         reaction: discord.Reaction
         user: Union[discord.User, discord.Member]
         """
-        if not reaction.is_custom_emoji():
-            return
-
-        if reaction.message.author == user:
+        if not reaction.is_custom_emoji() or reaction.message.author == user:
             return
 
         time_since = (
@@ -98,9 +95,11 @@ class events(commands.Cog):
         if time_since > 1800:
             return
 
-        if reaction.emoji.name.lower() == "downvote":
+        reaction_name = reaction.emoji.name.lower()
+
+        if reaction_name == "downvote":
             self.DB.add_karma(reaction.message.author.id, -1)
-        elif reaction.emoji.name.lower() == "upvote":
+        elif reaction_name == "upvote":
             self.DB.add_karma(reaction.message.author.id, 1)
 
     @commands.Cog.listener()
@@ -110,10 +109,7 @@ class events(commands.Cog):
         reaction: discord.Reaction
         user: Union[discord.User, discord.Member]
         """
-        if not reaction.is_custom_emoji():
-            return
-
-        if reaction.message.author == user:
+        if not reaction.is_custom_emoji() or reaction.message.author == user:
             return
 
         time_since = (
@@ -123,9 +119,11 @@ class events(commands.Cog):
         if time_since > 1800:
             return
 
-        if reaction.emoji.name.lower() == "downvote":
+        reaction_name = reaction.emoji.name.lower()
+
+        if reaction_name == "downvote":
             self.DB.add_karma(reaction.message.author.id, 1)
-        elif reaction.emoji.name.lower() == "upvote":
+        elif reaction_name == "upvote":
             self.DB.add_karma(reaction.message.author.id, -1)
 
     @commands.Cog.listener()
