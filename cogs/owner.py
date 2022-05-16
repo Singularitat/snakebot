@@ -552,67 +552,6 @@ class owner(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.group(invoke_without_command=True)
-    async def presence(self, ctx):
-        """Command group for changing the bots presence"""
-        embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = (
-            "```Usage: {}presence [game/streaming/listening/watching]```".format(
-                ctx.prefix
-            )
-        )
-        await ctx.send(embed=embed)
-
-    @presence.command()
-    async def game(self, ctx, *, name):
-        """Changes the bots status to playing a game.
-        In the format of 'Playing [name]'
-
-        name: str
-        """
-        await self.bot.change_presence(
-            status=discord.Status.online,
-            activity=discord.Game(name=name),
-        )
-
-    @presence.command()
-    async def streaming(self, ctx, url, *, name):
-        """Changes the bots status to streaming something.
-
-        url: str
-            The url of the stream
-        name: str
-            The name of the stream
-        """
-        await self.bot.change_presence(
-            status=discord.Status.online,
-            activity=discord.Streaming(url=url, name=name),
-        )
-
-    @presence.command()
-    async def listening(self, ctx, *, name):
-        """Changes the bots status to listening to something.
-        In the format of 'Listening to [name]'
-
-        name: str
-        """
-        await self.bot.change_presence(
-            status=discord.Status.online,
-            activity=discord.Activity(type=discord.ActivityType.listening, name=name),
-        )
-
-    @presence.command()
-    async def watching(self, ctx, *, name):
-        """Changes the bots status to listening to something.
-        In the format of 'Watching [name]'
-
-        name: str
-        """
-        await self.bot.change_presence(
-            status=discord.Status.online,
-            activity=discord.Activity(type=discord.ActivityType.watching, name=name),
-        )
-
     @commands.command()
     async def perf(self, ctx, *, command):
         """Checks the timing of a command, while attempting to suppress HTTP calls.
