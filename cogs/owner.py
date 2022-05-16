@@ -637,21 +637,6 @@ class owner(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["deletecmd", "removecmd"])
-    async def delete_command(self, ctx, command):
-        """Removes command from the bot.
-
-        command: str
-            The command to remove.
-        """
-        self.bot.remove_command(command)
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```Removed command {command}```",
-            )
-        )
-
     @commands.command()
     async def load(self, ctx, extension: str):
         """Loads an extension.
