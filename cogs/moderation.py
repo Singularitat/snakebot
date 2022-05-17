@@ -74,21 +74,6 @@ class moderation(commands.Cog):
         paginator = pages.Paginator(pages=invite_list)
         await paginator.send(ctx)
 
-    @commands.command(hidden=True)
-    @commands.guild_only()
-    async def inactive(self, ctx, days: int = 7):
-        """Gets how many people can be pruned.
-
-        days: int
-        """
-        inactive = await ctx.guild.estimate_pruned_members(days=days)
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```{inactive} members inactive for {days} days```",
-            )
-        )
-
     async def _end_poll(self, guild, message):
         """Ends a poll and sends the results."""
         polls = self.DB.main.get(b"polls")
@@ -416,18 +401,21 @@ class moderation(commands.Cog):
     @commands.command()
     @commands.has_permissions(ban_members=True)
     @commands.guild_only()
-    async def unban(self, ctx, name):
-        """Unbans a member based off their name.
+    async def unban(self, ctx, user: discord.User):
+        """Unbans a member based off their id.
 
-        name: str
+        user: discord.User
         """
         embed = discord.Embed(color=discord.Color.blurple())
-        for entry in await ctx.guild.bans():
-            if name == entry.user.name:
-                embed.description = "```User Unbanned.```"
+
+        async for entry in ctx.guild.bans():
+            if user == entry.user:
                 await ctx.guild.unban(entry.user)
+
+                embed.title = f"Unbanned {user}"
                 return await ctx.send(embed=embed)
-        embed.description = f"```User {name} Not Found.```"
+
+        embed.title = "Couldn't find user"
         await ctx.send(embed=embed)
 
     @commands.command(name="kick")
