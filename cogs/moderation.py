@@ -74,21 +74,6 @@ class moderation(commands.Cog):
         paginator = pages.Paginator(pages=invite_list)
         await paginator.send(ctx)
 
-    @commands.command(hidden=True)
-    @commands.guild_only()
-    async def inactive(self, ctx, days: int = 7):
-        """Gets how many people can be pruned.
-
-        days: int
-        """
-        inactive = await ctx.guild.estimate_pruned_members(days=days)
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"```{inactive} members inactive for {days} days```",
-            )
-        )
-
     async def _end_poll(self, guild, message):
         """Ends a poll and sends the results."""
         polls = self.DB.main.get(b"polls")
