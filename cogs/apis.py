@@ -496,16 +496,6 @@ class apis(commands.Cog):
         await ctx.send(data["file"])
 
     @commands.command()
-    async def insult(self, ctx):
-        """Insults you."""
-        url = "https://evilinsult.com/generate_insult.php?lang=en&type=json"
-
-        with ctx.typing():
-            data = await self.bot.get_json(url)
-
-        await ctx.send(data["insult"])
-
-    @commands.command()
     async def inspiration(self, ctx):
         """Uses zenquotes.io to get an inspirational quote."""
         url = "https://zenquotes.io/api/random"
