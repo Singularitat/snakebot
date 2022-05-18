@@ -897,31 +897,6 @@ class apis(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def nationalize(self, ctx, first_name):
-        """Estimate the nationality of a first name.
-
-        first_name: str
-        """
-        url = f"https://api.nationalize.io/?name={first_name}"
-
-        data = await self.bot.get_json(url)
-
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if not data["country"]:
-            embed.description = "```No results found```"
-            return await ctx.send(embed=embed)
-
-        embed.title = f"Estimates of the nationality of {data['name']}"
-
-        for country in data["country"]:
-            embed.add_field(
-                name=country["country_id"],
-                value=f"{country['probability'] * 100:.2f}%",
-            )
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def apod(self, ctx):
         """Gets the NASA Astronomy Picture of the Day."""
         url = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
