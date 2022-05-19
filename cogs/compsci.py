@@ -434,7 +434,7 @@ class compsci(commands.Cog):
         embed.description = f"```py\n{expr}\n\n>>> {result}```"
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(aliases=["r"])
     async def run(self, ctx, *, code=None):
         """Runs code.
 
