@@ -422,24 +422,6 @@ class apis(commands.Cog):
 
         await ctx.send(text.replace("\n\n\n", "\n"))
 
-    @commands.command()
-    async def poetry(self, ctx):
-        """Gets ai generated poetry."""
-        url = "https://boredhumans.com/api_poetry.php"
-
-        async with ctx.typing(), self.bot.client_session.post(
-            url, data={"lyrics1": True}
-        ) as resp:
-            data = await resp.json(content_type=None)
-
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                title=data["title"],
-                description=">>> " + data["lyrics"],
-            )
-        )
-
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.command(aliases=["complete"])
     async def synth(self, ctx, *, prompt: str):
