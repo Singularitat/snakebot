@@ -617,8 +617,13 @@ class useful(commands.Cog):
         url = f"http://wttr.in/{location}?format=j1"
         embed = discord.Embed(color=discord.Color.blurple())
 
-        async with ctx.typing():
-            data = await self.bot.get_json(url)
+        async with ctx.typing(), self.bot.client_session.get(url) as resp:
+            try:
+                data = await resp.json()
+            except ValueError:
+                embed.title = "Failed to get weather for that location"
+                embed.color = discord.Color.dark_red()
+                return await ctx.send(embed=embed)
 
             current = data["current_condition"][0]
             location = data["nearest_area"][0]
