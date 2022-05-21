@@ -228,22 +228,22 @@ class background_tasks(commands.Cog):
             "sec-fetch-dest": "document",
             "accept-language": "en-US,en;q=0.9",
         }
-        cookies = self.DB.main.get(b"stock-cookies")
-        if not cookies:
-            cookies = {}
+        current_cookies = self.DB.main.get(b"stock-cookies")
+        if not current_cookies:
+            current_cookies = {}
         else:
-            cookies = orjson.loads(cookies)
+            current_cookies = orjson.loads(current_cookies)
 
         async with self.bot.client_session.get(
-            url, headers=headers, cookies=cookies
+            url, headers=headers, cookies=current_cookies
         ) as resp:
-            new_cookies = {}
+            next_cookies = {}
             for header, value in resp.raw_headers:
                 if header != b"Set-Cookie":
                     continue
                 name, cookie = value.decode().split("=", 1)
-                new_cookies[name] = cookie.split(":", 1)[0]
-            self.DB.main.put(b"stock-cookies", orjson.dumps(cookies))
+                next_cookies[name] = cookie.split(":", 1)[0]
+            self.DB.main.put(b"stock-cookies", orjson.dumps(next_cookies))
             stocks = await resp.json()
 
         if not stocks:
