@@ -412,16 +412,6 @@ class apis(commands.Cog):
 
         await ctx.send(f"http://thiscitydoesnotexist.com{link}")
 
-    @commands.command()
-    async def story(self, ctx):
-        """Gets an ai generated story."""
-        url = "https://boredhumans.com/api_story.php"
-
-        async with ctx.typing(), self.bot.client_session.post(url) as resp:
-            text = await resp.text()
-
-        await ctx.send(text.replace("\n\n\n", "\n"))
-
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.command(aliases=["complete"])
     async def synth(self, ctx, *, prompt: str):
