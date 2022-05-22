@@ -5,7 +5,6 @@ import random
 import re
 import textwrap
 from datetime import datetime
-from html import unescape
 
 import discord
 from discord.ext import commands
@@ -637,39 +636,6 @@ class apis(commands.Cog):
                     color=discord.Color.blurple(), description=f"> {data['text']}"
                 )
             )
-
-    @commands.command(aliases=["so"])
-    async def stackoverflow(self, ctx, *, search):
-        """Gets stackoverflow posts based off a search.
-
-        search: str
-        """
-        url = (
-            "https://api.stackexchange.com/2.3/search/advanced?pagesize=5&"
-            f"order=asc&sort=relevance&q={search}&site=stackoverflow"
-        )
-
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        with ctx.typing():
-            posts = (await self.bot.get_json(url))["items"]
-
-            if not posts:
-                embed.description = "```No posts found```"
-                return await ctx.send(embed=embed)
-
-            for post in sorted(posts, key=lambda post: post["score"], reverse=True):
-                embed.add_field(
-                    name=f"`{unescape(post['title'])}`",
-                    value=f"""
-                    Score: {post['score']}
-                    Views: {post['view_count']}
-                    Tags: {', '.join(post['tags'][:3])}
-                    [Link]({post['link']})""",
-                    inline=False,
-                )
-
-        await ctx.send(embed=embed)
 
     @commands.command()
     async def kanye(self, ctx):
