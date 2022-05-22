@@ -597,6 +597,9 @@ class apis(commands.Cog):
 
         name: str
         """
+        if name.lower() == "nz":
+            name = "New Zealand"  # It gets Tanzania otherwise
+
         url = f"https://restcountries.com/v3.1/name/{name}"
         embed = discord.Embed(color=discord.Color.blurple())
 
