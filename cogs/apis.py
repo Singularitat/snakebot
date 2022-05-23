@@ -395,12 +395,6 @@ class apis(commands.Cog):
         await ctx.send(f"https://thisbeachdoesnotexist.com/data/seeds-075/{num}.jpg")
 
     @commands.command()
-    async def wojak(self, ctx):
-        """This wojak does not exist."""
-        num = random.randint(1, 1576)  # This how how they do it on their website
-        await ctx.send(f"https://thiswojakdoesnotexist.com/img/{num}.png")
-
-    @commands.command()
     async def city(self, ctx):
         """This city doesn't exist."""
         url = "https://thiscitydoesnotexist.com/"
