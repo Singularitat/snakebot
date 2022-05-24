@@ -153,14 +153,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
-    async def wojak_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="wojak"):
-            await self.cog.wojak(self.cog, context)
-
-            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-
     async def city_command(self):
         context = helpers.MockContext()
 
@@ -168,24 +160,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             await self.cog.city(self.cog, context)
 
             self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-
-    async def story_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="story"):
-            await self.cog.story(self.cog, context)
-
-            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-
-    async def poetry_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="poetry"):
-            await self.cog.poetry(self.cog, context)
-
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
 
     async def synth_command(self):
         context = helpers.MockContext()
@@ -210,14 +184,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
         with self.subTest(command="coffee"):
             await self.cog.coffee(self.cog, context)
-
-            self.assertIsNone(context.send.call_args.kwargs.get("embed"))
-
-    async def insult_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="insult"):
-            await self.cog.insult(self.cog, context)
 
             self.assertIsNone(context.send.call_args.kwargs.get("embed"))
 
@@ -291,19 +257,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```Country not found```")
-
-    async def stackoverflow_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="stackoverflow"):
-            await self.cog.stackoverflow(
-                self.cog, context, search="reverse a linked list"
-            )
-
-            embed = context.send.call_args.kwargs["embed"]
-
-            self.assertNotEqual(embed.color.value, 10038562)
-            self.assertNotEqual(embed.description, "```No posts found```")
 
     async def kanye_command(self):
         context = helpers.MockContext()
@@ -404,16 +357,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
         with self.subTest(command="apis search"):
             await self.cog.search(self.cog, context, search="cat")
-
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
-    async def nationalize_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="nationalize"):
-            await self.cog.nationalize(self.cog, context, first_name="Joe")
 
             self.assertNotEqual(
                 context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -1486,16 +1429,6 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
 
         context.send.assert_called_with("Oh yeah its all coming together")
 
-    async def test_convert_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.convert(self.cog, context, number=32)
-
-        self.assertEqual(
-            context.send.call_args.kwargs["embed"].description,
-            "```32°F is 0.00°C```",
-        )
-
     async def test_embedjson_command(self):
         context = helpers.MockContext()
 
@@ -1615,15 +1548,6 @@ class ModerationCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
         cls.cog = moderation(bot=bot)
-
-    async def test_inactive_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.inactive(self.cog, context)
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
 
     async def test_poll_command(self):
         context = helpers.MockContext()
