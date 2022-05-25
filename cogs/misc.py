@@ -152,6 +152,15 @@ class misc(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
+    @commands.command()
+    async def emoji(self, ctx, emoji: discord.Emoji):
+        """Gets the url to the image of an emoji."""
+        await ctx.send(
+            embed=discord.Embed(
+                color=discord.Color.blurple(), title="Image link", url=emoji.url
+            ).set_image(url=emoji.url)
+        )
+
     @commands.command(aliases=["tboard"])
     async def triviaboard(self, ctx):
         """Shows the top 10 trivia players."""
