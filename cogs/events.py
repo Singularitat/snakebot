@@ -3,7 +3,7 @@ import logging
 import os
 import platform
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import StringIO
 
 import discord
@@ -29,10 +29,64 @@ class DeleteButton(discord.ui.View):
                 await interaction.message.delete()
 
 
+class CooldownByContent(commands.CooldownMapping):
+    def _bucket_key(self, message: discord.Message) -> tuple[int, str]:
+        return (message.channel.id, message.content)
+
+
+class SpamChecker:
+    """Checks if someone is spamming via the below criteria
+    1) If a user has spammed more than 10 times in 12 seconds
+    2) If the content has been spammed 15 times in 17 seconds.
+    3) If a user has mentioned 40 people in 17 seconds.
+    """
+
+    def __init__(self):
+        self.by_content = CooldownByContent.from_cooldown(
+            15, 17.0, commands.BucketType.member
+        )
+        self.by_user = commands.CooldownMapping.from_cooldown(
+            10, 12.0, commands.BucketType.user
+        )
+
+        self.by_mentions = commands.CooldownMapping.from_cooldown(
+            40, 12, commands.BucketType.member
+        )
+
+    def is_spamming(self, message: discord.Message) -> bool:
+        if message.guild is None:
+            return False
+
+        current = message.created_at.timestamp()
+
+        user_bucket = self.by_user.get_bucket(message)
+        if user_bucket.update_rate_limit(current):
+            return True
+
+        content_bucket = self.by_content.get_bucket(message)
+        if content_bucket.update_rate_limit(current):
+            return True
+
+        if self.is_mention_spam(message, current):
+            return True
+
+        return False
+
+    def is_mention_spam(self, message: discord.Message, current: float) -> bool:
+        mention_bucket = self.by_mentions.get_bucket(message, current)
+        mention_count = sum(
+            not m.bot and m.id != message.author.id for m in message.mentions
+        )
+        mention_bucket._tokens -= mention_count - 1
+
+        return mention_bucket.update_rate_limit(current) is not None
+
+
 class events(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.DB = bot.DB
+        self.spam_checker = SpamChecker()
 
     async def poll_check(self, payload):
         """Keeps track of poll results.
@@ -276,32 +330,38 @@ class events(commands.Cog):
 
         message: discord.Message
         """
-        if message.guild:
-            guild = message.guild.id
+        guild_id = message.guild.id if message.guild else None
 
-            key = f"{guild}-{message.author.id}".encode()
-            count = self.DB.message_count.get(key)
-
-            if count:
-                count = int(count) + 1
-            else:
-                count = 1
-
-            self.DB.message_count.put(key, str(count).encode())
-
-            if key == b"815732601302155275-190747796452671488":
-                if message.content and not message.content.startswith("."):
-                    messages = orjson.loads(self.DB.main.get(b"justins-messages"))
-                    messages.append(message.content)
-                    self.DB.main.put(b"justins-messages", orjson.dumps(messages))
-        else:
-            guild = None
-
-        if self.DB.get_blacklist(message.author.id, guild) == b"1":
+        if self.DB.get_blacklist(message.author.id, guild_id) == b"1":
             try:
                 await message.add_reaction("<:downvote:766414744730206228>")
             except discord.errors.HTTPException:
                 pass
+
+        if not guild_id:
+            return
+
+        anti_spam = self.DB.main.get(f"anti_spam-{guild_id}".encode())
+        channel = message.channel.name.lower()
+
+        if anti_spam and channel != "bot" and self.spam_checker.is_spamming(message):
+            try:
+                await message.author.timeout(
+                    until=datetime.now() + timedelta(hours=1), reason="Spamming"
+                )
+            except (discord.errors.Forbidden, discord.errors.HTTPException):
+                pass
+
+        key = f"{guild_id}-{message.author.id}".encode()
+        count = self.DB.message_count.get(key)
+        # Add 1 to count and put it back into the database
+        self.DB.message_count.put(key, str(int(count) + 1).encode() if count else b"1")
+
+        if key == b"815732601302155275-190747796452671488":
+            if message.content and not message.content.startswith("."):
+                messages = orjson.loads(self.DB.main.get(b"justins-messages"))
+                messages.append(message.content)
+                self.DB.main.put(b"justins-messages", orjson.dumps(messages))
 
         match = GIST_REGEX.search(message.content)
 
@@ -313,6 +373,7 @@ class events(commands.Cog):
             if not data:
                 return
 
+            # We just want the first value in the dictionary
             file = data["files"].values().__iter__().__next__()
             content = file["content"]
             filename = file["filename"]
