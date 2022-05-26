@@ -89,6 +89,22 @@ class admin(commands.Cog):
             )
 
     @commands.command()
+    async def antispam(self, ctx):
+        """Toggles antispam on or off."""
+        key = f"anti_spam-{ctx.guild.id}".encode()
+        anti_spam = self.DB.main.get(key)
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        if anti_spam:
+            self.DB.main.delete(key)
+            embed.title = "Turned off anti spam"
+            return await ctx.send(embed=embed)
+        else:
+            self.DB.main.put(key, b"1")
+            embed.title = "Turned on anti spam"
+            return await ctx.send(embed=embed)
+
+    @commands.command()
     async def role(self, ctx, *, information):
         """Creates a button role message.
 
