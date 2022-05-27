@@ -99,10 +99,10 @@ class admin(commands.Cog):
             self.DB.main.delete(key)
             embed.title = "Turned off anti spam"
             return await ctx.send(embed=embed)
-        else:
-            self.DB.main.put(key, b"1")
-            embed.title = "Turned on anti spam"
-            return await ctx.send(embed=embed)
+
+        self.DB.main.put(key, b"1")
+        embed.title = "Turned on anti spam"
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def role(self, ctx, *, information):
