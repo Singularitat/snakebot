@@ -394,17 +394,6 @@ class apis(commands.Cog):
         num = random.randint(1, 9999)
         await ctx.send(f"https://thisbeachdoesnotexist.com/data/seeds-075/{num}.jpg")
 
-    @commands.command()
-    async def city(self, ctx):
-        """This city doesn't exist."""
-        url = "https://thiscitydoesnotexist.com/"
-
-        async with self.bot.client_session.get(url) as resp:
-            text = await resp.text()
-            link = re.search(r"<img src=\"\.(.*)\" alt=", text).group(1)
-
-        await ctx.send(f"http://thiscitydoesnotexist.com{link}")
-
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.command(aliases=["complete"])
     async def synth(self, ctx, *, prompt: str):
@@ -1190,7 +1179,7 @@ class apis(commands.Cog):
     @commands.command()
     async def xkcd(self, ctx):
         """Gets a random xkcd comic."""
-        await ctx.send(f"https://xkcd.com/{random.randint(0, 2622)}")
+        await ctx.send(f"https://xkcd.com/{random.randint(1, 2622)}")
 
     @commands.command(aliases=["urbandictionary"])
     async def urban(self, ctx, *, search):
