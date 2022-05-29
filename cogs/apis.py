@@ -193,30 +193,6 @@ class apis(commands.Cog):
         await ctx.reply(f"```py\n{formatted}```")
 
     @commands.command()
-    async def validate(self, ctx, domain: str):
-        """Checks if domains are disposable used to check if tempmail is detected as disposable.
-
-        domain: str
-        """
-        # This makes it so even if an email is passed in it is fine
-        domain = domain.split("@")[-1]
-
-        url = f"https://api.mailcheck.ai/domain/{domain}"
-        data = await self.bot.get_json(url)
-        embed = discord.Embed(color=discord.Color.blurple(), title=domain)
-
-        if "error" in data:
-            embed.description = f"```{data['error']}```"
-            await ctx.send(embed=embed)
-
-        if data["did_you_mean"]:
-            embed.add_field(name="Did you mean?", value=data["did_you_mean"])
-        embed.add_field(name="Disposable", value=data["disposable"])
-        embed.add_field(name="MX records", value=data["mx"])
-        embed.add_field(name="Status", value=data["status"])
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def advice(self, ctx):
         """Uses adviceslip.com to send you advice."""
         url = "https://api.adviceslip.com/advice"
