@@ -300,6 +300,14 @@ class images(commands.Cog):
         await self.dagpi(ctx, "comic", url)
 
     @commands.command()
+    async def cow(self, ctx, url: str = None):
+        """Projects an image onto a cow.
+
+        url: str
+        """
+        await self.jeyy(ctx, "cow", url)
+
+    @commands.command()
     async def matrix(self, ctx, url: str = None):
         """Adds a matrix overlay onto image.
 
