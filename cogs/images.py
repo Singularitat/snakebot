@@ -11,27 +11,33 @@ class images(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    async def dagpi(self, ctx, method, image_url):
-        if not image_url:
+    async def process_url(self, ctx, url):
+        if not url:
             if ctx.message.attachments:
-                image_url = ctx.message.attachments[0].url
-            elif ctx.message.reference and (message := ctx.message.reference.resolved):
+                return ctx.message.attachments[0].url
+
+            if ctx.message.reference and (message := ctx.message.reference.resolved):
                 if message.attachments:
-                    image_url = message.attachments[0].url
-                elif message.embeds:
-                    image_url = message.embeds[0].url
-            else:
-                image_url = ctx.author.display_avatar.url
-        elif image_url.isdigit():
-            user = self.bot.get_user(int(image_url))
-            if not user:
-                return await ctx.reply(
-                    embed=discord.Embed(
-                        color=discord.Color.blurple(),
-                        description="```Couldn't process id```",
-                    )
+                    return message.attachments[0].url
+
+                if message.embeds:
+                    return message.embeds[0].url
+
+            return ctx.author.display_avatar.url
+
+        user = await commands.UserConverter().convert(ctx, url)
+        return user.display_avatar.url
+
+    async def dagpi(self, ctx, method, image_url):
+        url = await self.process_url(ctx, image_url)
+
+        if not url:
+            return await ctx.reply(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="Couldn't find user",
                 )
-            image_url = user.display_avatar.url
+            )
 
         url = "https://dagpi.xyz/api/routes/dagpi-manip"
         data = {
@@ -68,26 +74,15 @@ class images(commands.Cog):
                 await ctx.reply(file=discord.File(fp=image, filename=filename))
 
     async def jeyy(self, ctx, endpoint, url):
+        url = await self.process_url(ctx, url)
+
         if not url:
-            if ctx.message.attachments:
-                url = ctx.message.attachments[0].url
-            elif ctx.message.reference and (message := ctx.message.reference.resolved):
-                if message.attachments:
-                    url = message.attachments[0].url
-                elif message.embeds:
-                    url = message.embeds[0].url
-            else:
-                url = ctx.author.display_avatar.url
-        elif url.isdigit():
-            user = self.bot.get_user(int(url))
-            if not user:
-                return await ctx.reply(
-                    embed=discord.Embed(
-                        color=discord.Color.blurple(),
-                        description="```Couldn't process id```",
-                    )
+            return await ctx.reply(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="Couldn't find user",
                 )
-            url = user.display_avatar.url
+            )
 
         url = f"https://api.jeyy.xyz/image/{endpoint}?image_url={url}"
 
