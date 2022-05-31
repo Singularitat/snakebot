@@ -25,19 +25,14 @@ class images(commands.Cog):
 
             return ctx.author.display_avatar.url
 
-        user = await commands.UserConverter().convert(ctx, url)
-        return user.display_avatar.url
+        try:
+            user = await commands.UserConverter().convert(ctx, url)
+            return user.display_avatar.url
+        except commands.UserNotFound:
+            return url
 
     async def dagpi(self, ctx, method, image_url):
-        url = await self.process_url(ctx, image_url)
-
-        if not url:
-            return await ctx.reply(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    title="Couldn't find user",
-                )
-            )
+        image_url = await self.process_url(ctx, image_url)
 
         url = "https://dagpi.xyz/api/routes/dagpi-manip"
         data = {
@@ -47,6 +42,7 @@ class images(commands.Cog):
         }
         headers = {
             "content-type": "text/plain;charset=UTF-8",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36",
         }
 
         async with ctx.typing(), self.bot.client_session.post(
@@ -76,17 +72,9 @@ class images(commands.Cog):
     async def jeyy(self, ctx, endpoint, url):
         url = await self.process_url(ctx, url)
 
-        if not url:
-            return await ctx.reply(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    title="Couldn't find user",
-                )
-            )
+        api_url = f"https://api.jeyy.xyz/image/{endpoint}?image_url={url}"
 
-        url = f"https://api.jeyy.xyz/image/{endpoint}?image_url={url}"
-
-        async with ctx.typing(), self.bot.client_session.get(url, timeout=30) as resp:
+        async with ctx.typing(), self.bot.client_session.get(api_url, timeout=30) as resp:
             if resp.status != 200:
                 return await ctx.reply(
                     embed=discord.Embed(
