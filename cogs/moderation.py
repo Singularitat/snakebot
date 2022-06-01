@@ -19,6 +19,7 @@ class moderation(commands.Cog):
         self.loop = bot.loop
         self.handles = {}
 
+    @commands.has_permissions(moderate_members=True)
     @commands.command()
     async def invites(self, ctx, member: discord.User = None):
         """Shows the invites that users joined from.
@@ -194,18 +195,6 @@ class moderation(commands.Cog):
 
         self.handles[message_id].cancel()
         self.handles.pop(message_id)
-
-    @commands.command()
-    @commands.has_permissions(manage_nicknames=True)
-    @commands.guild_only()
-    async def nick(self, ctx, member: discord.Member, *, nickname):
-        """Changes a members nickname.
-
-        member: discord.Member
-        nickname: str
-        """
-        await member.edit(nick=nickname)
-        await ctx.send(f"Changed {member.display_name}'s nickname to {nickname}'")
 
     @commands.command(name="warn")
     @commands.has_permissions(manage_messages=True)

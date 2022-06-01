@@ -74,7 +74,9 @@ class images(commands.Cog):
 
         api_url = f"https://api.jeyy.xyz/image/{endpoint}?image_url={url}"
 
-        async with ctx.typing(), self.bot.client_session.get(api_url, timeout=30) as resp:
+        async with ctx.typing(), self.bot.client_session.get(
+            api_url, timeout=30
+        ) as resp:
             if resp.status != 200:
                 return await ctx.reply(
                     embed=discord.Embed(
