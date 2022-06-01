@@ -11,27 +11,28 @@ class images(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    async def dagpi(self, ctx, method, image_url):
-        if not image_url:
+    async def process_url(self, ctx, url):
+        if not url:
             if ctx.message.attachments:
-                image_url = ctx.message.attachments[0].url
-            elif ctx.message.reference and (message := ctx.message.reference.resolved):
+                return ctx.message.attachments[0].url
+
+            if ctx.message.reference and (message := ctx.message.reference.resolved):
                 if message.attachments:
-                    image_url = message.attachments[0].url
-                elif message.embeds:
-                    image_url = message.embeds[0].url
-            else:
-                image_url = ctx.author.display_avatar.url
-        elif image_url.isdigit():
-            user = self.bot.get_user(int(image_url))
-            if not user:
-                return await ctx.reply(
-                    embed=discord.Embed(
-                        color=discord.Color.blurple(),
-                        description="```Couldn't process id```",
-                    )
-                )
-            image_url = user.display_avatar.url
+                    return message.attachments[0].url
+
+                if message.embeds:
+                    return message.embeds[0].url
+
+            return ctx.author.display_avatar.url
+
+        try:
+            user = await commands.UserConverter().convert(ctx, url)
+            return user.display_avatar.url
+        except commands.UserNotFound:
+            return url
+
+    async def dagpi(self, ctx, method, image_url):
+        image_url = await self.process_url(ctx, image_url)
 
         url = "https://dagpi.xyz/api/routes/dagpi-manip"
         data = {
@@ -41,6 +42,7 @@ class images(commands.Cog):
         }
         headers = {
             "content-type": "text/plain;charset=UTF-8",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36",
         }
 
         async with ctx.typing(), self.bot.client_session.post(
@@ -68,30 +70,11 @@ class images(commands.Cog):
                 await ctx.reply(file=discord.File(fp=image, filename=filename))
 
     async def jeyy(self, ctx, endpoint, url):
-        if not url:
-            if ctx.message.attachments:
-                url = ctx.message.attachments[0].url
-            elif ctx.message.reference and (message := ctx.message.reference.resolved):
-                if message.attachments:
-                    url = message.attachments[0].url
-                elif message.embeds:
-                    url = message.embeds[0].url
-            else:
-                url = ctx.author.display_avatar.url
-        elif url.isdigit():
-            user = self.bot.get_user(int(url))
-            if not user:
-                return await ctx.reply(
-                    embed=discord.Embed(
-                        color=discord.Color.blurple(),
-                        description="```Couldn't process id```",
-                    )
-                )
-            url = user.display_avatar.url
+        url = await self.process_url(ctx, url)
 
-        url = f"https://api.jeyy.xyz/image/{endpoint}?image_url={url}"
+        api_url = f"https://api.jeyy.xyz/image/{endpoint}?image_url={url}"
 
-        async with ctx.typing(), self.bot.client_session.get(url, timeout=30) as resp:
+        async with ctx.typing(), self.bot.client_session.get(api_url, timeout=30) as resp:
             if resp.status != 200:
                 return await ctx.reply(
                     embed=discord.Embed(
@@ -298,6 +281,14 @@ class images(commands.Cog):
         url: str
         """
         await self.dagpi(ctx, "comic", url)
+
+    @commands.command()
+    async def cow(self, ctx, url: str = None):
+        """Projects an image onto a cow.
+
+        url: str
+        """
+        await self.jeyy(ctx, "cow", url)
 
     @commands.command()
     async def matrix(self, ctx, url: str = None):
