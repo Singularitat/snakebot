@@ -330,6 +330,9 @@ class events(commands.Cog):
 
         message: discord.Message
         """
+        if message.author.bot:
+            return
+
         guild_id = message.guild.id if message.guild else None
 
         if self.DB.get_blacklist(message.author.id, guild_id) == b"1":
