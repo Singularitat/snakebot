@@ -554,8 +554,13 @@ class events(commands.Cog):
 
         elif isinstance(error, commands.errors.CommandOnCooldown):
             cooldown = int(error.cooldown.get_retry_after())
-            message = "You are on cooldown. Try again in {} hours {} minutes and {} seconds".format(
-                cooldown // 3600, (cooldown % 3600) // 60, (cooldown % 3600) % 60
+            # hours, minutes, seconds = cooldown // 3600, (cooldown % 3600) // 60, (cooldown % 3600) % 60
+            hours, seconds = divmod(cooldown, 3600)
+            minutes, seconds = divmod(seconds, 60)
+            message = "You are on cooldown. Try again in {}{}{} seconds".format(
+                f"{hours} hours " if hours else "",
+                f"{minutes} minutes and " if minutes else "",
+                seconds,
             )
 
         elif isinstance(error, discord.Forbidden):
