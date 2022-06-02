@@ -193,16 +193,6 @@ class apis(commands.Cog):
         await ctx.reply(f"```py\n{formatted}```")
 
     @commands.command()
-    async def advice(self, ctx):
-        """Uses adviceslip.com to send you advice."""
-        url = "https://api.adviceslip.com/advice"
-
-        async with self.bot.client_session.get(url) as resp:
-            data = await resp.json(content_type=None)
-
-        await ctx.send("> " + data["slip"]["advice"])
-
-    @commands.command()
     async def t0(self, ctx, *, prompt: str):
         """Uses the T0 model to do natural language processing on a prompt.
 
@@ -363,12 +353,6 @@ class apis(commands.Cog):
             f"notexist.appspot.com/o/images%2Fseed{num:0>4}.jpg?alt=media"
         )
         await ctx.send(url)
-
-    @commands.command()
-    async def beach(self, ctx):
-        """Uses thisbeachdoesnotexist.com to gets an ai generated beach."""
-        num = random.randint(1, 9999)
-        await ctx.send(f"https://thisbeachdoesnotexist.com/data/seeds-075/{num}.jpg")
 
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.command(aliases=["complete"])
