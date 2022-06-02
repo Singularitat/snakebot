@@ -354,12 +354,6 @@ class apis(commands.Cog):
         )
         await ctx.send(url)
 
-    @commands.command()
-    async def beach(self, ctx):
-        """Uses thisbeachdoesnotexist.com to gets an ai generated beach."""
-        num = random.randint(1, 9999)
-        await ctx.send(f"https://thisbeachdoesnotexist.com/data/seeds-075/{num}.jpg")
-
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.command(aliases=["complete"])
     async def synth(self, ctx, *, prompt: str):
