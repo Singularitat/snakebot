@@ -344,16 +344,6 @@ class apis(commands.Cog):
             view=DeleteButton(ctx.author),
         )
 
-    @commands.command()
-    async def sky(self, ctx):
-        """Gets an ai generated night sky."""
-        num = random.randint(1, 5000)
-        url = (
-            "https://firebasestorage.googleapis.com/v0/b/thisnightskydoes"
-            f"notexist.appspot.com/o/images%2Fseed{num:0>4}.jpg?alt=media"
-        )
-        await ctx.send(url)
-
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.command(aliases=["complete"])
     async def synth(self, ctx, *, prompt: str):
