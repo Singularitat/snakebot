@@ -383,15 +383,6 @@ class apis(commands.Cog):
         )
 
     @commands.command()
-    async def art(self, ctx):
-        """Gets an ai generated painting."""
-        url = "https://thisartworkdoesnotexist.com"
-
-        async with ctx.typing(), self.bot.client_session.get(url) as resp:
-            with io.BytesIO((await resp.read())) as image_binary:
-                await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
-
-    @commands.command()
     async def coffee(self, ctx):
         """Gets a random image of coffee."""
         url = "https://coffee.alexflipnote.dev/random.json"
