@@ -794,28 +794,6 @@ class apis(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def trends(self, ctx, *, country="new zealand"):
-        """Gets the current google search trends in a country.
-
-        country: str
-        """
-        url = "https://trends.google.com/trends/hottrends/visualize/internal/data"
-        country = country.lower()
-        if country != "new zealand":
-            country = country.replace(" ", "_")
-
-        data = await self.bot.get_json(url)
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if country not in data:
-            embed.description = f"```Country {country.title()} not found.```"
-            return await ctx.send(embed=embed)
-
-        embed.title = f"{country.title()} Search Trends"
-        embed.description = "```{}```".format("\n".join(data[country]))
-        await ctx.send(embed=embed)
-
     @commands.command(name="dadjoke")
     async def dad_joke(self, ctx):
         """Gets a random dad joke."""
