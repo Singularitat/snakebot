@@ -794,17 +794,6 @@ class apis(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(name="dadjoke")
-    async def dad_joke(self, ctx):
-        """Gets a random dad joke."""
-        url = "https://icanhazdadjoke.com/"
-        headers = {"Accept": "application/json"}
-
-        async with self.bot.client_session.get(url, headers=headers) as resp:
-            data = await resp.json()
-
-            await ctx.reply(data["joke"])
-
     @commands.command()
     async def cocktail(self, ctx, *, name=None):
         """Searchs for a cocktail and gets a random result by default.
