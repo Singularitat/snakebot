@@ -417,6 +417,7 @@ class games(commands.Cog):
         `.putt`      (Putt Party) - Mini golf game
         `.ocho`      (Blazing 8s) - A Crazy Eights variation
         `.land`      (Land.io) - Snake inspired arcade game
+        `.bobble`    (Bobble League)
         """
         embed.set_footer(text="Games are still in beta and may be broken")
         await ctx.send(embed=embed)
@@ -833,6 +834,16 @@ class games(commands.Cog):
             "There is another active Land.io game",
         )
 
+    @commands.command()
+    @commands.guild_only()
+    async def bobble(self, ctx):
+        """Starts a game of Bobble League."""
+        await self.game_invite(
+            947957217959759964,
+            ctx,
+            f"{ctx.guild.id}-bobble".encode(),
+            "There is another Bobble League game",
+        )
 
 def setup(bot: commands.Bot) -> None:
     """Starts the games cog."""
