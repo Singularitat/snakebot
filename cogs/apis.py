@@ -391,19 +391,6 @@ class apis(commands.Cog):
         await ctx.send(data["file"])
 
     @commands.command()
-    async def inspiration(self, ctx):
-        """Uses zenquotes.io to get an inspirational quote."""
-        url = "https://zenquotes.io/api/random"
-
-        async with self.bot.client_session.get(url) as resp:
-            data = (await resp.json(content_type=None))[0]
-
-        embed = discord.Embed(color=discord.Color.blurple(), description=data["q"])
-        embed.set_footer(text=f"― {data['a']}")
-
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def inspiro(self, ctx):
         """Gets images from inspirobot.me an ai quote generator."""
         url = "https://inspirobot.me/api?generate=true"
@@ -793,39 +780,6 @@ class apis(commands.Cog):
             """
         )
         await ctx.send(embed=embed)
-
-    @commands.command()
-    async def trends(self, ctx, *, country="new zealand"):
-        """Gets the current google search trends in a country.
-
-        country: str
-        """
-        url = "https://trends.google.com/trends/hottrends/visualize/internal/data"
-        country = country.lower()
-        if country != "new zealand":
-            country = country.replace(" ", "_")
-
-        data = await self.bot.get_json(url)
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if country not in data:
-            embed.description = f"```Country {country.title()} not found.```"
-            return await ctx.send(embed=embed)
-
-        embed.title = f"{country.title()} Search Trends"
-        embed.description = "```{}```".format("\n".join(data[country]))
-        await ctx.send(embed=embed)
-
-    @commands.command(name="dadjoke")
-    async def dad_joke(self, ctx):
-        """Gets a random dad joke."""
-        url = "https://icanhazdadjoke.com/"
-        headers = {"Accept": "application/json"}
-
-        async with self.bot.client_session.get(url, headers=headers) as resp:
-            data = await resp.json()
-
-            await ctx.reply(data["joke"])
 
     @commands.command()
     async def cocktail(self, ctx, *, name=None):
