@@ -391,19 +391,6 @@ class apis(commands.Cog):
         await ctx.send(data["file"])
 
     @commands.command()
-    async def inspiration(self, ctx):
-        """Uses zenquotes.io to get an inspirational quote."""
-        url = "https://zenquotes.io/api/random"
-
-        async with self.bot.client_session.get(url) as resp:
-            data = (await resp.json(content_type=None))[0]
-
-        embed = discord.Embed(color=discord.Color.blurple(), description=data["q"])
-        embed.set_footer(text=f"― {data['a']}")
-
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def inspiro(self, ctx):
         """Gets images from inspirobot.me an ai quote generator."""
         url = "https://inspirobot.me/api?generate=true"
