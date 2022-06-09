@@ -403,20 +403,11 @@ class games(commands.Cog):
         )
 
         embed.description = """
-        `.chess`     (Chess in the Park)
-        `.poker`     (Poker Night)
         `.betrayal`  (Betrayal.io)
         `.fishing`   (Fishington.io)
-        `.youtube`   (Watch Together)
-        `.spell`     (SpellCast) - A scrabble like game
         `.word`      (Word Snacks) - A word wheel like game
-        `.scrabble`  (Letter League)
-        `.doodle`    (Sketch Heads) - Basically skribblio
         `.awkword`   (Awkword) - Create sentences and vote on the best sentences
         `.sketchy`   (Sketchy Artist)
-        `.putt`      (Putt Party) - Mini golf game
-        `.ocho`      (Blazing 8s) - A Crazy Eights variation
-        `.land`      (Land.io) - Snake inspired arcade game
         `.bobble`    (Bobble League)
         """
         embed.set_footer(text="Games are still in beta and may be broken")
@@ -671,28 +662,6 @@ class games(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def chess(self, ctx):
-        """Starts a Chess In The Park game."""
-        await self.game_invite(
-            832012774040141894,
-            ctx,
-            f"{ctx.guild.id}-chess".encode(),
-            "There is another active Chess In The Park game",
-        )
-
-    @commands.command()
-    @commands.guild_only()
-    async def poker(self, ctx):
-        """Starts a Discord Poke Night."""
-        await self.game_invite(
-            755827207812677713,
-            ctx,
-            f"{ctx.guild.id}-poker_night".encode(),
-            "There is another active Poker Night game",
-        )
-
-    @commands.command()
-    @commands.guild_only()
     async def betrayal(self, ctx):
         """Starts a Betrayal.io game."""
         await self.game_invite(
@@ -715,28 +684,6 @@ class games(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def youtube(self, ctx):
-        """Starts discord Watch Together."""
-        await self.game_invite(
-            880218394199220334,
-            ctx,
-            f"{ctx.guild.id}-youtube_together".encode(),
-            "There is another active Watch Together",
-        )
-
-    @commands.command()
-    @commands.guild_only()
-    async def spell(self, ctx):
-        """Starts a game of Spell Cast."""
-        await self.game_invite(
-            852509694341283871,
-            ctx,
-            f"{ctx.guild.id}-spellcast".encode(),
-            "There is another active SpellCast game",
-        )
-
-    @commands.command()
-    @commands.guild_only()
     async def word(self, ctx):
         """Starts a game of Word Snacks."""
         await self.game_invite(
@@ -744,39 +691,6 @@ class games(commands.Cog):
             ctx,
             f"{ctx.guild.id}-snacks".encode(),
             "There is another active Word Snacks game",
-        )
-
-    @commands.command()
-    @commands.guild_only()
-    async def scrabble(self, ctx):
-        """Starts a game of Letter League."""
-        await self.game_invite(
-            879863686565621790,
-            ctx,
-            f"{ctx.guild.id}-tile".encode(),
-            "There is another active Letter League game",
-        )
-
-    @commands.command()
-    @commands.guild_only()
-    async def doodle(self, ctx):
-        """Starts a game of Sketch Heads."""
-        await self.game_invite(
-            902271654783242291,
-            ctx,
-            f"{ctx.guild.id}-doodle".encode(),
-            "There is another active Sketch Heads game",
-        )
-
-    @commands.command()
-    @commands.guild_only()
-    async def checkers(self, ctx):
-        """Starts a game of Checkers In The Park."""
-        await self.game_invite(
-            832013003968348200,
-            ctx,
-            f"{ctx.guild.id}-checkers".encode(),
-            "There is another active Checkers In The Park game",
         )
 
     @commands.command()
@@ -799,39 +713,6 @@ class games(commands.Cog):
             ctx,
             f"{ctx.guild.id}-sketchy".encode(),
             "There is another active Sketchy Artist game",
-        )
-
-    @commands.command()
-    @commands.guild_only()
-    async def putt(self, ctx):
-        """Starts a game of Putt Party."""
-        await self.game_invite(
-            945737671223947305,
-            ctx,
-            f"{ctx.guild.id}-putt".encode(),
-            "There is another active Putt Party game",
-        )
-
-    @commands.command()
-    @commands.guild_only()
-    async def ocho(self, ctx):
-        """Starts a game of Blazing 8s."""
-        await self.game_invite(
-            832025144389533716,
-            ctx,
-            f"{ctx.guild.id}-ocho".encode(),
-            "There is another active Blazing 8s game",
-        )
-
-    @commands.command()
-    @commands.guild_only()
-    async def land(self, ctx):
-        """Starts a Land.io game."""
-        await self.game_invite(
-            903769130790969345,
-            ctx,
-            f"{ctx.guild.id}-landio".encode(),
-            "There is another active Land.io game",
         )
 
     @commands.command()
