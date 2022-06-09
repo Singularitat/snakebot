@@ -726,6 +726,7 @@ class games(commands.Cog):
             "There is another Bobble League game",
         )
 
+
 def setup(bot: commands.Bot) -> None:
     """Starts the games cog."""
     bot.add_cog(games(bot))
