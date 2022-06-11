@@ -850,20 +850,6 @@ class misc(commands.Cog):
         """Oh yeah its all coming together."""
         await ctx.send("Oh yeah its all coming together")
 
-    @commands.command()
-    async def slap(self, ctx, member: discord.Member, *, reason="they are evil"):
-        """Slaps a member.
-
-        member: discord.Member
-            The member to slap.
-        reason: str
-            The reason for the slap.
-        """
-        await ctx.send(
-            f"{ctx.author.mention} slapped {member.mention} because {reason}",
-            allowed_mentions=discord.AllowedMentions.none(),
-        )
-
 
 def setup(bot: commands.Bot) -> None:
     """Starts misc cog."""
