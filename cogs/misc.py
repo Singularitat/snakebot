@@ -692,13 +692,6 @@ class misc(commands.Cog):
         embed.add_field(name="Increment", value=snowflake & 0xFFF, inline=False)
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def rand(self, ctx, a: int, b: int):
-        """Gets a random number such that a <= N <= b"""
-        if a > b:
-            a, b = b, a
-        await ctx.reply(random.randint(a, b))
-
     @commands.command(name="8ball")
     async def eightball(self, ctx):
         """Seek advice or fortune-telling."""
