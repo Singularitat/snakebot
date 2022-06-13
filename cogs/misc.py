@@ -401,15 +401,6 @@ class misc(commands.Cog):
         await paginator.send(ctx)
 
     @commands.command()
-    async def epoch(self, ctx, epoch: int):
-        """Converts epoch time to relative time.
-
-        epoch: int
-            The epoch time to convert can be seconds, milliseconds, microseconds.
-        """
-        await ctx.send(f"<t:{str(epoch)[:10]}:R>")
-
-    @commands.command()
     async def color(self, ctx, color):
         """Gets information about a hex color.
 
