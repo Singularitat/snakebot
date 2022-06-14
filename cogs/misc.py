@@ -1,5 +1,4 @@
 import io
-import math
 import random
 import re
 import unicodedata
@@ -96,51 +95,6 @@ ALT_NAMES = {
     "Tenth": "Tenth Doctor",
     "Doctor": "Tenth Doctor",
 }
-
-BIG_NUMS = (
-    "",
-    "Thousand",
-    "Million",
-    "Billion",
-    "Trillion",
-    "Quadrillion",
-    "Quintillion",
-    "Sextillion",
-    "Septillion",
-    "Octillion",
-    "Nonillion",
-    "Decillion",
-    "Undecillion",
-    "Duodecillion",
-    "Tredecillion",
-    "Quattuordecillion",
-    "Quindecillion",
-    "Sexdecillion",
-    "Septendecillion",
-    "Octodecillion",
-    "Novemdecillion",
-    "Vigintillion",
-    "Unvigintillion",
-    "Duovigintillion",
-    "Tresvigintillion",
-    "Quattuorvigintillion",
-    "Quinvigintillion",
-    "Sesvigintillion",
-    "Septemvigintillion",
-    "Octovigintillion",
-    "Novemvigintillion",
-    "Trigintillion",
-    "Untrigintillion",
-    "Duotrigintillion",
-    "Trestrigintillion",
-    "Quattuortrigintillion",
-    "Quintrigintillion",
-    "Sestrigintillion",
-    "Septentrigintillion",
-    "Octotrigintillion",
-    "Noventrigintillion",
-    "Quadragintillion",
-)
 
 opcodes = opcode.opmap
 
@@ -239,26 +193,6 @@ class misc(commands.Cog):
 
         code = code.replace("`", "`\u200b")
         await ctx.reply(f"```py\n{code}```")
-
-    @commands.command()
-    async def num(self, ctx, num: int):
-        """Parses a number into short scale form.
-
-        num: int
-        """
-        prefix = ""
-        if num < 0:
-            num = abs(num)
-            prefix = "-"
-        index = math.floor(math.log10(num) / 3) if num // 1 else 0
-        if index > 41:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.red(),
-                    description="Largest number that can be shown is Quadragintillion (126 digits)",
-                )
-            )
-        return await ctx.send(f"{prefix}{num/10**(3*index):.1f} {BIG_NUMS[index]}")
 
     @commands.command(aliases=["commits"])
     async def dcommits(self, ctx):
