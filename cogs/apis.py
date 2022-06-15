@@ -749,7 +749,7 @@ class apis(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     async def trivia(self, ctx, difficulty="easy"):
         """Does a simple trivia game.
 
@@ -782,6 +782,61 @@ class apis(commands.Cog):
         await ctx.reply(
             embed=embed, view=Trivia(self.DB, ctx.author, embed, correct, options)
         )
+
+    @trivia.command(aliases=["scoreboard"])
+    async def board(self, ctx):
+        """Shows the top 10 trivia players."""
+        users = []
+        for user, stats in self.DB.trivia_wins:
+            wins, losses = map(int, stats.decode().split(":"))
+            user = self.bot.get_user(int(user.decode()))
+            if not user:
+                continue
+            win_rate = (wins / (wins + losses)) * 100
+            users.append((wins, losses, win_rate, user.display_name))
+
+        users.sort(reverse=True)
+        top_users = []
+
+        for wins, losses, win_rate, user in users[:10]:
+            top_users.append(f"{user:<20} {wins:>5} | {losses:<7}| {win_rate:.2f}%")
+
+        embed = discord.Embed(
+            color=discord.Color.blurple(), title=f"Top {len(top_users)} Trivia Players"
+        )
+        embed.description = (
+            "```prolog\n                      wins | losses | win rate\n{}```"
+        ).format("\n".join(top_users))
+
+        await ctx.send(embed=embed)
+
+    @trivia.command()
+    async def stats(self, ctx, user: discord.User = None):
+        """Shows the trivia stats of a user.
+
+        user: discord.User
+            The user to show the stats of.
+        """
+        user = user or ctx.author
+        key = str(user.id).encode()
+        embed = discord.Embed(color=discord.Color.blurple())
+
+        stats = self.DB.trivia_wins.get(key)
+
+        if not stats:
+            embed.title = "You haven't played trivia yet"
+            return await ctx.send(embed=embed)
+
+        wins, losses = map(int, stats.decode().split(":"))
+
+        embed.title = f"{user.display_name}'s Trivia Stats"
+        embed.description = (
+            f"**Win Rate:** {(wins / (wins + losses)) * 100:.2f}%\n"
+            f"**Wins:** {wins}\n"
+            f"**Losses:** {losses}"
+        )
+
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def minecraft(self, ctx, ip):
