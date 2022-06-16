@@ -384,7 +384,7 @@ class useful(commands.Cog):
 
         await ctx.send(data["iurl"], view=DeleteButton(ctx.author))
 
-    @commands.command()
+    @commands.group(aliases=["temp"], invoke_without_command=True)
     async def tempmail(self, ctx):
         """Creates a random tempmail account for you."""
         url = "https://api.mail.tm/accounts"
@@ -431,8 +431,8 @@ class useful(commands.Cog):
         account["id"] = data["id"]
         self.DB.main.put(key, orjson.dumps(account))
 
-    @commands.command()
-    async def tempmessages(self, ctx):
+    @tempmail.command()
+    async def messages(self, ctx):
         """Gets the messages on your tempmail account if you have one."""
         url = "https://api.mail.tm/messages"
         key = f"tempmail-{ctx.author.id}".encode()
@@ -470,8 +470,8 @@ class useful(commands.Cog):
         embed.set_footer(text="Use .tempmessage [ID] to get the full message")
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def tempmessage(self, ctx, message_id):
+    @tempmail.command()
+    async def message(self, ctx, message_id):
         """Gets a tempmail message by its id.
 
         id: str
