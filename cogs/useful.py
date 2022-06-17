@@ -295,44 +295,6 @@ class useful(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["vaccines"])
-    async def vaccine(self, ctx):
-        """Gets current NZ vaccine data from the health.govt.nz website."""
-        url = (
-            "https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19"
-            "-novel-coronavirus/covid-19-data-and-statistics/covid-19-vaccine-data"
-        )
-        async with ctx.typing(), self.bot.client_session.get(url) as resp:
-            soup = lxml.html.fromstring(await resp.text())
-
-        data = soup.xpath(".//td")
-
-        description = (
-            "```prolog\n"
-            "Eligible Population Vaccinated %:\n"
-            f"  First Dose: {data[227].text_content()}\n"
-            f"  Second Dose: {data[229].text_content()}\n"
-            f"  Boosters: {data[233].text_content()}\n\n"
-            "Cumulative Total:\n"
-            f"  First Dose: {data[1].text}\n"
-            f"  Second Dose: {data[4].text}\n"
-            f"  Third Primary: {data[7].text}\n"
-            f"  Boosters: {data[9].text}\n\n"
-            "Vaccinations Yesterday:\n"
-            f"  First Dose: {data[0].text}\n"
-            f"  Second Dose: {data[3].text}\n"
-            f"  Third Primary: {data[6].text}\n"
-            f"  Boosters: {data[8].text}```"
-        )
-
-        await ctx.send(
-            embed=discord.Embed(color=discord.Color.blurple(), description=description)
-            .set_footer(text="Vaccine data from health.govt.nz")
-            .set_image(
-                url="https://www.health.govt.nz" + soup.xpath(".//img")[1].attrib["src"]
-            )
-        )
-
     @commands.command()
     async def holidays(self, ctx, country_code="NZ"):
         """Gets the holidays in a country.
