@@ -217,43 +217,6 @@ class information(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    async def say_permissions(self, ctx, member, channel):
-        """Sends an embed containing a members permissions in a channel.
-
-        member: discord.Member
-            The member to get permissions of.
-        channel: discord.TextChannel
-            The channel to get the permissions in.
-        """
-        permissions = channel.permissions_for(member)
-        embed = discord.Embed(color=member.color)
-        embed.set_author(name=str(member), icon_url=member.avatar)
-
-        allowed, denied = [], []
-        for name, value in permissions:
-            name = name.replace("_", " ").replace("guild", "server").title()
-            if value:
-                allowed.append(f"+ {name}\n")
-            else:
-                denied.append(f"- {name}\n")
-
-        embed.add_field(name="Allowed", value=f"```diff\n{''.join(allowed)}```")
-        embed.add_field(name="Denied", value=f"```diff\n{''.join(denied)}```")
-        await ctx.send(embed=embed)
-
-    @commands.command(hidden=True, aliases=["botperms"])
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    async def botpermissions(self, ctx, *, channel: discord.TextChannel = None):
-        """Shows the bot's permissions in a specific channel.
-
-        channel: discord.TextChannel
-            The channel to get the bots permissions in.
-        """
-        channel = channel or ctx.channel
-        member = ctx.guild.me
-        await self.say_permissions(ctx, member, channel)
-
     @commands.command(aliases=["perms"])
     @commands.guild_only()
     async def permissions(
@@ -269,7 +232,21 @@ class information(commands.Cog):
         channel = channel or ctx.channel
         member = member or ctx.author
 
-        await self.say_permissions(ctx, member, channel)
+        permissions = channel.permissions_for(member)
+        embed = discord.Embed(color=member.color)
+        embed.set_author(name=str(member), icon_url=member.avatar)
+
+        allowed, denied = [], []
+        for name, value in permissions:
+            name = name.replace("_", " ").replace("guild", "server").title()
+            (allowed if value else denied).append(name)
+
+        allowed = "\n".join(allowed)
+        denied = "\n".join(denied)
+
+        embed.add_field(name="Allowed", value=f"```ansi\n[2;32m{allowed}[0m```")
+        embed.add_field(name="Denied", value=f"```ansi\n[2;31m{denied}[0m```")
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def invite(self, ctx):
