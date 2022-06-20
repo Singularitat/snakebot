@@ -600,10 +600,11 @@ class misc(commands.Cog):
         else:
             karma = karma.decode()
 
-        prefix = "+" if int(karma) > 0 else ""
+        color = "32" if int(karma) > 0 else "31"
 
-        embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = f"```diff\n{user.display_name}'s karma:\n{prefix}{karma}```"
+        embed = discord.Embed(color=0x0)
+
+        embed.description = f"```ansi\n[2;34m{user.display_name}[0m's karma: [2;{color}m{karma}[0m```"
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["kboard", "ktop", "karmatop"])
@@ -619,16 +620,17 @@ class misc(commands.Cog):
             for karma, member in data:
                 temp = self.bot.get_user(member)
                 member = temp.display_name if temp else member
-                lst.append(f"{'-' if karma < 0 else '+'} {member}: {karma}")
+                color = "32" if int(karma) > 0 else "31"
+                lst.append(f"[2;34m{member}[0m: [2;{color}m{karma}[0m")
             return lst
 
         embed.add_field(
             name="Top Five",
-            value="```diff\n{}```".format("\n".join(parse_karma(sorted_karma[:5]))),
+            value="```ansi\n{}```".format("\n".join(parse_karma(sorted_karma[:5]))),
         )
         embed.add_field(
             name="Bottom Five",
-            value="```diff\n{}```".format("\n".join(parse_karma(sorted_karma[-5:]))),
+            value="```ansi\n{}```".format("\n".join(parse_karma(sorted_karma[-5:]))),
         )
         await ctx.send(embed=embed)
 
