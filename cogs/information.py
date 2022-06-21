@@ -359,23 +359,6 @@ class information(commands.Cog):
         await ctx.send(f"{link}\n```py\n{code}```")
 
     @commands.command()
-    async def cog(self, ctx, cog_name):
-        """Sends the .py file of a cog.
-
-        cog_name: str
-            The name of the cog.
-        """
-        if f"{cog_name}.py" not in os.listdir("cogs"):
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(),
-                    description=f"```No cog named {cog_name} found```",
-                )
-            )
-        with open(f"cogs/{cog_name}.py", "rb") as file:
-            await ctx.send(file=discord.File(file, f"{cog_name}.py"))
-
-    @commands.command()
     async def uptime(self, ctx):
         """Shows the bots uptime."""
         await ctx.send(f"Bot has been up since **<t:{self.bot.uptime:.0f}:R>**")
