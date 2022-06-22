@@ -658,15 +658,6 @@ class apis(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.group(invoke_without_command=True)
-    async def apis(self, ctx):
-        """Command group for the public apis api."""
-        embed = discord.Embed(
-            color=discord.Color.blurple(),
-            description=f"```Usage: {ctx.prefix}apis [categories/random/search]```",
-        )
-        await ctx.send(embed=embed)
-
     @commands.command()
     async def apod(self, ctx):
         """Gets the NASA Astronomy Picture of the Day."""
