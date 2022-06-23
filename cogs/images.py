@@ -261,14 +261,6 @@ class images(commands.Cog):
         await self.dagpi(ctx, "triggered", url)
 
     @commands.command()
-    async def delete(self, ctx, url: str = None):
-        """Creates an windows deletion dialog with the image inside it.
-
-        url: str
-        """
-        await self.dagpi(ctx, "delete", url)
-
-    @commands.command()
     async def america(self, ctx, url: str = None):
         """Puts a gif of the america flag over an image.
 
