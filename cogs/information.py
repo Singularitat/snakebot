@@ -22,26 +22,6 @@ class information(commands.Cog):
         self.process = psutil.Process()
 
     @commands.command()
-    @commands.guild_only()
-    async def roles(self, ctx):
-        """Shows the roles of the server."""
-        description = ""
-
-        for i, role in enumerate(ctx.guild.roles[1:], start=1):
-            if not i % 3:
-                description += f"{role}\n"
-            else:
-                description += f"{str(role):<20}"
-
-        await ctx.send(
-            embed=discord.Embed(
-                color=discord.Color.blurple(),
-                title="Server Roles",
-                description=f"```{description}```",
-            )
-        )
-
-    @commands.command()
     async def changes(self, ctx):
         """Gets the last 12 commits."""
         url = "https://api.github.com/repos/Singularitat/snakebot/commits?per_page=24"
@@ -50,12 +30,11 @@ class information(commands.Cog):
             commits = await self.bot.get_json(url)
 
         embed = discord.Embed(color=discord.Color.blurple())
-        count = 0
 
+        count = 0
         for commit in commits:
             if commit["commit"]["verification"]["payload"]:
                 continue
-
             if count == 12:
                 break
             count += 1
@@ -87,11 +66,11 @@ class information(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(name="oldest", aliases=["accdate", "newest"])
+    @commands.command(aliases=["newest"])
     @commands.guild_only()
-    async def oldest_members(self, ctx, amount: int = 10):
+    async def oldest(self, ctx, amount: int = 10):
         """Gets the oldest accounts in a server.
-        Call with 'newest' to get the newest members
+        Run with the `newest` alias to get the newest members
 
         amount: int
         """
