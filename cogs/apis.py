@@ -634,31 +634,6 @@ class apis(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def meaning(self, ctx, *, words):
-        """Gets words with similar meaning to [words].
-        Example .meaning ringing in the ears
-
-        words: str
-            The words to get possible meanings of.
-        """
-        url = f"https://api.datamuse.com/words?ml={words}&max=9"
-
-        meanings = await self.bot.get_json(url)
-
-        embed = discord.Embed(color=discord.Color.blurple(), title="Possible meanings")
-
-        if not meanings:
-            embed.description = "```No results found```"
-            return await ctx.send(embed=embed)
-
-        embed.set_footer(text="The numbers below are the scores")
-
-        for meaning in meanings:
-            embed.add_field(name=meaning["word"], value=meaning["score"])
-
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def apod(self, ctx):
         """Gets the NASA Astronomy Picture of the Day."""
         url = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
