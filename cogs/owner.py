@@ -238,17 +238,11 @@ class owner(commands.Cog):
         with cProfile.Profile() as pr:
             await new_ctx.command.invoke(new_ctx)
 
-        file = StringIO()
-        ps = pstats.Stats(pr, stream=file).strip_dirs().sort_stats("cumulative")
+        stats = StringIO()
+        ps = pstats.Stats(pr, stream=stats).strip_dirs().sort_stats("cumulative")
         ps.print_stats()
 
-        await ctx.send(file=discord.File(StringIO(file.getvalue()), "profile.txt"))
-
-    @commands.command(name="wipeblacklist")
-    async def wipe_blacklist(self, ctx):
-        """Wipes everyone from the blacklist list includes downvoted members."""
-        for member, value in self.DB.blacklist:
-            self.DB.blacklist.delete(member)
+        await ctx.send(file=discord.File(StringIO(stats.getvalue()), "profile.txt"))
 
     @commands.group(invoke_without_command=True)
     async def db(self, ctx):
