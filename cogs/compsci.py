@@ -47,6 +47,64 @@ class compsci(commands.Cog):
         self.bot = bot
         self.DB = bot.DB
 
+    @commands.command(aliases=["course"])
+    async def courses(self, ctx, course_number: int = None):
+        """Gets information about compsci courses at the University of Auckland."""
+        embed = discord.Embed(color=discord.Color.blurple())
+        courses = self.DB.main.get(b"courses")
+
+        if not courses:
+            embed.title = "Failed to get course information"
+            return await ctx.send(embed=embed)
+
+        courses = orjson.loads(courses)
+
+        if course_number:
+            name = f"COMPSCI {course_number}"
+            info = courses.get(name)
+            if not info:
+                embed.title = "Couldn't find that course"
+                return await ctx.send(embed=embed)
+
+            stages, description, restrictions = info
+
+            stages = "\n".join(stages)
+            if not description:
+                description = "No description..."
+
+            embed.description = f"{stages}\n\n{description}\n\n{restrictions}"
+            embed.title = name
+            return await ctx.send(embed=embed)
+
+        count = 0
+        embeds = []
+
+        for course_name, info in courses.items():
+            count += 1
+
+            stages, description, restrictions = info
+
+            stages = "\n".join(stages)
+            if description:
+                description = description.split(".", 1)[0]
+            else:
+                description = "No description..."
+
+            embed.add_field(
+                name=course_name, value=f"{stages}\n\n{description}\n\n{restrictions}"
+            )
+
+            if count == 6:
+                embeds.append(embed)
+                embed = discord.Embed(color=discord.Color.blurple())
+                count = 0
+
+        if count != 6:
+            embeds.append(embed)
+
+        paginator = pages.Paginator(pages=embeds)
+        await paginator.send(ctx)
+
     @commands.command(aliases=["propagation", "transmission"])
     async def prop(self, ctx, data_rate, length, speed, frame_size):
         """Calculates transmission time, propagation time and effective data rate."""

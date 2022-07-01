@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 
 import discord
+import lxml.html
 import orjson
 from discord.ext import commands, tasks
 
@@ -294,7 +295,7 @@ class background_tasks(commands.Cog):
     async def backup(self):
         """Makes a backup of the db every 6 hours."""
         if self.DB.main.get(b"restart") == b"1":
-            return self.DB.main.delete(b"restart")
+            return
 
         number = self.DB.main.get(b"backup_number")
 
@@ -458,11 +459,70 @@ class background_tasks(commands.Cog):
 
         self.DB.main.put(b"currencies", orjson.dumps(symbols))
 
-    @get_stocks.before_loop
-    async def wait_for_proxy(self):
-        """Make sure we have proxy before we request stocks."""
-        if self.tasks["get_stocks"].current_loop == 0:
-            await asyncio.sleep(3)
+    def find_courses(self, courses, soup):
+        element_class = '"course-card w3-panel w3-white w3-card w3-round w3-display-container p-3 pl-4 pr-4"'
+
+        for course in soup.xpath(f".//div[@class={element_class}]"):
+            title = course.find(
+                './/h4[@class="w3-show-inline-block course-code search-text-region"]'
+            ).text.strip()
+            semester = " ".join(
+                course.find('.//div[@class="mr-2 mb-3"]').text.split()[:-1]
+            )
+
+            if title not in courses:
+                prescription = course.find(
+                    './/div[@class="mr-2 mb-3 course-prescription"]'
+                )
+                if prescription is not None:
+                    prescription = prescription.text.strip()
+                restrictions = course.find(
+                    './/div[@class="mr-2 mb-3 requirement-description"]'
+                )
+                if restrictions is not None:
+                    restrictions = restrictions.text.strip()
+
+                courses[title] = [
+                    [semester],
+                    prescription,
+                    restrictions,
+                ]
+            else:
+                courses[title][0].append(semester)
+
+    @tasks.loop(count=1)
+    async def get_courses(self):
+        """Gets information about compsci courses at the University of Auckland."""
+        if self.DB.main.get(b"restart") == b"1":
+            await self.delayed_delete()
+
+        year = str(datetime.now().year)[-2:]
+
+        url = (
+            "https://courseoutline.auckland.ac.nz/dco/course/advanceSearch"
+            f"?facultyId=4000&termCodeYear=1{year}&organisationCode=COMSCI"
+        )
+        courses = {}
+
+        async with self.bot.client_session.get(url) as resp:
+            soup = lxml.html.fromstring(await resp.text())
+
+        self.find_courses(courses, soup)
+
+        links = soup.xpath('.//div[@id="pagination"]//a/@href')[:-1]
+
+        for link in links:
+            async with self.bot.client_session.get(link) as resp:
+                soup = lxml.html.fromstring(await resp.text())
+
+            self.find_courses(courses, soup)
+
+        self.DB.main.put(b"courses", orjson.dumps(courses))
+
+    async def delayed_delete(self):
+        await asyncio.sleep(1)
+
+        self.DB.main.delete(b"restart")
 
 
 def setup(bot):
