@@ -137,39 +137,6 @@ class owner(commands.Cog):
 
         await ctx.reply("Cannot find type of object that this id is for")
 
-    @commands.command(aliases=["d", "docs"])
-    async def doc(self, ctx, search):
-        """Gets the shows the dunder doc attribute of a discord object.
-
-        search: str
-            The discord object.
-        """
-        docs = self.DB.docs.get(search.encode())
-        if not docs:
-            names = [
-                name.decode() for name in self.DB.docs.iterator(include_value=False)
-            ]
-            matches = "\n".join(
-                difflib.get_close_matches(
-                    search,
-                    names,
-                    n=9,
-                    cutoff=0.0,
-                )
-            )
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.blurple(), description=f"```less\n{matches}```"
-                )
-            )
-
-        docs = docs.decode()
-
-        if len(docs) > 2000:
-            return await ctx.send(file=discord.File(StringIO(docs), "doc.txt"))
-
-        await ctx.send(f"```ahk\n{docs}```")
-
     @commands.command(pass_context=True, hidden=True, name="eval")
     async def _eval(self, ctx, *, code: str):
         """Evaluates code.

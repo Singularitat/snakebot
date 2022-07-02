@@ -411,34 +411,6 @@ class background_tasks(commands.Cog):
         domain = data["hydra:member"][0]["domain"]
         self.DB.main.put(b"tempdomain", domain.encode())
 
-    def _get_documentation(self, obj, wb):
-        if not getattr(obj, "__doc__", None):
-            return
-        if not hasattr(obj, "__name__"):
-            return
-
-        name = getattr(obj, "__qualname__", None) or obj.__name__
-        wb.put(name.encode(), obj.__doc__.encode())
-
-        for name in dir(obj):
-            if name.startswith("_"):
-                continue
-            sub_obj = getattr(obj, name, None)
-            if (
-                sub_obj
-                and getattr(sub_obj, "__module__", None)
-                and sub_obj.__module__.startswith("discord")
-            ):
-                self._get_documentation(sub_obj, wb)
-
-    @tasks.loop(count=1)
-    async def get_documentation(self):
-        """Gets the documentation of all discord objects from their __doc__ attribute."""
-        with self.DB.docs.write_batch() as wb:
-            self._get_documentation(discord, wb)
-            self._get_documentation(commands, wb)
-            self._get_documentation(tasks, wb)
-
     @tasks.loop(hours=2)
     async def get_currencies(self):
         url = "https://api.vatcomply.com/rates?base=NZD"
