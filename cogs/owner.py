@@ -1,8 +1,5 @@
 import asyncio
-import cProfile
-import difflib
 import os
-import pstats
 import textwrap
 import time
 import traceback
@@ -182,34 +179,6 @@ class owner(commands.Cog):
         embed.add_field(name="Return Value", value=ret, inline=False)
 
         return await ctx.send(embed=embed)
-
-    @commands.command()
-    async def profile(self, ctx, *, command):
-        """Profiles a command.
-
-        command: str
-        """
-        ctx.message.content = f"{ctx.prefix}{command}"
-        new_ctx = await self.bot.get_context(ctx.message, cls=type(ctx))
-        new_ctx.reply = new_ctx.send  # Reply ignores the PerformanceMocker
-
-        new_ctx._state = PerformanceMocker()
-        new_ctx.channel = PerformanceMocker()
-
-        embed = discord.Embed(color=discord.Color.blurple())
-
-        if not new_ctx.command:
-            embed.description = "```No command found```"
-            return await ctx.send(embed=embed)
-
-        with cProfile.Profile() as pr:
-            await new_ctx.command.invoke(new_ctx)
-
-        stats = StringIO()
-        ps = pstats.Stats(pr, stream=stats).strip_dirs().sort_stats("cumulative")
-        ps.print_stats()
-
-        await ctx.send(file=discord.File(StringIO(stats.getvalue()), "profile.txt"))
 
     @commands.group(invoke_without_command=True)
     async def db(self, ctx):
