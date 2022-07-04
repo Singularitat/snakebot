@@ -302,15 +302,6 @@ class owner(commands.Cog):
 
         await ctx.send(file=discord.File(file, "data.json"))
 
-    @commands.command(aliases=["clearinf"])
-    @commands.guild_only()
-    async def clear_infractions(self, ctx, member: discord.Member):
-        """Removes all infractions of a member.
-
-        member: discord.Member
-        """
-        self.DB.infractions.delete(f"{ctx.guild.id}-{member.id}".encode())
-
     @commands.command(aliases=["removeinf"])
     @commands.guild_only()
     async def remove_infraction(
