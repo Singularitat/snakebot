@@ -236,7 +236,7 @@ class background_tasks(commands.Cog):
             current_cookies = orjson.loads(current_cookies)
 
         async with self.bot.client_session.get(
-            url, headers=headers, cookies=current_cookies
+            url, headers=headers, cookies=current_cookies, timeout=30
         ) as resp:
             next_cookies = {}
             for header, value in resp.raw_headers:
