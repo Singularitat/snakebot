@@ -875,7 +875,7 @@ class apis(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["syn", "synonym"])
+    @commands.command(aliases=["synonym", "antonym", "antonyms"])
     async def synonyms(self, ctx, *, word):
         url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
 
@@ -889,16 +889,18 @@ class apis(commands.Cog):
         data = data[0]
         description = ""
 
+        key = "synonyms" if ctx.invoked_with.startswith("synonym") else "antonyms"
+
         for meaning in data["meanings"]:
             temp = meaning["partOfSpeech"] + "\n  "
             seen = False
             for definition in meaning["definitions"]:
-                synonyms = definition["synonyms"]
-                if synonyms:
+                words = definition[key]
+                if words:
                     temp += (
                         definition["definition"]
                         + "\n    "
-                        + "\n    ".join(synonyms)
+                        + "\n    ".join(words)
                         + "\n\n  "
                     )
                     seen = True
@@ -906,50 +908,11 @@ class apis(commands.Cog):
                 description += temp[:-2]
 
         if not description:
-            embed.description = "```No synonyms found```"
+            embed.description = "```No {key} found```"
             return await ctx.send(embed=embed)
 
         embed.url = f"https://www.dictionary.com/browse/{word}"
-        embed.title = f"{word.title()} Synonyms"
-        embed.description = f"```prolog\n{description.title().strip()}```"
-        await ctx.send(embed=embed)
-
-    @commands.command(aliases=["antonym"])
-    async def antonyms(self, ctx, *, word):
-        url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
-
-        data = await self.bot.get_json(url)
-
-        embed = discord.Embed(color=discord.Color.blurple())
-        if isinstance(data, dict):
-            embed.description = "```Word not found```"
-            return await ctx.send(embed=embed)
-
-        data = data[0]
-        description = ""
-
-        for meaning in data["meanings"]:
-            temp = meaning["partOfSpeech"] + "\n  "
-            seen = False
-            for definition in meaning["definitions"]:
-                antonyms = definition["antonyms"]
-                if antonyms:
-                    temp += (
-                        definition["definition"]
-                        + "\n    "
-                        + "\n    ".join(antonyms)
-                        + "\n\n  "
-                    )
-                    seen = True
-            if seen:
-                description += temp[:-2]
-
-        if not description:
-            embed.description = "```No antonyms found```"
-            return await ctx.send(embed=embed)
-
-        embed.url = f"https://www.dictionary.com/browse/{word}"
-        embed.title = f"{word.title()} Antonyms"
+        embed.title = f"{word} {key}".title()
         embed.description = f"```prolog\n{description.title().strip()}```"
         await ctx.send(embed=embed)
 
