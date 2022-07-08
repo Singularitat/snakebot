@@ -242,17 +242,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotEqual(embed.color.value, 10038562)
             self.assertNotEqual(embed.description, "```No results found```")
 
-    async def meaning_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="meaning"):
-            await self.cog.meaning(self.cog, context, words="ringing in the ears")
-
-            embed = context.send.call_args.kwargs["embed"]
-
-            self.assertNotEqual(embed.color.value, 10038562)
-            self.assertNotEqual(embed.description, "```No results found```")
-
     async def apod_command(self):
         context = helpers.MockContext()
 
@@ -319,17 +308,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
 
         with self.subTest(command="synonyms"):
             await self.cog.synonyms(self.cog, context, word="cat")
-
-            embed = context.send.call_args.kwargs["embed"]
-
-            self.assertNotEqual(embed.color.value, 10038562)
-            self.assertNotEqual(embed.description, "```Word not found```")
-
-    async def antonyms_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="antonyms"):
-            await self.cog.antonyms(self.cog, context, word="cat")
 
             embed = context.send.call_args.kwargs["embed"]
 
@@ -418,119 +396,6 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
         cls.cog = compsci(bot=bot)
-
-    async def test_columnar_command(self):
-        context = helpers.MockContext()
-        context.invoked_subcommand = None
-
-        await self.cog.columnar(self.cog, context)
-
-        self.assertEqual(
-            context.reply.call_args.kwargs["embed"].description,
-            f"```Usage: {context.prefix}columnar [decode/encode]```",
-        )
-
-    async def test_rail_command(self):
-        context = helpers.MockContext()
-        context.invoked_subcommand = None
-
-        await self.cog.rail(self.cog, context)
-
-        self.assertEqual(
-            context.reply.call_args.kwargs["embed"].description,
-            f"```Usage: {context.prefix}rail [decode/encode]```",
-        )
-
-    async def test_rail_encode_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.rail_encode(
-            self.cog,
-            context,
-            7,
-            message="the quick brown fox jumps over the lazy dog",
-        )
-
-        context.reply.assert_called_with("tosahrwp lzebnmo y   uve qkfjehduco rtoix g")
-
-    async def test_rail_decode_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.rail_decode(
-            self.cog, context, 7, message="tosahrwp lzebnmo y   uve qkfjehduco rtoix g"
-        )
-
-        context.reply.assert_called_with("the quick brown fox jumps over the lazy dog")
-
-    async def test_substitution_command(self):
-        context = helpers.MockContext()
-        context.invoked_subcommand = None
-
-        await self.cog.substitution(self.cog, context)
-
-        self.assertEqual(
-            context.reply.call_args.kwargs["embed"].description,
-            f"```Usage: {context.prefix}substitution [decode/encode]```",
-        )
-
-    async def test_substitution_encode_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.substitution_encode(
-            self.cog,
-            context,
-            "key",
-            message="THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG",
-        )
-
-        context.reply.assert_called_with("SFB PTGYI EQNVM CNW HTLOR NUBQ SFB JKZX AND")
-
-    async def test_substitution_decode_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.substitution_decode(
-            self.cog,
-            context,
-            "key",
-            message="SFB PTGYI EQNVM CNW HTLOR NUBQ SFB JKZX AND",
-        )
-
-        context.reply.assert_called_with("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG")
-
-    async def test_vigenere_command(self):
-        context = helpers.MockContext()
-        context.invoked_subcommand = None
-
-        await self.cog.vigenere(self.cog, context)
-
-        self.assertEqual(
-            context.reply.call_args.kwargs["embed"].description,
-            f"```Usage: {context.prefix}vigenere [decode/encode]```",
-        )
-
-    async def test_vigenere_encode_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.vigenere_encode(
-            self.cog,
-            context,
-            "7",
-            message="THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG",
-        )
-
-        context.reply.assert_called_with("AOL XBPJR IYVDU MVE QBTWZ VCLY AOL SHGF KVN")
-
-    async def test_vigenere_decode_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.vigenere_decode(
-            self.cog,
-            context,
-            "7",
-            message="AOL XBPJR IYVDU MVE QBTWZ VCLY AOL SHGF KVN",
-        )
-
-        context.reply.assert_called_with("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG")
 
     async def test_prop_command(self):
         context = helpers.MockContext()
@@ -1049,28 +914,10 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         cls.cog = information(bot=bot)
 
-    async def test_roles_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.roles(self.cog, context)
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
     async def test_about_command(self):
         context = helpers.MockContext()
 
         await self.cog.about(self.cog, context)
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
-    async def test_oldest_members_commmand(self):
-        context = helpers.MockContext()
-
-        await self.cog.oldest_members(self.cog, context)
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -1082,15 +929,6 @@ class InformationCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         await self.cog.message_top(self.cog, context)
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
-    async def test_botpermissions_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.botpermissions(self.cog, context)
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -1225,15 +1063,6 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         await self.cog.atom(self.cog, context, "O")
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
-    async def test_stats(self):
-        context = helpers.MockContext()
-
-        await self.cog.stats(self.cog, context)
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
