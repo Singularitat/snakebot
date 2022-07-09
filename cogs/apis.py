@@ -207,6 +207,12 @@ class apis(commands.Cog):
         async with ctx.typing(), self.bot.client_session.post(
             url, json=data, timeout=30
         ) as resp:
+            if resp.status != 200:
+                return await ctx.reply(
+                    embed=discord.Embed(
+                        color=discord.Color.dark_red(), title="Request Failed"
+                    ).set_footer(text=f"Status code was {resp.status}")
+                )
             resp = await resp.json(content_type=None)
 
         await ctx.send(
