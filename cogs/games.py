@@ -409,6 +409,7 @@ class games(commands.Cog):
         `.awkword`   (Awkword) - Create sentences and vote on the best sentences
         `.sketchy`   (Sketchy Artist)
         `.bobble`    (Bobble League)
+        `.ask`       (Ask Away)
         """
         embed.set_footer(text="Games are still in beta and may be broken")
         await ctx.send(embed=embed)
@@ -724,6 +725,17 @@ class games(commands.Cog):
             ctx,
             f"{ctx.guild.id}-bobble".encode(),
             "There is another Bobble League game",
+        )
+
+    @commands.command()
+    @commands.guild_only()
+    async def ask(self, ctx):
+        """Starts a game of Ask Away."""
+        await self.game_invite(
+            976052223358406656,
+            ctx,
+            f"{ctx.guild.id}-askaway".encode(),
+            "There is another Ask Away game",
         )
 
 
