@@ -738,6 +738,7 @@ class games(commands.Cog):
             "There is another Ask Away game",
         )
 
+
 def setup(bot: commands.Bot) -> None:
     """Starts the games cog."""
     bot.add_cog(games(bot))
