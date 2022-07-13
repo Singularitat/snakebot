@@ -253,14 +253,6 @@ class images(commands.Cog):
         await self.dagpi(ctx, "burn", url)
 
     @commands.command()
-    async def triggered(self, ctx, url: str = None):
-        """Makes a triggered gif with an image.
-
-        url: str
-        """
-        await self.dagpi(ctx, "triggered", url)
-
-    @commands.command()
     async def america(self, ctx, url: str = None):
         """Puts a gif of the america flag over an image.
 
