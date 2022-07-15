@@ -149,14 +149,6 @@ class images(commands.Cog):
         await self.dagpi(ctx, "colors", url)
 
     @commands.command()
-    async def petpet(self, ctx, url: str = None):
-        """Pet Pet.
-
-        url: str
-        """
-        await self.dagpi(ctx, "petpet", url)
-
-    @commands.command()
     async def invert(self, ctx, url: str = None):
         """Inverts the colors of an image.
 
