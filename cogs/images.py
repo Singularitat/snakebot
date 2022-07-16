@@ -213,14 +213,6 @@ class images(commands.Cog):
         await self.dagpi(ctx, "rgb", url)
 
     @commands.command()
-    async def shatter(self, ctx, url: str = None):
-        """Puts a broken glass overlay on an image.
-
-        url: str
-        """
-        await self.dagpi(ctx, "shatter", url)
-
-    @commands.command()
     async def paint(self, ctx, url: str = None):
         """Makes an image look like a painting.
 
