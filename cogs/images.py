@@ -221,14 +221,6 @@ class images(commands.Cog):
         await self.dagpi(ctx, "paint", url)
 
     @commands.command()
-    async def rainbow(self, ctx, url: str = None):
-        """Gives a weird rainbow effect to an image.
-
-        url: str
-        """
-        await self.dagpi(ctx, "rainbow", url)
-
-    @commands.command()
     async def burn(self, ctx, url: str = None):
         """Burns an image.
 
