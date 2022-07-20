@@ -285,14 +285,6 @@ class images(commands.Cog):
         await self.jeyy(ctx, "glitch", url)
 
     @commands.command()
-    async def lamp(self, ctx, url: str = None):
-        """Flickers an image like a lamp turning on and off.
-
-        url: str
-        """
-        await self.jeyy(ctx, "lamp", url)
-
-    @commands.command()
     async def sob(self, ctx, url: str = None):
         """Puts a picture of Melvin Lawson sobbing on the background of an image.
 
