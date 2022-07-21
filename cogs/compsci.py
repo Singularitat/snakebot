@@ -469,6 +469,18 @@ class compsci(commands.Cog):
 
         [Compsci 230](https://notes.joewuthrich.com/compsci230)
         An introduction to object-oriented coding in Java.
+
+        [Compsci 235](https://notes.joewuthrich.com/compsci235)
+        Software design methodologies to structure the process of developing software.
+
+        [Compsci 320](https://notes.joewuthrich.com/compsci320)
+        Fundamental design techniques used for efficient algorithmic problem-solving.
+
+        [Compsci 335](https://notes.joewuthrich.com/compsci335)
+        Web application development.
+
+        [Compsci 340](https://notes.joewuthrich.com/compsci340)
+        Operating system principles.
         """
         await ctx.send(embed=embed)
 
