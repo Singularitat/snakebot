@@ -484,25 +484,6 @@ class compsci(commands.Cog):
         """
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["pastpapers", "exams"])
-    async def library(self, ctx):
-        embed = discord.Embed(color=discord.Color.blurple(), title="Past Exam Papers")
-
-        embed.description = """
-        [Home Page](https://www.library.auckland.ac.nz/)
-
-        [Compsci 101](https://www.library.auckland.ac.nz/exam-papers/subject/Computer%20Science/COMPSCI%20101)
-        [Compsci 110](https://www.library.auckland.ac.nz/exam-papers/subject/Computer%20Science/COMPSCI%20110)
-        [Compsci 120](https://www.library.auckland.ac.nz/exam-papers/subject/Computer%20Science/COMPSCI%20120)
-        [Compsci 130](https://www.library.auckland.ac.nz/exam-papers/subject/Computer%20Science/COMPSCI%20130)
-        [Compsci 210](https://www.library.auckland.ac.nz/exam-papers/subject/Computer%20Science/COMPSCI%20210)
-        [Compsci 215](https://www.library.auckland.ac.nz/exam-papers/subject/Computer%20Science/COMPSCI%20215)
-        [Compsci 220](https://www.library.auckland.ac.nz/exam-papers/subject/Computer%20Science/COMPSCI%20220)
-        [Compsci 225](https://www.library.auckland.ac.nz/exam-papers/subject/Computer%20Science/COMPSCI%20225)
-        [Compsci 230](https://www.library.auckland.ac.nz/exam-papers/subject/Computer%20Science/COMPSCI%20230)
-        """
-        await ctx.send(embed=embed)
-
     @commands.group(name="float", invoke_without_command=True)
     async def _float(self, ctx, number: float):
         """Converts a float to the half-precision floating-point format.
