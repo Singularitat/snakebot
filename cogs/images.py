@@ -221,14 +221,6 @@ class images(commands.Cog):
         await self.dagpi(ctx, "paint", url)
 
     @commands.command()
-    async def burn(self, ctx, url: str = None):
-        """Burns an image.
-
-        url: str
-        """
-        await self.dagpi(ctx, "burn", url)
-
-    @commands.command()
     async def america(self, ctx, url: str = None):
         """Puts a gif of the america flag over an image.
 
