@@ -301,14 +301,6 @@ class images(commands.Cog):
         await self.jeyy(ctx, "canny", url)
 
     @commands.command()
-    async def bonk(self, ctx, url: str = None):
-        """A gif of an image getting whacked by news paper.
-
-        url: str
-        """
-        await self.jeyy(ctx, "bonks", url)
-
-    @commands.command()
     async def warp(self, ctx, url: str = None):
         """Warps an image.
 
