@@ -277,14 +277,6 @@ class images(commands.Cog):
         await self.jeyy(ctx, "glitch", url)
 
     @commands.command()
-    async def sob(self, ctx, url: str = None):
-        """Puts a picture of Melvin Lawson sobbing on the background of an image.
-
-        url: str
-        """
-        await self.jeyy(ctx, "sob", url)
-
-    @commands.command()
     async def cartoon(self, ctx, url: str = None):
         """Makes an image look like a cartoon image.
 
