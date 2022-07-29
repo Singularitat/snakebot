@@ -105,7 +105,12 @@ class misc(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.DB = bot.DB
-
+        
+    @commands.command(aliases = ["jack", "sponserachild"])
+    async def tiki(self, ctx):
+        """Another great commit by justin"""
+        await ctx.send("Please buy us tiki fire rum: https://www.thewhiskyexchange.com/p/24202/admiral-vernons-old-j-spiced-tiki-fire-rum")
+                   
     @commands.command()
     async def emoji(self, ctx, emoji: discord.Emoji):
         """Gets the url to the image of an emoji."""
@@ -467,7 +472,7 @@ class misc(commands.Cog):
     async def ship(self, ctx, user: discord.User = None):
         """Ships a user with a random other user.
 
-        Results are not endorsed by Snake Bot
+        Results are endorsed by Snake Bot
 
         user: discord.User
             Defaults to author.
@@ -489,7 +494,7 @@ class misc(commands.Cog):
     async def match(self, ctx, user1: discord.User, user2: discord.User = None):
         """Sees how much of a match two users are.
 
-        Results are not endorsed by Snake Bot
+        Results are endorsed by Snake Bot
 
         user1: discord.User
         user2: discord.User
