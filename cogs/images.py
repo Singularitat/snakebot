@@ -261,28 +261,12 @@ class images(commands.Cog):
         await self.jeyy(ctx, "balls", url)
 
     @commands.command()
-    async def hearts(self, ctx, url: str = None):
-        """Puts a hearts gif overlay onto an image.
-
-        url: str
-        """
-        await self.jeyy(ctx, "hearts", url)
-
-    @commands.command()
     async def glitch(self, ctx, url: str = None):
         """Adds glitches to an image as a gif.
 
         url: str
         """
         await self.jeyy(ctx, "glitch", url)
-
-    @commands.command()
-    async def sob(self, ctx, url: str = None):
-        """Puts a picture of Melvin Lawson sobbing on the background of an image.
-
-        url: str
-        """
-        await self.jeyy(ctx, "sob", url)
 
     @commands.command()
     async def cartoon(self, ctx, url: str = None):
