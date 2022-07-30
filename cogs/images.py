@@ -221,14 +221,6 @@ class images(commands.Cog):
         await self.dagpi(ctx, "paint", url)
 
     @commands.command()
-    async def america(self, ctx, url: str = None):
-        """Puts a gif of the america flag over an image.
-
-        url: str
-        """
-        await self.dagpi(ctx, "america", url)
-
-    @commands.command()
     async def grayscale(self, ctx, url: str = None):
         """Grayscales an image.
 
