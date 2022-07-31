@@ -157,14 +157,6 @@ class images(commands.Cog):
         await self.dagpi(ctx, "invert", url)
 
     @commands.command()
-    async def hog(self, ctx, url: str = None):
-        """Histogram of Oriented Gradients of an image.
-
-        url: str
-        """
-        await self.dagpi(ctx, "hog", url)
-
-    @commands.command()
     async def mirror(self, ctx, url: str = None):
         """Mirror an image on the y axis.
 
