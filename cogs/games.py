@@ -718,17 +718,6 @@ class games(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def bobble(self, ctx):
-        """Starts a game of Bobble League."""
-        await self.game_invite(
-            947957217959759964,
-            ctx,
-            f"{ctx.guild.id}-bobble".encode(),
-            "There is another Bobble League game",
-        )
-
-    @commands.command()
-    @commands.guild_only()
     async def ask(self, ctx):
         """Starts a game of Ask Away."""
         await self.game_invite(
