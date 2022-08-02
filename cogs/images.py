@@ -300,14 +300,6 @@ class images(commands.Cog):
         """
         await self.jeyy(ctx, "shock", url)
 
-    @commands.command()
-    async def pattern(self, ctx, url: str = None):
-        """Puts a pattern overlay gif on an image.
-
-        url: str
-        """
-        await self.jeyy(ctx, "pattern", url)
-
     @commands.command(aliases=["kill"])
     async def shoot(self, ctx, url: str = None):
         """Shoots someone.
@@ -383,7 +375,7 @@ class images(commands.Cog):
             if isinstance(item, commands.core.Command):
                 image_commands.append(
                     "`{}{}` ({})".format(
-                        ctx.prefix, item, item.help.rstrip("\nurl: str\n")
+                        ctx.prefix, item, item.help.split("\n", 1)[0]
                     )
                 )
 
