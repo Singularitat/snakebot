@@ -375,7 +375,7 @@ class images(commands.Cog):
             if isinstance(item, commands.core.Command):
                 image_commands.append(
                     "`{}{}` ({})".format(
-                        ctx.prefix, item, item.help.rstrip("\nurl: str\n")
+                        ctx.prefix, item, item.help.split("\n", 1)[0]
                     )
                 )
 
