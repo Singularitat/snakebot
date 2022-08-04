@@ -117,17 +117,17 @@ class animals(commands.Cog):
     @commands.command()
     async def bird(self, ctx):
         """Gets a random bird image."""
-        await self.get(ctx, "https://some-random-api.ml/img/birb", "link")
-
-    @commands.command()
-    async def bird2(self, ctx):
-        """Gets a random bird image."""
-        await self.get(ctx, "http://shibe.online/api/birds", 0)
-
-    @commands.command()
-    async def bird4(self, ctx):
-        """Gets a random bird image"""
-        await self.get(ctx, "https://api.alexflipnote.dev/birb", "file")
+        await self.get_mutiple(
+            ctx,
+            (
+                "https://some-random-api.ml/img/birb",
+                "http://shibe.online/api/birds",
+                "https://api.alexflipnote.dev/birb",
+            ),
+            ("link", 0, "file"),
+            (None, None, None),
+            ("", "", ""),
+        )
 
     @commands.command()
     async def redpanda(self, ctx):
