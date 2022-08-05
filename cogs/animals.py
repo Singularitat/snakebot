@@ -28,6 +28,24 @@ class animals(commands.Cog):
             )
         await ctx.send(resp[key] if not subkey else resp[key][subkey])
 
+    async def get_mutiple(self, ctx, urls, keys, subkeys, prefixs):
+        with ctx.typing():
+            for url, key, subkey, prefix in zip(urls, keys, subkeys, prefixs):
+                resp = await self.bot.get_json(url)
+
+                if resp:
+                    break
+            else:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        color=discord.Color.dark_red(),
+                        description="Failed to reach any api",
+                    ).set_footer(
+                        text="apis may be temporarily down or experiencing high trafic"
+                    )
+                )
+        return await ctx.send(prefix + (resp[key] if not subkey else resp[key][subkey]))
+
     @commands.command()
     async def horse(self, ctx):
         """This horse doesn't exist."""
@@ -99,17 +117,17 @@ class animals(commands.Cog):
     @commands.command()
     async def bird(self, ctx):
         """Gets a random bird image."""
-        await self.get(ctx, "https://some-random-api.ml/img/birb", "link")
-
-    @commands.command()
-    async def bird2(self, ctx):
-        """Gets a random bird image."""
-        await self.get(ctx, "http://shibe.online/api/birds", 0)
-
-    @commands.command()
-    async def bird4(self, ctx):
-        """Gets a random bird image"""
-        await self.get(ctx, "https://api.alexflipnote.dev/birb", "file")
+        await self.get_mutiple(
+            ctx,
+            (
+                "https://some-random-api.ml/img/birb",
+                "http://shibe.online/api/birds",
+                "https://api.alexflipnote.dev/birb",
+            ),
+            ("link", 0, "file"),
+            (None, None, None),
+            ("", "", ""),
+        )
 
     @commands.command()
     async def redpanda(self, ctx):
@@ -138,51 +156,20 @@ class animals(commands.Cog):
 
     @commands.command()
     async def cat(self, ctx):
-        """This cat doesn't exist."""
-        url = "https://thiscatdoesnotexist.com"
-
-        async with ctx.typing(), self.bot.client_session.get(url) as resp:
-            with BytesIO((await resp.read())) as image_binary:
-                await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
-
-    @commands.command()
-    async def cat2(self, ctx):
         """Gets a random cat image."""
-        await self.get(ctx, "https://api.thecatapi.com/v1/images/search", 0, "url")
-
-    @commands.command()
-    async def cat3(self, ctx):
-        """Gets a random cat image."""
-        url = "https://cataas.com/cat?json=true"
-
-        with ctx.typing():
-            resp = await self.bot.get_json(url)
-
-        if not resp:
-            return await ctx.send(
-                embed=discord.Embed(
-                    color=discord.Color.dark_red(), description="Failed to reach api"
-                ).set_footer(
-                    text="api may be temporarily down or experiencing high trafic"
-                )
-            )
-
-        await ctx.send(f"https://cataas.com{resp['url']}")
-
-    @commands.command()
-    async def cat4(self, ctx):
-        """Gets a random cat image."""
-        await self.get(ctx, "https://thatcopy.pw/catapi/rest", "webpurl")
-
-    @commands.command()
-    async def cat5(self, ctx):
-        """Gets a random cat image."""
-        await self.get(ctx, "http://shibe.online/api/cats", 0)
-
-    @commands.command()
-    async def cat6(self, ctx):
-        """Gets a random cat image."""
-        await self.get(ctx, "https://aws.random.cat/meow", "file")
+        await self.get_mutiple(
+            ctx,
+            (
+                "https://api.thecatapi.com/v1/images/search",
+                "https://cataas.com/cat?json=true",
+                "https://thatcopy.pw/catapi/rest",
+                "http://shibe.online/api/cats",
+                "https://aws.random.cat/meow",
+            ),
+            (0, "url", "webpurl", "0", "file"),
+            ("url", None, None, None, None),
+            ("", "https://cataas.com", "", "", ""),
+        )
 
     @commands.command()
     async def catstatus(self, ctx, status=404):
@@ -197,24 +184,18 @@ class animals(commands.Cog):
         """Gets a random dog image."""
         if breed:
             url = f"https://dog.ceo/api/breed/{breed}/images/random"
-        else:
-            url = "https://dog.ceo/api/breeds/image/random"
+            await self.get(ctx, url, "message")
 
-        await self.get(ctx, url, "message")
-
-    @commands.command()
-    async def dog2(self, ctx):
-        """Gets a random dog image."""
-        await self.get(ctx, "https://random.dog/woof.json", "url")
-
-    @commands.command()
-    async def dog3(self, ctx):
-        """Gets a random dog image."""
-        await self.get(
+        await self.get_mutiple(
             ctx,
-            "https://api.thedogapi.com/v1/images/search?sub_id=demo-3d4325",
-            0,
-            "url",
+            (
+                "https://dog.ceo/api/breeds/image/random",
+                "https://random.dog/woof.json",
+                "https://api.thedogapi.com/v1/images/search?sub_id=demo-3d4325",
+            ),
+            ("message", "url", 0),
+            (None, None, "url"),
+            ("", "", ""),
         )
 
     @commands.command()
