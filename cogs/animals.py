@@ -38,14 +38,13 @@ class animals(commands.Cog):
             else:
                 return await ctx.send(
                     embed=discord.Embed(
-                        color=discord.Color.dark_red(), description="Failed to reach any api"
+                        color=discord.Color.dark_red(),
+                        description="Failed to reach any api",
                     ).set_footer(
                         text="apis may be temporarily down or experiencing high trafic"
                     )
                 )
-        return await ctx.send(
-            prefix + (resp[key] if not subkey else resp[key][subkey])
-        )
+        return await ctx.send(prefix + (resp[key] if not subkey else resp[key][subkey]))
 
     @commands.command()
     async def horse(self, ctx):
@@ -185,24 +184,18 @@ class animals(commands.Cog):
         """Gets a random dog image."""
         if breed:
             url = f"https://dog.ceo/api/breed/{breed}/images/random"
-        else:
-            url = "https://dog.ceo/api/breeds/image/random"
+            await self.get(ctx, url, "message")
 
-        await self.get(ctx, url, "message")
-
-    @commands.command()
-    async def dog2(self, ctx):
-        """Gets a random dog image."""
-        await self.get(ctx, "https://random.dog/woof.json", "url")
-
-    @commands.command()
-    async def dog3(self, ctx):
-        """Gets a random dog image."""
-        await self.get(
+        await self.get_mutiple(
             ctx,
-            "https://api.thedogapi.com/v1/images/search?sub_id=demo-3d4325",
-            0,
-            "url",
+            (
+                "https://dog.ceo/api/breeds/image/random",
+                "https://random.dog/woof.json",
+                "https://api.thedogapi.com/v1/images/search?sub_id=demo-3d4325",
+            ),
+            ("message", "url", 0),
+            (None, None, "url"),
+            ("", "", ""),
         )
 
     @commands.command()
