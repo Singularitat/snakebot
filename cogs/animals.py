@@ -142,17 +142,17 @@ class animals(commands.Cog):
     @commands.command()
     async def fox(self, ctx):
         """Gets a random fox image."""
-        await self.get(ctx, "https://randomfox.ca/floof", "image")
-
-    @commands.command()
-    async def fox2(self, ctx):
-        """Gets a random fox image."""
-        await self.get(ctx, "https://wohlsoft.ru/images/foxybot/randomfox.php", "file")
-
-    @commands.command()
-    async def fox3(self, ctx):
-        """Gets a random fox image."""
-        await self.get(ctx, "https://some-random-api.ml/img/fox", "link")
+        await self.get_mutiple(
+            ctx,
+            (
+                "https://randomfox.ca/floof",
+                "https://wohlsoft.ru/images/foxybot/randomfox.php",
+                "https://some-random-api.ml/img/fox",
+            ),
+            ("image", "file", "link"),
+            (None, None, None),
+            ("", "", ""),
+        )
 
     @commands.command()
     async def cat(self, ctx):
