@@ -45,7 +45,9 @@ class animals(commands.Cog):
                         text="apis may be temporarily down or experiencing high trafic"
                     )
                 )
-        return await ctx.send(prefix + (resp[key] if not subkey else resp[key][subkey]))
+        return await ctx.send(
+            prefix if prefix else "" + (resp[key] if not subkey else resp[key][subkey])
+        )
 
     @commands.command()
     async def horse(self, ctx):
@@ -147,7 +149,6 @@ class animals(commands.Cog):
                 ("https://wohlsoft.ru/images/foxybot/randomfox.php", "file"),
                 ("https://some-random-api.ml/img/fox", "link"),
             ),
-            ("image", "file", "link"),
         )
 
     @commands.command()
