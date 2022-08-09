@@ -28,9 +28,10 @@ class animals(commands.Cog):
             )
         await ctx.send(resp[key] if not subkey else resp[key][subkey])
 
-    async def get_mutiple(self, ctx, urls, keys, subkeys, prefixs):
+    async def get_multiple(self, ctx, arg_tuples):
         with ctx.typing():
-            for url, key, subkey, prefix in zip(urls, keys, subkeys, prefixs):
+            for args in arg_tuples:
+                url, key, subkey, prefix = *args, *((None,) * abs(len(args) - 4))
                 resp = await self.bot.get_json(url)
 
                 if resp:
@@ -117,16 +118,13 @@ class animals(commands.Cog):
     @commands.command()
     async def bird(self, ctx):
         """Gets a random bird image."""
-        await self.get_mutiple(
+        await self.get_multiple(
             ctx,
             (
-                "https://some-random-api.ml/img/birb",
-                "http://shibe.online/api/birds",
-                "https://api.alexflipnote.dev/birb",
+                ("https://some-random-api.ml/img/birb", "link"),
+                ("http://shibe.online/api/birds", 0),
+                ("https://api.alexflipnote.dev/birb", "file"),
             ),
-            ("link", 0, "file"),
-            (None, None, None),
-            ("", "", ""),
         )
 
     @commands.command()
@@ -142,33 +140,28 @@ class animals(commands.Cog):
     @commands.command()
     async def fox(self, ctx):
         """Gets a random fox image."""
-        await self.get_mutiple(
+        await self.get_multiple(
             ctx,
             (
-                "https://randomfox.ca/floof",
-                "https://wohlsoft.ru/images/foxybot/randomfox.php",
-                "https://some-random-api.ml/img/fox",
+                ("https://randomfox.ca/floof", "image"),
+                ("https://wohlsoft.ru/images/foxybot/randomfox.php", "file"),
+                ("https://some-random-api.ml/img/fox", "link"),
             ),
             ("image", "file", "link"),
-            (None, None, None),
-            ("", "", ""),
         )
 
     @commands.command()
     async def cat(self, ctx):
         """Gets a random cat image."""
-        await self.get_mutiple(
+        await self.get_multiple(
             ctx,
             (
-                "https://api.thecatapi.com/v1/images/search",
-                "https://cataas.com/cat?json=true",
-                "https://thatcopy.pw/catapi/rest",
-                "http://shibe.online/api/cats",
-                "https://aws.random.cat/meow",
+                ("https://api.thecatapi.com/v1/images/search", 0, "url"),
+                ("https://cataas.com/cat?json=true", "url", None, "https://cataas.com"),
+                ("https://thatcopy.pw/catapi/rest", "webpurl"),
+                ("http://shibe.online/api/cats", "0"),
+                ("https://aws.random.cat/meow", "file"),
             ),
-            (0, "url", "webpurl", "0", "file"),
-            ("url", None, None, None, None),
-            ("", "https://cataas.com", "", "", ""),
         )
 
     @commands.command()
@@ -186,16 +179,17 @@ class animals(commands.Cog):
             url = f"https://dog.ceo/api/breed/{breed}/images/random"
             await self.get(ctx, url, "message")
 
-        await self.get_mutiple(
+        await self.get_multiple(
             ctx,
             (
-                "https://dog.ceo/api/breeds/image/random",
-                "https://random.dog/woof.json",
-                "https://api.thedogapi.com/v1/images/search?sub_id=demo-3d4325",
+                ("https://dog.ceo/api/breeds/image/random", "message"),
+                ("https://random.dog/woof.json", "url"),
+                (
+                    "https://api.thedogapi.com/v1/images/search?sub_id=demo-3d4325",
+                    0,
+                    "url",
+                ),
             ),
-            ("message", "url", 0),
-            (None, None, "url"),
-            ("", "", ""),
         )
 
     @commands.command()
