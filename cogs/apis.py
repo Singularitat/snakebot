@@ -663,26 +663,6 @@ class apis(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def gender(self, ctx, first_name):
-        """Estimates a gender from a first name.
-
-        first_name: str
-        """
-        url = f"https://api.genderize.io/?name={first_name}"
-
-        data = await self.bot.get_json(url)
-        embed = discord.Embed(color=discord.Color.blurple())
-        embed.description = textwrap.dedent(
-            f"""
-            ```First Name: {data['name']}
-            Gender: {data['gender']}
-            Probability: {data['probability'] * 100}%
-            Count: {data['count']}```
-            """
-        )
-        await ctx.send(embed=embed)
-
-    @commands.command()
     async def cocktail(self, ctx, *, name=None):
         """Searchs for a cocktail and gets a random result by default.
 
