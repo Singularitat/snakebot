@@ -38,7 +38,7 @@ class SpamChecker:
     """Checks if someone is spamming via the below criteria
     1) If a user has spammed more than 10 times in 12 seconds
     2) If the content has been spammed 15 times in 17 seconds.
-    3) If a user has mentioned 40 people in 17 seconds.
+    3) If a user has mentioned 40 separate people in 17 seconds.
     """
 
     def __init__(self):
@@ -50,7 +50,7 @@ class SpamChecker:
         )
 
         self.by_mentions = commands.CooldownMapping.from_cooldown(
-            40, 12, commands.BucketType.member
+            40, 12.0, commands.BucketType.member
         )
 
     def is_spamming(self, message: discord.Message) -> bool:
