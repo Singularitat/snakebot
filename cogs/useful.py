@@ -315,7 +315,7 @@ class useful(commands.Cog):
 
         for holiday in data:
             epoch = time.mktime(time.strptime(holiday["date"], "%Y-%m-%d"))
-            # I want the the past holidays after everything else
+            # Make it so holidays that have already happened are after everything else
             if epoch < current_time:
                 past_holidays.append((holiday["name"], f"<t:{epoch:.0f}:R>"))
             else:

@@ -374,9 +374,7 @@ class images(commands.Cog):
             item = getattr(self, item)
             if isinstance(item, commands.core.Command):
                 image_commands.append(
-                    "`{}{}` ({})".format(
-                        ctx.prefix, item, item.help.split("\n", 1)[0]
-                    )
+                    "`{}{}` ({})".format(ctx.prefix, item, item.help.split("\n", 1)[0])
                 )
 
         await ctx.send(
