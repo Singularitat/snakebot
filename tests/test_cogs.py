@@ -252,16 +252,6 @@ class ApisCogTests(unittest.IsolatedAsyncioTestCase):
                 context.send.call_args.kwargs["embed"].color.value, 10038562
             )
 
-    async def gender_command(self):
-        context = helpers.MockContext()
-
-        with self.subTest(command="gender"):
-            await self.cog.gender(self.cog, context, first_name="Joe")
-
-            self.assertNotEqual(
-                context.send.call_args.kwargs["embed"].color.value, 10038562
-            )
-
     async def cocktail_command(self):
         context = helpers.MockContext()
 
@@ -569,15 +559,6 @@ class CompsciCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         await self.cog.notes(self.cog, context)
-
-        self.assertNotEqual(
-            context.send.call_args.kwargs["embed"].color.value, 10038562
-        )
-
-    async def test_library_command(self):
-        context = helpers.MockContext()
-
-        await self.cog.library(self.cog, context)
 
         self.assertNotEqual(
             context.send.call_args.kwargs["embed"].color.value, 10038562
@@ -1133,17 +1114,6 @@ class MiscCogTests(unittest.IsolatedAsyncioTestCase):
         context = helpers.MockContext()
 
         await self.cog.rate(self.cog, context)
-
-        self.assertIsNone(context.reply.call_args.kwargs.get("embed"))
-
-    async def test_ship_command(self):
-        context = helpers.MockContext(
-            guild=helpers.MockGuild(
-                members=[helpers.MockMember(), helpers.MockMember()]
-            )
-        )
-
-        await self.cog.ship(self.cog, context)
 
         self.assertIsNone(context.reply.call_args.kwargs.get("embed"))
 
