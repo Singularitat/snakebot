@@ -204,9 +204,9 @@ class compsci(commands.Cog):
             A expression to calculate.
         """
         num_bases = {
-            "h": (16, hex_float),
-            "o": (8, oct_float),
-            "b": (2, bin_float),
+            "h": (16, hex_float, "0x"),
+            "o": (8, oct_float, "0o"),
+            "b": (2, bin_float, "0b"),
         }
         base, method, prefix = num_bases.get(num_base[0].lower(), (None, None, None))
 
