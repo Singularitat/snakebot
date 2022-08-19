@@ -59,11 +59,6 @@ class animals(commands.Cog):
                 await ctx.send(file=discord.File(fp=image_binary, filename="image.png"))
 
     @commands.command()
-    async def axolotl(self, ctx):
-        """Gets a random axolotl image."""
-        await self.get(ctx, "https://axoltlapi.herokuapp.com", "url")
-
-    @commands.command()
     async def lizard(self, ctx):
         """Gets a random lizard image."""
         await self.get(ctx, "https://nekos.life/api/v2/img/lizard", "url")
