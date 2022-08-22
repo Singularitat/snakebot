@@ -287,7 +287,7 @@ class compsci(commands.Cog):
         ) as response:
             data = await response.json()
 
-        output = data["run"]["output"]
+        output = data["run"]["output"].strip()
 
         if "compile" in data and data["compile"]["stderr"]:
             output = data["compile"]["stderr"] + "\n" + output
