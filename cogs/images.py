@@ -189,14 +189,6 @@ class images(commands.Cog):
         await self.dagpi(ctx, "mosiac", url)
 
     @commands.command()
-    async def charcoal(self, ctx, url: str = None):
-        """Makes an image look like a charcoal drawing.
-
-        url: str
-        """
-        await self.dagpi(ctx, "charcoal", url)
-
-    @commands.command()
     async def rgb(self, ctx, url: str = None):
         """Get an RGB graph of an image's colors.
 
