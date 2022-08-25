@@ -75,7 +75,6 @@ class CustomMockMixin:
 guild_data = {
     "id": 1,
     "name": "guild",
-    "region": "Europe",
     "verification_level": 2,
     "default_notications": 1,
     "afk_timeout": 100,
