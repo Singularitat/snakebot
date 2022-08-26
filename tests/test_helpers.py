@@ -300,7 +300,6 @@ class MockObjectTests(unittest.TestCase):
 
     def test_spec_propagation_of_mock_subclasses(self):
         test_values = (
-            (helpers.MockGuild, "region"),
             (helpers.MockRole, "mentionable"),
             (helpers.MockMember, "display_name"),
             (helpers.MockBot, "owner_id"),
