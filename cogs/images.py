@@ -221,14 +221,6 @@ class images(commands.Cog):
         await self.jeyy(ctx, "cow", url)
 
     @commands.command()
-    async def matrix(self, ctx, url: str = None):
-        """Adds a matrix overlay onto image.
-
-        url: str
-        """
-        await self.jeyy(ctx, "matrix", url)
-
-    @commands.command()
     async def balls(self, ctx, url: str = None):
         """Turns an image into balls that are dropped.
 
