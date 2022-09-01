@@ -301,14 +301,6 @@ class images(commands.Cog):
         await self.jeyy(ctx, "bubble", url)
 
     @commands.command()
-    async def cloth(self, ctx, url: str = None):
-        """Turns an image into a gif of a hanging cloth.
-
-        url: str
-        """
-        await self.jeyy(ctx, "cloth", url)
-
-    @commands.command()
     async def iso(self, ctx, *, codes=None):
         """Uses jeyy.xyz to draw isometric blocks based on inputted codes.
 
