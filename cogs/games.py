@@ -465,13 +465,13 @@ class games(commands.Cog):
         self.DB.main.put(key, data["code"].encode())
 
     @commands.cooldown(1, 30, commands.BucketType.user)
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     async def cookie(self, ctx):
         """Starts a simple game of cookie clicker."""
         await ctx.send("Click for cookies", view=CookieClicker(self.DB, ctx.author))
 
-    @commands.command()
-    async def cookies(self, ctx, user: discord.User = None):
+    @cookie.command(aliases=["b"])
+    async def bal(self, ctx, user: discord.User = None):
         """Gets a members cookies.
 
         user: discord.User
@@ -502,8 +502,8 @@ class games(commands.Cog):
         await ctx.send(embed=embed)
         self.DB.cookies.put(user_id, orjson.dumps(cookies))
 
-    @commands.command()
-    async def cookietop(self, ctx):
+    @cookie.command()
+    async def top(self, ctx):
         """Gets the users with the most cookies."""
         cookietop = []
         for member, data in self.DB.cookies:
@@ -527,8 +527,8 @@ class games(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def cookiegive(self, ctx, member: discord.Member, amount: int):
+    @cookie.command()
+    async def give(self, ctx, member: discord.Member, amount: int):
         """Gives cookies to someone.
 
         member: discord.Member
