@@ -86,7 +86,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
             return data
         except Exception:
-            pass
+            raise YTDLError(f"Couldn't find anything that matches {search}")
 
     @classmethod
     async def create_source_playlist(cls, typ, data, *, loop):
