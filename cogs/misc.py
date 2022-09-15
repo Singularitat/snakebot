@@ -107,6 +107,41 @@ class misc(commands.Cog):
         self.DB = bot.DB
 
     @commands.command()
+    async def solved(self, ctx: commands.Context):
+        """Marks a thread in the help forum as solved."""
+        if not isinstance(ctx.channel, discord.Thread):
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), title="This is not in a thread"
+                )
+            )
+
+        if ctx.channel.id != 1019979153589670010:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), title="This is not in the help forum"
+                )
+            )
+
+        if ctx.channel.owner_id != ctx.author.id:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    title="You are not the Orginal Poster of this thread",
+                )
+            )
+
+        try:
+            await ctx.message.add_reaction("✅")
+        except (discord.HTTPException, discord.Forbidden):
+            pass
+        await ctx.channel.edit(
+            locked=True,
+            archived=True,
+            reason=f"Marked as solved ({ctx.author} {ctx.author.id})",
+        )
+
+    @commands.command()
     async def emoji(self, ctx, emoji: discord.Emoji):
         """Gets the url to the image of an emoji."""
         await ctx.send(
