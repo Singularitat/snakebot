@@ -34,7 +34,7 @@ class Database:
         for db in prefixed_dbs:
             setattr(self, db, self.main.prefixed_db(f"{db}-".encode()))
 
-    def add_karma(self, member_id, amount):
+    def add_karma(self, member_id: int, amount: int):
         """Adds or removes an amount from a members karma.
 
         member_id: int
@@ -61,7 +61,7 @@ class Database:
         if guild and (state := self.blacklist.get(f"{guild}-{member_id}".encode())):
             return state
 
-    def get_bal(self, member_id):
+    def get_bal(self, member_id: bytes) -> Decimal:
         """Gets the balance of an member.
 
         member_id: bytes
@@ -73,7 +73,7 @@ class Database:
 
         return Decimal(1000.0)
 
-    def put_bal(self, member_id, balance: float):
+    def put_bal(self, member_id: bytes, balance: float):
         """Sets the balance of an member.
 
         member_id: bytes
@@ -83,17 +83,17 @@ class Database:
         self.bal.put(member_id, balance_bytes or b"0.0")
         return balance
 
-    def add_bal(self, member_id, amount: float):
+    def add_bal(self, member_id: bytes, amount: float):
         """Adds to the balance of an member.
 
         member_id: bytes
-        amount: int
+        amount: float
         """
         if amount < 0:
             raise ValueError("You can't pay a negative amount")
         return self.put_bal(member_id, self.get_bal(member_id) + Decimal(amount))
 
-    def get_stock(self, symbol):
+    def get_stock(self, symbol: bytes):
         """Returns the data of a stock.
 
         symbol: bytes
@@ -104,7 +104,7 @@ class Database:
             return orjson.loads(stock)
         return None
 
-    def put_stock(self, symbol, data):
+    def put_stock(self, symbol: bytes, data: dict):
         """Sets the data of a stock.
 
         symbol: bytes
@@ -112,7 +112,7 @@ class Database:
         """
         self.stocks.put(symbol.encode(), orjson.dumps(data))
 
-    def get_stockbal(self, member_id):
+    def get_stockbal(self, member_id: bytes) -> dict | None:
         """Returns a members stockbal.
 
         member_id: bytes
@@ -121,9 +121,9 @@ class Database:
 
         if data:
             return orjson.loads(data)
-        return {}
+        return None
 
-    def put_stockbal(self, member_id, data):
+    def put_stockbal(self, member_id: bytes, data: dict):
         """Sets a members stockbal.
 
         member_id: bytes
@@ -131,7 +131,7 @@ class Database:
         """
         self.stockbal.put(member_id, orjson.dumps(data))
 
-    def get_crypto(self, symbol):
+    def get_crypto(self, symbol: bytes) -> dict | None:
         """Returns the data of a crypto.
 
         symbol: bytes
