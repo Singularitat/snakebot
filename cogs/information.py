@@ -408,7 +408,10 @@ class information(commands.Cog):
         if isinstance(user, discord.Member):
             length = len(user.roles) - 1
             if length > 10:
-                roles = ", ".join(role.mention for role in user.roles[1:11]) + f" + {length - 10} more roles"
+                roles = (
+                    ", ".join(role.mention for role in user.roles[1:11])
+                    + f" + {length - 10} more roles"
+                )
             else:
                 roles = ", ".join(role.mention for role in user.roles[1:])
 
