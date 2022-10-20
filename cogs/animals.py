@@ -173,7 +173,7 @@ class animals(commands.Cog):
         """Gets a random dog image."""
         if breed:
             url = f"https://dog.ceo/api/breed/{breed}/images/random"
-            await self.get(ctx, url, "message")
+            return await self.get(ctx, url, "message")
 
         await self.get_multiple(
             ctx,
