@@ -406,7 +406,15 @@ class information(commands.Cog):
         )
 
         if isinstance(user, discord.Member):
-            roles = ", ".join(role.mention for role in user.roles[1:])
+            length = len(user.roles) - 1
+            if length > 10:
+                roles = (
+                    ", ".join(role.mention for role in user.roles[1:11])
+                    + f" + {length - 10} more roles"
+                )
+            else:
+                roles = ", ".join(role.mention for role in user.roles[1:])
+
             joined = f"**<t:{user.joined_at.timestamp():.0f}:R>**"
             if roles and user.top_role.colour.value != 0:
                 embed.color = user.top_role.colour
