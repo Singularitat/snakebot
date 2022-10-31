@@ -438,7 +438,9 @@ class compsci(commands.Cog):
     @commands.command()
     async def notes(self, ctx):
         """Sends a link to Joe's notes."""
-        embed = discord.Embed(color=0x3381b1, title="Joe's Notes", url="https://notes.joewuthrich.com")
+        embed = discord.Embed(
+            color=0x3381B1, title="Joe's Notes", url="https://notes.joewuthrich.com"
+        )
 
         embed.description = """
         ~~---------------------------------------------------------------------------~~
