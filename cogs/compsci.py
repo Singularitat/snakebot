@@ -437,50 +437,52 @@ class compsci(commands.Cog):
 
     @commands.command()
     async def notes(self, ctx):
-        """Sends a link to Joes notes."""
-        embed = discord.Embed(color=discord.Color.blurple(), title="Joes Notes")
+        """Sends a link to Joe's notes."""
+        embed = discord.Embed(color="0xff7700", title="Joe's Notes", url="https://notes.joewuthrich.com")
 
         embed.description = """
-        [Home Page](https://notes.joewuthrich.com)
+        **[Compsci 101](https://notes.joewuthrich.com/compsci101)**
+        An introduction to programming using the Python programming language.
 
-        [Compsci 101](https://notes.joewuthrich.com/compsci101)
-        Introduction to programming using the Python programming language.
+        **[Compsci 110](https://notes.joewuthrich.com/compsci110)**
+        An explanation of how computers work and some of the things we can use them for.
 
-        [Compsci 110](https://notes.joewuthrich.com/compsci110)
-        This course explains how computers work and some of the things we can use them for.
+        **[Compsci 120](https://notes.joewuthrich.com/compsci120)**
+        An introduction to basic mathematical tools and methods needed for computer science.
 
-        [Compsci 120](https://notes.joewuthrich.com/compsci120)
-        Introduces basic mathematical tools and methods needed for computer science.
+        **[Compsci 130](https://notes.joewuthrich.com/compsci130)**
+        An entry course to programming for students with prior knowledge in Python.
 
-        [Compsci 130](https://notes.joewuthrich.com/compsci130)
-        Entry course to Computer Science for students with prior programming knowledge in Python.
+        ~~---------------------------------------------------------------------------~~
 
-        [Compsci 210](https://notes.joewuthrich.com/compsci210)
-        An introduction to computer organisation, programming in the LC3 assembly language and C.
+        **[Compsci 210](https://notes.joewuthrich.com/compsci210)**
+        An introduction to computer organisation, programming in the LC3 assembly language, and C.
 
-        [Compsci 215](https://notes.joewuthrich.com/compsci215)
+        **[Compsci 215](https://notes.joewuthrich.com/compsci215)**
         An introduction to data communications and security.
 
-        [Compsci 220](https://notes.joewuthrich.com/compsci220)
+        **[Compsci 220](https://notes.joewuthrich.com/compsci220)**
         An introduction to the analysis of algorithms and data structures.
 
-        [Compsci 225](https://notes.joewuthrich.com/compsci225)
-        Discrete Structures in Mathematics and Computer Science.
+        **[Compsci 225](https://notes.joewuthrich.com/compsci225)**
+        An analysis of discrete structures in Mathematics and Computer Science.
 
-        [Compsci 230](https://notes.joewuthrich.com/compsci230)
+        **[Compsci 230](https://notes.joewuthrich.com/compsci230)**
         An introduction to object-oriented coding in Java.
 
-        [Compsci 235](https://notes.joewuthrich.com/compsci235)
-        Software design methodologies to structure the process of developing software.
+        **[Compsci 235](https://notes.joewuthrich.com/compsci235)**
+        An introduction to software design methodologies to structure the process of developing software.
 
-        [Compsci 320](https://notes.joewuthrich.com/compsci320)
-        Fundamental design techniques used for efficient algorithmic problem-solving.
+        ~~---------------------------------------------------------------------------~~
 
-        [Compsci 335](https://notes.joewuthrich.com/compsci335)
-        Web application development.
+        **[Compsci 320](https://notes.joewuthrich.com/compsci320)**
+        An analysis of fundamental design techniques used for efficient algorithmic problem-solving.
 
-        [Compsci 340](https://notes.joewuthrich.com/compsci340)
-        Operating system principles.
+        **[Compsci 335](https://notes.joewuthrich.com/compsci335)**
+        An introduction to web application development.
+
+        **[Compsci 340](https://notes.joewuthrich.com/compsci340)**
+        An introduction to operating system principles.
         """
         await ctx.send(embed=embed)
 
