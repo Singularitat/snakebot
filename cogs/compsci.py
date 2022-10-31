@@ -441,6 +441,8 @@ class compsci(commands.Cog):
         embed = discord.Embed(color=0x3381b1, title="Joe's Notes", url="https://notes.joewuthrich.com")
 
         embed.description = """
+        ~~---------------------------------------------------------------------------~~
+
         **[Compsci 101](https://notes.joewuthrich.com/compsci101)**
         An introduction to programming using the Python programming language.
 
