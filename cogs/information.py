@@ -33,7 +33,7 @@ class information(commands.Cog):
 
         count = 0
         for commit in commits:
-            if commit["commit"]["verification"]["payload"]:
+            if len(commit["parents"]) > 1:
                 continue
             if count == 12:
                 break
