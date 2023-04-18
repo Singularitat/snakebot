@@ -67,7 +67,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.duration = self.parse_duration(data["duration"])
         self.url = data.get("webpage_url")
         self.views = self.parse_number(data["view_count"])
-        self.likes = self.parse_number(data["like_count"])
         self.stream_url = data.get("url")
 
     def __str__(self):
