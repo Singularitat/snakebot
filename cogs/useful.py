@@ -196,9 +196,8 @@ class DeleteButton(discord.ui.View):
 
     @discord.ui.button(label="X", style=discord.ButtonStyle.red)
     async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
-        if interaction.user == self.author:
-            if interaction.message:
-                await interaction.message.delete()
+        if interaction.user == self.author and interaction.message:
+            await interaction.message.delete()
 
 
 class useful(commands.Cog):
@@ -633,10 +632,10 @@ class useful(commands.Cog):
             for codes in STATUS_CODES.values():
                 message = ""
 
-                for code, tag in codes.items():
-                    if not code.isdigit():
+                for status_code, tag in codes.items():
+                    if not status_code.isdigit():
                         continue
-                    message += f"\n{code} {tag}"
+                    message += f"\n{status_code} {tag}"
 
                 embed.add_field(
                     name=codes["title"],
@@ -741,17 +740,15 @@ class useful(commands.Cog):
         search: str
             The term to search for.
         """
-        embed = discord.Embed(color=discord.Color.blurple())
-
         cache_search = f"google-{search.lower()}"
-        cache = await self.cache_check(cache_search)
 
-        if isinstance(cache, tuple):
-            url, title = cache
-            embed.set_image(url=url)
-            embed.title = title
+        if cache_search in self.bot.cache:
+            url = self.bot.cache[cache_search].pop()
 
-            return await ctx.send(embed=embed, view=DeleteButton(ctx.author))
+            if not self.bot.cache[cache_search]:
+                self.bot.cache.pop(cache_search)
+
+            return await ctx.send(url, view=DeleteButton(ctx.author))
 
         async with ctx.typing():
             url = f"https://www.google.com/search?q={search}&source=lnms&tbm=isch&safe=active"
@@ -761,27 +758,40 @@ class useful(commands.Cog):
             async with self.bot.client_session.get(url, headers=headers) as page:
                 soup = lxml.html.fromstring(await page.text())
 
-            images = {}
-            for a in soup.xpath('.//img[@class="rg_i Q4LuWd"]'):
-                try:
-                    images[a.attrib["data-src"]] = a.attrib["alt"]
-                except KeyError:
-                    pass
+            images = []
 
-            if images == {}:
-                embed.title = "No images found"
-                embed.color = discord.Color.dark_red()
+            for script in soup.xpath("/html/body/script"):
+                if script.text.startswith("AF_initDataCallback") and len(script.text) > 1000:
+                    text = script.text.strip(", sideChannel: {}});")
+                    data_position = text.find("data")
+                    text = text[data_position + 5:]
+
+                    data = orjson.loads(text)
+
+                    if data[0] is not None:
+                        continue
+
+                    for image in enumerate(data[56][1][0][0][1][0]):
+                        try:
+                            if isinstance(image, tuple):
+                                images.append(image[1][0][0]["444383007"][1][3][0])
+                            else:
+                                images.append(image[0][0]["444383007"][1][3][0])
+                        except (KeyError, IndexError, TypeError):
+                            continue
+
+                    break
+
+            if not images:
+                embed = discord.Embed(title="No images found", color=discord.Color.dark_red())
                 return await ctx.send(embed=embed)
 
-            url, title = random.choice(list(images.items()))
-            images.pop(url)
+            images = images[::-1]
+            url = images.pop()
 
-            embed.set_image(url=url)
-            embed.title = title
+            await ctx.send(url, view=DeleteButton(ctx.author))
 
-            await ctx.send(embed=embed, view=DeleteButton(ctx.author))
-
-            cache[cache_search] = images
+            self.bot.cache[cache_search] = images
             self.loop.call_later(300, self.bot.remove_from_cache, cache_search)
 
     @commands.command(aliases=["img"])
