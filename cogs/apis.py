@@ -838,7 +838,7 @@ class apis(commands.Cog):
         phonetics = definition["phonetics"]
 
         if phonetics and (phonetics := phonetics[0]):
-            embed.title = phonetics["text"]
+            embed.title = phonetics.get("text")
             embed.description = f"[pronunciation]({phonetics['audio']})"
 
         for meaning in definition["meanings"]:
@@ -1001,9 +1001,13 @@ class apis(commands.Cog):
             self.loop.call_later(300, self.bot.remove_from_cache, cache_search)
 
         embed.title = search.title()
+        definition = URBAN_REGEX.sub(r"\1", item["definition"])
+        if len(definition) > 1024:
+            definition = definition[:1009] + "... (truncated)"
+
         embed.add_field(
             name="Definition",
-            value=URBAN_REGEX.sub(r"\1", item["definition"]),
+            value=definition,
             inline=False,
         )
         embed.add_field(
@@ -1060,47 +1064,6 @@ class apis(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def covid(self, ctx, *, country="nz"):
-        """Shows current coronavirus cases, defaults to New Zealand.
-
-        country: str - The country to search for
-        """
-        url = f"https://disease.sh/v3/covid-19/countries/{country}"
-
-        embed = discord.Embed(colour=discord.Color.red())
-
-        data = await self.bot.get_json(url)
-
-        if "message" in data:
-            embed.description = (
-                "```Not a valid country\nExamples: NZ, New Zealand, all```"
-            )
-            return await ctx.send(embed=embed)
-
-        embed.set_author(
-            name=f"Cornavirus {data['country']}:",
-            icon_url=data["countryInfo"]["flag"],
-        )
-
-        embed.description = textwrap.dedent(
-            f"""
-                ```prolog
-                Total Cases:   Total Deaths:
-                {data['cases']:<15,}{data['deaths']:,}
-
-                Active Cases:  Cases Today:
-                {data['active']:<15,}{data['todayCases']:,}
-
-                Deaths Today:  Recovered Total:
-                {data['todayDeaths']:<15,}{data['recovered']:,}
-                ```
-            """
-        )
-        embed.timestamp = discord.utils.utcnow()
-
-        await ctx.send(embed=embed)
-
     @commands.command(aliases=["gh"])
     async def github(self, ctx, username: str):
         """Fetches a members's GitHub information."""
@@ -1141,7 +1104,6 @@ class apis(commands.Cog):
         embed.set_footer(text="Account created at")
 
         if user_data["type"] == "User":
-
             embed.add_field(
                 name="Followers",
                 value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)",

@@ -113,7 +113,7 @@ class stocks(commands.Cog):
             title=f"Sold {amount:.2f} stocks for ${cash:.2f}",
             color=discord.Color.blurple(),
         )
-        embed.set_footer(text=f"Balance: ${bal:,f}")
+        embed.set_footer(text=f"Balance: ${bal:,}")
 
         await ctx.send(embed=embed)
 
@@ -165,7 +165,7 @@ class stocks(commands.Cog):
             title=f"You bought {amount:.2f} stocks in {symbol}",
             color=discord.Color.blurple(),
         )
-        embed.set_footer(text=f"Balance: ${bal:,f}")
+        embed.set_footer(text=f"Balance: ${bal:,}")
 
         await ctx.send(embed=embed)
 
@@ -269,21 +269,21 @@ class stocks(commands.Cog):
     async def list(self, ctx):
         """Shows the prices of stocks from the nasdaq api."""
         messages = []
-        stocks = ""
+        stocks_ = ""
         for i, (stock, price) in enumerate(self.DB.stocks, start=1):
             price = orjson.loads(price)["price"]
 
             if not i % 3:
-                stocks += f"{stock.decode():}: ${float(price):.2f}\n"
+                stocks_ += f"{stock.decode():}: ${float(price):.2f}\n"
             else:
-                stocks += f"{stock.decode():}: ${float(price):.2f}\t".expandtabs()
+                stocks_ += f"{stock.decode():}: ${float(price):.2f}\t".expandtabs()
 
             if not i % 99:
-                messages.append(discord.Embed(description=f"```prolog\n{stocks}```"))
-                stocks = ""
+                messages.append(discord.Embed(description=f"```prolog\n{stocks_}```"))
+                stocks_ = ""
 
         if i % 99:
-            messages.append(discord.Embed(description=f"```prolog\n{stocks}```"))
+            messages.append(discord.Embed(description=f"```prolog\n{stocks_}```"))
 
         paginator = pages.Paginator(pages=messages)
         await paginator.send(ctx)

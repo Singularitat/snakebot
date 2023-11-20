@@ -1,5 +1,5 @@
 import pathlib
-from decimal import Decimal
+from decimal import setcontext, Decimal, Context, MAX_EMAX, MAX_PREC, MIN_EMIN
 
 import orjson
 import plyvel
@@ -33,6 +33,7 @@ class Database:
         )
         for db in prefixed_dbs:
             setattr(self, db, self.main.prefixed_db(f"{db}-".encode()))
+        setcontext(Context(prec=MAX_PREC, Emax=MAX_EMAX, Emin=MIN_EMIN))
 
     def add_karma(self, member_id: int, amount: int):
         """Adds or removes an amount from a members karma.
@@ -73,21 +74,26 @@ class Database:
 
         return Decimal(1000.0)
 
-    def put_bal(self, member_id: bytes, balance: float):
+    def put_bal(self, member_id: bytes, balance: Decimal):
         """Sets the balance of an member.
 
         member_id: bytes
-        balance: float
+        balance: Decimal
         """
-        balance_bytes = f"{balance:50f}".rstrip("0").lstrip(" ").encode()
+        if balance == balance.to_integral():
+            balance = balance.quantize(Decimal(1))
+        else:
+            balance = balance.normalize()
+
+        balance_bytes = f"{balance:50f}".lstrip(" ").encode()
         self.bal.put(member_id, balance_bytes or b"0.0")
         return balance
 
-    def add_bal(self, member_id: bytes, amount: float):
+    def add_bal(self, member_id: bytes, amount: Decimal):
         """Adds to the balance of an member.
 
         member_id: bytes
-        amount: float
+        amount: Decimal
         """
         if amount < 0:
             raise ValueError("You can't pay a negative amount")
@@ -121,7 +127,7 @@ class Database:
 
         if data:
             return orjson.loads(data)
-        return None
+        return {}
 
     def put_stockbal(self, member_id: bytes, data: dict):
         """Sets a members stockbal.

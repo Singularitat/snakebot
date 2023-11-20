@@ -201,6 +201,11 @@ class animals(commands.Cog):
         """Gets a random dog image."""
         await self.get(ctx, "http://shibe.online/api/shibes", 0)
 
+    @commands.command()
+    async def capybara(self, ctx):
+        """Gets a random dog image."""
+        await self.get(ctx, "https://api.capy.lol/v1/capybara?json=true", "data", "url")
+
 
 def setup(bot: commands.Bot) -> None:
     """Starts the animals cog."""

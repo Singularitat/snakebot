@@ -71,9 +71,18 @@ class Deck:
             return None
         return False
 
-    def get_embed(self, bet, hidden=True):
+    def get_embed(self, bet, hidden=True, win=False):
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.title = f"Blackjack game (${bet})"
+
+        if hidden:
+            embed.title = f"Blackjack game (${bet:,.2f})"
+        elif win is None:
+            embed.title = f"You tied! (${bet:,.2f})"
+        elif win:
+            embed.title = f"You won! (${bet:,.2f})"
+        else:
+            embed.title = f"You lost! (${bet:,.2f})"
+
         embed.description = """
         **Your Hand: {}**
         {}
@@ -88,6 +97,75 @@ class Deck:
             else f"`{self.dealer[0].name}{self.dealer[0].suit}` `##`",
         )
         return embed
+
+
+class BlackJack(discord.ui.View):
+    def __init__(self, db, user: discord.User, bet):
+        super().__init__(timeout=1200.0)
+        self.user = user
+        self.DB = db
+
+        self.bet = bet
+        self.deck = Deck()
+
+        self.user_key = str(user.id).encode()
+
+        if self.deck.score(self.deck.member) == 21:
+            if self.deck.score(self.deck.dealer) != 21:
+                bal = self.DB.get_bal(self.user_key) + bet
+                self.DB.put_bal(self.user_key, bal)
+
+            for child in self.children:
+                child.disabled = True
+
+            self.stop()
+        else:
+            bal = self.DB.get_bal(self.user_key) - bet
+            self.DB.put_bal(self.user_key, bal)
+
+    @discord.ui.button(label="🇭", style=discord.ButtonStyle.blurple)
+    async def hit(self, button, interaction):
+        if interaction.user == self.user:
+            self.deck.member.append(self.deck.items.pop())
+
+            if self.deck.score(self.deck.member) >= 21:
+                is_win = self.deck.is_win()
+
+                if is_win is True:
+                    bal = self.DB.get_bal(self.user_key) + self.bet * 2
+
+                    self.DB.put_bal(self.user_key, bal)
+
+                for child in self.children:
+                    child.disabled = True
+
+                return await interaction.response.edit_message(
+                    view=self, embed=self.get_embed(False, is_win)
+                )
+
+            await interaction.response.edit_message(view=self, embed=self.get_embed())
+
+    @discord.ui.button(label="🇸", style=discord.ButtonStyle.blurple)
+    async def stand(self, button, interaction):
+        if interaction.user == self.user:
+            is_win = self.deck.is_win()
+
+            if is_win is True:
+                bal = self.DB.get_bal(self.user_key) + self.bet * 2
+
+                self.DB.put_bal(self.user_key, bal)
+
+            for child in self.children:
+                child.disabled = True
+
+            return await interaction.response.edit_message(
+                view=self, embed=self.get_embed(False, is_win)
+            )
+
+    def get_embed(self, hidden=True, is_win=False):
+        return self.deck.get_embed(
+            self.bet, False if self.children[0].disabled else hidden, is_win
+        )
 
 
 class economy(commands.Cog):
@@ -130,55 +208,9 @@ class economy(commands.Cog):
             embed.title = "You don't have enough cash"
             return await ctx.send(embed=embed)
 
-        deck = Deck()
-        message = await ctx.send(embed=deck.get_embed(bet))
+        blackjack = BlackJack(self.DB, ctx.author, bet)
 
-        if deck.score(deck.member) == 21:
-            await message.edit(embed=deck.get_embed(bet, False))
-            self.DB.put_bal(member, bal + bet)
-            return await message.add_reaction("✅")
-
-        if deck.score(deck.dealer) == 21:
-            await message.edit(embed=deck.get_embed(bet, False))
-            self.DB.put_bal(member, bal - bet)
-            return await message.add_reaction("❎")
-
-        reactions = ["🇭", "🇸"]
-
-        def check(reaction: discord.Reaction, user: discord.User) -> bool:
-            return (
-                user.id == ctx.author.id
-                and reaction.message.channel == ctx.channel
-                and reaction.emoji in reactions
-            )
-
-        for reaction in reactions:
-            await message.add_reaction(reaction)
-
-        while deck.score(deck.member) < 21:
-            reaction, user = await ctx.bot.wait_for(
-                "reaction_add", timeout=60.0, check=check
-            )
-            if reaction.emoji == "🇭":
-                deck.member.append(deck.items.pop())
-            else:
-                break
-            await reaction.remove(user)
-            await message.edit(embed=deck.get_embed(bet))
-
-        is_win = deck.is_win()
-
-        if is_win is None:
-            await message.add_reaction("➖")
-        elif is_win:
-            bal += bet
-            await message.add_reaction("✅")
-        else:
-            bal -= bet
-            await message.add_reaction("❎")
-
-        await message.edit(embed=deck.get_embed(bet, False))
-        self.DB.put_bal(member, bal)
+        await ctx.send(embed=blackjack.get_embed(), view=blackjack)
 
     @commands.command(aliases=["coinf", "cf"])
     async def coinflip(self, ctx, choice="h", bet="0"):
@@ -223,15 +255,15 @@ class economy(commands.Cog):
 
         if choice == result[0]:
             embed.color = discord.Color.blurple()
-            embed.description = f"You won ${bet}"
+            embed.description = f"You won ${bet:,.2f}"
             bal += bet
         else:
-            embed.description = f"You lost ${bet}"
+            embed.description = f"You lost ${bet:,.2f}"
             bal -= bet
 
         self.DB.put_bal(member, bal)
 
-        embed.set_footer(text=f"Balance: ${bal:,f}")
+        embed.set_footer(text=f"Balance: ${bal:,.2f}")
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -262,13 +294,13 @@ class economy(commands.Cog):
         if random.randint(1, 100) == 50:
             bal += bet * 99
             self.DB.put_bal(member, bal)
-            embed.title = f"You won ${bet * 99}"
-            embed.set_footer(text=f"Balance: ${bal:,f}")
+            embed.title = f"You won ${bet * 99:,.2f}"
+            embed.set_footer(text=f"Balance: ${bal:,.2f}")
             return await ctx.send(embed=embed)
 
         self.DB.put_bal(member, bal - bet)
-        embed.title = f"You lost ${bet}"
-        embed.set_footer(text=f"Balance: ${bal - bet:,}")
+        embed.title = f"You lost ${bet:,.2f}"
+        embed.set_footer(text=f"Balance: ${bal - bet:,.2f}")
         embed.color = discord.Color.red()
         await ctx.send(embed=embed)
 
@@ -368,7 +400,7 @@ class economy(commands.Cog):
         if not silent:
             embed.title = f"[ {a} {b} {c} {d} ]"
             embed.description = f"You {result} ${bet*(abs(winnings)):,.2f}"
-            embed.set_footer(text=f"Balance: ${bal:,f}")
+            embed.set_footer(text=f"Balance: ${bal:,.2f}")
 
             await ctx.reply(embed=embed, mention_author=False)
 
@@ -435,7 +467,7 @@ class economy(commands.Cog):
         bal = self.DB.get_bal(user_id)
 
         embed = discord.Embed(color=discord.Color.blurple())
-        embed.add_field(name=f"{user.display_name}'s balance", value=f"${bal:,f}")
+        embed.add_field(name=f"{user.display_name}'s balance", value=f"${bal:,.2f}")
 
         await ctx.send(embed=embed)
 
@@ -580,8 +612,8 @@ class economy(commands.Cog):
         sender_bal -= Decimal(amount)
         self.DB.put_bal(sender, sender_bal)
 
-        embed.title = f"Sent ${amount:,f} to {user.display_name}"
-        embed.set_footer(text=f"New Balance: ${sender_bal:,f}")
+        embed.title = f"Sent ${amount:,.2f} to {user.display_name}"
+        embed.set_footer(text=f"New Balance: ${sender_bal:,.2f}")
 
         await ctx.send(embed=embed)
 
@@ -595,7 +627,7 @@ class economy(commands.Cog):
         embed = discord.Embed(
             title=f"Paid {ctx.author.display_name} $1000", color=discord.Color.blurple()
         )
-        embed.set_footer(text=f"Balance: ${bal:,f}")
+        embed.set_footer(text=f"Balance: ${bal:,.2f}")
 
         await ctx.send(embed=embed)
 

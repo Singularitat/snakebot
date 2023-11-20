@@ -479,6 +479,12 @@ class compsci(commands.Cog):
 
         ~~---------------------------------------------------------------------------~~
 
+        **[Compsci 315](https://notes.joewuthrich.com/compsci315)**
+        A course on Data Communications Technologies, emphasizing the fundamentals and layers of data communications, protocol stacks, and Internet protocols.
+
+        **[Compsci 316](https://notes.joewuthrich.com/compsci316)**
+        A course covering various cybersecurity concepts including malware analysis, hardware security, and blockchain.
+
         **[Compsci 320](https://notes.joewuthrich.com/compsci320)**
         An analysis of fundamental design techniques used for efficient algorithmic problem-solving.
 
@@ -487,6 +493,15 @@ class compsci(commands.Cog):
 
         **[Compsci 340](https://notes.joewuthrich.com/compsci340)**
         An introduction to operating system principles.
+
+        **[Compsci 361](https://notes.joewuthrich.com/compsci361)**
+        Introduction to Machine Learning
+        
+        **[Compsci 367](https://notes.joewuthrich.com/compsci367)**
+        Artificial Intelligence, focusing on knowledge representation, search, logic, planning, and natural language processing.
+
+        **[Compsci 369](https://notes.joewuthrich.com/compsci369)**
+        A course exploring computer science integration with life sciences, including modelling, sequence alignment, and phylogenetics.
         """
         await ctx.send(embed=embed)
 
