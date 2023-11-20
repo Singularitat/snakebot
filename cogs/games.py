@@ -341,14 +341,19 @@ class WordleInput(discord.ui.Modal):
             self.view.children[0].disabled = True
             embed.set_footer(text=f"The word was {self.view.word}")
 
-        line = []
+        line = ["⬛"] * 5
+        letter_counts = {letter: self.view.word.count(letter) for letter in set(self.view.word)}
+
         for i in range(5):
-            if word[i] == self.view.word[i]:
-                line.append("🟩")
-            elif word[i] in self.view.word:
-                line.append("🟨")
-            else:
-                line.append("⬛")
+            guess_char = word[i]
+            target_char = self.view.word[i]
+
+            if guess_char == target_char:
+                line[i] = "🟩"
+                letter_counts[guess_char] -= 1
+            elif guess_char in self.view.word and letter_counts[guess_char] > 0:
+                letter_counts[guess_char] -= 1
+                line[i] = "🟨"
 
         emoji_letters = "|".join([chr(127365 + ord(letter)) for letter in word])
         self.view.lines += "|".join(line) + "\n" + emoji_letters + "\n"
@@ -623,6 +628,8 @@ class games(commands.Cog):
             message = await self.bot.wait_for("message", timeout=60.0, check=check)
 
             if message.content.lower() == word:
+                embed.title = word
+                await embed_message.edit(embed=embed)
                 return await embed_message.add_reaction("✅")
 
             guess = message.content[0].lower()
