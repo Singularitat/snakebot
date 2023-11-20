@@ -761,10 +761,13 @@ class useful(commands.Cog):
             images = []
 
             for script in soup.xpath("/html/body/script"):
-                if script.text.startswith("AF_initDataCallback") and len(script.text) > 1000:
+                if (
+                    script.text.startswith("AF_initDataCallback")
+                    and len(script.text) > 1000
+                ):
                     text = script.text.strip(", sideChannel: {}});")
                     data_position = text.find("data")
-                    text = text[data_position + 5:]
+                    text = text[data_position + 5 :]
 
                     data = orjson.loads(text)
 
@@ -783,7 +786,9 @@ class useful(commands.Cog):
                     break
 
             if not images:
-                embed = discord.Embed(title="No images found", color=discord.Color.dark_red())
+                embed = discord.Embed(
+                    title="No images found", color=discord.Color.dark_red()
+                )
                 return await ctx.send(embed=embed)
 
             images = images[::-1]

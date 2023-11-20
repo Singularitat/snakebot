@@ -342,7 +342,9 @@ class WordleInput(discord.ui.Modal):
             embed.set_footer(text=f"The word was {self.view.word}")
 
         line = ["⬛"] * 5
-        letter_counts = {letter: self.view.word.count(letter) for letter in set(self.view.word)}
+        letter_counts = {
+            letter: self.view.word.count(letter) for letter in set(self.view.word)
+        }
 
         for i in range(5):
             guess_char = word[i]
